@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg"  preserveAspectRatio="xMinYMin meet" viewBox="0 0 200 100"
+      style="border:solid 6px"
+      xmlns="http://www.w3.org/2000/svg">
+      <g>
+      <path id="svg-text" d="M 10 50 H 180" fill="transparent" stroke="lightgray" />
+
+          <text>
+          <textPath
+                xlink:href="#svg-text"
+                method="stretch"
+                lengthAdjust="spacingAndGlyphs"
+              >Beautifully resized!</textPath>
+          </text>
+      </g>
+  </svg>
