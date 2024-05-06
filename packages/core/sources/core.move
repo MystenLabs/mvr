@@ -1,9 +1,10 @@
-module core::core {
+/// Used to register the core package.
+module core::core{
+    use sui::package;
 
-    use sui::{
-        dynamic_field::{Self as df},
-        balance::{Self, Balance},
-        sui::SUI,
-    };
+    public struct CORE has drop {}
 
+    fun init(otw: CORE, ctx: &mut TxContext) {
+        package::claim_and_keep(otw, ctx)
+    }
 }

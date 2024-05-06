@@ -6,12 +6,8 @@
 /// This module couples the "DotMove" object with the "DotMoveRecord", to validate that these
 /// can only be created / removed together (No way to create a `DotMove` without the equivalent DotMoveRecord).
 module core::dot_move {
-
-    use std::string::String;
-
-    use sui::{
-        clock::Clock
-    };
+    use sui::clock::Clock;
+    use core::name::Name;
 
     /// Tries to create or update a dotmove object with invalid expiration.
     const EInvalidExpirationTimestamp: u64 = 1;
@@ -19,7 +15,7 @@ module core::dot_move {
     /// The `DotMove` struct represents ownership of a `.move` name.
     public struct DotMove has key, store {
         id: UID,
-        name: String,
+        name: Name,
         expiration_timestamp_ms: u64,
     }
 
@@ -33,7 +29,7 @@ module core::dot_move {
     /// A `DotMove` and a `DotMoveRecord` are tightly coupled.
     /// There has to be a matching `DotMove` object for each `DotMoveRecord` entry.
     public(package) fun new(
-        name: String,
+        name: Name,
         expiration_timestamp_ms: u64,
         clock: &Clock,
         ctx: &mut TxContext,
@@ -42,8 +38,8 @@ module core::dot_move {
 
         DotMove {
             id: object::new(ctx),
-            name: name,
-            expiration_timestamp_ms: expiration_timestamp_ms,
+            name,
+            expiration_timestamp_ms,
         }
     }
 
@@ -71,7 +67,7 @@ module core::dot_move {
         dot_move.id.to_inner()
     }
 
-    public fun name(dot_move: &DotMove): String {
+    public fun name(dot_move: &DotMove): Name {
         dot_move.name
     }
 }

@@ -4,7 +4,7 @@ import { execFileSync, execSync } from 'child_process';
 import fs, { readFileSync } from 'fs';
 import { homedir } from 'os';
 import path from 'path';
-import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client';
+import { getFullnodeUrl, SuiClient, SuiTransactionBlockResponse } from '@mysten/sui.js/client';
 import { decodeSuiPrivateKey } from '@mysten/sui.js/cryptography';
 import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 import { Secp256k1Keypair } from '@mysten/sui.js/keypairs/secp256k1';
@@ -32,12 +32,8 @@ export const publishPackage = (txb: TransactionBlock, path: string, network: Net
 		dependencies,
 	});
 
-	const sender = txb.moveCall({
-		target: `0x2::tx_context::sender`,
-	});
-
 	// Transfer the upgrade capability to the sender so they can upgrade the package later if they want.
-	txb.transferObjects([cap], sender);
+	txb.transferObjects([cap], sender(txb));
 };
 
 /// Returns a signer based on the active address of system's sui.
@@ -93,6 +89,12 @@ export const signAndExecute = async (txb: TransactionBlock, network: Network) =>
 		},
 	});
 };
+
+export const sender = (txb: TransactionBlock) => {
+	return txb.moveCall({
+		target: `0x2::tx_context::sender`,
+	});
+}
 
 /// Builds a transaction (unsigned) and saves it on `setup/tx/tx-data.txt` (on production)
 /// or `setup/src/tx-data.local.txt` on mainnet.
@@ -158,3 +160,23 @@ async function inspectTransaction(tx: TransactionBlock, client: SuiClient) {
 
 	return result.effects.status.status === 'success';
 }
+
+
+export const parseCorePackageObjects = (data: SuiTransactionBlockResponse) => {
+	const packageId = data.objectChanges!.find((x) => x.type === 'published');
+	if (!packageId || packageId.type !== 'published') throw new Error('Expected Published object');
+	const upgradeCap = parseCreatedObject(data, '0x2::package::UpgradeCap');
+
+	return {
+		packageId: packageId.packageId,
+		upgradeCap: upgradeCap,
+	};
+};
+
+/// Only works with single objects (if there are multiple of a type, it'll return the first it finds).
+export const parseCreatedObject = (data: SuiTransactionBlockResponse, objectType: string) => {
+	const obj = data.objectChanges!.find((x) => x.type === 'created' && x.objectType === objectType);
+	if (!obj || obj.type !== 'created') throw new Error(`Expected ${objectType} object`);
+
+	return obj.objectId;
+};

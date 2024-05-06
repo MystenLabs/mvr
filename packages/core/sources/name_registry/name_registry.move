@@ -16,7 +16,8 @@ module core::name_registry {
 
     use core::{
         dot_move::{Self, DotMove},
-        dot_move_record::{Self, DotMoveRecord}
+        dot_move_record::{Self, DotMoveRecord},
+        name::{Self, Name}
     };
 
     /// Errors
@@ -25,6 +26,7 @@ module core::name_registry {
     const EUnauthorizedApp: u64 = 3;
     const ERecordNotExists: u64 = 4;
     const EIdMissMatch: u64 = 5;
+    const EInvalidOrg: u64 = 6;
 
     /// The version of the `NameRegistry`.
     const VERSION: u16 = 1;
@@ -38,7 +40,7 @@ module core::name_registry {
         id: UID,
         balance: Balance<SUI>,
         version: u16,
-        registry: Table<String, DotMoveRecord>,
+        registry: Table<Name, DotMoveRecord>,
     }
 
     /// The Capability for privileged access to the` NameRegistry`.
@@ -61,28 +63,31 @@ module core::name_registry {
         };
 
         transfer::public_transfer(NameRegistryCap { id: object::new(ctx) }, ctx.sender());
+        transfer::public_transfer(FinancialCap { id: object::new(ctx) }, ctx.sender());
         transfer::share_object(registry);
     }
 
-    /// Add a new `.move` name in the registry
+    /// Add a new Name in the registry
     public fun add_record<T: drop>(
         registry: &mut NameRegistry, 
         _: T, 
-        clock: &Clock, 
         name: String, 
         expiration_timestamp_ms: u64, 
+        clock: &Clock, 
         ctx: &mut TxContext
     ): DotMove {
         assert!(registry.is_app_authorized<T>(), EUnauthorizedApp);
         assert!(registry.is_valid_version(), EInvalidVersion);
+        let org_name = name::new(name);
+        assert!(org_name.is_org(), EInvalidOrg);
 
         // If the current record exists and has expired, remove from registry.
         registry.remove_record_if_exists_and_expired(name, clock);
 
-        let dot_move = dot_move::new(name, expiration_timestamp_ms, clock, ctx);
-        let record = dot_move_record::new(name, expiration_timestamp_ms, clock, dot_move.id(), ctx);
+        let dot_move = dot_move::new(org_name, expiration_timestamp_ms, clock, ctx);
+        let record = dot_move_record::new(expiration_timestamp_ms, clock, dot_move.id(), ctx);
 
-        registry.registry.add(name, record);
+        registry.registry.add(org_name, record);
         dot_move
     }
 
@@ -96,14 +101,18 @@ module core::name_registry {
     ) {
         assert!(registry.is_app_authorized<T>(), EUnauthorizedApp);
         assert!(registry.is_valid_version(), EInvalidVersion);
-
         assert!(dot_move.has_expired(clock), ERecordNotExpired);
 
-        let record = registry.registry.borrow(dot_move.name());
-
-        if (record.is_valid_for(&dot_move)) {
-            let deletion = registry.registry.remove(dot_move.name());
-            deletion.burn();
+        let org_name = dot_move.name();
+        // If the record exists, we check if it is valid for the `DotMove`.
+        // If it's also valid for the specified `DotMove`, we remove it.
+        if (registry.registry.contains(org_name)) {
+            let record = registry.registry.borrow(org_name);
+            // If the record is valid for that particular `DotMove`, we remove it.
+            if (record.is_valid_for(&dot_move)) {
+                let delete_record = registry.registry.remove(dot_move.name());
+                delete_record.burn();
+            };
         };
 
         dot_move.burn();
@@ -130,33 +139,20 @@ module core::name_registry {
         dot_move.set_expiration_timestamp_ms(expiration_timestamp_ms, clock);
     }
 
-
-    fun remove_record_if_exists_and_expired(
+    /// Deposit funds into the registry.
+    /// Only callable from an authorized app.
+    public fun deposit<T: drop>(
         registry: &mut NameRegistry,
-        name: String,
-        clock: &Clock
+        _: T,
+        coin: Coin<SUI>,
     ) {
-        if (!registry.registry.contains(name)) {
-            return
-        };
+        assert!(registry.is_app_authorized<T>(), EUnauthorizedApp);
+        assert!(registry.is_valid_version(), EInvalidVersion);
 
-        let record = registry.registry.remove(name);
-        assert!(record.has_expired(clock), ERecordNotExpired);
-
-        // destroy the record object.
-        record.burn();
-    }
-
-    public fun is_app_authorized<T: drop>(registry: &NameRegistry): bool {
-        df::exists_(&registry.id, AuthorizedApp<T> {})
-    }
-
-    fun is_valid_version(registry: &NameRegistry): bool {
-        registry.version == VERSION
+        registry.balance.join(coin.into_balance());
     }
 
     /// Cap-based functionality
-
     /// A public withdraw function only callable from the `FinancialCap` holder.
     public fun withdraw(
         registry: &mut NameRegistry,
@@ -164,6 +160,10 @@ module core::name_registry {
         ctx: &mut TxContext,
     ): Coin<SUI> {
         registry.balance.withdraw_all().into_coin(ctx)
+    }
+
+    public fun is_app_authorized<T: drop>(registry: &NameRegistry): bool {
+        df::exists_(&registry.id, AuthorizedApp<T> {})
     }
 
     /// This function allows to add a new organization to the registry.
@@ -180,5 +180,29 @@ module core::name_registry {
         _: &NameRegistryCap,
     ) {
         df::remove<AuthorizedApp<T>, bool>(&mut registry.id, AuthorizedApp<T> {});
+    }
+
+    fun is_valid_version(registry: &NameRegistry): bool {
+        registry.version == VERSION
+    }
+
+    /// This function removes a record from the registry 
+    /// if it exists, and only if it has expired.
+    fun remove_record_if_exists_and_expired(
+        registry: &mut NameRegistry,
+        name: String,
+        clock: &Clock
+    ) {
+        let org_name = name::new(name);
+
+        if (!registry.registry.contains(org_name)) {
+            return
+        };
+
+        let record = registry.registry.remove(org_name);
+        assert!(record.has_expired(clock), ERecordNotExpired);
+
+        // destroy the record object.
+        record.burn();
     }
 }

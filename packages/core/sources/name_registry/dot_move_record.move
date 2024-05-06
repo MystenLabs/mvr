@@ -1,12 +1,6 @@
 module core::dot_move_record {
-    use std::string::String;
-    use sui::{
-        clock::Clock,
-    };
-
-    use core::{
-      dot_move::DotMove
-    };
+    use sui::clock::Clock;
+    use core::dot_move::DotMove;
 
     const EInvalidExpirationTimestamp: u64 = 1;
 
@@ -39,7 +33,6 @@ module core::dot_move_record {
     /// There has to be a matching `DotMove` object for each `DotMoveRecord` entry,
     /// so that's the reason we create the record in parallel with the DotMove object.
     public(package) fun new(
-        name: String,
         expiration_timestamp_ms: u64,
         clock: &Clock,
         dot_move_id: ID,
