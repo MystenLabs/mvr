@@ -11,7 +11,11 @@ export const findDotMoveNames = (type: string) => {
     return [...names];
 }
 
-export const findTransactionBlockMoveNames = (serializedTransactionBlock: string) => {
+/**
+ * Looks up all `.move` names in a serialized transaction block.
+ * Returns a list of all the names found.
+ */
+export const findTransactionBlockMoveNames = (serializedTransactionBlock: string): string[] => {
     const serialized = JSON.parse(serializedTransactionBlock);
     const names = [];
 
@@ -23,5 +27,5 @@ export const findTransactionBlockMoveNames = (serializedTransactionBlock: string
         }
     }
 
-    return [...new Set(names)]
+    return [...new Set(names as string[])]
 }

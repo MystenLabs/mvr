@@ -1,3 +1,4 @@
+/// TODO: Move to a separate package.
 module core::registration {
     use std::string::String;
     use sui::clock::Clock;

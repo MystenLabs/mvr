@@ -1,7 +1,7 @@
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { registerApp, registerDotMove, setExternalNetwork } from "./registration-helpers";
 import constants from "../published.mainnet.json"
-import { Network, sender, signAndExecute } from "../utils";
+import { sender, signAndExecute } from "../utils";
 
 const registerDotMoveName = async (name: string) => {
   const txb = new TransactionBlock();
@@ -38,10 +38,10 @@ const setNetworkForApp = async (appCap: string, network: string, value: string) 
     console.log(res);
 }
 
-// setNetworkForApp('0x96e4f1e1dc210006cad3a8d93b4f9e7e2573df37520a1e914630d71868462e11', 'testnet', '0xe23f39539cb3c8c2cd7344af0b3a5ca50a36a03221759b7ba98dccbdc8bd9750');
+setNetworkForApp('0x2c68413bb792cf687742c7cfbf758fe0c897dc39002c52eb8d6148f337bed158', 'testnet', '0xe23f39539cb3c8c2cd7344af0b3a5ca50a36a03221759b7ba98dccbdc8bd9750');
 // registerDotMoveName('demos');
 // const DOT_MOVE_NAME_OBJ = `0x9602911d2dad1c2b333e354132f167a0fd7d76527b74a8f50db92b777612118b`;
-// appRegistration('demo-nft@demos', DOT_MOVE_NAME_OBJ, '0xa4da56667d429b71eff805f0f05bb06f9d1ee4b34e02be5aa00c89e2bd6fb8f4');
+// appRegistration('nft@demos', DOT_MOVE_NAME_OBJ, '0xa4da56667d429b71eff805f0f05bb06f9d1ee4b34e02be5aa00c89e2bd6fb8f4');
 
 // registerDotMove(t)
 
