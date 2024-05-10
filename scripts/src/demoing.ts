@@ -38,13 +38,13 @@ const setNetworkForApp = async (appCap: string, network: string, value: { packag
     console.log(res);
 }
 
-setNetworkForApp('0x8e27ac80dd59837679cf3444f128a1602a54b02a7c4ef448cb31c6bd24bb1d2d', 'testnet', {
-  packageAddress: '0x2c6aa312fbba13c0184b10a53273b58fda1e9f6119ce8a55fd2d7ea452c56bd8',
-  packageInfoId: '0x7e045f7bdc3dc0b0acdab5878fe8833efbf60b889c526b67d0dc35d7293c568a'
-});
+// setNetworkForApp('0x5b3c08a98bd19b0f77d04be39b0805c35953d357fb20e4ad4837973a818edd60', 'testnet', {
+//   packageAddress: '0x7d46caec25163a18b3eb0b834789c415d45075c0b3e619036d9d6fe3fe6c3aaf',
+//   packageInfoId: '0x0faba75f980711387e2e8d7531160d270160abb3f33de502f06b18be432106d8'
+// });
 // registerDotMoveName('sample');
-// const DOT_MOVE_NAME_OBJ = `0xa98fca24b4f3f4d701ee602f5074375f55c1a6d59de96995036940ef82e13df3`;
-// appRegistration('nft@sample', DOT_MOVE_NAME_OBJ, '0xb08fd547b47d620f19516bf8d54560c1e357f0cd5cd326f0f217943c5c8db4dd');
+// const DOT_MOVE_NAME_OBJ = `0x4ae542adf2c85f436c63c66fff49302cb50c5a2ca391a2873aad8723cd85a025`;
+// appRegistration('package@dotmove', DOT_MOVE_NAME_OBJ, '0xb8b4d5707085ae42f8f7fa8185a1d293d353763158aef3d3f17e9873a6d4cc65');
 
 // registerDotMove(t)
 

@@ -10,16 +10,8 @@ import { BaseSelect } from './BaseSelect';
 
 const menu = [
 	{
-		title: 'Dynamic Fields',
-		link: '/df-viewer',
-	},
-	// {
-	//   title: "PTB Builder",
-	//   link: "/ptb-builder",
-	// },
-	{
-		title: 'PTB Generator',
-		link: '/ptb-generator',
+		title: 'Home',
+		link: '/',
 	},
 ];
 

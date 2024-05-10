@@ -12,7 +12,7 @@ export function Root() {
 		<div>
 			<Toaster position="bottom-center" />
 			<Header />
-			<Container py="8" className="container">
+			<Container py="8" className="container mx-auto">
 				<Outlet />
 			</Container>
 		</div>

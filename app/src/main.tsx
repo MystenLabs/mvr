@@ -11,14 +11,13 @@ import {
 } from "@mysten/dapp-kit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Theme } from "@radix-ui/themes";
-import App from "./App.tsx";
 import { RouterProvider } from "react-router-dom";
 import { router } from '@/router/index';
+import "./index.css";
 
 const queryClient = new QueryClient();
 
 const { networkConfig } = createNetworkConfig({
-  localnet: { url: getFullnodeUrl("localnet") },
   devnet: { url: getFullnodeUrl("devnet") },
   testnet: { url: getFullnodeUrl("testnet") },
   mainnet: { url: getFullnodeUrl("mainnet") },
@@ -26,13 +25,11 @@ const { networkConfig } = createNetworkConfig({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Theme appearance="dark">
+    <Theme appearance="light">
       <QueryClientProvider client={queryClient}>
         <SuiClientProvider networks={networkConfig} defaultNetwork="devnet">
           <WalletProvider autoConnect>
-
             <RouterProvider router={router} />
-            <App />
           </WalletProvider>
         </SuiClientProvider>
       </QueryClientProvider>
