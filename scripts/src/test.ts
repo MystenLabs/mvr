@@ -1,13 +1,13 @@
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { PackageInfo } from "./package-info";
+import { PackageInfo } from "./sdk/package-info";
 import { Network, signAndExecute } from "../utils";
 
 const PACKAGE_IDS = {
     mainnet: {
-         packageInfoPackageId: '0x15f29668bc8a8168975f6de8da926ea398619cfff5894bb71d31a777fa7ea18e',
+         packageInfoPackageId: '0x9664b1e243682f6db0d103cb972da6bf95927737d50d8e333ab53c2b3ed64f28',
     },
     testnet: {
-        packageInfoPackageId: '0x08ad4adcb87d72b0c1626ee1c50cd1c0a9642c703b91df49399f44880d774841',
+        packageInfoPackageId: '0x7d46caec25163a18b3eb0b834789c415d45075c0b3e619036d9d6fe3fe6c3aaf',
     },
     devnet: {
         packageInfoPackageId: '',
@@ -26,10 +26,15 @@ const createPackageInfo = async (upgradeCapId: string, label: string, network: N
     packageInfoBuilder
         .new(upgradeCapId)
         .setLabel(label)
-        .setGithubVersioning(1, {
+        .setStyle({
+            backgroundColor: 'fef3ef',
+            packageColor: '2F243A',
+            titleColor: '2F243A'
+        })
+        .setGitVersioning(1, {
             githubRepository: "https://github.com/MystenLabs/dot_move",
-            githubSubdirectory: "packages/demo",
-            githubTag: "main",
+            githubSubdirectory: "packages/package_info",
+            githubTag: "releases/mainnet/v1",
         })
         .tranfer({
             selfTransfer: true
@@ -38,14 +43,21 @@ const createPackageInfo = async (upgradeCapId: string, label: string, network: N
     const res = await signAndExecute(txb, network);
     console.log(res);
 }
-
-createPackageInfo('0xb5da12447ed6881a783d82d97eca5b2a4fde3addddfdb3df6b4be6274c2369ea', 'DemoV1Testnet', 'testnet');
-
-// const updatePackageInfo = async () => {
-//     const txb = new TransactionBlock();
-//     const packageInfoBuilder = new PackageInfo(txb, PACKAGE_INFO_PACKAGE_ID, EXISTING_PACKAGE_INFO);
+const updatePackageInfo = async (packageInfoId: string, name: string, network: Network) => {
+    const txb = new TransactionBlock();
+    const packageInfoBuilder = new PackageInfo(txb, PACKAGE_IDS[network].packageInfoPackageId, packageInfoId);
     
-//     packageInfoBuilder.setLabel("InfoTestnet");
-//     const res = await signAndExecute(txb, 'testnet');
-//     console.log(res);
-// }
+    packageInfoBuilder.setLabel(name);
+    const res = await signAndExecute(txb, network);
+    console.log(res);
+}
+
+// createPackageInfo('0x5ab20b154caf69755b8f2331a868f0d24d07f05a1a30141621513acbac8d6470', 'Demo', 'mainnet');
+// createPackageInfo('0x7c7effd173ddd0cc33ff19c377f480b46b5c1f2c38d694d0a3e9e7abd34bf49c', 'PackageInfo', 'mainnet');
+// createPackageInfo('0xe162447ee458a1e798e9b9caa52e127b8122c140ae915384e4f10781c4244603', 'DotMove', 'mainnet');
+
+// createPackageInfo('0x660e2b943cf23edf84ef96a9bf6dcc91478948196f8a72c629ba8f9ba7d75c4b', 'Demo', 'testnet');
+// createPackageInfo('0x31c673185511790397a00db4d40d21affbea9c5bfb2eac37a91a76cc07c807b3', 'PackageInfo', 'testnet');
+// createPackageInfo('0xe162447ee458a1e798e9b9caa52e127b8122c140ae915384e4f10781c4244603', 'DotMove', 'testnet');
+
+

@@ -9,7 +9,8 @@ module package_info::package_info {
     };
 
     use package_info::{
-        github::GithubInfo,
+        label::{Self, Label},
+        git::GitInfo,
         style::{Self, Style},
     };
 
@@ -25,7 +26,8 @@ module package_info::package_info {
     public struct PackageInfo has key {
         id: UID,
         // the label: Used in Display & other places to distinguish packages easily.
-        label: String,
+        label: Label,
+        // The styling of the PackageInfo object
         style: Style,
         // the ID of the upgrade cap
         upgrade_cap_id: ID,
@@ -34,8 +36,8 @@ module package_info::package_info {
         package_address: address,
         // We can hold any metadata we want for the package (up to obj size limit).
         metadata: VecMap<String, String>,
-        // We can hold the github versioning here.
-        github_versioning: Table<u64, GithubInfo>,
+        // We can hold the git versioning here.
+        git_versioning: Table<u64, GitInfo>,
     }
 
     fun init(otw: PACKAGE_INFO, ctx: &mut TxContext) {
@@ -51,12 +53,12 @@ module package_info::package_info {
 
         PackageInfo {
             id: object::new(ctx),
-            label: b"".to_string(),
+            label: label::new(b"".to_string()),
             style: style::default(),
             package_address: cap.upgrade_package().to_address(),
             upgrade_cap_id: object::id(cap),
             metadata: vec_map::empty(),
-            github_versioning: table::new(ctx)
+            git_versioning: table::new(ctx)
         }
     }
 
@@ -64,7 +66,7 @@ module package_info::package_info {
         info: &mut PackageInfo,
         label: String
     ) {
-        info.label = label;
+        info.label = label::new(label);
     }
 
     public fun set_style(
@@ -88,19 +90,19 @@ module package_info::package_info {
     /// This is helpful for:
     /// 1. Source validation services: It will work on all set versions with the correct source code on those revisions.
     /// 2. Development process: Easy to depend on any version of the package.
-    public fun set_github_versioning(
+    public fun set_git_versioning(
         info: &mut PackageInfo,
         version: u64,
-        github_info: GithubInfo
+        git_info: GitInfo
     ) {
         // we do it in an "add or update" fashion for each key.
-        if (info.github_versioning.contains(version)) {
-            info.github_versioning.remove(version);
+        if (info.git_versioning.contains(version)) {
+            info.git_versioning.remove(version);
         };
-        info.github_versioning.add(version, github_info);
+        info.git_versioning.add(version, git_info);
     }
 
-    /// Allows the owner to attach any other logic / DFs.
+    /// Allows the owner to attach any other logic / DFs to an owned packageInfo.
     public fun set_custom_metadata<K: copy + store + drop, V: store>(
         info: &mut PackageInfo,
         key: K,

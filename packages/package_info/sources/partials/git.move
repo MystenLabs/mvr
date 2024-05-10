@@ -1,8 +1,7 @@
-module package_info::github {
-
+module package_info::git {
     use std::string::String;
 
-    public struct GithubInfo has copy, store, drop {
+    public struct GitInfo has copy, store, drop {
         // The repository that our code's open source at
         repository: String,
         // The sub-path inside the repository
@@ -11,8 +10,8 @@ module package_info::github {
         tag: String
     }
 
-    public fun new(repository: String, path: String, tag: String): GithubInfo {
-        GithubInfo {
+    public fun new(repository: String, path: String, tag: String): GitInfo {
+        GitInfo {
             repository,
             path,
             tag

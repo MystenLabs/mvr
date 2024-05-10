@@ -2,6 +2,7 @@ import { TransactionBlock, TransactionObjectArgument } from "@mysten/sui.js/tran
 import { sender, signAndExecute } from "../utils";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
 import { CorePackageData } from "./publish";
+import { bcs } from "@mysten/sui.js/bcs";
 
 export const registerDotMove = (txb: TransactionBlock, name: string, constants: CorePackageData) => {
   return txb.moveCall({
@@ -48,17 +49,30 @@ export const registerApp = ({
   return appCap;
 }
 
-export const setExternalNetwork = async (txb: TransactionBlock, appCap: string, network: string, value: string, constants: CorePackageData) => {
+export const setExternalNetwork = async (
+  txb: TransactionBlock, 
+  appCap: string, 
+  network: string, 
+  value: { packageAddress: string; packageInfoId: string; }, 
+  constants: CorePackageData
+) => {
+
+  const appInfo = txb.moveCall({
+    target: `${constants.packageId}::app_info::new`,
+    arguments: [
+      txb.pure(bcs.option(bcs.Address).serialize(value.packageInfoId).toBytes()),
+      txb.pure(bcs.option(bcs.Address).serialize(value.packageAddress).toBytes()),
+      txb.pure(bcs.option(bcs.Address).serialize(null).toBytes())
+    ]
+  });
+
   txb.moveCall({
     target: `${constants.packageId}::app_registry::set_network`,
     arguments: [
       txb.object(constants.appRegistry),
       txb.object(appCap),
       txb.pure.string(network),
-      txb.pure.id(value)
+      appInfo
     ]
   })
 };
-
-
-// 0xe1d5d3d35b00eb6fdc6112ca68b1b9968f787ec826048d1ffb29cc42df65743b

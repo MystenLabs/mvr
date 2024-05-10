@@ -3,16 +3,17 @@ name = "package_info"
 edition = "2024.beta"
 
 #mainnet
-published-at = "0x15f29668bc8a8168975f6de8da926ea398619cfff5894bb71d31a777fa7ea18e"
+published-at = "0x9664b1e243682f6db0d103cb972da6bf95927737d50d8e333ab53c2b3ed64f28"
 
 #testnet
-#published-at = "0x08ad4adcb87d72b0c1626ee1c50cd1c0a9642c703b91df49399f44880d774841"
+#published-at = "0x7d46caec25163a18b3eb0b834789c415d45075c0b3e619036d9d6fe3fe6c3aaf"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
 
 [addresses]
+# package_info = "0x0"
 #mainnet
-package_info = "0x15f29668bc8a8168975f6de8da926ea398619cfff5894bb71d31a777fa7ea18e"
+package_info = "0x9664b1e243682f6db0d103cb972da6bf95927737d50d8e333ab53c2b3ed64f28"
 #testnet
-#package_info = "0x08ad4adcb87d72b0c1626ee1c50cd1c0a9642c703b91df49399f44880d774841"
+# package_info = "0x7d46caec25163a18b3eb0b834789c415d45075c0b3e619036d9d6fe3fe6c3aaf"

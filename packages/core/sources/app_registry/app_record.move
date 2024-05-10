@@ -3,7 +3,11 @@ module core::app_record {
     use sui::{
         vec_map::{Self, VecMap},
     };
-    use core::name::Name;
+    use core::{
+        name::Name,
+        app_info::{Self, AppInfo}
+    };
+
     use package_info::package_info::PackageInfo;
 
     const EPackageAlreadyAssigned: u64 = 1;
@@ -12,14 +16,14 @@ module core::app_record {
         id: UID,
         // The Capability object used for managing the `AppRecord`.
         app_cap_id: ID,
-        // The `PackageInfo` ID for mainnet. This can be optional
-        // if a name is created before attaching a mainnet package (e.g. for testnet/devnet)
-        package_info_id: Option<ID>,
-        // The `UpgradeCap` ID on mainnet. We only store it in case we wanna give any "super-admin"
-        // capabilities to `upgrade_cap` holders.
-        upgrade_cap_id: Option<ID>,
+
+        // The mainnet `AppInfo` object.
+        // This is optional until a `mainnet` package is mapped to a record, making 
+        // the record immutable.
+        app_info: Option<AppInfo>,
+
         // This is what being resolved across networks.
-        networks: VecMap<String, ID>,
+        networks: VecMap<String, AppInfo>,
         // Any read-only metadata for the record.
         metadata: VecMap<String, String>,
     }
@@ -39,9 +43,8 @@ module core::app_record {
 
         (AppRecord {
             id: object::new(ctx),
+            app_info: option::none(),
             app_cap_id: cap.id.to_inner(),
-            package_info_id: option::none(),
-            upgrade_cap_id: option::none(),
             networks: vec_map::empty(),
             metadata: vec_map::empty()
         }, cap)
@@ -52,33 +55,34 @@ module core::app_record {
         record: &mut AppRecord,
         package_info: &PackageInfo
     ) {
-        assert!(record.package_info_id.is_none(), EPackageAlreadyAssigned);
-
-        record.package_info_id = option::some(package_info.id());
-        record.upgrade_cap_id = option::some(package_info.upgrade_cap_id());
+        assert!(record.app_info.is_none(), EPackageAlreadyAssigned);
+        record.app_info = option::some(app_info::new(
+            option::some(package_info.id()),
+            option::some(package_info.package_address()),
+            option::some(package_info.upgrade_cap_id()),
+        ));
     }
 
     /// Set a specified network target ID.
     /// Even though our standard live networks are `TESTNET, DEVNET`,
-    /// we allow this to be custom-set, so any new 
-    /// networks can also be used in the future (e.g. BRIDGENET, PRIVATENET)
+    /// we allow this to be custom-set, so any new
     public(package) fun set_network(
         record: &mut AppRecord,
         network: String,
-        target: ID
+        info: AppInfo
     ) {
         if (record.networks.contains(&network)) {
             record.networks.remove(&network);
         };
 
-        record.networks.insert(network, target);
+        record.networks.insert(network, info);
     }
 
     /// Checks if the record is immutable (mainnet package has been attached).
     public(package) fun is_immutable(
         record: &AppRecord
     ): bool {
-        record.package_info_id.is_some()
+        record.app_info.is_some()
     }
 
     public(package) fun burn(
@@ -86,9 +90,8 @@ module core::app_record {
     ) {
         let AppRecord {
             id,
+            app_info: _,
             app_cap_id: _,
-            package_info_id: _,
-            upgrade_cap_id: _,
             networks: _,
             metadata: _,
         } = record;

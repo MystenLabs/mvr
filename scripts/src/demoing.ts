@@ -30,7 +30,7 @@ const appRegistration = async (name: string, dotMove: string, packageInfo?: stri
   console.log(res);
 }
 
-const setNetworkForApp = async (appCap: string, network: string, value: string) => {
+const setNetworkForApp = async (appCap: string, network: string, value: { packageAddress: string; packageInfoId: string }) => {
     const txb = new TransactionBlock();
     setExternalNetwork(txb, appCap, network, value, constants);
 
@@ -38,10 +38,13 @@ const setNetworkForApp = async (appCap: string, network: string, value: string) 
     console.log(res);
 }
 
-setNetworkForApp('0x2c68413bb792cf687742c7cfbf758fe0c897dc39002c52eb8d6148f337bed158', 'testnet', '0xe23f39539cb3c8c2cd7344af0b3a5ca50a36a03221759b7ba98dccbdc8bd9750');
-// registerDotMoveName('demos');
-// const DOT_MOVE_NAME_OBJ = `0x9602911d2dad1c2b333e354132f167a0fd7d76527b74a8f50db92b777612118b`;
-// appRegistration('nft@demos', DOT_MOVE_NAME_OBJ, '0xa4da56667d429b71eff805f0f05bb06f9d1ee4b34e02be5aa00c89e2bd6fb8f4');
+setNetworkForApp('0x8e27ac80dd59837679cf3444f128a1602a54b02a7c4ef448cb31c6bd24bb1d2d', 'testnet', {
+  packageAddress: '0x2c6aa312fbba13c0184b10a53273b58fda1e9f6119ce8a55fd2d7ea452c56bd8',
+  packageInfoId: '0x7e045f7bdc3dc0b0acdab5878fe8833efbf60b889c526b67d0dc35d7293c568a'
+});
+// registerDotMoveName('sample');
+// const DOT_MOVE_NAME_OBJ = `0xa98fca24b4f3f4d701ee602f5074375f55c1a6d59de96995036940ef82e13df3`;
+// appRegistration('nft@sample', DOT_MOVE_NAME_OBJ, '0xb08fd547b47d620f19516bf8d54560c1e357f0cd5cd326f0f217943c5c8db4dd');
 
 // registerDotMove(t)
 

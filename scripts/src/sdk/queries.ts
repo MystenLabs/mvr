@@ -14,33 +14,49 @@ const nameToBcs = (name: string) => {
     }
 }
 
-export const nameToValidGraphqlName = (name: string) => {
-    return name.replaceAll('-', '_').replace('@', '__')
+export const recordKeyToIndex = (key: string) => {
+    return Number(key.replace('name_', ''));
 }
 
-export const graphqlNameToDotMoveName = (name: string) => {
-    return name.replace('__', '@').replaceAll('_', '-')
-}
-
-export const GetAppRecords = (names: string[], type: string, registryAddress: string) => `
+const recordFragment = `fragment RECORD_VALUES on DynamicField {
+    value {
+        ...on MoveValue {
+            json
+        }
+    }
+}`
+const getRecords = (names: string[], type: string, registryAddress: string) => `
     query {
         owner(address: "${registryAddress}") {
             ${
-                names.map((name) => {
+                names.map((name, index) => {
                     return `
-                    ${nameToValidGraphqlName(name)}: dynamicField(name: { type: "${type}", bcs: "${NameLabelBcsDefinition.serialize(nameToBcs(name)).toBase64()}"} ) {
-                        value {
-                            ...on MoveValue {
-                              json
-                            }
-                          }
+                    name_${index}: dynamicField(name: 
+                        { 
+                            type: "${type}", bcs: "${NameLabelBcsDefinition.serialize(nameToBcs(name)).toBase64()}"} 
+                        ) {
+                        ...RECORD_VALUES
                     }
                     `
                 })
             }
         }
     }
+    ${recordFragment}
 `;
+
+const resolveTypes = (types: string[]) => `
+    query {
+        ${types.map((type, i) => {
+            return `
+            type_${i}: type(type: "${type}") {
+                layout
+            }
+            `
+        })}
+    } 
+`;
+
 
 export const getObjects = graphql(`
 query multiGetObjects(
@@ -65,7 +81,8 @@ query multiGetObjects(
 
 
 export const GraphqlQueries = {
-    getRecords: GetAppRecords,
+    getRecords,
+    resolveTypes,
     typed: {
         getObjects
     }

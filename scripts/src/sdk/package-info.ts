@@ -75,11 +75,11 @@ export class PackageInfo {
         return this;
     }
 
-    setGithubVersioning(version: number, githubInfo: GithubPackageInfo) {
+    setGitVersioning(version: number, githubInfo: GithubPackageInfo) {
         this.#checkInitialized();
         
         const github = this.transactionBlock.moveCall({
-            target: `${this.packageId}::github::new`,
+            target: `${this.packageId}::git::new`,
             arguments: [
                 this.transactionBlock.pure.string(githubInfo.githubRepository),
                 this.transactionBlock.pure.string(githubInfo.githubSubdirectory),
@@ -88,7 +88,7 @@ export class PackageInfo {
         });
 
         this.transactionBlock.moveCall({
-            target: `${this.packageId}::package_info::set_github_versioning`,
+            target: `${this.packageId}::package_info::set_git_versioning`,
             arguments: [
                 this.info,
                 this.transactionBlock.pure.u64(version),

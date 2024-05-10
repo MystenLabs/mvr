@@ -4,7 +4,7 @@
 /// 
 /// The flow is that someone can come in with a `DotMove` object and
 /// register an app for that name. (e.g. coming in with `@test` and registering `app@test`)
-/// Once an app is registered, an a mainnet `PackageInfo` is set, it cannot ever be mutated.
+/// Once an app is registered, an a mainnet `AppInfo` is set, it cannot ever be mutated.
 /// That retains the strong assurance that a name can always point to a single package 
 /// (across any version of it).
 /// 
@@ -21,7 +21,8 @@ module core::app_registry {
     use core::{
         app_record::{Self, AppRecord, AppCap},
         dot_move::DotMove,
-        name::{Self, Name}
+        name::{Self, Name},
+        app_info::AppInfo
     };
 
     const EAppAlreadyRegistered: u64 = 1;
@@ -95,15 +96,16 @@ module core::app_registry {
         registry: &mut AppRegistry,
         cap: &AppCap,
         network: String,
-        id: ID,
+        info: AppInfo,
     ) {
+        // TODO: Limit this to known networks?
         assert!(registry.app_exists(cap.name()), EAppDoesNotExist);
         let record = registry.registry.borrow_mut(cap.name());
         assert!(cap.is_valid_for(record), EUnauthorized);
-        record.set_network(network, id);
+        record.set_network(network, info);
     }
 
-
+    /// Check if an app is part of the registry.
     fun app_exists(registry: &AppRegistry, name: Name): bool {
         registry.registry.contains(name)
     }
