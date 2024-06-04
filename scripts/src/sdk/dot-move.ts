@@ -1,8 +1,30 @@
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { findDotMoveNames, findTransactionBlockMoveNames } from "./helpers";
+import { findDotMoveNames, findTransactionBlockMoveNames, replaceTargets, replaceTypes } from "./helpers";
 import { SuiGraphQLClient } from "@mysten/sui.js/graphql";
 import { GraphqlQueries, recordKeyToIndex } from "./queries";
-import { Network } from "../../utils";
+import { BuildTransactionOptions, TransactionDataBuilder } from "@mysten/sui/transactions";
+
+export type NameMapping = {
+    name: string;
+    data: NameMappingData | null
+}
+
+export const resolveDotMoveNames = ({ dotMoveClient }: { dotMoveClient: DotMoveClient }) => async (
+    transactionData: TransactionDataBuilder,
+    _buildOptions: BuildTransactionOptions,
+    next: () => Promise<void>
+) => {
+    const names = findTransactionBlockMoveNames(transactionData);
+    // Get all the names with the respective package info objects.
+    const nameMappings = await dotMoveClient.bulkResolveDotMoveApps(names) as NameMapping[];
+
+    // deduplicate all types that need to be resolved (and fix all targets).
+    const typesToResolve = [...new Set(replaceTargets(transactionData, nameMappings))];
+    const resolved = await dotMoveClient.bulkResolveTypes(typesToResolve, nameMappings);
+
+    replaceTypes(transactionData, resolved);
+	await next();
+}
 
 export type NameMappingData = {
     activeNetworkPackageAddress: string;
@@ -12,12 +34,7 @@ export type NameMappingData = {
     };
 }
 
-export type NameMapping = {
-    name: string;
-    data: NameMappingData | null
-}
-
-export class DotMove {
+export class DotMoveClient {
     #suiMainnetClient: SuiGraphQLClient<any>;
     #suiActiveClient: SuiGraphQLClient<any>;
     #appRegistryTableId: string = '0x250b60446b8e7b8d9d7251600a7228dbfda84ccb4b23a56a700d833e221fae4f';
@@ -43,66 +60,6 @@ export class DotMove {
             queries: GraphqlQueries.typed
         });
         if (network) this.#network = network;
-    }
-
-    async prepareTransactionBlock(txb: TransactionBlock) { 
-        const serialized = JSON.parse(txb.serialize());
-
-        // find all `.move` names in the transaction block
-        const allNames = findTransactionBlockMoveNames(txb.serialize());
-
-        // Get all the names with the respective package info objects.
-        const nameMappings = await this.bulkResolveDotMoveApps(allNames) as NameMapping[];
-        const typesToResolve: string[] = [];
-
-        // loop through the transactions and replace the names with the resolved addresses.
-        for(const tx of serialized.transactions) {
-            for (const mapping of nameMappings) {
-                const address = mapping.data?.activeNetworkPackageAddress;
-
-                if (tx.target && tx.target.includes(mapping.name)) {
-                    console.log(`Replacing ${tx.target} with ${tx.target.replaceAll(mapping.name, address)}`);
-                    tx.target = tx.target.replaceAll(mapping.name, address);
-                }
-                const types = structuredClone(tx.typeArguments);
-                if (!types) continue;
-                // We do our first round of replacing types.
-                // Next, we'll do a "struct layout" resolution to make sure we have the correct types.
-                for(let i=0; i < types.length; i++){
-                    let t = types[i];
-                    if (!types[i].includes(mapping.name)) continue;
-                    types[i] = t.replaceAll(mapping.name, address);
-                    console.log(`Replacing ${t} with ${types[i]}`);
-                    // save type so we can do a resolution.
-                    typesToResolve.push(types[i]);
-                }
-                tx.typeArguments = types;
-            }
-        }
-
-        // Loop again, this time to do a bulk-resolution of types
-        // As there's no guarantee that we'll have the "latest" version.
-        // unique types to resolve
-        const uniqueTypesToResolve = [...new Set(typesToResolve)];
-        const resolvedTypes = await this.bulkResolveTypes(uniqueTypesToResolve, nameMappings);
-
-        for (const tx of serialized.transactions) {
-            const types = structuredClone(tx.typeArguments);
-            if (!types) continue;
-
-            for(let i=0; i < types.length; i++){
-                for (const [index, type] of uniqueTypesToResolve.entries()) {
-                    if (!types[i].includes(type) || type === resolvedTypes[index]) continue;
-                    console.log(`Replacing type ${type} with ${resolvedTypes[index]}`);
-                    types[i] = types[i].replaceAll(type, resolvedTypes[index]);
-                    
-                }
-            }
-
-            tx.typeArguments = types;
-        }
-
-        return TransactionBlock.from(JSON.stringify(serialized));
     }
 
     async bulkResolveDotMoveApps(names: string[], includeInfoObjects = false) {
@@ -144,7 +101,7 @@ export class DotMove {
             }
         }
 
-        // TODO: Make sure to get the "latest" version for each of these resolved packages.
+        // TODO: Make sure to get the "latest" version (OR the request version) for each of these resolved packages.
         // That implies that we need to call a "getLatestVersion" query for each `packageInfo` object here.
         const list = [];
         let packageInfoObjects: any[] | null = null;
@@ -188,7 +145,7 @@ export class DotMove {
         const results = [...types];
 
         for (const name of names) {
-            for(let i=0;i<types.length; i++){
+            for(let i=0; i< types.length; i++){
                 const address = name?.data?.activeNetworkPackageAddress;
                 if (!address) throw new Error(`Package "${name.name}" not found!`);
                 results[i] = results[i].replaceAll(name.name, address);

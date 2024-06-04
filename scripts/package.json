@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@mysten/graphql-transport": "^0.0.6",
+    "@mysten/sui": "^1.0.5",
     "@mysten/sui.js": "^0.52.0"
   }
 }

@@ -37,4 +37,4 @@ const demo = async (network: 'mainnet' | 'testnet' | 'devnet') => {
     console.dir(res.effects);
 }
 
-demo('testnet');
+demo('mainnet');

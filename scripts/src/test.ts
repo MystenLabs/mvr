@@ -43,14 +43,21 @@ const createPackageInfo = async (upgradeCapId: string, label: string, network: N
     const res = await signAndExecute(txb, network);
     console.log(res);
 }
-const updatePackageInfo = async (packageInfoId: string, name: string, network: Network) => {
+const updatePackageInfo = async (packageInfoId: string, network: Network) => {
     const txb = new TransactionBlock();
     const packageInfoBuilder = new PackageInfo(txb, PACKAGE_IDS[network].packageInfoPackageId, packageInfoId);
-    
-    packageInfoBuilder.setLabel(name);
+
+    packageInfoBuilder.setGitVersioning(1, {
+        githubRepository: "https://github.com/MystenLabs/dot_move",
+        githubSubdirectory: "packages/package_info",
+        githubTag: "ml/also-add-graphql-version",
+    });
+
     const res = await signAndExecute(txb, network);
     console.log(res);
 }
+
+updatePackageInfo('0xb8b4d5707085ae42f8f7fa8185a1d293d353763158aef3d3f17e9873a6d4cc65', 'mainnet');
 
 // createPackageInfo('0x5ab20b154caf69755b8f2331a868f0d24d07f05a1a30141621513acbac8d6470', 'Demo', 'mainnet');
 // createPackageInfo('0x7c7effd173ddd0cc33ff19c377f480b46b5c1f2c38d694d0a3e9e7abd34bf49c', 'PackageInfo', 'mainnet');

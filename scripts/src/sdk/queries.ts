@@ -54,7 +54,7 @@ const resolveTypes = (types: string[]) => `
             }
             `
         })}
-    } 
+    }
 `;
 
 
