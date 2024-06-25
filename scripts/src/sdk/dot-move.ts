@@ -71,6 +71,8 @@ export class DotMoveClient {
             variables: {}
         });
 
+        console.dir(data, { depth: null });
+
         const results = data.data?.owner;
         const nameMappings: Record<string, NameMappingData> = {};
 

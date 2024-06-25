@@ -24,8 +24,6 @@ export const findTransactionBlockMoveNames = (builder: TransactionDataBuilder): 
         const tx = command.MoveCall;
 
         if (!tx) continue;
-
-        console.log(tx);
         findDotMoveNames(tx.package).forEach(name => names.add(name));
 
         for (const type of (tx.typeArguments ?? [])) {

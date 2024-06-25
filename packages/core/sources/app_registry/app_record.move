@@ -12,8 +12,7 @@ module core::app_record {
 
     const EPackageAlreadyAssigned: u64 = 1;
 
-    public struct AppRecord has key, store {
-        id: UID,
+    public struct AppRecord has store {
         // The Capability object used for managing the `AppRecord`.
         app_cap_id: ID,
 
@@ -26,6 +25,9 @@ module core::app_record {
         networks: VecMap<String, AppInfo>,
         // Any read-only metadata for the record.
         metadata: VecMap<String, String>,
+        // Any extra data that needs to be stored.
+        // Unblocks TTO, and DFs extendability.
+        storage: UID,
     }
 
     public struct AppCap has key, store {
@@ -42,11 +44,11 @@ module core::app_record {
         };
 
         (AppRecord {
-            id: object::new(ctx),
             app_info: option::none(),
             app_cap_id: cap.id.to_inner(),
             networks: vec_map::empty(),
-            metadata: vec_map::empty()
+            metadata: vec_map::empty(),
+            storage: object::new(ctx),
         }, cap)
     }
 
@@ -89,14 +91,14 @@ module core::app_record {
         record: AppRecord
     ) {
         let AppRecord {
-            id,
+            storage,
             app_info: _,
             app_cap_id: _,
             networks: _,
             metadata: _,
         } = record;
 
-        id.delete();
+        storage.delete();
     }
 
     /// Checks if the supplied capability is valid for the record.

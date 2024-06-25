@@ -6,8 +6,7 @@ import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
 
 type Network = 'mainnet' | 'testnet' | 'devnet';
 
-const NETWORK_TO_TEST: Network = 'testnet';
-
+const NETWORK_TO_TEST: Network = process.argv[2] as Network ?? 'testnet';
 const client = new SuiClient({
     url: getFullnodeUrl(NETWORK_TO_TEST)
 });
@@ -19,9 +18,8 @@ const dotMoveClient = new DotMoveClient({
 
 const demo = async () => {
     const tx = new Transaction();
-
     tx.addSerializationPlugin(resolveDotMoveNames({ dotMoveClient }));
-    
+
     const nft = tx.moveCall({
         target: `nft@sample::demo::new_nft`
     });
@@ -50,7 +48,6 @@ const demo = async () => {
             client
         })
     });
-
     console.dir(res.effects);
 }
 

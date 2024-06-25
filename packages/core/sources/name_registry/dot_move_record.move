@@ -8,16 +8,16 @@ module core::dot_move_record {
     // This is saved on our on-chain registry to keep track of the expiration date 
     // and handle renewals, etc.
     //
-    // We add `key` here in order to allow better upgradeability 
+    // We add `UID` here in order to allow better upgradeability 
     // (e.g. by TTO or by attaching DFs), in future versions.
-    public struct DotMoveRecord has key, store {
-        id: UID,
+    public struct DotMoveRecord has store {
         dot_move_id: ID,
-        expiration_timestamp_ms: u64
+        expiration_timestamp_ms: u64,
+        storage: UID,
     }
 
-    public fun id(record: &DotMoveRecord): ID {
-        record.id.to_inner()
+    public fun storage(record: &DotMoveRecord): ID {
+        record.storage.to_inner()
     }
 
     public fun has_expired(record: &DotMoveRecord, clock: &Clock): bool {
@@ -41,9 +41,9 @@ module core::dot_move_record {
         assert!(expiration_timestamp_ms > clock.timestamp_ms(), EInvalidExpirationTimestamp);
 
         DotMoveRecord {
-            id: object::new(ctx),
             dot_move_id,
             expiration_timestamp_ms,
+            storage: object::new(ctx),
         }
     }
 
@@ -58,7 +58,7 @@ module core::dot_move_record {
 
     /// Delete a `DotMoveRecord` object.
     public(package) fun burn(record: DotMoveRecord) {
-        let DotMoveRecord { id, dot_move_id: _, expiration_timestamp_ms: _ } = record;
-        id.delete();
+        let DotMoveRecord { storage, dot_move_id: _, expiration_timestamp_ms: _ } = record;
+        storage.delete();
     }
 }
