@@ -1,0 +1,10 @@
+[package]
+name = "nftmaker"
+edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
+
+[dependencies]
+demo = { resolver = "./dotmove", packages = { id = "nft@sample" } }
+# demo = { git = "https://github.com/MystenLabs/dot_move.git", rev = "ml/migrate-to-plugin", subdir = "packages/demo" }
+
+[addresses]
+nftmaker = "0x0"

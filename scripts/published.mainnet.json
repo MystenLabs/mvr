@@ -1,0 +1,11 @@
+{
+  "packageId": "0x1a841abe817c38221596856bc975b3b84f2f68692191e9247e185213d3d02fd8",
+  "upgradeCap": "0xe162447ee458a1e798e9b9caa52e127b8122c140ae915384e4f10781c4244603",
+  "publisher": "0x322ef844e482e3175ac9fd5e166c28bfbeb8f3ecb28d355108efeed0d1bed0db",
+  "nameRegistry": "0x9870708fccb41f99eb96d39ddac45fd28c610d030b913217511e0cb5c5b9cce2",
+  "nameRegistryCap": "0x8ee4e33d86efb1793cd66914c151c23850a0dd7cdc77dc41ad13056ebca70373",
+  "appRegistry": "0x6cfe9299df92beacba6e848a6bbbf69cc31a868071daeee2c3ce3127bcee9825",
+  "financialCap": "0x0682f8929f6f93f4cbb796ca4fc2d1512bf3dccefa361efb94ca8f3d99a1b185",
+  "appRegistryTable": "0x250b60446b8e7b8d9d7251600a7228dbfda84ccb4b23a56a700d833e221fae4f",
+  "nameRegistryTable": "0x95e45def580ab57377f5f3faa0009b101880874175cc16eb0b9d607e46c888c5"
+}

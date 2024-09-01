@@ -1,0 +1,18 @@
+<svg fill="none" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#a)">
+        <rect width="1000" height="1000" fill="#style.background_color"/>
+        <path d="m630.75 856.77-262.5-151.38" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        <path d="m762 1049.3v-233.33c-0.011-10.229-2.711-20.276-7.83-29.133-5.119-8.856-12.478-16.21-21.337-21.325l-204.17-116.67c-8.868-5.12-18.927-7.815-29.167-7.815s-20.299 2.695-29.167 7.815l-204.17 116.67c-8.859 5.115-16.218 12.469-21.337 21.325-5.119 8.857-7.82 18.904-7.83 29.133v233.33c0.01 10.23 2.711 20.28 7.83 29.14 5.119 8.85 12.478 16.21 21.337 21.32l204.17 116.67c8.868 5.12 18.927 7.81 29.167 7.81s20.299-2.69 29.167-7.81l204.17-116.67c8.859-5.11 16.218-12.47 21.337-21.32 5.119-8.86 7.819-18.91 7.83-29.14z" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        <path d="m244.88 785.61 254.62 147.29 254.62-147.29" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        <text x="500" y="112.136" fill="#style.package_color" font-family="Verdana" font-size="32" font-weight="bold" text-anchor="middle">Package Info</text>
+        <text x="500" y="154.545" fill="#style.package_color" fill-opacity=".6" font-family="Verdana" font-size="18" font-weight="bold" text-anchor="middle">upgrade_cap_id</text>
+        <text x="500" y="450.591" fill="#style.title_color" font-family="Verdana" font-size="102" font-weight="bold" text-anchor="middle">
+            test
+        </text>
+    </g>
+    <defs>
+        <clipPath id="a">
+            <rect width="1e3" height="1e3" fill="#fff"/>
+        </clipPath>
+    </defs>
+</svg>
