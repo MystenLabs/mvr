@@ -1,40 +1,43 @@
-import { DotMoveClient, resolveDotMoveNames } from "./sdk/dot-move";
-import { getActiveAddress } from "../utils";
 import { Transaction } from "@mysten/sui/transactions";
 import { normalizeSuiAddress } from "@mysten/sui/utils";
 import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+import { resolveNames } from "./plugin";
+import { SuiGraphQLClient } from "@mysten/sui/graphql";
+import { getActiveAddress } from "../../utils";
 
 type Network = 'mainnet' | 'testnet' | 'devnet';
 
-const NETWORK_TO_TEST: Network = process.argv[2] as Network ?? 'testnet';
+const NETWORK_TO_TEST: Network = process.argv[2] as Network ?? 'localnet';
+
 const client = new SuiClient({
     url: getFullnodeUrl(NETWORK_TO_TEST)
 });
 
-const dotMoveClient = new DotMoveClient({
-    activeGraphqlEndpoint: `https://sui-${NETWORK_TO_TEST}.mystenlabs.com/graphql`,
-    network: NETWORK_TO_TEST
+const graphqlClient = new SuiGraphQLClient({
+    // url: `https://sui-${NETWORK_TO_TEST}.mystenlabs.com/graphql`
+    url: 'http://127.0.0.1:8000/graphql'
 });
+
+Transaction.registerGlobalSerializationPlugin(resolveNames({ suiGraphqlClient: graphqlClient }));
 
 const demo = async () => {
     const tx = new Transaction();
-    tx.addSerializationPlugin(resolveDotMoveNames({ dotMoveClient }));
 
     const nft = tx.moveCall({
-        target: `nft@sample::demo::new_nft`
+        target: `first@demo::demo::new_nft`
     });
 
     tx.moveCall({
-        target: `nft@sample::demo::noop_w_type_param`,
+        target: `first@demo::demo::noop_w_type_param`,
         typeArguments: [
-            `nft@sample::demo::DemoWitness`
+            `first@demo::demo::DemoWitness`
         ]
     });
 
     tx.moveCall({
-        target: `nft@sample::demo::noop_w_type_param`,
+        target: `first@demo::demo::noop_w_type_param`,
         typeArguments: [
-            `nft@sample::demo::NestedDemoWitness<nft@sample::demo::DemoWitness>`
+            `first@demo::demo::NestedDemoWitness<first@demo::demo::DemoWitness>`
         ]
     });
 

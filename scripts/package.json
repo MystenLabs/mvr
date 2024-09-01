@@ -10,13 +10,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^20.12.8",
+    "@types/node": "^22.5.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@mysten/graphql-transport": "^0.0.6",
-    "@mysten/sui": "^1.0.5",
-    "@mysten/sui.js": "^0.52.0"
+    "@mysten/graphql-transport": "^0.2.16",
+    "@mysten/sui": "^1.7.0"
   }
 }

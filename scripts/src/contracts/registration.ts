@@ -1,16 +1,13 @@
-import { TransactionBlock, TransactionObjectArgument } from "@mysten/sui.js/transactions"
-import { sender, signAndExecute } from "../utils";
-import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
-import { CorePackageData } from "./publish";
-import { bcs } from "@mysten/sui.js/bcs";
+import { CorePackageData } from "../publish";
+import { Transaction, TransactionObjectArgument } from "@mysten/sui/transactions";
 
-export const registerDotMove = (txb: TransactionBlock, name: string, constants: CorePackageData) => {
+export const registerDotMove = (txb: Transaction, name: string, constants: CorePackageData) => {
   return txb.moveCall({
       target: `${constants.packageId}::registration::register`,
       arguments: [
               txb.object(constants.nameRegistry),
               txb.pure.string(name),
-              txb.object(SUI_CLOCK_OBJECT_ID),
+              txb.object.clock(),
       ],
   });
 }
@@ -19,10 +16,10 @@ export const registerApp = ({
   txb, name, dotMove, packageInfo,
   constants
 }: {
-  txb: TransactionBlock;
+  txb: Transaction;
   name: string;
-  dotMove: TransactionObjectArgument;
-  packageInfo?: string;
+  dotMove: TransactionObjectArgument | string;
+  packageInfo?: TransactionObjectArgument | string;
   constants: CorePackageData;
 }) => {
   const appCap = txb.moveCall({
@@ -31,7 +28,7 @@ export const registerApp = ({
       txb.object(constants.appRegistry),
       txb.pure.string(name),
       txb.object(dotMove),
-      txb.object(SUI_CLOCK_OBJECT_ID)
+      txb.object.clock()
     ]
   });
 
@@ -50,7 +47,7 @@ export const registerApp = ({
 }
 
 export const setExternalNetwork = async (
-  txb: TransactionBlock, 
+  txb: Transaction, 
   appCap: string, 
   network: string, 
   value: { packageAddress: string; packageInfoId: string; }, 
@@ -60,9 +57,9 @@ export const setExternalNetwork = async (
   const appInfo = txb.moveCall({
     target: `${constants.packageId}::app_info::new`,
     arguments: [
-      txb.pure(bcs.option(bcs.Address).serialize(value.packageInfoId).toBytes()),
-      txb.pure(bcs.option(bcs.Address).serialize(value.packageAddress).toBytes()),
-      txb.pure(bcs.option(bcs.Address).serialize(null).toBytes())
+      txb.pure.option('address', value.packageInfoId),
+      txb.pure.option('address', value.packageAddress),
+      txb.pure.option('address', null)
     ]
   });
 

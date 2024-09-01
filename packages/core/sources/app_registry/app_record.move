@@ -10,7 +10,13 @@ module core::app_record {
 
     use package_info::package_info::PackageInfo;
 
+    /// Keeping the maximum number of networks to a reasonable number, to avoid abuse.
+    const MAX_NETWORKS: u64 = 25;
+
     const EPackageAlreadyAssigned: u64 = 1;
+    const ENotFound: u64 = 2;
+    /// The maximum number of networks has been reached, a cleanup needs to be done.
+    const EMaxNetworksReached: u64 = 3;
 
     public struct AppRecord has store {
         // The Capability object used for managing the `AppRecord`.
@@ -65,9 +71,7 @@ module core::app_record {
         ));
     }
 
-    /// Set a specified network target ID.
-    /// Even though our standard live networks are `TESTNET, DEVNET`,
-    /// we allow this to be custom-set, so any new
+    /// Set a specified network ID (we expect a chain identifier) -> AppInfo.
     public(package) fun set_network(
         record: &mut AppRecord,
         network: String,
@@ -76,8 +80,17 @@ module core::app_record {
         if (record.networks.contains(&network)) {
             record.networks.remove(&network);
         };
-
+        assert!(record.networks.size() < MAX_NETWORKS, EMaxNetworksReached);
         record.networks.insert(network, info);
+    }
+
+    /// Removes a network target ID
+    public(package) fun remove_network(
+        record: &mut AppRecord,
+        network: String
+    ) {
+        assert!(record.networks.contains(&network), ENotFound);
+        record.networks.remove(&network);
     }
 
     /// Checks if the record is immutable (mainnet package has been attached).

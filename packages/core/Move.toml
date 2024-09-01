@@ -3,9 +3,8 @@ name = "core"
 edition = "2024.alpha" # edition = "legacy" to use legacy (pre-2024) Move
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "main" }
 package_info = { local = "../package_info" }
-# package_info = { id = "package-info@dotmove" }
 
 [addresses]
 core = "0x0"

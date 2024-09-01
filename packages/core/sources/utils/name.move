@@ -103,7 +103,7 @@ module core::name {
 
         while(!name.is_empty()) {
             let next_separator_index = name.index_of(&separator);
-            let part = name.sub_string(0, next_separator_index);
+            let part = name.substring(0, next_separator_index);
             labels.push_back(part);
 
             let next_portion = if (next_separator_index == name.length()) {
@@ -112,7 +112,7 @@ module core::name {
                 next_separator_index + 1
             };
 
-            name = name.sub_string(next_portion, name.length());
+            name = name.substring(next_portion, name.length());
         };
 
         labels.reverse();
@@ -121,7 +121,7 @@ module core::name {
 
     fun is_valid_label(label: &String): bool {
         let len = label.length();
-        let label_bytes = label.bytes();
+        let label_bytes = label.as_bytes();
         let mut index = 0;
 
         if (len < 1 || len > MAX_LABEL_LENGTH) {

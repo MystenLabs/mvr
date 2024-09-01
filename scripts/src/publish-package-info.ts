@@ -1,7 +1,8 @@
-import { TransactionBlock } from "@mysten/sui.js/transactions"
-import { Network, getClient, parseCorePackageObjects, parseCreatedObject, publishPackage, signAndExecute } from "../utils";
+import { getClient, manageInitialPublishForPackage, Network, parseCorePackageObjects, parseCreatedObject, publishPackage, signAndExecute, sleep } from "../utils";
 import path from "path";
 import { writeFileSync } from "fs";
+import { Transaction } from "@mysten/sui/transactions";
+import { execSync } from "child_process";
 
 const DISPLAY = {
 	name: 'Package Info',
@@ -16,35 +17,39 @@ export type CorePackageData = {
     publisher: string;
 }
 
-export const publish = async (network: Network) => {
-    const txb = new TransactionBlock();
-    publishPackage(txb, path.resolve(__dirname, '../../packages/package_info'), network);
+
+export const publish = async (network: Network, clientConfigPath: string) => {
+	const client = getClient(network);
+    const txb = new Transaction();
+    publishPackage(txb, path.resolve(__dirname, '../../packages/package_info'), clientConfigPath);
     const res = await signAndExecute(txb, network);
     console.dir(res);
 
+	await sleep(2500);
+
     const { packageId, upgradeCap } = parseCorePackageObjects(res);
 
-    const publisher = parseCreatedObject(res, '0x2::package::Publisher');
+	manageInitialPublishForPackage(path.resolve(__dirname, '../../packages/package_info'), packageId);
 
-    const results = {
-        packageId, upgradeCap,  publisher,
-    }
+    const publisher = parseCreatedObject(res, '0x2::package::Publisher');
+    const results = {  packageId, upgradeCap,  publisher };
 
     writeFileSync(path.resolve(__dirname + `/../package-info.${network}.json`), JSON.stringify(results, null, 2));
     await setupPackageInfoDisplay(results, network);
+	return results;
 }
 
 export const setupPackageInfoDisplay = async (data: CorePackageData, network: Network) => {
     const TYPE = `${data.packageId}::package_info::PackageInfo`;
-    const txb = new TransactionBlock();
+    const txb = new Transaction();
 
 	// Create a new Display object using the publisher object and the fields.
 	let display = txb.moveCall({
 		target: '0x2::display::new_with_fields',
 		arguments: [
 			txb.object(data.publisher),
-			txb.pure(Object.keys(DISPLAY)),
-			txb.pure(Object.values(DISPLAY)),
+			txb.pure.vector('string', Object.keys(DISPLAY)),
+			txb.pure.vector('string', Object.values(DISPLAY)),
 		],
 		typeArguments: [TYPE],
 	});
@@ -64,9 +69,8 @@ export const setupPackageInfoDisplay = async (data: CorePackageData, network: Ne
 		}),
 	);
 
-	const res = await signAndExecute(txb, network);
-    console.log(res);
+	const res = await signAndExecute(txb, network,);
+	// wait until we've seen the transaction on-chain.
+	await getClient(network).waitForTransaction({ digest: res.digest });
+	return res;
 }
-
-// publish('mainnet');
-// setupPackageInfoDisplay({ packageId: '7d46caec25163a18b3eb0b834789c415d45075c0b3e619036d9d6fe3fe6c3aaf', upgradeCap: '', publisher: '0xba646d3ddb04b7f8866d94a1c54e59e4673a67fe68f706b2ddf33508df984f4a'}, 'testnet');
