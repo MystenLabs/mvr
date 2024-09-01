@@ -5,7 +5,7 @@ import { resolveNames } from "./ts-sdk/plugin";
 import { SuiGraphQLClient } from "@mysten/sui/graphql";
 import { getActiveAddress } from "../utils";
 
-type Network = 'mainnet' | 'testnet' | 'devnet';
+type Network = 'mainnet' | 'testnet' | 'devnet' | 'localnet';
 
 const NETWORK_TO_TEST: Network = process.argv[2] as Network ?? 'localnet';
 
@@ -14,8 +14,7 @@ const client = new SuiClient({
 });
 
 const graphqlClient = new SuiGraphQLClient({
-    // url: `https://sui-${NETWORK_TO_TEST}.mystenlabs.com/graphql`
-    url: 'http://127.0.0.1:8000/graphql'
+    url: NETWORK_TO_TEST === 'localnet' ? `http://127.0.0.1:8000/graphql` : `https://sui-${NETWORK_TO_TEST}.mystenlabs.com/graphql`
 });
 
 Transaction.registerGlobalSerializationPlugin(resolveNames({ suiGraphqlClient: graphqlClient }));

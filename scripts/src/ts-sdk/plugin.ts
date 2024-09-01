@@ -5,24 +5,41 @@ import { findTransactionBlockNames, listToRequests, NameResolutionRequest, repla
 export type NameResolutionPlugin = {
     suiGraphqlClient: SuiGraphQLClient;
     pageSize?: number;
+    /** 
+     * Local overrides to the resolution plugin. Useful for CI testing.
+     * 
+     * Expected format is:
+     * 1. For packages: `app@org` -> `0x1234`
+     * 2. For types: `app@org::type::Type` -> `0x1234::type::Type`
+     * 
+     */
+    overrides?: Record<string, string>;
 }
 
-export const resolveNames = ({ suiGraphqlClient, pageSize = 10 }: NameResolutionPlugin) => async (
+export const resolveNames = ({ suiGraphqlClient, pageSize = 10, overrides = {} }: NameResolutionPlugin) => async (
     transactionData: TransactionDataBuilder,
     _buildOptions: BuildTransactionOptions,
     next: () => Promise<void>
 ) => {
     const names = findTransactionBlockNames(transactionData);
+    // Remove the "overrides" from the list of names to resolve.
+    names.names = names.names.filter(x => !overrides[x]);
+    names.types = names.types.filter(x => !overrides[x]);
+
     const batches = listToRequests(names, pageSize);
-
     // now we need to bulk resolve all the names + types, and replace them in the transaction data.
-    const results = (await Promise.all(batches.map(batch => queryGQL(suiGraphqlClient, batch)))).reduce((acc, val) => ({ ...acc, ...val }), {});
+    const results = (await Promise.all(batches.map(batch => queryGQL(suiGraphqlClient, batch))))
+                .reduce((acc, val) => ({ ...acc, ...val }), {});
 
-    replaceNames(transactionData, results);
+    replaceNames(transactionData, {...results, ...overrides});
+
 	await next();
 }
 
 const queryGQL = async (client: SuiGraphQLClient, requests: NameResolutionRequest[]) => {
+    // avoid making a request if there are no names to resolve.
+    if (requests.length === 0) return {};
+
     // Create multiple queries for each name / type we need to resolve
     const gqlQuery = `{
         ${requests.map(req => {
