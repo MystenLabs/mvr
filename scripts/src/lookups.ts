@@ -1,9 +1,9 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { normalizeSuiAddress } from "@mysten/sui/utils";
 import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
-import { resolveNames } from "./plugin";
+import { resolveNames } from "./ts-sdk/plugin";
 import { SuiGraphQLClient } from "@mysten/sui/graphql";
-import { getActiveAddress } from "../../utils";
+import { getActiveAddress } from "../utils";
 
 type Network = 'mainnet' | 'testnet' | 'devnet';
 
