@@ -65,12 +65,13 @@ export const publishDotMove = async (network: Network, clientConfigPath: string)
 
     const dotMoveGraphqlToml = `[move-registry]
 package-address = "${packageId}"
-registry-id = "${appRegistry}"
+registry-id = "${appRegistryTable}"
 `;
 
-    writeFileSync(path.resolve(__dirname + `/../graphql.${network}.config.toml`), dotMoveGraphqlToml);
+    const gqlConfigName = __dirname + `/../graphql.${network}.config.toml`;
+    writeFileSync(path.resolve(gqlConfigName), dotMoveGraphqlToml);
     await setupBasicRegistration(results, network);
-    console.log("GraphQL Config file saved at: " + path.resolve(__dirname + `/../graphql-${network}.config.toml`));
+    console.log("GraphQL Config file saved at: " + path.resolve(gqlConfigName));
 
     return results;
 }
