@@ -4,4 +4,4 @@ build
 target
 
 *.localnet.*
-published.*.json
+published.localnet.json
