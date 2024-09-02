@@ -1,5 +1,13 @@
 import { TransactionDataBuilder } from "@mysten/sui/transactions";
 
+const NAMED_PART_PATTERN = `([a-z0-9]+(?:-[a-z0-9]+)*)`;
+const OPTIONAL_VERSION_PATTERN = `(?:\/v(\d+))?`;
+// Matches a Move package name with an optional version. (e.g. app@org/v1)
+const NAME_PATTERN = new RegExp(`^${NAMED_PART_PATTERN}@${NAMED_PART_PATTERN}${OPTIONAL_VERSION_PATTERN}$`);
+
+// const PACKAGE_REGEXP = new RegExp(NAME_PATTERN);
+const NAME_SEPARATOR = '@';
+
 export type NameResolutionRequest = {
     id: number;
     type: 'package' | 'moveType';
@@ -21,10 +29,16 @@ export const findTransactionBlockNames = (builder: TransactionDataBuilder): { na
         if (!tx) continue;
 
         const pkg = tx.package.split('::')[0];
-        if (pkg.includes('@')) names.add(pkg);
+        if (pkg.includes(NAME_SEPARATOR)){
+            if (!isValidNamedPackage(pkg)) throw new Error(`Invalid package name: ${pkg}`);
+            names.add(pkg);
+        }
 
         for (const type of (tx.typeArguments ?? [])) {
-            if (type.includes('@')) types.add(type);
+            if (type.includes(NAME_SEPARATOR)) {
+                if (!isValidNamedType(type)) throw new Error(`Invalid type with names: ${type}`);
+                types.add(type);
+            }
         }
     }
 
@@ -46,7 +60,7 @@ export const replaceNames = (builder: TransactionDataBuilder, results: Record<st
         const nameParts = tx.package.split('::');
         const name = nameParts[0];
 
-        if (name.includes('@') && !results[name]) throw new Error(`No address found for package: ${name}`);
+        if (name.includes(NAME_SEPARATOR) && !results[name]) throw new Error(`No address found for package: ${name}`);
 
         nameParts[0] = results[name];
         tx.package = nameParts.join('::');
@@ -55,7 +69,7 @@ export const replaceNames = (builder: TransactionDataBuilder, results: Record<st
         if (!types) continue;
     
         for (let i=0; i < types.length; i++) {
-            if (!types[i].includes('@')) continue;
+            if (!types[i].includes(NAME_SEPARATOR)) continue;
 
             if (!results[types[i]]) throw new Error(`No resolution found for type: ${types[i]}`);
             types[i] = results[types[i]];
@@ -80,7 +94,25 @@ export const listToRequests = (names: { names: string[], types: string[] }, batc
     return batch(results, batchSize);
 }
 
+export const isValidNamedPackage = (name: string): boolean => {
+    return NAME_PATTERN.test(name);
+}
+
+/**
+ * Checks if a type contains valid named packages.
+ * This DOES NOT check if the type is a valid Move type.
+ */
+export const isValidNamedType = (type: string): boolean => {
+    // split our type by all possible type delimeters.
+    const splitType = type.split(/::|<|>|,/);
+    for (const t of splitType) {
+        if (t.includes(NAME_SEPARATOR) && !isValidNamedPackage(t)) return false;
+    }
+    return true;
+}
+
 const deduplicate = <T>(arr: T[]): T[] => [...new Set(arr)];
+
 const batch = <T>(arr: T[], size: number): T[][] => {
     const batches = [];
     for (let i=0; i < arr.length; i+=size) {

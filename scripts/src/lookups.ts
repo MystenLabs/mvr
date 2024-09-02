@@ -17,7 +17,9 @@ const graphqlClient = new SuiGraphQLClient({
     url: NETWORK_TO_TEST === 'localnet' ? `http://127.0.0.1:8000/graphql` : `https://sui-${NETWORK_TO_TEST}.mystenlabs.com/graphql`
 });
 
-Transaction.registerGlobalSerializationPlugin(resolveNames({ suiGraphqlClient: graphqlClient }));
+Transaction.registerGlobalSerializationPlugin(resolveNames({ suiGraphQLClient: graphqlClient, overrides: {
+    'std@framework': '0x1'
+} }));
 
 const demo = async () => {
     const tx = new Transaction();
@@ -37,6 +39,13 @@ const demo = async () => {
         target: `first@demo::demo::noop_w_type_param`,
         typeArguments: [
             `first@demo::demo::NestedDemoWitness<first@demo::demo::DemoWitness>`
+        ]
+    });
+
+    tx.moveCall({
+        target: 'std@framework::string::utf8',
+        arguments: [
+            tx.pure.string('Hello World')
         ]
     });
 
