@@ -3,7 +3,17 @@ import { BuildTransactionOptions, TransactionDataBuilder } from "@mysten/sui/tra
 import { findTransactionBlockNames, listToRequests, NameResolutionRequest, replaceNames } from "./utils";
 
 export type NameResolutionPlugin = {
-    suiGraphqlClient: SuiGraphQLClient;
+    /**
+     * The SuiGraphQLClient to use for resolving names.
+     * The endpoint should be the GraphQL endpoint of the network you are targeting.
+     * For non-mainnet networks, if the plugin doesn't work as expected, you need to validate that the
+     * RPC provider has support for the `packageByName` and `typeByName` queries (using external resolver).
+     */
+    suiGraphQLClient: SuiGraphQLClient;
+    /**
+     * The number of names to resolve in each batch request.
+     * Needs to be calculated based on the GraphQL query limits.
+     */
     pageSize?: number;
     /** 
      * Local overrides to the resolution plugin. Useful for CI testing.
@@ -16,7 +26,7 @@ export type NameResolutionPlugin = {
     overrides?: Record<string, string>;
 }
 
-export const resolveNames = ({ suiGraphqlClient, pageSize = 10, overrides = {} }: NameResolutionPlugin) => async (
+export const resolveNames = ({ suiGraphQLClient, pageSize = 10, overrides = {} }: NameResolutionPlugin) => async (
     transactionData: TransactionDataBuilder,
     _buildOptions: BuildTransactionOptions,
     next: () => Promise<void>
@@ -28,7 +38,7 @@ export const resolveNames = ({ suiGraphqlClient, pageSize = 10, overrides = {} }
 
     const batches = listToRequests(names, pageSize);
     // now we need to bulk resolve all the names + types, and replace them in the transaction data.
-    const results = (await Promise.all(batches.map(batch => queryGQL(suiGraphqlClient, batch))))
+    const results = (await Promise.all(batches.map(batch => queryGQL(suiGraphQLClient, batch))))
                 .reduce((acc, val) => ({ ...acc, ...val }), {});
 
     replaceNames(transactionData, {...results, ...overrides});
@@ -58,12 +68,14 @@ const queryGQL = async (client: SuiGraphQLClient, requests: NameResolutionReques
         variables: undefined
     });
 
+    if (result.errors) throw new Error(JSON.stringify({ query: gqlQuery, errors: result.errors }));
+    
     const results: Record<string, string> = {};
 
     // Parse the results and create a map of `<name|type> -> <address|repr>`
     for (const req of requests) {
         const key = gqlQueryKey(req.id);
-        if (!result.data || !result.data[key]) throw new Error(`No result found for key: ${req.name}`);
+        if (!result.data || !result.data[key]) throw new Error(`No result found for: ${req.name}`);
         const data = result.data[key] as { address?: string, repr?: string };
         
         results[req.name] = req.type === 'package' ? data.address! : data.repr!;
