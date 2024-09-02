@@ -18,6 +18,9 @@ const SUI = process.env.SUI_BINARY ?? `sui`;
 
 export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+export const getActiveNetwork = (): Network => {
+	return execSync(`${SUI} client active-env`, { encoding: 'utf8' }).trim() as Network;
+};
 
 export const getActiveAddress = () => {
 	return execSync(`${SUI} client active-address`, { encoding: 'utf8' }).trim();
