@@ -12,7 +12,7 @@ module core::pricing {
 
     public struct Range(u64, u64) has copy, store, drop;
 
-    // A struct that holds the length range and the price of a service.
+    /// A struct that holds the length range and the price of a service.
     public struct PricingConfig<phantom T> has copy, store, drop {
         pricing: VecMap<Range, u64>,
     }
