@@ -10,6 +10,7 @@ module core::pricing {
     /// Tries to calculate the price for a given length
     const EPriceNotSet: u64 = 4;
 
+    /// A range struct that holds the start and end of a range (inclusive).
     public struct Range(u64, u64) has copy, store, drop;
 
     /// A struct that holds the length range and the price of a service.
