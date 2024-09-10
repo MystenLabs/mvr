@@ -5,3 +5,5 @@ target
 
 *.localnet.*
 published.localnet.json
+.trace
+*.mvcov
