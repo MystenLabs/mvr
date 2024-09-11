@@ -21,5 +21,4 @@ module core::app_info {
             upgrade_cap_id: option::none()
         }
     }
-
 }
