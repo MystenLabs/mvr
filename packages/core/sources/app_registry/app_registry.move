@@ -98,7 +98,6 @@ module core::app_registry {
         network: String,
         info: AppInfo,
     ) {
-        // TODO: Limit this to known networks?
         assert!(registry.app_exists(cap.name()), EAppDoesNotExist);
         let record = registry.registry.borrow_mut(cap.name());
         assert!(cap.is_valid_for(record), EUnauthorized);

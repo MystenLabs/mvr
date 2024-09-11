@@ -1,8 +1,6 @@
 module core::app_record {
     use std::string::String;
-    use sui::{
-        vec_map::{Self, VecMap},
-    };
+    use sui::vec_map::{Self, VecMap};
     use core::{
         name::Name,
         app_info::{Self, AppInfo}
@@ -103,13 +101,7 @@ module core::app_record {
     public(package) fun burn(
         record: AppRecord
     ) {
-        let AppRecord {
-            storage,
-            app_info: _,
-            app_cap_id: _,
-            networks: _,
-            metadata: _,
-        } = record;
+        let AppRecord { storage, ..} = record;
 
         storage.delete();
     }
