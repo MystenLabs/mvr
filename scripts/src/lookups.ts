@@ -14,15 +14,13 @@ const graphqlClient = new SuiGraphQLClient({
     url: NETWORK_TO_TEST === 'localnet' ? `http://127.0.0.1:8000/graphql` : `https://sui-${NETWORK_TO_TEST}.mystenlabs.com/graphql`
 });
 
-const plugin = namedPackagesPlugin({
+Transaction.registerGlobalSerializationPlugin('namedPackagesPlugin', namedPackagesPlugin({
     suiGraphQLClient: graphqlClient,
     overrides: {
         packages: { 'std@framework': '0x1' },
         types: {}
     }
-});
-
-Transaction.registerGlobalSerializationPlugin('namedPackagesPlugin', plugin);
+}));
 
 const demo = async () => {
     const tx = new Transaction();
@@ -63,8 +61,6 @@ const demo = async () => {
         })
     });
 
-
-    console.dir(plugin, { depth: null });
     console.dir(res.effects);
 }
 
