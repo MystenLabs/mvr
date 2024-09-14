@@ -1,5 +1,5 @@
 [package]
-name = "core"
+name = "mvr"
 edition = "2024.alpha" # edition = "legacy" to use legacy (pre-2024) Move
 
 [dependencies]
@@ -13,4 +13,4 @@ suins = { git = "https://github.com/mystenlabs/suins-contracts/", subdir = "pack
 # suins = { git = "https://github.com/mystenlabs/suins-contracts/", subdir = "packages/suins", rev = "releases/testnet/core/v2" }
 
 [addresses]
-core = "0x0"
+mvr = "0x0"

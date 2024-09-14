@@ -1,4 +1,4 @@
-module core::constants;
+module mvr::constants;
 
 use std::string::String;
 

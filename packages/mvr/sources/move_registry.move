@@ -14,11 +14,11 @@
 /// We do not store all the package addresses (for different versions). Instead,
 /// we rely on the
 /// RPCs to resolve a package at a specified address.
-module core::move_registry;
+module mvr::move_registry;
 
-use core::app::{Self, App};
-use core::app_info::AppInfo;
-use core::app_record::{Self, AppRecord, AppCap};
+use mvr::app::{Self, App};
+use mvr::app_info::AppInfo;
+use mvr::app_record::{Self, AppRecord, AppCap};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::clock::Clock;

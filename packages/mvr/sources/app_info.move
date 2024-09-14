@@ -1,4 +1,5 @@
-module core::app_info;
+/// A simple re-usable struct to store an app's information.
+module mvr::app_info;
 
 public struct AppInfo has copy, store, drop {
     package_info_id: Option<ID>,

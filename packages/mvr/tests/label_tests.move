@@ -1,6 +1,6 @@
-module core::app_tests;
+module mvr::app_tests;
 
-use core::app;
+use mvr::app;
 use suins::domain::{Self, Domain};
 
 #[test]
@@ -30,22 +30,22 @@ fun app_to_string() {
     assert!(app.to_string() == b"maybe.even.more.nested@org/app".to_string());
 }
 
-#[test, expected_failure(abort_code = ::core::app::EInvalidName)]
+#[test, expected_failure(abort_code = ::mvr::app::EInvalidName)]
 fun create_empty_failure() {
     app::new(b"".to_string(), classic_domain());
 }
 
-#[test, expected_failure(abort_code = ::core::app::EInvalidName)]
+#[test, expected_failure(abort_code = ::mvr::app::EInvalidName)]
 fun create_invalid_label_failure() {
     app::new(b"-app".to_string(), classic_domain());
 }
 
-#[test, expected_failure(abort_code = ::core::app::EInvalidName)]
+#[test, expected_failure(abort_code = ::mvr::app::EInvalidName)]
 fun create_invalid_domain_failure() {
     app::new(b"app-".to_string(), classic_domain());
 }
 
-#[test, expected_failure(abort_code = ::core::app::EInvalidName)]
+#[test, expected_failure(abort_code = ::mvr::app::EInvalidName)]
 fun create_invalid_tld_failure() {
     app::new(b"ap@o".to_string(), classic_domain());
 }

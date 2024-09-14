@@ -6,9 +6,9 @@
 /// - It must be up to 64 characters per label
 /// - It can only contain alphanumeric characters, in lower case, and dashes
 /// (singular, not in the beginning or end)
-module core::app;
+module mvr::app;
 
-use core::constants;
+use mvr::constants;
 use std::string::String;
 use suins::constants as ns_constants;
 use suins::domain::Domain;

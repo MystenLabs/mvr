@@ -1,8 +1,8 @@
-module core::app_record;
+module mvr::app_record;
 
-use core::app::App;
-use core::app_info::{Self, AppInfo};
-use core::constants;
+use mvr::app::App;
+use mvr::app_info::{Self, AppInfo};
+use mvr::constants;
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::vec_map::{Self, VecMap};
