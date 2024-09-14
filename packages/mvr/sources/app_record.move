@@ -1,8 +1,8 @@
 module mvr::app_record;
 
-use mvr::app::App;
 use mvr::app_info::{Self, AppInfo};
 use mvr::constants;
+use mvr::name::Name;
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::vec_map::{Self, VecMap};
@@ -34,7 +34,7 @@ public struct AppCap has key, store {
     id: UID,
     /// We save the referenced App for easier off-chain management & on-chain
     /// access.
-    app: App,
+    name: Name,
     /// Whether the app is immutable on the main network.
     /// Also utilized for `Display` purposes.
     is_immutable: bool,
@@ -42,13 +42,13 @@ public struct AppCap has key, store {
 
 /// Returns a plain `AppRecord` to be populated.
 public(package) fun new(
-    app: App,
+    name: Name,
     ns_nft_id: ID,
     ctx: &mut TxContext,
 ): (AppRecord, AppCap) {
     let cap = AppCap {
         id: object::new(ctx),
-        app,
+        name,
         is_immutable: false,
     };
 
@@ -121,6 +121,6 @@ public(package) fun is_valid_for(cap: &AppCap, record: &AppRecord): bool {
     record.app_cap_id == cap.id.to_inner()
 }
 
-public(package) fun app(cap: &AppCap): App {
-    cap.app
+public(package) fun app(cap: &AppCap): Name {
+    cap.name
 }

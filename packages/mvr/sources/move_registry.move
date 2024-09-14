@@ -4,7 +4,7 @@
 ///
 /// The flow is that someone can come in with a `DotMove` object and
 /// register an app for that name. (e.g. coming in with `@test` and registering
-/// `app@test`)
+/// `app@test`)2
 /// Once an app is registered, an a mainnet `AppInfo` is set, it cannot ever be
 /// mutated.
 /// That retains the strong assurance that a name can always point to a single
@@ -16,9 +16,9 @@
 /// RPCs to resolve a package at a specified address.
 module mvr::move_registry;
 
-use mvr::app::{Self, App};
 use mvr::app_info::AppInfo;
 use mvr::app_record::{Self, AppRecord, AppCap};
+use mvr::name::{Self, Name};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::clock::Clock;
@@ -36,7 +36,7 @@ const ECannotRegisterWithSubname: u64 = 5;
 /// There are no "admin" actions for this registry.
 public struct MoveRegistry has key {
     id: UID,
-    registry: Table<App, AppRecord>,
+    registry: Table<Name, AppRecord>,
 }
 
 /// The OTW to claim Publisher.
@@ -66,7 +66,7 @@ public fun register(
     clock: &Clock,
     ctx: &mut TxContext,
 ): AppCap {
-    let app_name = app::new(name, nft.domain());
+    let app_name = name::new(name, nft.domain());
     assert!(!nft.has_expired(clock), ENSNameExpired);
     assert!(!nft.domain().is_subdomain(), ECannotRegisterWithSubname);
 
@@ -136,6 +136,6 @@ fun borrow_record_mut(
 }
 
 /// Check if an app is part of the registry.
-fun app_exists(registry: &MoveRegistry, app: App): bool {
-    registry.registry.contains(app)
+fun app_exists(registry: &MoveRegistry, name: Name): bool {
+    registry.registry.contains(name)
 }

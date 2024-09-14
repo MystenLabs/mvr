@@ -6,7 +6,7 @@
 /// - It must be up to 64 characters per label
 /// - It can only contain alphanumeric characters, in lower case, and dashes
 /// (singular, not in the beginning or end)
-module mvr::app;
+module mvr::name;
 
 use mvr::constants;
 use std::string::String;
@@ -15,7 +15,7 @@ use suins::domain::Domain;
 use suins::suins_registration::SuinsRegistration;
 
 const EInvalidName: u64 = 1;
-const ENotAnApp: u64 = 2;
+const ENotAnName: u64 = 2;
 const EUnknownTLD: u64 = 3;
 
 /// A name format is `@org/app`
@@ -23,7 +23,7 @@ const EUnknownTLD: u64 = 3;
 /// also be nested.
 /// So `example@org/app` would also be valid, and `inner.example@org/app` would
 /// also be valid.
-public struct App has copy, store, drop {
+public struct Name has copy, store, drop {
     /// The ORG part of the name is a SuiNS Domain.
     org: Domain,
     /// The APP part of the name. We keep it as a vector, even though it'll
@@ -32,32 +32,32 @@ public struct App has copy, store, drop {
     app: vector<String>,
 }
 
-/// Creates a new `App`.
-public fun new(app: String, org: Domain): App {
+/// Creates a new `Name`.
+public fun new(app: String, org: Domain): Name {
     // validate that our app is a valid label.
     validate_labels(&vector[app]);
 
-    App {
+    Name {
         org,
         app: vector[app],
     }
 }
 
 /// Validates that the `Org` part
-public fun has_valid_org(name: &App, org: &SuinsRegistration): bool {
+public fun has_valid_org(name: &Name, org: &SuinsRegistration): bool {
     name.org == org.domain()
 }
 
-/// Get the `app` from an `App`.
+/// Get the `app` from an `Name`.
 /// E.g. `@org/example` returns `example`
-public fun app(app: &App): &String {
-    assert!(app.app.length() == 1, ENotAnApp);
+public fun app(app: &Name): &String {
+    assert!(app.app.length() == 1, ENotAnName);
     &app.app[0]
 }
 
-/// Converts an `App` to its string representation (e.g. `@org/app`,
+/// Converts an `Name` to its string representation (e.g. `@org/app`,
 /// `inner@org/app`)
-public fun to_string(app: &App): String {
+public fun to_string(app: &Name): String {
     let mut name = b"".to_string();
 
     // construct the "org" part.
@@ -95,7 +95,7 @@ public fun to_string(app: &App): String {
 }
 
 /// TODO: implement
-// public fun from_string(name: String): App { }
+// public fun from_string(name: String): Name { }
 
 public(package) fun validate_labels(labels: &vector<String>) {
     assert!(!labels.is_empty(), EInvalidName);
