@@ -30,6 +30,7 @@ const EAppAlreadyRegistered: u64 = 1;
 const EUnauthorized: u64 = 2;
 const EAppDoesNotExist: u64 = 3;
 const ENSNameExpired: u64 = 4;
+const ECannotRegisterWithSubname: u64 = 5;
 
 /// The shared object holding the registry of packages.
 /// There are no "admin" actions for this registry.
@@ -67,6 +68,7 @@ public fun register(
 ): AppCap {
     let app_name = app::new(name, nft.domain());
     assert!(!nft.has_expired(clock), ENSNameExpired);
+    assert!(!nft.domain().is_subdomain(), ECannotRegisterWithSubname);
 
     // check if the app already exists, and we can only ever replace if we have
     // not set

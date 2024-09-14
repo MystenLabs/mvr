@@ -23,7 +23,6 @@ const EUnknownTLD: u64 = 3;
 /// also be nested.
 /// So `example@org/app` would also be valid, and `inner.example@org/app` would
 /// also be valid.
-/// We assume TLD is `sui` always.
 public struct App has copy, store, drop {
     /// The ORG part of the name is a SuiNS Domain.
     org: Domain,
