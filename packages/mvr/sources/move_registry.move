@@ -93,7 +93,7 @@ public fun assign_package(
     cap: &mut AppCap,
     info: &PackageInfo,
 ) {
-    let record = registry.borrow_record(cap);
+    let record = registry.borrow_record_mut(cap);
     assert!(!record.is_immutable(), EAppAlreadyRegistered);
     record.assign_package(cap, info);
 }
@@ -105,7 +105,7 @@ public fun set_network(
     network: String,
     info: AppInfo,
 ) {
-    let record = registry.borrow_record(cap);
+    let record = registry.borrow_record_mut(cap);
     record.set_network(network, info);
 }
 
@@ -116,11 +116,17 @@ public fun unset_network(
     cap: &AppCap,
     network: String,
 ) {
-    let record = registry.borrow_record(cap);
+    let record = registry.borrow_record_mut(cap);
     record.unset_network(network);
 }
 
-fun borrow_record(registry: &mut MoveRegistry, cap: &AppCap): &mut AppRecord {
+/// Borrows a record for a given cap.
+/// Aborts if the app does not exist or the cap is not still valid for the
+/// record.
+fun borrow_record_mut(
+    registry: &mut MoveRegistry,
+    cap: &AppCap,
+): &mut AppRecord {
     assert!(registry.app_exists(cap.app()), EAppDoesNotExist);
     let record = registry.registry.borrow_mut(cap.app());
     assert!(cap.is_valid_for(record), EUnauthorized);

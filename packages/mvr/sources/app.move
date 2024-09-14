@@ -49,14 +49,15 @@ public fun has_valid_org(name: &App, org: &SuinsRegistration): bool {
     name.org == org.domain()
 }
 
-/// Get the `app` from a `Name`.
-/// E.g. `example@org` returns `example`
+/// Get the `app` from an `App`.
+/// E.g. `@org/example` returns `example`
 public fun app(app: &App): &String {
     assert!(app.app.length() == 1, ENotAnApp);
     &app.app[0]
 }
 
-/// Converts an `App` to its string representation.
+/// Converts an `App` to its string representation (e.g. `@org/app`,
+/// `inner@org/app`)
 public fun to_string(app: &App): String {
     let mut name = b"".to_string();
 
@@ -97,20 +98,6 @@ public fun to_string(app: &App): String {
 /// TODO: implement
 // public fun from_string(name: String): App { }
 
-/// A list of all known TLDs.
-fun get_tld_symbol(tld: &String): String {
-    if (tld == ns_constants::sui_tld()) return constants::sui_tld_separator!();
-    abort EUnknownTLD
-}
-
-/// Converts a TLD symbol to a TLD string.
-fun symbol_to_tld(symbol: &String): String {
-    if (symbol == constants::sui_tld_separator!()) {
-        return ns_constants::sui_tld()
-    };
-    abort EUnknownTLD
-}
-
 public(package) fun validate_labels(labels: &vector<String>) {
     assert!(!labels.is_empty(), EInvalidName);
 
@@ -139,4 +126,18 @@ fun is_valid_label(label: &String): bool {
     };
 
     true
+}
+
+/// A list of all known TLDs.
+fun get_tld_symbol(tld: &String): String {
+    if (tld == ns_constants::sui_tld()) return constants::sui_tld_separator!();
+    abort EUnknownTLD
+}
+
+/// Converts a TLD symbol to a TLD string.
+fun symbol_to_tld(symbol: &String): String {
+    if (symbol == constants::sui_tld_separator!()) {
+        return ns_constants::sui_tld()
+    };
+    abort EUnknownTLD
 }

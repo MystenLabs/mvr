@@ -18,11 +18,10 @@ public struct AppRecord has store {
     app_cap_id: ID,
     /// The SuiNS registration object that created this record.
     ns_nft_id: ID,
-    // The mainnet `AppInfo` object.
-    // This is optional until a `mainnet` package is mapped to a record, making
-    // the record immutable.
+    // The mainnet `AppInfo` object. This is optional until a `mainnet` package
+    // is mapped to a record, making the record immutable.
     app_info: Option<AppInfo>,
-    // This is what being resolved across networks.
+    // This is what being resolved for external networks.
     networks: VecMap<String, AppInfo>,
     // Any read-only metadata for the record.
     metadata: VecMap<String, String>,
