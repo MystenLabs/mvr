@@ -5,7 +5,7 @@ module package_info::package_info {
         package::{Self, UpgradeCap},
         table::{Self, Table},
         vec_map::{Self, VecMap},
-        dynamic_field
+        dynamic_field as df
     };
 
     use package_info::{
@@ -76,13 +76,21 @@ module package_info::package_info {
         info.style = style;
     }
 
-    // Set some metadata for a package.
+    // Set any metadata for the NFT.
     public fun set_metadata(
         info: &mut PackageInfo,
         key: String,
         value: String
     ) {
         info.metadata.insert(key, value);
+    }
+
+    /// Unset any plain-text metadata from the NFT.
+    public fun unset_metadata(
+        info: &mut PackageInfo,
+        key: String
+    ) {
+        info.metadata.remove(&key);
     }
 
     /// Allows us to set the github metadata for any given version of a package.
@@ -102,16 +110,24 @@ module package_info::package_info {
         info.git_versioning.add(version, git_info);
     }
 
-    /// Allows the owner to attach any other logic / DFs to an owned packageInfo.
+    /// Allows the owner to attach any other logic / DFs to the NFT.
     public fun set_custom_metadata<K: copy + store + drop, V: store>(
         info: &mut PackageInfo,
         key: K,
         value: V
     ) {
-        dynamic_field::add(&mut info.id, key, value);
+        df::add(&mut info.id, key, value);
+    }
+
+    /// Allows removing any custom metadata from the NFT.
+    public fun remove_custom_metadata<K: copy + store + drop, V: store>(
+        info: &mut PackageInfo,
+        key: K
+    ): V {
+        df::remove(&mut info.id, key)
     }
     
-    /// Last PTB call (or ownership transfer).
+    /// Last PTB call (or ownership change).
     public fun transfer(info: PackageInfo, to: address) {
         transfer::transfer(info, to)
     }
