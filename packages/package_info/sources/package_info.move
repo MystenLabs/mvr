@@ -1,8 +1,7 @@
 module package_info::package_info;
 
+use package_info::display::{Self, PackageDisplay};
 use package_info::git::GitInfo;
-use package_info::label::{Self, Label};
-use package_info::style::{Self, Style};
 use std::string::String;
 use sui::dynamic_field as df;
 use sui::package::{Self, UpgradeCap};
@@ -22,10 +21,8 @@ public struct PACKAGE_INFO has drop {}
 /// available)
 public struct PackageInfo has key {
     id: UID,
-    // the label: Used in Display & other places to distinguish packages easily.
-    label: Label,
-    // The styling of the PackageInfo object
-    style: Style,
+    /// The
+    display: PackageDisplay,
     // the ID of the upgrade cap
     upgrade_cap_id: ID,
     // the address of the package (no version specified, any version that got
@@ -44,7 +41,7 @@ fun init(otw: PACKAGE_INFO, ctx: &mut TxContext) {
 }
 
 /// Create a new empty `PackageInfo` object for a given `upgrade_cap`.
-/// Expects a `&mut UpgradeCap` for added security. 
+/// Expects a `&mut UpgradeCap` for added security.
 /// (All privileged upgrade cap functions require &mut)/
 public fun new(cap: &mut UpgradeCap, ctx: &mut TxContext): PackageInfo {
     assert!(
@@ -54,8 +51,7 @@ public fun new(cap: &mut UpgradeCap, ctx: &mut TxContext): PackageInfo {
 
     PackageInfo {
         id: object::new(ctx),
-        label: label::new(b"".to_string()),
-        style: style::default(),
+        display: display::default(b"Package".to_string()),
         package_address: cap.upgrade_package().to_address(),
         upgrade_cap_id: object::id(cap),
         metadata: vec_map::empty(),
@@ -68,12 +64,10 @@ public fun transfer(info: PackageInfo, to: address) {
     transfer::transfer(info, to)
 }
 
-public fun set_label(info: &mut PackageInfo, label: String) {
-    info.label = label::new(label);
-}
-
-public fun set_style(info: &mut PackageInfo, style: Style) {
-    info.style = style;
+public fun set_display(info: &mut PackageInfo, mut display: PackageDisplay) {
+    // we encode the label here (We get the proper SVG data in the display)
+    display.encode_label(info.package_address.to_string());
+    info.display = display;
 }
 
 /// Set any metadata for the NFT.
