@@ -14,10 +14,12 @@ const SVG_INITIAL_Y: u64 = 70;
 const SVG_LINE_HEIGHT: u64 = 50;
 const NAME_FONT_SIZE: u64 = 41;
 const PACKAGE_FONT_SIZE: u64 = 18;
+const DEFAULT_TEXT_COLOR: vector<u8> = b"030F1C";
 
 public struct PackageDisplay has copy, store, drop {
     gradient_from: String,
     gradient_to: String,
+    text_color: String,
     name: String,
     uri_encoded_name: String,
 }
@@ -32,9 +34,10 @@ public fun new(
         gradient_from,
         gradient_to,
         name,
+        text_color: DEFAULT_TEXT_COLOR.to_string(),
         // We keep empty for now. The uri encoding happens when we call
-        // `encode_label`.
-        // That happens when `set_display` is called on `PackageInfo`.
+        // `encode_label`. That happens when `set_display` is called on
+        // `PackageInfo`.
         uri_encoded_name: b"".to_string(),
     }
 }
@@ -75,6 +78,7 @@ public(package) fun encode_label(display: &mut PackageDisplay, id: String) {
                 SVG_X,
                 SVG_INITIAL_Y + (iterations * SVG_LINE_HEIGHT),
                 NAME_FONT_SIZE,
+                display.text_color,
             ),
         );
 
@@ -92,20 +96,29 @@ public(package) fun encode_label(display: &mut PackageDisplay, id: String) {
             SVG_X,
             SVG_INITIAL_Y + (iterations * SVG_LINE_HEIGHT),
             PACKAGE_FONT_SIZE,
+            display.text_color,
         ),
     );
 
     display.uri_encoded_name = urlencode::encode(*pre_encoded_name.as_bytes());
 }
 
-fun new_text(part: String, x: u64, y: u64, font_size: u64): String {
+fun new_text(
+    part: String,
+    x: u64,
+    y: u64,
+    font_size: u64,
+    text_fill_color: String,
+): String {
     let mut text = b"<text x='".to_string();
     text.append(x.to_string());
     text.append(b"' y='".to_string());
     text.append(y.to_string());
     text.append(b"' font-family='Courier, monospace' font-weight='bold' font-size='".to_string());
     text.append(font_size.to_string());
-    text.append(b"' fill='black'>".to_string());
+    text.append(b"' fill='#".to_string());
+    text.append(text_fill_color);
+    text.append(b"'>".to_string());
     text.append(part);
     text.append(b"</text>".to_string());
 
