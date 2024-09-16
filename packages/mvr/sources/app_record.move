@@ -40,6 +40,14 @@ public struct AppCap has key, store {
     is_immutable: bool,
 }
 
+public fun is_cap_immutable(cap: &AppCap): bool {
+    cap.is_immutable
+}
+
+public fun name(cap: &AppCap): Name {
+    cap.name
+}
+
 /// Returns a plain `AppRecord` to be populated.
 public(package) fun new(
     name: Name,

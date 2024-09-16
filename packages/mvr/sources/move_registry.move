@@ -26,11 +26,18 @@ use sui::package;
 use sui::table::{Self, Table};
 use suins::suins_registration::SuinsRegistration;
 
+/// The app is already registered and is immutable.
 const EAppAlreadyRegistered: u64 = 1;
+/// The user is not authorized to perform the action.
 const EUnauthorized: u64 = 2;
+/// The app does not exist.
 const EAppDoesNotExist: u64 = 3;
+/// The given `SuinsRegistration` object has expired.
 const ENSNameExpired: u64 = 4;
+/// We do not allow subnames in the current phase.
 const ECannotRegisterWithSubname: u64 = 5;
+/// The app is immutable and cannot be removed.
+const ECannotRemoveImmutableApp: u64 = 6;
 
 /// The shared object holding the registry of packages.
 /// There are no "admin" actions for this registry.
@@ -56,33 +63,50 @@ fun init(otw: MOVE_REGISTRY, ctx: &mut TxContext) {
 /// The `SuinsRegistration` object is used for validation.
 ///
 /// Aborts if:
-/// 1. The app is already registered and is immutable (mainnet package info
-/// set).
-/// 2. The name is not valid for the given `DotMove` object.
+/// 1. The app is already registered and is immutable 
+/// 2. The given `SuinsRegistration` object has expired
+/// 3. The given `SuinsRegistration` object is a subdomain
 public fun register(
     registry: &mut MoveRegistry,
-    name: String,
     nft: &SuinsRegistration,
+    name: String,
     clock: &Clock,
     ctx: &mut TxContext,
 ): AppCap {
     let app_name = name::new(name, nft.domain());
     assert!(!nft.has_expired(clock), ENSNameExpired);
+    // We do not allow subnames in the current phase.
     assert!(!nft.domain().is_subdomain(), ECannotRegisterWithSubname);
-
-    // check if the app already exists, and we can only ever replace if we have
-    // not set
-    // the mainnet package info.
-    if (registry.registry.contains(app_name)) {
-        let record = registry.registry.remove(app_name);
-        assert!(!record.is_immutable(), EAppAlreadyRegistered);
-        record.burn();
-    };
 
     let (new_record, cap) = app_record::new(app_name, object::id(nft), ctx);
     registry.registry.add(app_name, new_record);
 
     cap
+}
+
+/// Allows removing an app from the registry,
+/// only if the app is not immutable 
+/// (no mainnet package has been assigned).
+/// 
+/// Aborts if:
+/// 1. The app does not exist
+/// 2. The app is immutable
+/// 3. The given `SuinsRegistration` object has expired
+public fun remove(
+    registry: &mut MoveRegistry,
+    nft: &SuinsRegistration,
+    name: String,
+    clock: &Clock,
+    _ctx: &mut TxContext,
+) {
+    let app_name = name::new(name, nft.domain());
+    assert!(!nft.has_expired(clock), ENSNameExpired);
+    assert!(registry.registry.contains(app_name), EAppDoesNotExist);
+
+    let record = registry.registry.remove(app_name);
+    assert!(!record.is_immutable(), ECannotRemoveImmutableApp);
+
+    record.burn();
 }
 
 /// Assigns a package to the given app.
@@ -122,6 +146,11 @@ public fun unset_network(
     record.unset_network(network);
 }
 
+/// Check if an app is part of the registry.
+public(package) fun app_exists(registry: &MoveRegistry, name: Name): bool {
+    registry.registry.contains(name)
+}
+
 /// Borrows a record for a given cap.
 /// Aborts if the app does not exist or the cap is not still valid for the
 /// record.
@@ -135,7 +164,8 @@ fun borrow_record_mut(
     record
 }
 
-/// Check if an app is part of the registry.
-fun app_exists(registry: &MoveRegistry, name: Name): bool {
-    registry.registry.contains(name)
+
+#[test_only]
+public(package) fun init_for_testing(ctx: &mut TxContext) {
+    init(MOVE_REGISTRY {}, ctx)
 }
