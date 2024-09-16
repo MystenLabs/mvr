@@ -72,6 +72,10 @@ export const setupOnLocalnet = async () => {
             gitSubdirectory: "packages/demo",
             gitTag: "ml/migrate-to-plugin",
         });
+
+    // TODO: Publish SuiNS (clone from `suins-contracts`), set it up,
+    // then create some names for testing in localnet environment.
+
     // const name = registerDotMove(tx, "demo", dotMoveDetails);
 
     // const app = registerApp({
