@@ -37,7 +37,7 @@ const ENSNameExpired: u64 = 4;
 /// We do not allow subnames in the current phase.
 const ECannotRegisterWithSubname: u64 = 5;
 /// The app is immutable and cannot be removed.
-const ECannotRemoveImmutableApp: u64 = 6;
+const EAlreadyImmutable: u64 = 6;
 
 /// The shared object holding the registry of packages.
 /// There are no "admin" actions for this registry.
@@ -104,7 +104,7 @@ public fun remove(
     assert!(registry.registry.contains(app_name), EAppDoesNotExist);
 
     let record = registry.registry.remove(app_name);
-    assert!(!record.is_immutable(), ECannotRemoveImmutableApp);
+    assert!(!record.is_immutable(), EAlreadyImmutable);
 
     record.burn();
 }

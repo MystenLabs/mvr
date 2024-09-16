@@ -82,12 +82,7 @@ fun test_immutable_packages() {
     scenario.cleanup(registry, clock);
 }
 
-#[
-    test,
-    expected_failure(
-        abort_code = ::mvr::move_registry::ECannotRemoveImmutableApp,
-    ),
-]
+#[test, expected_failure(abort_code = ::mvr::move_registry::EAlreadyImmutable)]
 fun try_to_remove_immutable() {
     let (mut scenario, mut registry, clock) = test_setup();
     scenario.next_tx(ADDR_1);
