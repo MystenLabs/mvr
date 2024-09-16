@@ -28,8 +28,6 @@ public fun new(
     name: String,
 ): PackageDisplay {
     assert!(name.length() <= MAX_NAME_LENGTH, EMaxNameLengthExceeded);
-    // TODO: actually create the SVG to be encoded (split `name` into multiple
-    // lines)
     PackageDisplay {
         gradient_from,
         gradient_to,
