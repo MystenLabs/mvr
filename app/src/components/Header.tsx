@@ -38,7 +38,7 @@ export default function Header({
 
   return (
     <header className="border-b border-border-classic">
-      <div className="container grid md:grid-cols-2 lg:grid-cols-12 items-center justify-between py-Regular">
+      <div className="container grid md:grid-cols-2 lg:grid-cols-12 items-center justify-between py-Regular max-md:px-Regular">
         <div className="lg:col-span-3 flex items-center gap-Small">
           <SuiLogo />
           mvr

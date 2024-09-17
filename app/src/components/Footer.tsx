@@ -35,9 +35,9 @@ const Social = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border-classic">
+    <footer className="border-t border-border-classic max-md:px-Regular">
       <div className="container grid items-center gap-Small py-Regular lg:grid-cols-2">
-        <div className="flex items-center gap-Small">
+        <div className="md:flex items-center gap-Small">
           <Text variant="small/regular" mono color="tertiary" family="mono" className="uppercase pr-Small">
             © 2024 Sui foundation. All rights reserved.
           </Text>

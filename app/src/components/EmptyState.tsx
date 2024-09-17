@@ -25,6 +25,7 @@ export function EmptyState({
           <Text
             variant="regular/regular"
             color="secondary"
+            family="inter"
             className="mx-auto max-w-[550px] pt-Small text-center"
           >
             {description}
