@@ -43,7 +43,7 @@ export default function Footer() {
           </Text>
           {
             Menu.map(({ name, href }) => (
-                <Link href={href}>{
+                <Link key={name} href={href}>{
                     <Text variant="small/regular" family="mono" color="tertiary" className="uppercase hover:underline">
                         {name}
                     </Text>
@@ -53,7 +53,7 @@ export default function Footer() {
         </div>
         <div className="flex justify-end gap-Small items-center">
           {Social.map(({ name, url, icon }) => (
-            <Link href={url} key={name} target="_blank" passHref>
+            <Link key={name} href={url} target="_blank" passHref>
               {icon}
             </Link>
           ))}
