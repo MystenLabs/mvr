@@ -15,20 +15,22 @@ export function EmptyState({
     <div className="flex h-[85vh] items-center justify-center">
       <div className="text-center">
         {icon && <h1 className="text-[6rem]">{icon}</h1>}
+
         {title && (
-          <Text variant="md/regular" className="text-center">
+          <Text variant="display/semibold" className="mx-auto max-w-[700px] text-center" color="secondary">
             {title}
           </Text>
         )}
         {description && (
           <Text
-            variant="sm/regular"
-            className="mx-auto max-w-[450px] pt-Small text-center"
+            variant="regular/regular"
+            color="secondary"
+            className="mx-auto max-w-[550px] pt-Small text-center"
           >
             {description}
           </Text>
         )}
-        <div className="py-Small">{children}</div>
+        <div className="py-Large">{children}</div>
       </div>
     </div>
   );

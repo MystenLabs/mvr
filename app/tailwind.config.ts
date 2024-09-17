@@ -6,6 +6,7 @@ export default {
     content: ["./src/**/*.tsx"],
   theme: {
 	colors: {
+		white: 'rgb(var(--white))',
 		background: 'rgb(var(--background))',
 		'background-dark': 'rgb(var(--background-dark))',
 		'background-secondary': 'rgb(var(--background-secondary))',
@@ -29,8 +30,13 @@ export default {
   	extend: {
 		fontSize: {
 			'2xs': '11px',
+			xs: '12px',
 			sm: '14px',
 			md: '16px',
+			lg: '17px',
+			'DSmall': '44px',
+			'HSmall': '20px',
+			
 		},
 		spacing: {
 			XSmall: 'var(--spacing-XSmall)',

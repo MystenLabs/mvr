@@ -11,7 +11,7 @@ export const Content = {
         },
         wallet: {
             icon: '👋🏽',
-            title: 'Welcome to Move Registry!',
+            title: 'Connect your wallet or enter a custom address',
             description: 'To get started, connect your wallet or use a custom address.',
             button: 'Read our FAQ'
         }

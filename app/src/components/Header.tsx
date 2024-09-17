@@ -12,6 +12,7 @@ import { Switch } from "./ui/switch";
 import { useMVRContext } from "./providers/mvr-provider";
 import { Input } from "./ui/input";
 import { Content } from "@/data/content";
+import { Text } from "./ui/Text";
 
 const Links = [
   {
@@ -65,7 +66,10 @@ export default function Header({
           )}
 
           <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall">
-            Custom
+
+            <Text variant="regular/regular" color="secondary">
+              Custom
+            </Text>
             <Switch
               checked={mvrContext.isCustom}
               onCheckedChange={(checked) => updateUseCustomAddress(checked)}
