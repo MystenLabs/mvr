@@ -9,7 +9,6 @@ import {
 
 import { Button } from '../ui/button';
 import { useState } from 'react';
-import SuiLogo from "@/icons/SuiLogo";
 import { AccountSelector, AccountContent } from './AccountSelector';
 import { SuiActiveAccountInfo, ActiveAccountInfo } from './AccountInfo';
 import { useWalletNetwork } from '@/hooks/useWalletNetwork';
