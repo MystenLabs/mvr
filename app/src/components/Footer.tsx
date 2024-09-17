@@ -24,7 +24,7 @@ const Social = [
 
 export default function Footer() {
     return (
-        <footer className="border-t border-content-primary/15 ">
+        <footer className="border-t border-border-classic ">
             <div className="container py-Regular grid lg:grid-cols-2 gap-5 items-center">
                 <div>
                     <p className="font-mono text-sm text-content-tertiary -indent-6 uppercase">

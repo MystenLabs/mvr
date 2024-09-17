@@ -22,6 +22,7 @@ export const Content = {
         description: 'It seems like you have some packages. Create a new package by clicking the button below.',
         button: 'Create a Package metadata NFT'
     },
+    addressPlaceholder: 'Enter your custom address (e.g. 0xdee)',
 
     networkMissmatch: (network: string) => `The wallet\'s network does not match the network of the application (${network}). Please switch your wallet to the correct network to continue.`,
 }

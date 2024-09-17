@@ -23,7 +23,7 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
     }),
   });
 
-  const updateCustomValue = (val: boolean) => {
+  const updateUseCustomAddress = (val: boolean) => {
     updateMVRSetup({ ...mvrSetup, isCustom: val });
   };
 
@@ -46,7 +46,7 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <MVRContext.Provider value={mvrSetup}>
-      <Header updateCustomAddress={updateCustomValue} />
+      <Header updateUseCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
       <BaseContent>{children}</BaseContent>
       <Footer />
     </MVRContext.Provider>

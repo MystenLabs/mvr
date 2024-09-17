@@ -10,6 +10,8 @@ import { ConnectButton } from "@mysten/dapp-kit";
 import SuiLogo from "@/icons/SuiLogo";
 import { Switch } from "./ui/switch";
 import { useMVRContext } from "./providers/mvr-provider";
+import { Input } from "./ui/input";
+import { Content } from "@/data/content";
 
 const Links = [
   {
@@ -23,23 +25,24 @@ const Links = [
 ];
 
 export default function Header({
-    updateCustomAddress,
+  updateUseCustomAddress,
+  updateCustomAddress,
 }: {
-    updateCustomAddress: (val: boolean) => void;
+  updateUseCustomAddress: (val: boolean) => void;
+  updateCustomAddress: (val: string) => void;
 }) {
   const path = usePathname();
 
   const mvrContext = useMVRContext();
 
   return (
-    <header className="border-b border-content-primary/15">
-      <div className="container flex justify-between py-Regular items-center">
-        <div className="flex items-center gap-Small">
+    <header className="border-b border-border-classic">
+      <div className="container grid md:grid-cols-2 lg:grid-cols-12 items-center justify-between py-Regular">
+        <div className="lg:col-span-3 flex items-center gap-Small">
           <SuiLogo />
           mvr
         </div>
-        {/* menu */}
-        <div>
+        <div className="lg:col-span-4 text-center">
           {Links.map(({ name, href }) => (
             <Button
               asChild
@@ -50,14 +53,22 @@ export default function Header({
             </Button>
           ))}
         </div>
-        <div className="flex items-center gap-Small justify-end">
-          {!mvrContext.isCustom && <ConnectButton />}
+        <div className="lg:col-span-5 flex items-center justify-end gap-Small">
+          {mvrContext.isCustom ? (
+            <Input
+              value={mvrContext.customAddress}
+              placeholder={Content.addressPlaceholder}
+              onChange={(e) => updateCustomAddress(e.target.value)}
+            />
+          ) : (
+            <ConnectButton />
+          )}
 
-          <div className="bg-background-secondary flex items-center gap-Small rounded-full border border-content-primary/15 px-Small py-XSmall">
+          <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall">
             Custom
             <Switch
-                checked={mvrContext.isCustom}
-                onCheckedChange={(checked) => updateCustomAddress(checked) }
+              checked={mvrContext.isCustom}
+              onCheckedChange={(checked) => updateUseCustomAddress(checked)}
             />
           </div>
         </div>

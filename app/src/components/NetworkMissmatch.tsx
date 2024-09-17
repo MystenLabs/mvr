@@ -9,7 +9,7 @@ export function NetworkMissmatch({
   expectedNetwork: string;
 }) {
   return (
-    <div className="border-b border-content-primary/15 bg-background">
+    <div className="border-b border-border-classic bg-background">
       <div className="container py-Small text-center">
         {Content.networkMissmatch(expectedNetwork)}
       </div>

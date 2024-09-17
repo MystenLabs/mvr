@@ -11,6 +11,8 @@ export default {
 		'background-secondary': 'rgb(var(--background-secondary))',
 		'background-tertiary': 'rgb(var(--background-tertiary))',
 
+		'border-classic': 'rgba(var(--border-classic))',
+
 		negative: 'rgb(var(--negative))',
 		positive: 'rgb(var(--positive))',
 		'secondary-hover': 'rgba(var(--secondary-hover))',

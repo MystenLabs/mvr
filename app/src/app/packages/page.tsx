@@ -11,7 +11,7 @@ export default function Packages() {
         title={Content.emptyStates.package.title}
         description={Content.emptyStates.package.description}
       >
-        <Button variant="outline">{Content.emptyStates.package.button}</Button>
+        <Button variant="secondary">{Content.emptyStates.package.button}</Button>
       </EmptyState>
     );
   return (
