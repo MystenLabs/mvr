@@ -5,7 +5,7 @@ import { Transaction } from "@mysten/sui/transactions";
 
 const DISPLAY = {
 	name: 'Package Info',
-	description: 'This object contains metadata about a package, and is always indexable (`key` only). It is primarily used by Move Registry.',
+	description: 'This object helps store metadata about a package, and remains indexable accessible from indexers. It is primarily used by Move Registry (mvr).',
 	image_url: '',
 };
 

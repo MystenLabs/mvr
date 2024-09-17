@@ -6,12 +6,12 @@ use std::string::String;
 /// Max length of a package name exceeded.
 const EMaxNameLengthExceeded: u64 = 1;
 
-// Max length of a package name. (6 lines x 17 characters)
-const MAX_NAME_LENGTH: u64 = 102;
+// Max length of a package name. (4 lines x 17 characters)
+const MAX_NAME_LENGTH: u64 = 68;
 const CHARACTERS_PER_LINE: u64 = 17;
 const SVG_X: u64 = 38;
 const SVG_INITIAL_Y: u64 = 70;
-const SVG_LINE_HEIGHT: u64 = 50;
+const SVG_LINE_HEIGHT: u64 = 46;
 const NAME_FONT_SIZE: u64 = 41;
 const PACKAGE_FONT_SIZE: u64 = 18;
 const DEFAULT_TEXT_COLOR: vector<u8> = b"030F1C";
@@ -114,7 +114,7 @@ fun new_text(
     text.append(x.to_string());
     text.append(b"' y='".to_string());
     text.append(y.to_string());
-    text.append(b"' font-family='Courier, monospace' font-weight='bold' font-size='".to_string());
+    text.append(b"' font-family='Roboto Mono, Courier, monospace' letter-spacing='0' font-weight='bold' font-size='".to_string());
     text.append(font_size.to_string());
     text.append(b"' fill='#".to_string());
     text.append(text_fill_color);
