@@ -8,8 +8,12 @@ export default {
 	colors: {
 		background: 'rgb(var(--background))',
 		'background-dark': 'rgb(var(--background-dark))',
+		'background-secondary': 'rgb(var(--background-secondary))',
+		'background-tertiary': 'rgb(var(--background-tertiary))',
 
 		negative: 'rgb(var(--negative))',
+		positive: 'rgb(var(--positive))',
+		'secondary-hover': 'rgba(var(--secondary-hover))',
 
 		primary: 'rgb(var(--primary))',
 		'primary-hover': 'rgb(var(--primary-hover))',

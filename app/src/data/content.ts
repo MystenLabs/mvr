@@ -8,6 +8,12 @@ export const Content = {
             title: 'Publish your package first.',
             description: 'Before you start using this, you need to have a package published. Once you have a package published, come back to manage it.',
             button: 'Learn more',
+        },
+        wallet: {
+            icon: '👋🏽',
+            title: 'Welcome to Move Registry!',
+            description: 'To get started, connect your wallet or use a custom address.',
+            button: 'Read our FAQ'
         }
     },
     package: {

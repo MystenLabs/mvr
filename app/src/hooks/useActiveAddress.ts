@@ -4,9 +4,8 @@ import { useCurrentAccount } from '@mysten/dapp-kit';
 import { useMVRContext } from '@/components/providers/mvr-provider';
 
 export function useActiveAddress() {
-	const { isMultisig, multisigAddress } = useMVRContext();
-
+	const { isCustom, customAddress } = useMVRContext();
 	const account = useCurrentAccount();
 
-	return isMultisig ? multisigAddress : account?.address;
+	return isCustom ? customAddress : account?.address;
 }
