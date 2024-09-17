@@ -14,6 +14,12 @@ export const Content = {
             title: 'Connect your wallet or enter a custom address',
             description: 'To get started, connect your wallet or use a custom address.',
             button: 'Read our FAQ'
+        },
+        suinsNames: {
+            icon: '🚀',
+            title: 'Let\'s get started!',
+            description: 'You need a SuiNS name to register your first app. Create a SuiNS name by clicking the button below.',
+            button: 'Create a SuiNS name'
         }
     },
     package: {
