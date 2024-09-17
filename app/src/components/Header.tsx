@@ -1,3 +1,6 @@
+// Copyright (c) Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+
 'use client'
 
 import Link from "next/link";
@@ -5,6 +8,7 @@ import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import { ConnectButton } from "@mysten/dapp-kit";
 import SuiLogo from "@/icons/SuiLogo";
+import { useWalletNetwork } from "@/hooks/useWalletNetwork";
 
 const Links = [
     {
@@ -19,8 +23,6 @@ const Links = [
 
 export default function Header() {
     const path = usePathname();
-
-    console.log(path);
 
     return (
         <header className="border-b border-content-primary/15">
