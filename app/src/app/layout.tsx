@@ -1,12 +1,15 @@
 import "@/styles/globals.css";
 
-import { GeistSans } from "geist/font/sans";
 import { everett, everettMono, inter } from "@/fonts";
 import { type Metadata } from "next";
 import { cn } from "@/lib/utils";
 import Providers from "@/components/providers/Providers";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { MVRContext, MVRSetup } from "@/components/providers/mvr-provider";
+import { useEffect, useState } from "react";
+import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
+import { BaseLayout } from "@/components/layouts/BaseLayout";
 
 export const metadata: Metadata = {
   title: "Move Registry",
@@ -21,9 +24,9 @@ export default function RootLayout({
     <html lang="en" className={cn(everett.variable, everettMono.variable, inter.variable)}>
       <body>
           <Providers>
-              <Header />
+            <BaseLayout>
               {children}
-              <Footer />
+            </BaseLayout>
           </Providers>
         </body>
     </html>

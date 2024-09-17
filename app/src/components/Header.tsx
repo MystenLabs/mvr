@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import { ConnectButton } from "@mysten/dapp-kit";
+import SuiLogo from "@/icons/SuiLogo";
 
 const Links = [
     {
@@ -24,7 +25,8 @@ export default function Header() {
     return (
         <header className="border-b border-content-primary/15">
             <div className="container flex justify-between py-Regular">
-                <div>
+                <div className="flex gap-Small items-center">
+                    <SuiLogo />
                     mvr
                 </div>
                 {/* menu */}
