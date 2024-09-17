@@ -7,6 +7,7 @@ import { getFullnodeUrl } from "@mysten/sui/client";
 import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
 
 import "@mysten/dapp-kit/dist/index.css";
+import { mvrWalletTheme } from "@/data/wallet-theme";
 
 const networks = {
   devnet: { url: getFullnodeUrl("devnet") },
@@ -23,6 +24,7 @@ export default function Providers({ children }: { children: ReactNode }) {
         <QueryClientProvider client={client}>
           <SuiClientProvider networks={networks} defaultNetwork="mainnet">
             <WalletProvider
+              theme={mvrWalletTheme}
               stashedWallet={{ name: "Move Registry (mvr)" }}
               autoConnect
             >
