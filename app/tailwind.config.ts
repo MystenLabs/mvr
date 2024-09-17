@@ -35,7 +35,7 @@ export default {
 			md: '16px',
 			lg: '17px',
 			'DSmall': '44px',
-			'HSmall': '20px',
+			'HSmall': '22px',
 			
 		},
 		spacing: {

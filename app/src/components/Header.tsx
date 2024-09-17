@@ -39,12 +39,12 @@ export default function Header({
 
   return (
     <header className="border-b border-border-classic">
-      <div className="container grid md:grid-cols-2 lg:grid-cols-12 items-center justify-between py-Regular max-md:px-Regular">
-        <div className="lg:col-span-3 flex items-center gap-Small">
+      <div className="container grid items-center justify-between py-Regular max-md:px-Regular md:grid-cols-2 lg:grid-cols-12">
+        <div className="flex items-center gap-Small lg:col-span-3">
           <SuiLogo />
-          mvr
+          <Text variant="heading/regular">mvr</Text>
         </div>
-        <div className="lg:col-span-4 text-center">
+        <div className="text-center lg:col-span-4">
           {Links.map(({ name, href }) => (
             <Button
               asChild
@@ -55,7 +55,7 @@ export default function Header({
             </Button>
           ))}
         </div>
-        <div className="lg:col-span-5 flex items-center justify-end gap-Small">
+        <div className="flex items-center justify-end gap-Small lg:col-span-5">
           {mvrContext.isCustom ? (
             <Input
               value={mvrContext.customAddress}
@@ -67,7 +67,6 @@ export default function Header({
           )}
 
           <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall">
-
             <Text variant="regular/regular" color="secondary">
               Custom
             </Text>
