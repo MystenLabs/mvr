@@ -39,37 +39,23 @@ export class PackageInfo {
         return this;
     }
 
-    setLabel(label: string) {
+    setDisplay(label: string, gradientFrom: string, gradientTo: string) {
         this.#checkInitialized();
 
-        this.transaction.moveCall({
-            target: `${this.packageId}::package_info::set_label`,
+        const display = this.transaction.moveCall({
+            target: `${this.packageId}::display::new`,
             arguments: [
-                this.transaction.object(this.info!),
+                this.transaction.pure.string(gradientFrom),
+                this.transaction.pure.string(gradientTo),
                 this.transaction.pure.string(label),
             ],
         });
 
-        return this;
-    }
-
-    setStyle({ backgroundColor, titleColor, packageColor }: PackageInfoStyle) {
-        this.#checkInitialized();
-
-        const style = this.transaction.moveCall({
-            target: `${this.packageId}::style::new`,
-            arguments: [
-                this.transaction.pure.string(backgroundColor),
-                this.transaction.pure.string(titleColor),
-                this.transaction.pure.string(packageColor),
-            ],
-        });
-
         this.transaction.moveCall({
-            target: `${this.packageId}::package_info::set_style`,
+            target: `${this.packageId}::package_info::set_display`,
             arguments: [
                 this.transaction.object(this.info!),
-                style,
+                display,
             ],
         });
 

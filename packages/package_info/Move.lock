@@ -2,8 +2,17 @@
 
 [move]
 version = 2
-manifest_digest = "CCE1DA85C8C05D12D5BB2BC005C6940BB6DA2109545CECF6876363A1D017B98F"
-deps_digest = "F8BBB0CCB2491CA29A3DF03D6F92277A4F3574266507ACD77214D37ECA3F3082"
+manifest_digest = "1083345E3C72C6931A0411E25978EA18EB09E1E18C45D2B746DFED091B7411DC"
+deps_digest = "3C4103934B1E040BB6B23F1D610B4EF9F2F1166A50A104EADCF77467C004C600"
+dependencies = [
+  { name = "Codec" },
+  { name = "Sui" },
+]
+
+[[move.package]]
+name = "Codec"
+source = { git = "https://github.com/sui-potatoes/app.git", rev = "codec@testnet-v1", subdir = "packages/codec" }
+
 dependencies = [
   { name = "Sui" },
 ]
@@ -27,8 +36,8 @@ flavor = "sui"
 
 [env]
 
-[env.localnet]
-chain-id = "26d47eb9"
-original-published-id = "0xf4bf19658a69b5425f20ef20de84e9569f3dafdbcfe68a05561555274d6ccb4c"
-latest-published-id = "0xf4bf19658a69b5425f20ef20de84e9569f3dafdbcfe68a05561555274d6ccb4c"
+[env.testnet]
+chain-id = "4c78adac"
+original-published-id = "0x5d6f70aa401c13b9c37eeebabe9baf375533d1c7575fe954c564b224ae94e7a2"
+latest-published-id = "0x5d6f70aa401c13b9c37eeebabe9baf375533d1c7575fe954c564b224ae94e7a2"
 published-version = "1"
