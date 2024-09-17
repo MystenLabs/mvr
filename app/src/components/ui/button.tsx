@@ -16,12 +16,14 @@ const buttonVariants = cva(
           "border border-primary bg-transparent hover:bg-primary hover:text-content-primary",
         link: "text-content-primary underline-offset-4 hover:underline",
         secondary: 'bg-background-tertiary text-white hover:bg-secondary-hover',
+        header: 'bg-background-secondary text-white border border-border-classic',
       },
       size: {
         default: "h-8 px-5 py-2",
         sm: "h-7 px-3 text-xs",
         lg: "h-9 px-8",
         icon: "h-8 w-9",
+        header: "px-Regular py-XSmall"
       },
     },
     defaultVariants: {

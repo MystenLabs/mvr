@@ -13,6 +13,7 @@ import { useMVRContext } from "./providers/mvr-provider";
 import { Input } from "./ui/input";
 import { Content } from "@/data/content";
 import { Text } from "./ui/Text";
+import { SuiConnectPill } from "./wallet/SuiConnectPill";
 
 const Links = [
   {
@@ -62,7 +63,7 @@ export default function Header({
               onChange={(e) => updateCustomAddress(e.target.value)}
             />
           ) : (
-            <ConnectButton />
+            <SuiConnectPill />
           )}
 
           <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall">

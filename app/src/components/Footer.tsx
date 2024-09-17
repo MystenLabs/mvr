@@ -53,7 +53,7 @@ export default function Footer() {
         </div>
         <div className="flex justify-end gap-Small items-center">
           {Social.map(({ name, url, icon }) => (
-            <Link key={name} href={url} target="_blank" passHref>
+            <Link key={name} href={url} target="_blank" passHref className="hover:scale-110 ease-in-out duration-300">
               {icon}
             </Link>
           ))}
