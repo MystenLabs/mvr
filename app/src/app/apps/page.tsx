@@ -1,0 +1,27 @@
+"use client";
+import { EmptyState } from "@/components/EmptyState";
+import { Button } from "@/components/ui/button";
+import { Content } from "../../data/content";
+import Link from "next/link";
+
+export default function App() {
+  if (true)
+    return (
+      <EmptyState
+        icon={Content.emptyStates.suinsNames.icon}
+        title={Content.emptyStates.suinsNames.title}
+        description={Content.emptyStates.suinsNames.description}
+      >
+        <Button size="lg" asChild>
+          <Link href="https://www.suins.io" target="_blank">
+            {Content.emptyStates.suinsNames.button}
+          </Link>
+        </Button>
+      </EmptyState>
+    );
+  return (
+    <main>
+      <h1>This is Move Registry packages..</h1>
+    </main>
+  );
+}
