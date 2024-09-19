@@ -2,8 +2,14 @@
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Content } from "../../data/content";
+import { useGetUpgradeCaps } from "@/hooks/useGetUpgradeCaps";
+import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
 
 export default function Packages() {
+
+  // const { data: upgradeCaps } = useGetUpgradeCaps('testnet');
+  // const { data: packageInfos } = useGetPackageInfoObjects('testnet');
+
   if (true)
     return (
       <EmptyState
