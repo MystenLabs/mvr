@@ -1,0 +1,11 @@
+[package]
+name = "nftmaker"
+edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
+
+[dependencies]
+# underscore triggers multi-lock streaming -- will be generalized
+_ = { resolver = "./mvr", network = "testnet", packages = [ "nft@sample", "nft@sample" ] }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
+
+[addresses]
+nftmaker = "0x0"
