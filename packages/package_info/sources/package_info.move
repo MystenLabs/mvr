@@ -8,8 +8,15 @@ use sui::package::{Self, UpgradeCap};
 use sui::table::{Self, Table};
 use sui::vec_map::{Self, VecMap};
 
+use fun df::remove as UID.remove;
+use fun df::add as UID.add;
+
 /// Tries to create a package during an upgrade.
 const ECannotCreateDuringUpgrade: u64 = 1;
+/// Tries to remove a version that doesn't exist.
+const EVersionNotFound: u64 = 2;
+/// Tries to add a version that already exists.
+const EVersionAlreadyExists: u64 = 3;
 
 /// OTW to claim `Display` for this package.
 public struct PACKAGE_INFO has drop {}
@@ -91,11 +98,17 @@ public fun set_git_versioning(
     version: u64,
     git_info: GitInfo,
 ) {
-    // we do it in an "add or update" fashion for each key.
-    if (info.git_versioning.contains(version)) {
-        info.git_versioning.remove(version);
-    };
+    assert!(!info.git_versioning.contains(version), EVersionAlreadyExists);
     info.git_versioning.add(version, git_info);
+}
+
+/// Allows unsetting a previously set git version.
+/// This should be used to:
+/// 1. Remove any invalid version.
+/// 2. Override versions by unsetting + then calling "set". (updates)
+public fun unset_git_versioning(info: &mut PackageInfo, version: u64): GitInfo {
+    assert!(info.git_versioning.contains(version), EVersionNotFound);
+    info.git_versioning.remove(version)
 }
 
 /// Allows the owner to attach any other logic / DFs to the NFT.
@@ -104,7 +117,7 @@ public fun set_custom_metadata<K: copy + store + drop, V: store>(
     key: K,
     value: V,
 ) {
-    df::add(&mut info.id, key, value);
+    info.id.add(key, value)
 }
 
 /// Allows removing any custom metadata from the NFT.
@@ -112,7 +125,7 @@ public fun remove_custom_metadata<K: copy + store + drop, V: store>(
     info: &mut PackageInfo,
     key: K,
 ): V {
-    df::remove(&mut info.id, key)
+    info.id.remove(key)
 }
 
 /// === Getters ===
