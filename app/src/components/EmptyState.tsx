@@ -12,7 +12,7 @@ export function EmptyState({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex h-[85vh] items-center justify-center">
+    <div className="flex h-[80vh] items-center justify-center">
       <div className="text-center">
         {icon && <h1 className="text-[6rem]">{icon}</h1>}
 

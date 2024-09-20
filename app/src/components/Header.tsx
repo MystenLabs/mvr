@@ -6,7 +6,6 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
-import { ConnectButton } from "@mysten/dapp-kit";
 import SuiLogo from "@/icons/SuiLogo";
 import { Switch } from "./ui/switch";
 import { useMVRContext } from "./providers/mvr-provider";
@@ -38,7 +37,7 @@ export default function Header({
   const mvrContext = useMVRContext();
 
   return (
-    <header className="border-b border-border-classic">
+    <header>
       <div className="container grid items-center justify-between py-Regular max-md:px-Regular md:grid-cols-2 lg:grid-cols-12">
         <div className="flex items-center gap-Small lg:col-span-3">
           <SuiLogo />

@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Content } from "../../data/content";
 import { useGetUpgradeCaps } from "@/hooks/useGetUpgradeCaps";
 import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
+import { usePackagesNetwork } from "@/components/providers/packages-provider";
 
 export default function Packages() {
 
   // const { data: upgradeCaps } = useGetUpgradeCaps('testnet');
   // const { data: packageInfos } = useGetPackageInfoObjects('testnet');
+
+  const selectedNetwork = usePackagesNetwork();
 
   if (true)
     return (
