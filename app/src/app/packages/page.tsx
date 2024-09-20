@@ -13,13 +13,9 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CreatePackageInfo from "@/components/modals/CreatePackageInfo";
 import { Text } from "@/components/ui/Text";
 import { formatAddress } from "@mysten/sui/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
@@ -30,6 +26,17 @@ export default function Packages() {
   const [selectedPackage, setSelectedPackage] = useState<PackageInfo | null>(
     null,
   );
+
+  useEffect(() => {
+    if (
+      !selectedPackage &&
+      packageInfos &&
+      packageInfos[selectedNetwork] &&
+      packageInfos[selectedNetwork].length > 0
+    ) {
+      setSelectedPackage(packageInfos[selectedNetwork][0] ?? null);
+    }
+  }, [packageInfos]);
 
   if (
     (!upgradeCaps || upgradeCaps[selectedNetwork].length === 0) &&
@@ -75,11 +82,13 @@ export default function Packages() {
   }
 
   return (
-    <main className="container min-h-full">
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={25} className="md:min-w-[300px] lg:w-[30%]">
-          <div className="grid grid-cols-1 gap-XSmall p-Regular">
-            {packageInfos[selectedNetwork].map((packageInfo) => (
+    <main className="container flex-grow">
+      <div className="lg:flex lg:flex-grow gap-Regular">
+        <div className="lg:flex lg:flex-col gap-XSmall p-Regular flex-shrink-0 md:h-[75vh] border-r border-border-classic overflow-y-auto">
+          {Array(1)
+            .fill(packageInfos[selectedNetwork])
+            .flat()
+            .map((packageInfo) => (
               <div
                 key={packageInfo.objectId}
                 className={cn(
@@ -90,23 +99,20 @@ export default function Packages() {
                 onClick={() => setSelectedPackage(packageInfo)}
               >
                 <Text variant="xsmall/regular" className="block max-w-[250px]">
-                  {" "}
-                  {packageInfo.display.name}{" "}
+                  {packageInfo.display.name}
                 </Text>
                 <Text variant="xxsmall/regular" className="block opacity-75">
                   {formatAddress(packageInfo.objectId)}
                 </Text>
               </div>
             ))}
-          </div>
-        </ResizablePanel>
-        <ResizableHandle disabled />
-        <ResizablePanel defaultSize={75}>
-          <div className="py-25">
-            Wowoow
-            </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        </div>
+        <div className="p-Large block break-words">
+          {selectedPackage && (
+            <PackageInfoViewer packageInfo={selectedPackage} />
+          )}
+        </div>
+      </div>
     </main>
   );
 }
