@@ -40,11 +40,9 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <MVRContext.Provider value={mvrSetup}>
-      <div className="grid grid-rows-[auto_1fr_auto] min-h-screen">
+      <div className="min-h-screen flex flex-col">
         <Header updateUseCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
-        <div>
          <BaseContent>{children}</BaseContent>
-        </div>
         <Footer />
       </div>
 

@@ -8,6 +8,7 @@ export const Content = {
             title: 'Publish your package first.',
             description: 'Before you start using this, you need to have a package published. Once you have a package published, come back to manage it.',
             button: 'Learn more',
+            url: 'https://docs.sui.io/guides/developer/first-app/publish'
         },
         wallet: {
             icon: '👋🏽',

@@ -6,6 +6,7 @@ import { parseVariant, type SizeAndWeightVariant } from "./utils/sizeAndWeight";
 const textStyles = cva(["break-words"], {
   variants: {
     size: {
+      xxsmall: 'text-2xs',
       xsmall: 'text-xs',
       small: 'text-sm',
       regular: 'text-base',
