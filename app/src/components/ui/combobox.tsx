@@ -55,25 +55,27 @@ export function ComboBox({
       <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandInput placeholder={searchText}/>
-          <CommandList>
+          <CommandList className="overflow-y-auto">
             <CommandEmpty>{emptyState}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.value}
+                  className="cursor-pointer"
                   onSelect={(currentValue) => {
                     if(value !== currentValue) setValue(currentValue)
                     setOpen(false)
                   }}
                 >
+                  {option.label}
+
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "h-4 w-4 bg-positive rounded-full ml-Small text-primary-dark p-0.5",
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
                 </CommandItem>
               ))}
             </CommandGroup>

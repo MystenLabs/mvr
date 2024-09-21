@@ -82,37 +82,46 @@ export default function Packages() {
   }
 
   return (
-    <main className="container flex-grow">
-      <div className="lg:flex lg:flex-grow gap-Regular">
-        <div className="lg:flex lg:flex-col gap-XSmall p-Regular flex-shrink-0 md:h-[75vh] border-r border-border-classic overflow-y-auto">
-          {Array(1)
-            .fill(packageInfos[selectedNetwork])
-            .flat()
-            .map((packageInfo) => (
-              <div
-                key={packageInfo.objectId}
-                className={cn(
-                  "cursor-pointer px-Small py-XSmall text-content-tertiary",
-                  selectedPackage?.objectId === packageInfo.objectId &&
-                    "rounded-md bg-primary",
-                )}
-                onClick={() => setSelectedPackage(packageInfo)}
-              >
-                <Text variant="xsmall/regular" className="block max-w-[250px]">
-                  {packageInfo.display.name}
-                </Text>
-                <Text variant="xxsmall/regular" className="block opacity-75">
-                  {formatAddress(packageInfo.objectId)}
-                </Text>
-              </div>
-            ))}
+    <Dialog>
+        <CreatePackageInfo />
+      <main className="container flex-grow">
+        <div className="gap-Regular lg:flex lg:flex-grow">
+          <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-r border-border-classic p-Regular md:h-[75vh] lg:flex lg:flex-col">
+            <DialogTrigger>
+              <Button variant="link">{Content.package.button}</Button>
+            </DialogTrigger>
+            {Array(1)
+              .fill(packageInfos[selectedNetwork])
+              .flat()
+              .map((packageInfo) => (
+                <div
+                  key={packageInfo.objectId}
+                  className={cn(
+                    "cursor-pointer px-Small py-XSmall text-content-tertiary",
+                    selectedPackage?.objectId === packageInfo.objectId &&
+                      "rounded-md bg-primary",
+                  )}
+                  onClick={() => setSelectedPackage(packageInfo)}
+                >
+                  <Text
+                    variant="xsmall/regular"
+                    className="block max-w-[250px]"
+                  >
+                    {packageInfo.display.name}
+                  </Text>
+                  <Text variant="xxsmall/regular" className="block opacity-75">
+                    {formatAddress(packageInfo.objectId)}
+                  </Text>
+                </div>
+              ))}
+          </div>
+          <div className="block break-words p-Large">
+            {selectedPackage && (
+              <PackageInfoViewer packageInfo={selectedPackage} />
+            )}
+          </div>
         </div>
-        <div className="p-Large block break-words">
-          {selectedPackage && (
-            <PackageInfoViewer packageInfo={selectedPackage} />
-          )}
-        </div>
-      </div>
-    </main>
+      </main>
+    </Dialog>
   );
 }
