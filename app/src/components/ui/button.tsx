@@ -13,9 +13,9 @@ const buttonVariants = cva(
         default:
           "bg-primary text-content-primary hover:bg-primary-hover",
         outline:
-          "border border-primary bg-transparent hover:bg-primary hover:text-content-primary",
+          "border border-border-classic bg-transparent hover:bg-border-classic hover:text-content-primary",
         link: "text-content-primary underline-offset-4 hover:underline",
-        secondary: 'bg-background-tertiary text-white hover:bg-secondary-hover',
+        secondary: 'bg-background-secondary text-white hover:bg-secondary-hover',
         header: 'bg-background-secondary text-white border border-border-classic',
 
         custom: 'bg-transparent text-content-primary',
