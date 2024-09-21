@@ -6,6 +6,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "../ui/dialog";
 import { ComboBox } from "../ui/combobox";
 import { usePackagesNetwork } from "../providers/packages-provider";
@@ -16,6 +17,7 @@ import { usePackageModules } from "@/hooks/usePackageModules";
 import { Text } from "../ui/Text";
 import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 export default function CreatePackageInfo() {
   const selectedNetwork = usePackagesNetwork();
@@ -48,7 +50,7 @@ export default function CreatePackageInfo() {
       <DialogHeader>
         <DialogTitle>Create Package Info</DialogTitle>
         <DialogDescription>
-          <div className="grid grid-cols-1 gap-Regular py-Regular">
+          <div className="grid grid-cols-1 gap-Large py-Regular">
             <div>
               <label>
                 <Text
@@ -62,6 +64,7 @@ export default function CreatePackageInfo() {
               </label>
               <ComboBox
                 searchText="Paste your ID here..."
+                placeholder="Select an upgrade cap..."
                 value={selectedPackage}
                 setValue={setSelectedPackage}
                 options={availableUpgradeCaps}
@@ -70,7 +73,7 @@ export default function CreatePackageInfo() {
 
             <div
               className={cn(
-                "min-h-32 rounded-xl border border-border-classic p-Small",
+                "h-32 overflow-y-auto rounded-xl border border-border-classic p-Small",
                 !packageModules && "flex items-center justify-center",
               )}
             >
@@ -94,10 +97,26 @@ export default function CreatePackageInfo() {
                   ))}
                 </>
               ) : (
-                <Text variant="small/regular" family="inter">
+                <Text variant="small/regular" family="inter" color="tertiary">
                   Modules from your selected upgrade cap will be shown here.
                 </Text>
               )}
+            </div>
+
+            <div className="grid gap-Small md:grid-cols-2">
+              <DialogTrigger asChild>
+                <Button variant="tertiary">
+                  <Text variant="small/regular" family="inter">
+                    Cancel
+                  </Text>
+                </Button>
+              </DialogTrigger>
+
+              <Button variant="default">
+                <Text variant="small/regular" family="inter">
+                  Create New
+                </Text>
+              </Button>
             </div>
           </div>
         </DialogDescription>

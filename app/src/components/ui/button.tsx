@@ -17,6 +17,7 @@ const buttonVariants = cva(
         link: "text-content-primary underline-offset-4 hover:underline",
         secondary: 'bg-background-secondary text-white hover:bg-secondary-hover',
         header: 'bg-background-secondary text-white border border-border-classic',
+        tertiary: 'bg-background-tertiary text-white hover:bg-secondary-hover',
 
         custom: 'bg-transparent text-content-primary',
       },
