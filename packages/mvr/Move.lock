@@ -2,7 +2,7 @@
 
 [move]
 version = 2
-manifest_digest = "712331B96C2E217C3C2EC2C1E18698FED66F4F500DF783618AE4DA2621EFA061"
+manifest_digest = "CED39E66101804B3F2912EAFDDBD80B9A9E04796886E8231A7117BEE63EE69A8"
 deps_digest = "060AD7E57DFB13104F21BE5F5C3759D03F0553FC3229247D9A7A6B45F50D03A3"
 dependencies = [
   { name = "Sui" },
@@ -11,12 +11,20 @@ dependencies = [
 ]
 
 [[move.package]]
+name = "Codec"
+source = { git = "https://github.com/sui-potatoes/app.git", rev = "codec@testnet-v1", subdir = "packages/codec" }
+
+dependencies = [
+  { name = "Sui" },
+]
+
+[[move.package]]
 name = "MoveStdlib"
-source = { git = "https://github.com/MystenLabs/sui.git", rev = "framework/mainnet", subdir = "crates/sui-framework/packages/move-stdlib" }
+source = { git = "https://github.com/MystenLabs/sui.git", rev = "framework/testnet", subdir = "crates/sui-framework/packages/move-stdlib" }
 
 [[move.package]]
 name = "Sui"
-source = { git = "https://github.com/MystenLabs/sui.git", rev = "framework/mainnet", subdir = "crates/sui-framework/packages/sui-framework" }
+source = { git = "https://github.com/MystenLabs/sui.git", rev = "framework/testnet", subdir = "crates/sui-framework/packages/sui-framework" }
 
 dependencies = [
   { name = "MoveStdlib" },
@@ -27,12 +35,13 @@ name = "package_info"
 source = { local = "../package_info" }
 
 dependencies = [
+  { name = "Codec" },
   { name = "Sui" },
 ]
 
 [[move.package]]
 name = "suins"
-source = { git = "https://github.com/mystenlabs/suins-contracts/", rev = "releases/mainnet/core/v3", subdir = "packages/suins" }
+source = { git = "https://github.com/mystenlabs/suins-contracts/", rev = "releases/testnet/core/v2", subdir = "packages/suins" }
 
 dependencies = [
   { name = "Sui" },
@@ -44,12 +53,6 @@ edition = "2024.alpha"
 flavor = "sui"
 
 [env]
-
-[env.testnet]
-chain-id = "4c78adac"
-original-published-id = "0xa6041ac57f9151d49d00dcdc4f79f8c5ba1e399e1005dcb0fdd1c8632020d5a6"
-latest-published-id = "0xa6041ac57f9151d49d00dcdc4f79f8c5ba1e399e1005dcb0fdd1c8632020d5a6"
-published-version = "1"
 
 [env.mainnet]
 chain-id = "35834a8a"
