@@ -26,10 +26,7 @@ export function PackageInfoViewer({
             width="100%"
             height="auto"
             className="max-md:max-w-[300px]"
-            gradientFrom={packageInfo.display.gradientFrom}
-            gradientTo={packageInfo.display.gradientTo}
-            text={packageInfo.display.name}
-            textColor={packageInfo.display.textColor}
+            {...packageInfo.display}
           />
 
           {!disableEdits && (

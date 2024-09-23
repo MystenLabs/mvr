@@ -16,16 +16,37 @@ const PackageInfoPackageIds = {
 const packageInfoType = (network: Network) =>
   `${PackageInfoPackageIds[network]}::package_info::PackageInfo`;
 
+export const DefaultPackageDisplay = {
+  gradientFrom: "E0E1EC",
+  gradientTo: "BDBFEC",
+  name: "",
+  textColor: "030F1C",
+};
+
+export const DefaultColors = [
+  {
+    name: 'Blue',
+    gradientFrom: 'E0E1EC',
+    gradientTo: 'BDBFEC',
+    textColor: '030F1C',
+  },
+  {
+    name: 'Pink',
+    gradientFrom: 'FCE4EC',
+  }
+]
+export type PackageDisplayType = {
+  gradientFrom: string;
+  gradientTo: string;
+  name: string;
+  textColor: string;
+}
+
 export type PackageInfo = {
   objectId: string;
   packageAddress: string;
   upgradeCapId: string;
-  display: {
-    gradientFrom: string;
-    gradientTo: string;
-    name: string;
-    textColor: string;
-  };
+  display: PackageDisplayType;
   gitVersionsTableId: string;
   metadata: any;
 };
@@ -55,7 +76,6 @@ const parsePackageInfoContent = (cap?: SuiObjectResponse): PackageInfo => {
   if (cap.data.content.dataType !== "moveObject")
     throw new Error("Invalid upgrade cap object");
 
-  console.log(cap);
   const fields = cap.data.content.fields as Record<string, any>;
 
   return {
@@ -114,7 +134,6 @@ export function useGetPackageInfoObjects(network?: Network | "all") {
     select(data) {
       const res: Record<string, PackageInfo[]> = {};
 
-      console.log(data);
       for (const key of Object.keys(data)) {
         if (!data[key as Network]) continue;
         res[key] =

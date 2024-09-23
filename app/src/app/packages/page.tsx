@@ -10,7 +10,7 @@ import {
 import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import Link from "next/link";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import CreatePackageInfo from "@/components/modals/CreatePackageInfo";
+import CreatePackageInfo from "@/components/modals/create-package-info/CreatePackageInfo";
 import { Text } from "@/components/ui/Text";
 import { formatAddress } from "@mysten/sui/utils";
 import { useEffect, useState } from "react";
@@ -20,6 +20,7 @@ import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
 
+  const [showCreationDialog, setShowCreationDialog] = useState(false);
   const { data: upgradeCaps } = useGetUpgradeCaps(selectedNetwork);
   const { data: packageInfos } = useGetPackageInfoObjects(selectedNetwork);
 
@@ -71,19 +72,19 @@ export default function Packages() {
         title={Content.package.title}
         description={Content.package.description}
       >
-        <Dialog>
+        <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
           <DialogTrigger>
             <Button variant="default">{Content.package.button}</Button>
           </DialogTrigger>
-          <CreatePackageInfo />
+          <CreatePackageInfo closeDialog={() => setShowCreationDialog(false)}/>
         </Dialog>
       </EmptyState>
     );
   }
 
   return (
-    <Dialog>
-      <CreatePackageInfo />
+    <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
+      <CreatePackageInfo closeDialog={() => setShowCreationDialog(false)}/>
       <main className="container flex-grow">
         <div className="gap-Regular lg:flex lg:flex-grow">
           <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-r border-border-classic p-Regular md:h-[75vh] lg:flex lg:flex-col">
