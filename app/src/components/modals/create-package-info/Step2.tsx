@@ -20,6 +20,7 @@ export function PackageInfoStep2({
         packageAddr={packageAddress}
         className="mx-auto"
         width={200}
+        height={"auto"}
       />
 
       <div className="grid flex-grow grid-cols-1 gap-Regular max-md:text-left">
