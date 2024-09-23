@@ -7,12 +7,14 @@ export function ModalFooter({
   loading = false,
   leftBtnHandler,
   rightBtnHandler,
+  rightBtnType = "submit"
 }: {
   loading?: boolean;
   leftBtnText?: string;
   rightBtnText?: string;
   leftBtnHandler?: (...args: any[]) => void;
   rightBtnHandler?: (...args: any[]) => void;
+  rightBtnType?: "submit" | "button";
 }) {
   return (
     <div className="grid gap-Small pt-Regular md:grid-cols-2">

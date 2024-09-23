@@ -97,6 +97,7 @@ export default function CreatePackageInfo({
               leftBtnText={step === 1 ? "Cancel" : "Previous"}
               rightBtnText={step === 1 ? "Next" : "Create"}
               loading={isPending}
+              rightBtnType={step === 1 ? "button" : "submit"}
               leftBtnHandler={() => {
                 if (step === 1) {
                   closeDialog();
