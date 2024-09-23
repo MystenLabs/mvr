@@ -50,7 +50,7 @@ export default function CreateVersion({
       });
     } else {
       form.clearErrors("version");
-      form.trigger("version");
+      if(!!form.getValues().version) form.trigger("version");
     }
   }
 

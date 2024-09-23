@@ -32,8 +32,8 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
   const network = usePackagesNetwork();
 
   return (
-    <div className="p-Small">
-      <div className="border-b border-border-classic">
+    <div className="p-XSmall md:p-Small">
+      <div className="border-b border-border-classic flex items-center overflow-x-auto">
         {Tabs.map((tab) => (
           <TabTitle
             key={tab.key}
@@ -48,7 +48,7 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
           >
             <Text
               variant="small/regular"
-              className="flex flex-wrap items-center gap-XSmall"
+              className="flex flex-shrink-0 items-center gap-XSmall"
             >
               {tab.title}
               {tab.url && <OpenInNewWindowIcon />}

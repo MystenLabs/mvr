@@ -26,6 +26,7 @@
     --background-secondary: 247, 247, 248, 0.04;
     --background-tertiary: 247, 247, 248, 0.24;
 
+    --spacing-XXSmall: 0.25rem;
     --spacing-XSmall: 0.5rem;
     --spacing-Small: 0.75rem;
     --spacing-Regular: 1rem;

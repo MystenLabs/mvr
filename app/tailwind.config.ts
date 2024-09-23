@@ -39,6 +39,7 @@ export default {
 			
 		},
 		spacing: {
+			XXSmall: 'var(--spacing-XXSmall)',
 			XSmall: 'var(--spacing-XSmall)',
 			Small: 'var(--spacing-Small)',
 			Regular: 'var(--spacing-Regular)',

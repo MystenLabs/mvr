@@ -70,21 +70,24 @@ export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
         closeDialog={() => setShowCreationDialog(false)}
         addUpdate={addUpdate}
       />
-      <DialogTrigger asChild>
-        <Button variant="default">Create version</Button>
-      </DialogTrigger>
-      {orderedVersions?.map((x) => <Version key={x.version} version={x} />)}
-      {updates.map((x) => (
-        <Version key={x.version} version={x} />
-      ))}
+      <div className="mb-Regular grid grid-cols-1 gap-Regular px-Small">
+        {orderedVersions?.map((x) => <Version key={x.version} version={x} />)}
+        {updates.map((x) => (
+          <Version key={x.version} version={x} />
+        ))}
+      </div>
 
-      {updates.length > 0 && (
-        <div className="grid grid-cols-1 justify-start pt-Regular">
+      <div className="flex flex-wrap gap-Small px-Small">
+        <DialogTrigger asChild>
+          <Button variant="outline">Add version</Button>
+        </DialogTrigger>
+
+        {updates.length > 0 && (
           <Button isLoading={isPending} onClick={saveChanges}>
             Save Changes
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </Dialog>
   );
 }
