@@ -4,6 +4,7 @@ import { fetchAllDynamicFields, fetchAllPages } from "@/utils/query";
 import { useQuery } from "@tanstack/react-query";
 
 export type GitVersion = {
+    action?: 'add' | 'update' | 'delete';
     version: number;
     repository: string;
     path: string;

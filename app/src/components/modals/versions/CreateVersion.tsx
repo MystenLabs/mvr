@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ModalFooter } from "../ModalFooter";
+import { GitVersion } from "@/hooks/useVersionsTable";
 
 const formSchema = z.object({
   version: z.coerce.number().positive(),
@@ -32,8 +33,12 @@ const formSchema = z.object({
 });
 
 export default function CreateVersion({
+  type = "add",
   closeDialog,
+  addUpdate,
 }: {
+  type?: "add" | "update" | "delete";
+  addUpdate: (update: GitVersion) => void;
   closeDialog: () => void;
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,10 +47,14 @@ export default function CreateVersion({
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-    alert(values);
+    addUpdate({
+      action: type,
+      ...values,
+      path: values.path ?? "",
+    });
+
+    form.reset();
+    closeDialog();
   }
 
   return (

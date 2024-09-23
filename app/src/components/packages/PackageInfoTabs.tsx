@@ -14,17 +14,14 @@ const Tabs = [
   {
     key: "source-code",
     title: "Source Code",
-    content: "Source Code",
   },
   {
     key: "metadata",
     title: "Metadata",
-    content: "Metadata",
   },
   {
     key: "view-on-explorer",
-    title: "View on Explorer",
-    content: "View on Explorer",
+    title: "Explorer",
     url: (objectId: string, network: Network) =>
       `https://suiexplorer.com/object/${objectId}?network=${network}`,
   },
@@ -33,12 +30,6 @@ const Tabs = [
 export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
   const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
   const network = usePackagesNetwork();
-
-  const { data: versions } = useVersionsTable(packageInfo.gitVersionsTableId);
-
-  const orderedVersions = useMemo(() => {
-    return versions?.sort((a, b) => b.version - a.version);
-  }, [versions]);
 
   return (
     <div className="p-Small">
@@ -66,7 +57,7 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
         ))}
       </div>
       <div className="py-Regular">
-        {activeTab === "source-code" && <PackageVersions versions={orderedVersions ?? []} /> }
+        <PackageVersions packageInfo={packageInfo} />
       </div>
     </div>
   );
