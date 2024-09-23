@@ -6,9 +6,9 @@ import { Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
 
 // TODO: Replace with `MVR` resolution when GQL goes live.
-const PackageInfoPackageIds = {
+export const PackageInfoPackageIds = {
   mainnet: "",
-  testnet: "0x3335c4965a6f26aedeb39a652e6ebe555bb83ae531a5309745a14cf725b0a100",
+  testnet: "0x32250323bab33181556e758219ccef308736939349640592b2e7c2252701f035",
   devnet: "",
   localnet: "",
 };

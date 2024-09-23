@@ -108,7 +108,7 @@ export default function CreatePackageInfo({
 
               <Button
                 variant="default"
-                disabled={!selectedPackage || !display.name}
+                disabled={(step === 1 && !selectedPackage) || (step === 2 && !display.name)}
                 className="max-md:order-1"
                 isLoading={isPending}
                 onClick={async () => {

@@ -89,7 +89,7 @@ export default function Packages() {
         <div className="gap-Regular lg:flex lg:flex-grow">
           <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-r border-border-classic p-Regular md:h-[75vh] lg:flex lg:flex-col">
             <DialogTrigger>
-              <Button variant="custom">{Content.package.button}</Button>
+              <Button variant="link">{Content.package.button}</Button>
             </DialogTrigger>
             {packageInfos[selectedNetwork].map((packageInfo) => (
               <div

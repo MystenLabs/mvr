@@ -27,7 +27,8 @@ const processSvg = () => {
 
 	dataUrl = dataUrl.replace('REPLACE_ME_WITH_TEXTS', '{display.uri_encoded_name}')
 					.replace('REPLACE_ME_GRADIENT_TO', '{display.gradient_to}')
-					.replace('REPLACE_ME_GRADIENT_FROM', '{display.gradient_from}');
+					.replace('REPLACE_ME_GRADIENT_FROM', '{display.gradient_from}')
+					.replace('REPLACE_ME_TEXT_COLOR', '{display.text_color}');
 	
 	return dataUrl;
 }

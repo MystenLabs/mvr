@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { type ReactNode } from "react";
 import { Button } from "./button";
+import { cn } from "@/lib/utils";
 
 const styles = cva(
   ["rounded-none py-Large capitalize duration-300 ease-in-out hover:opacity-100"], {
@@ -30,7 +31,7 @@ export function TabTitle({
   ...styleProps
 }: TabTitleProps & React.HTMLAttributes<HTMLButtonElement>) {
   return (
-    <Button className={styles(styleProps)} {...styleProps} variant="custom">
+    <Button className={cn(styles(styleProps), className)} {...styleProps} variant="custom">
         {children}
     </Button>
   );
