@@ -4,6 +4,7 @@ import { Content } from "@/data/content";
 import { TabTitle } from "../ui/TabTitle";
 import { Text } from "../ui/Text";
 import { useState } from "react";
+import { useVersionsTable } from "@/hooks/useVersionsTable";
 
 const Tabs = [
   {
@@ -20,6 +21,10 @@ const Tabs = [
 
 export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
   const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
+
+  const { data: versions } = useVersionsTable(packageInfo.gitVersionsTableId);
+
+  console.log(versions);
 
   return (
     <div className="p-Small">

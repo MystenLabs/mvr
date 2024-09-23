@@ -4,7 +4,6 @@ import { useActiveAddress } from "./useActiveAddress";
 import { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
 import { Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
-import { get } from "http";
 
 // TODO: Replace with `MVR` resolution when GQL goes live.
 const PackageInfoPackageIds = {
@@ -101,7 +100,11 @@ export function useGetPackageInfoObjects(network?: Network | "all") {
       } else {
         return {
           [network as Network]:
-            (await getPackageInfoObjects(clients[network as Network], address!, network as Network)) ?? [],
+            (await getPackageInfoObjects(
+              clients[network as Network],
+              address!,
+              network as Network,
+            )) ?? [],
         };
       }
     },

@@ -3,26 +3,26 @@ import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import { useQuery } from "@tanstack/react-query";
 
 export function usePackageModules(packageId: string) {
-    const selectedNetwork = usePackagesNetwork();
-    const clients = useSuiClientsContext();
+  const selectedNetwork = usePackagesNetwork();
+  const clients = useSuiClientsContext();
 
-    const client = clients[selectedNetwork];
+  const client = clients[selectedNetwork];
 
-    return useQuery({
-        queryKey: ['packageModule', packageId],
+  return useQuery({
+    queryKey: ["packageModule", packageId],
 
-        queryFn: async () => {
+    queryFn: async () => {
+      const modules = await client.getNormalizedMoveModulesByPackage({
+        package: packageId,
+      });
 
-            const modules = await client.getNormalizedMoveModulesByPackage({
-                package: packageId
-            });
+      return modules;
+    },
+    
 
-            return modules;
-        },
-
-        select(data) {
-            return Object.keys(data);
-        },
-        enabled: !!packageId
-    })
+    select(data) {
+      return Object.keys(data);
+    },
+    enabled: !!packageId,
+  });
 }
