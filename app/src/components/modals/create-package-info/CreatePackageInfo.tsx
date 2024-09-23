@@ -12,10 +12,15 @@ import { usePackagesNetwork } from "../../providers/packages-provider";
 import { useGetUpgradeCaps } from "@/hooks/useGetUpgradeCaps";
 import { formatAddress } from "@mysten/sui/utils";
 import { Text } from "../../ui/Text";
-import { DefaultPackageDisplay, PackageDisplayType, useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
+import {
+  DefaultPackageDisplay,
+  PackageDisplayType,
+  useGetPackageInfoObjects,
+} from "@/hooks/useGetPackageInfoObjects";
 import { Button } from "../../ui/button";
 import { PackageInfoStep1 } from "./Step1";
 import { PackageInfoStep2 } from "./Step2";
+import { useCreatePackageInfoMutation } from "@/mutations/packageInfoMutations";
 
 export default function CreatePackageInfo({
   closeDialog,
@@ -26,12 +31,22 @@ export default function CreatePackageInfo({
 
   const [step, setStep] = useState(1);
 
-  const [display, setDisplay] = useState<PackageDisplayType>(DefaultPackageDisplay);
+  const [display, setDisplay] = useState<PackageDisplayType>(
+    DefaultPackageDisplay,
+  );
 
-  const { data: upgradeCaps } = useGetUpgradeCaps(selectedNetwork);
-  const { data: packageInfos } = useGetPackageInfoObjects(selectedNetwork);
+  const { data: upgradeCaps, refetch: refetchUpgradeCaps } = useGetUpgradeCaps(selectedNetwork);
+  const { data: packageInfos, refetch: refetchPackageInfos } = useGetPackageInfoObjects(selectedNetwork);
+
+  const { mutateAsync: execute, isPending } = useCreatePackageInfoMutation(selectedNetwork);
 
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+
+  const postCreation = async () => {
+    closeDialog();
+    await refetchPackageInfos();
+    await refetchUpgradeCaps();
+  }
 
   const availableUpgradeCaps = useMemo(() => {
     if (!upgradeCaps || !packageInfos) return [];
@@ -49,7 +64,6 @@ export default function CreatePackageInfo({
       }));
   }, [upgradeCaps, packageInfos]);
 
-
   return (
     <DialogContent>
       <DialogHeader>
@@ -63,48 +77,59 @@ export default function CreatePackageInfo({
                 availableUpgradeCaps={availableUpgradeCaps}
               />
             )}
-
-            {
-              step === 2 && (
-                <PackageInfoStep2
-                  packageAddress={selectedPackage ?? ''}
-                  display={display}
-                  setDisplay={setDisplay}
-                />
-              )
-            }
+            {step === 2 && (
+              <PackageInfoStep2
+                packageAddress={selectedPackage ?? ""}
+                display={display}
+                setDisplay={setDisplay}
+              />
+            )}
 
             <Text variant="small/regular" family="inter" color="tertiary">
-                Selected Upgrade Cap: {formatAddress(selectedPackage ?? '')}
+              Selected Upgrade Cap: {formatAddress(selectedPackage ?? "")}
             </Text>
 
-
             <div className="grid gap-Small md:grid-cols-2">
-              <Button variant="tertiary" onClick={() => {
-                if (step === 1) {
-                  closeDialog();
-                  return;
-                }
-                setStep(1);
-              }}
-              className="max-md:order-2"
+              <Button
+                variant="tertiary"
+                onClick={() => {
+                  if (step === 1) {
+                    closeDialog();
+                    return;
+                  }
+                  setStep(1);
+                }}
+                className="max-md:order-2"
               >
                 <Text variant="small/regular" family="inter">
-                  {
-                    step === 1 ? "Cancel" : "Previous"
-                  }
+                  {step === 1 ? "Cancel" : "Previous"}
                 </Text>
               </Button>
 
               <Button
                 variant="default"
-                disabled={!selectedPackage}
+                disabled={!selectedPackage || !display.name}
                 className="max-md:order-1"
-                onClick={() => {
+                isLoading={isPending}
+                onClick={async () => {
                   if (step === 1) {
                     setStep(2);
                     return;
                   }
+
+                  const upgradeCap = upgradeCaps?.[selectedNetwork].find(
+                    (x) => x.package === selectedPackage,
+                  );
+
+                  if (!upgradeCap) return;
+
+                  const res = await execute({
+                    upgradeCapId: upgradeCap?.objectId,
+                    display,
+                    network: selectedNetwork,
+                  });
+
+                  if (res) await postCreation();
                   // handle creation.
                 }}
               >

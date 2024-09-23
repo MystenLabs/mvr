@@ -7,6 +7,7 @@ import Header from "../Header";
 import Footer from "../Footer";
 import { LocalStorageKeys } from "@/data/localStorage";
 import { BaseContent } from "./BaseContent";
+import { Toaster } from 'sonner'
 
 export function BaseLayout({ children }: { children: React.ReactNode }) {
   const [mvrSetup, setMVRSetup] = useState<MVRSetup>({
@@ -41,6 +42,7 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
   return (
     <MVRContext.Provider value={mvrSetup}>
       <div className="min-h-screen flex flex-col">
+        <Toaster />
         <Header updateUseCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
         <BaseContent>{children}</BaseContent>
         <Footer />

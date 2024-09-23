@@ -59,8 +59,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <Comp
           className={cn(buttonVariants({ variant, size, className }))}
           ref={ref}
-          disabled={isLoading || props.disabled}
           {...props}
+          disabled={isLoading ? true : props.disabled}
         />
       )
     }
@@ -69,8 +69,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        disabled={isLoading || props.disabled}
         {...props}
+        disabled={isLoading ? true : props.disabled}
       >
         {isLoading && <ReloadIcon className="mr-2 h-3 w-3 animate-spin" />}
         {props.children}
