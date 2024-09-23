@@ -26,6 +26,7 @@ export function PackageInfoViewer({
             width="100%"
             height="auto"
             className="max-md:max-w-[300px]"
+            packageAddr={packageInfo.packageAddress}
             {...packageInfo.display}
           />
 

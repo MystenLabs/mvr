@@ -8,7 +8,7 @@ import { fetchAllOwnedObjects } from "@/utils/query";
 // TODO: Replace with `MVR` resolution when GQL goes live.
 export const PackageInfoPackageIds = {
   mainnet: "",
-  testnet: "0x32250323bab33181556e758219ccef308736939349640592b2e7c2252701f035",
+  testnet: "0x4433047b14865ef466c55c35ec0f8a55726628e729d21345f2c4673582ec15a8",
   devnet: "",
   localnet: "",
 };

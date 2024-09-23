@@ -32,7 +32,7 @@ export const Content = {
     package: {
         icon: '📦',
         title: 'Let\'s get started!',
-        description: 'It seems like you have some packages. Create a new package by clicking the button below.',
+        description: 'It seems like you have some packages. Create a new package metadata object by clicking the button below.',
         button: 'Create a Package metadata NFT'
     },
     

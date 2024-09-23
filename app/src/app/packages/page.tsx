@@ -16,9 +16,11 @@ import { formatAddress } from "@mysten/sui/utils";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
+import { useActiveAddress } from "@/hooks/useActiveAddress";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
+  const activeAddress = useActiveAddress();
 
   const [showCreationDialog, setShowCreationDialog] = useState(false);
   const { data: upgradeCaps } = useGetUpgradeCaps(selectedNetwork);
@@ -27,6 +29,11 @@ export default function Packages() {
   const [selectedPackage, setSelectedPackage] = useState<PackageInfo | null>(
     null,
   );
+
+  // reset selected package when address changes
+  useEffect(() => {
+    setSelectedPackage(null);
+  }, [activeAddress])
 
   useEffect(() => {
     if (
@@ -112,7 +119,7 @@ export default function Packages() {
           </div>
           <div className="block break-words p-Large">
             {selectedPackage && (
-              <PackageInfoViewer packageInfo={selectedPackage} />
+              <PackageInfoViewer packageInfo={selectedPackage}  />
             )}
           </div>
         </div>

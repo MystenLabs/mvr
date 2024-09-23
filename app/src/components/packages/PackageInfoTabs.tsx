@@ -35,8 +35,6 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
 
   const { data: versions } = useVersionsTable(packageInfo.gitVersionsTableId);
 
-  console.log(versions);
-
   return (
     <div className="p-Small">
       <div className="border-b border-border-classic">
@@ -65,7 +63,7 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
 
       <div className="py-Regular">
         {activeTab === "source-code" && (
-          <div>{JSON.stringify(packageInfo)}</div>
+          <div>{JSON.stringify(versions)}</div>
         )}
       </div>
     </div>
