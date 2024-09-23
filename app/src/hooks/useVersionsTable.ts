@@ -1,9 +1,7 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import { fetchAllDynamicFields, fetchAllPages } from "@/utils/query";
-import { DynamicFieldInfo } from "@mysten/sui/client";
 import { useQuery } from "@tanstack/react-query";
-
 
 export type GitVersion = {
     version: number;

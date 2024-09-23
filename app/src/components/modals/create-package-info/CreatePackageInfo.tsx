@@ -21,6 +21,7 @@ import { Button } from "../../ui/button";
 import { PackageInfoStep1 } from "./Step1";
 import { PackageInfoStep2 } from "./Step2";
 import { useCreatePackageInfoMutation } from "@/mutations/packageInfoMutations";
+import { ModalFooter } from "../ModalFooter";
 
 export default function CreatePackageInfo({
   closeDialog,
@@ -35,10 +36,13 @@ export default function CreatePackageInfo({
     DefaultPackageDisplay,
   );
 
-  const { data: upgradeCaps, refetch: refetchUpgradeCaps } = useGetUpgradeCaps(selectedNetwork);
-  const { data: packageInfos, refetch: refetchPackageInfos } = useGetPackageInfoObjects(selectedNetwork);
+  const { data: upgradeCaps, refetch: refetchUpgradeCaps } =
+    useGetUpgradeCaps(selectedNetwork);
+  const { data: packageInfos, refetch: refetchPackageInfos } =
+    useGetPackageInfoObjects(selectedNetwork);
 
-  const { mutateAsync: execute, isPending } = useCreatePackageInfoMutation(selectedNetwork);
+  const { mutateAsync: execute, isPending } =
+    useCreatePackageInfoMutation(selectedNetwork);
 
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
 
@@ -46,7 +50,7 @@ export default function CreatePackageInfo({
     closeDialog();
     await refetchPackageInfos();
     await refetchUpgradeCaps();
-  }
+  };
 
   const availableUpgradeCaps = useMemo(() => {
     if (!upgradeCaps || !packageInfos) return [];
@@ -89,55 +93,38 @@ export default function CreatePackageInfo({
               Selected Upgrade Cap: {formatAddress(selectedPackage ?? "")}
             </Text>
 
-            <div className="grid gap-Small md:grid-cols-2">
-              <Button
-                variant="tertiary"
-                onClick={() => {
-                  if (step === 1) {
-                    closeDialog();
-                    return;
-                  }
-                  setStep(1);
-                }}
-                className="max-md:order-2"
-              >
-                <Text variant="small/regular" family="inter">
-                  {step === 1 ? "Cancel" : "Previous"}
-                </Text>
-              </Button>
+            <ModalFooter
+              leftBtnText={step === 1 ? "Cancel" : "Previous"}
+              rightBtnText={step === 1 ? "Next" : "Create"}
+              loading={isPending}
+              leftBtnHandler={() => {
+                if (step === 1) {
+                  closeDialog();
+                  return;
+                }
+                setStep(1);
+              }}
+              rightBtnHandler={async () => {
+                if (step === 1) {
+                  setStep(2);
+                  return;
+                }
 
-              <Button
-                variant="default"
-                disabled={(step === 1 && !selectedPackage) || (step === 2 && !display.name)}
-                className="max-md:order-1"
-                isLoading={isPending}
-                onClick={async () => {
-                  if (step === 1) {
-                    setStep(2);
-                    return;
-                  }
+                const upgradeCap = upgradeCaps?.[selectedNetwork].find(
+                  (x) => x.package === selectedPackage,
+                );
 
-                  const upgradeCap = upgradeCaps?.[selectedNetwork].find(
-                    (x) => x.package === selectedPackage,
-                  );
+                if (!upgradeCap) return;
 
-                  if (!upgradeCap) return;
+                const res = await execute({
+                  upgradeCapId: upgradeCap?.objectId,
+                  display,
+                  network: selectedNetwork,
+                });
 
-                  const res = await execute({
-                    upgradeCapId: upgradeCap?.objectId,
-                    display,
-                    network: selectedNetwork,
-                  });
-
-                  if (res) await postCreation();
-                  // handle creation.
-                }}
-              >
-                <Text variant="small/regular" family="inter">
-                  {step === 1 ? "Next" : "Create"}
-                </Text>
-              </Button>
-            </div>
+                if (res) await postCreation();
+              }}
+            />
           </div>
         </DialogDescription>
       </DialogHeader>

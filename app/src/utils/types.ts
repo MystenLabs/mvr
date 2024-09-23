@@ -7,3 +7,8 @@ export const Networks = {
     devnet: 'devnet',
     // localnet: 'localnet',
 }
+
+export const AvailableNetworks = {
+    mainnet: 'mainnet',
+    testnet: 'testnet',
+}

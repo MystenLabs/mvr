@@ -25,7 +25,7 @@ export function PackageInfoViewer({
           <PackageInfoDisplay
             width="100%"
             height="auto"
-            className="max-md:max-w-[300px]"
+            className="max-lg:max-w-[300px]"
             packageAddr={packageInfo.packageAddress}
             {...packageInfo.display}
           />

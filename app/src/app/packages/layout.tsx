@@ -2,11 +2,10 @@
 
 import { useMVRContext } from "@/components/providers/mvr-provider";
 import { PackagesNetworkContext } from "@/components/providers/packages-provider";
-import { Button } from "@/components/ui/button";
 import { TabTitle } from "@/components/ui/TabTitle";
 import { Text } from "@/components/ui/Text";
 import { useWalletNetwork } from "@/hooks/useWalletNetwork";
-import { Network, Networks } from "@/utils/types";
+import { AvailableNetworks, Network } from "@/utils/types";
 import { useEffect, useState } from "react";
 
 export default function PackagesLayout({
@@ -29,20 +28,11 @@ export default function PackagesLayout({
     <PackagesNetworkContext.Provider value={network}>
       <div className="border-b border-border-classic">
         <div className="container flex">
-          {Object.values(Networks).map((net) => (
+          {Object.values(AvailableNetworks).map((net) => (
 
             <TabTitle key={net} active={net === network} onClick={() => setNetwork(net as Network)}>
               <Text variant="small/regular">{net}</Text>
             </TabTitle>
-            // <Button
-            //   className={`rounded-none py-Large capitalize opacity-60 duration-300 ease-in-out hover:opacity-100 ${net === network && "border-b-2 opacity-100"}`}
-            //   key={net}
-            //   size="sm"
-            //   variant="custom"
-            //   onClick={() => setNetwork(net as Network)}
-            // >
-            //   <Text variant="small/regular">{net}</Text>
-            // </Button>
           ))}
         </div>
       </div>

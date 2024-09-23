@@ -13,8 +13,8 @@ export type Clients = {
 };
 
 export const DefaultClients: Clients = {
-    mainnet: new SuiClient({ url: getFullnodeUrl('mainnet') }),
-    testnet: new SuiClient({ url: getFullnodeUrl('testnet') }),
+    mainnet: new SuiClient({ url: 'https://suins-rpc.mainnet.sui.io:443' }),
+    testnet: new SuiClient({ url: 'https://suins-rpc.testnet.sui.io:443' }),
     devnet: new SuiClient({ url: getFullnodeUrl('devnet') }),
     localnet: new SuiClient({ url: getFullnodeUrl('localnet') })
 };

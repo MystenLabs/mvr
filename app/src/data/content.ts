@@ -23,7 +23,6 @@ export const Content = {
             button: 'Create a SuiNS name'
         },
         versions: {
-            icon: '🔢',
             title: 'No versions found',
             description: 'It seems like you have no versions. Create a new version by clicking the button below.',
             button: 'Create a Version'

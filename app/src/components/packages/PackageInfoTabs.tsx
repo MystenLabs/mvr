@@ -3,11 +3,12 @@ import { EmptyState } from "../EmptyState";
 import { Content } from "@/data/content";
 import { TabTitle } from "../ui/TabTitle";
 import { Text } from "../ui/Text";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useVersionsTable } from "@/hooks/useVersionsTable";
 import { Network } from "@/utils/types";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
+import { PackageVersions } from "./PackageVersions";
 
 const Tabs = [
   {
@@ -35,6 +36,10 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
 
   const { data: versions } = useVersionsTable(packageInfo.gitVersionsTableId);
 
+  const orderedVersions = useMemo(() => {
+    return versions?.sort((a, b) => b.version - a.version);
+  }, [versions]);
+
   return (
     <div className="p-Small">
       <div className="border-b border-border-classic">
@@ -60,11 +65,8 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
           </TabTitle>
         ))}
       </div>
-
       <div className="py-Regular">
-        {activeTab === "source-code" && (
-          <div>{JSON.stringify(versions)}</div>
-        )}
+        {activeTab === "source-code" && <PackageVersions versions={orderedVersions ?? []} /> }
       </div>
     </div>
   );
