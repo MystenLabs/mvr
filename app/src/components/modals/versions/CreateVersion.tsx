@@ -6,12 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../ui/dialog";
-import { usePackagesNetwork } from "../../providers/packages-provider";
-import { Text } from "../../ui/Text";
-import { Button } from "../../ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -24,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { ModalFooter } from "../ModalFooter";
 import { GitVersion } from "@/hooks/useVersionsTable";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   version: z.coerce.number().positive(),
@@ -36,14 +34,37 @@ export default function CreateVersion({
   type = "add",
   closeDialog,
   addUpdate,
+  taken = [],
 }: {
+  taken?: (number | string)[];
   type?: "add" | "update" | "delete";
   addUpdate: (update: GitVersion) => void;
   closeDialog: () => void;
 }) {
+  /// Validate the version and do not allow duplicates
+  const extraValidations = () => {
+    if (taken.map(x => +x).includes(+form.getValues().version)) {
+      form.setError("version", {
+        type: "manual",
+        message: "Version has to be unique per package",
+      });
+    } else {
+      form.clearErrors("version");
+      form.trigger("version");
+    }
+  }
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
+
+  const watch = useWatch(form);
+
+  useEffect(() => {
+    extraValidations();
+  }, [watch]);
+
+  // form.setError()
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -140,6 +161,7 @@ export default function CreateVersion({
                 />
 
                 <ModalFooter
+                  rightBtnDisabled={!form.formState.isValid}
                   rightBtnText="Create Version"
                   leftBtnHandler={closeDialog}
                 />

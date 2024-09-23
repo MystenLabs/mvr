@@ -25,6 +25,10 @@ export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
 
   const [updates, setUpdates] = useState<GitVersion[]>([]);
 
+  const takenVersions = useMemo(() => {
+    return orderedVersions?.map((x) => x.version) ?? [];
+  }, [orderedVersions]);
+
   const addUpdate = (update: GitVersion) => {
     setUpdates([...updates, update]);
     console.log(updates);
@@ -60,7 +64,15 @@ export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
     );
 
   return (
-    <>
+    <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
+      <CreateVersion
+        taken={takenVersions}
+        closeDialog={() => setShowCreationDialog(false)}
+        addUpdate={addUpdate}
+      />
+      <DialogTrigger asChild>
+        <Button variant="default">Create version</Button>
+      </DialogTrigger>
       {orderedVersions?.map((x) => <Version key={x.version} version={x} />)}
       {updates.map((x) => (
         <Version key={x.version} version={x} />
@@ -73,6 +85,6 @@ export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
           </Button>
         </div>
       )}
-    </>
+    </Dialog>
   );
 }

@@ -7,7 +7,8 @@ export function ModalFooter({
   loading = false,
   leftBtnHandler,
   rightBtnHandler,
-  rightBtnType = "submit"
+  rightBtnType = "submit",
+  rightBtnDisabled = false
 }: {
   loading?: boolean;
   leftBtnText?: string;
@@ -15,6 +16,7 @@ export function ModalFooter({
   leftBtnHandler?: (...args: any[]) => void;
   rightBtnHandler?: (...args: any[]) => void;
   rightBtnType?: "submit" | "button";
+  rightBtnDisabled?: boolean;
 }) {
   return (
     <div className="grid gap-Small pt-Regular md:grid-cols-2">
@@ -30,10 +32,11 @@ export function ModalFooter({
       </Button>
 
       <Button
-        type="submit"
+        type={rightBtnType}
         variant="default"
         className="max-md:order-1"
         isLoading={loading}
+        disabled={rightBtnDisabled}
         onClick={rightBtnHandler}
       >
         <Text variant="small/regular" family="inter">
