@@ -17,6 +17,9 @@ importers:
       '@mysten/sui':
         specifier: ^1.9.0
         version: 1.9.0(typescript@5.6.2)
+      '@mysten/suins':
+        specifier: ^0.4.0
+        version: 0.4.0(typescript@5.6.2)
       '@radix-ui/react-dialog':
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -280,6 +283,10 @@ packages:
   '@mysten/sui@1.9.0':
     resolution: {integrity: sha512-AcnwVK7ro8+GWAp/vz0V35naS1/PD1FkYlH6rglupKWvVIpnmEBgjr+XE7U4LvtAyoXPiE4uj/MhXLIx5rZuzw==}
     engines: {node: '>=18'}
+
+  '@mysten/suins@0.4.0':
+    resolution: {integrity: sha512-cDXrlhtDFw/WgtOvMvtXT3sTD8l7qaQhLKGM+oL2u7ccOxwxgpfcU8AX+57EcTVpblbGq4Bw49mMhImSMOIMOg==}
+    engines: {node: '>=16'}
 
   '@mysten/wallet-standard@0.13.4':
     resolution: {integrity: sha512-uVN/6BJLhharDCiCCaB4uJ+cVRLMyHDU/QbZwL1agSwb+NX4/lDSaVso2DjQClpgcrR4fiBVfQsE9sIYPIDrbQ==}
@@ -2808,6 +2815,14 @@ snapshots:
       graphql: 16.9.0
       tweetnacl: 1.0.3
       valibot: 0.36.0
+    transitivePeerDependencies:
+      - '@gql.tada/svelte-support'
+      - '@gql.tada/vue-support'
+      - typescript
+
+  '@mysten/suins@0.4.0(typescript@5.6.2)':
+    dependencies:
+      '@mysten/sui': 1.9.0(typescript@5.6.2)
     transitivePeerDependencies:
       - '@gql.tada/svelte-support'
       - '@gql.tada/vue-support'

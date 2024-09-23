@@ -21,11 +21,11 @@ export function PackageInfoViewer({
         {packageInfo.display.name}
       </Text>
       <div className="grid grid-cols-1 gap-Regular pt-Regular md:grid-cols-12">
-        <div className="pb-Large md:col-span-3">
+        <div className="pb-Large md:col-span-3 py-Small">
           <PackageInfoDisplay
             width="100%"
             height="auto"
-            className="max-lg:max-w-[300px]"
+            className="max-lg:max-w-[300px] !h-auto pb-Small mx-auto"
             packageAddr={packageInfo.packageAddress}
             {...packageInfo.display}
           />

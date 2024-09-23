@@ -3,8 +3,13 @@ import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Content } from "../../data/content";
 import Link from "next/link";
+import { useOwnedSuinsNames } from "@/hooks/useOwnedSuiNSNames";
 
 export default function App() {
+
+  const { data: suinsNames } = useOwnedSuinsNames();
+
+  console.log(suinsNames);
   if (true)
     return (
       <EmptyState

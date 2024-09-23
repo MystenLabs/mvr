@@ -8,10 +8,11 @@ export const PackageInfoDisplay = (props: SVGProps<SVGSVGElement> & PackageDispl
   <svg
     key={JSON.stringify(props)}
     width={props.width ?? "500"}
-    height={props.width ?? "500"}
+    height={props.height ?? "500"}
     viewBox="0 0 500 500"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    {...props}
   >
     <g clip-path="url(#clip0_6_2)">
       <path

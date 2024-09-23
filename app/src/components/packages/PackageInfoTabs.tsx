@@ -32,7 +32,7 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
   const network = usePackagesNetwork();
 
   return (
-    <div className="p-XSmall md:p-Small">
+    <div>
       <div className="border-b border-border-classic flex items-center overflow-x-auto">
         {Tabs.map((tab) => (
           <TabTitle
