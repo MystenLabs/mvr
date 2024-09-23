@@ -32,7 +32,7 @@ export default function Packages() {
 
   // reset selected package when address changes
   useEffect(() => {
-    setSelectedPackage(null);
+    setSelectedPackage(packageInfos?.[selectedNetwork][0] ?? null);
   }, [activeAddress])
 
   useEffect(() => {
