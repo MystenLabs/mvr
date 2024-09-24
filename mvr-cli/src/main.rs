@@ -536,19 +536,6 @@ async fn build_lock_files(resolved_packages: &HashMap<String, PackageInfo>) -> R
         let lock_with_root =
             insert_root_dependency(&move_lock_content, &root_name_from_source, git_info)?;
         lock_files.push(lock_with_root);
-
-        /* Dummy values that are known to work for an on-chain package */
-        /*
-        let root_name = parse_source_package_name(&_demo_package_move_toml())?;
-        let git_info = &GitInfo {
-            repository: "https://github.com/MystenLabs/dot_move.git".into(),
-            tag: "ml/migrate-to-plugin".into(),
-            path: "packages/demo".into(),
-        };
-        let lock_with_root =
-            insert_root_dependency(&_demo_package_move_lock(), &root_name, git_info)?;
-        lock_files.push(lock_with_root);
-        */
     }
 
     Ok(lock_files)
