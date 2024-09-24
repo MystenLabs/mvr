@@ -172,7 +172,7 @@ async fn list_apps() -> Result<()> {
 /// [dependencies.key]
 /// resolver = "mvr"
 /// network = "mainnet"
-/// packages = [ "foo@bar", "baz@qux/v1" ]
+/// packages = [ "foo/bar", "baz/qux/v1" ]
 ///
 /// The high-level logic of this function is as follows:
 /// 1) Fetch on-chain data for `packages`: the GitHub repository, branch, and subpath
