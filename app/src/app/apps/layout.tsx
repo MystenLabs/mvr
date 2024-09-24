@@ -7,7 +7,10 @@ import {
 } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
 import { Text } from "@/components/ui/Text";
-import { useOwnedSuinsNames } from "@/hooks/useOwnedSuiNSNames";
+import {
+  formatNamesForComboBox,
+  useOwnedSuinsNames,
+} from "@/hooks/useOwnedSuiNSNames";
 import { useEffect, useState } from "react";
 
 export default function AppsLayout({
@@ -15,7 +18,7 @@ export default function AppsLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const { data: ownedNames } = useOwnedSuinsNames();
 
-  const [appValue, setAppValue] = useState<AppContextType>({
+  const [appValue, setAppValue] = useState<AppContextType["value"]>({
     selectedSuinsName: null,
   });
 
@@ -35,7 +38,7 @@ export default function AppsLayout({
   }, [ownedNames]);
 
   return (
-    <AppContext.Provider value={appValue}>
+    <AppContext.Provider value={{ value: appValue, setValue: setAppValue }}>
       <div className="border-b border-border-classic">
         <div className="container flex items-center gap-Regular pb-Regular">
           <Text variant="xsmall/semibold" family="inter">
@@ -43,14 +46,11 @@ export default function AppsLayout({
           </Text>
           <div className="w-[300px]">
             <ComboBox
+              placeholder="Select a name..."
               value={appValue.selectedSuinsName?.nftId}
-              options={
-                ownedNames?.map((x) => ({
-                  value: x.nftId,
-                  label: x.domainName,
-                })) ?? []
-              }
+              options={formatNamesForComboBox(ownedNames ?? [])}
               setValue={selectSuinsName}
+              showSearch={false}
             />
           </div>
         </div>

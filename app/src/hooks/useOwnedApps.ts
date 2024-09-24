@@ -1,12 +1,10 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
-import { MAINNET_CONFIG } from "@mysten/suins";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
 import { fetchAllOwnedObjects } from "@/utils/query";
 import { SuiObjectResponse } from "@mysten/sui/client";
 import { normalizeSuiNSName } from "@mysten/sui/utils";
-
-const APPS_PACKAGE_ID = ``
+import { Constants } from "@/lib/constants";
 
 export type AppCap = {
   nftId: string;
@@ -41,7 +39,7 @@ export function useOwnedApps() {
         client,
         address: activeAddress!,
         filter: {
-          StructType: `${MAINNET_CONFIG.suinsPackageId!.v1}::app_record::AppCap`
+          StructType: `${Constants.appsPackageId}::app_record::AppCap`
         }
       });
 

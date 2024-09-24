@@ -52,3 +52,10 @@ export function useOwnedSuinsNames() {
     },
   })
 }
+
+export function formatNamesForComboBox(names: SuinsName[]) {
+  return names.map((x) => ({
+    value: x.nftId,
+    label: x.domainName,
+  }));
+}

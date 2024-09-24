@@ -26,6 +26,12 @@ export const Content = {
             title: 'No versions found',
             description: 'It seems like you have no versions. Create a new version by clicking the button below.',
             button: 'Create a Version'
+        },
+        apps: {
+            icon :'🧑‍💻',
+            title: 'Onwards.',
+            description: 'Create your first application by clicking the button below.',
+            button: 'Add an Application'
         }
     },
     package: {
@@ -34,7 +40,6 @@ export const Content = {
         description: 'It seems like you have some packages. Create a new package metadata object by clicking the button below.',
         button: 'Create a Package metadata NFT'
     },
-    
 
     addressPlaceholder: 'Enter your custom address (e.g. 0xdee)',
     

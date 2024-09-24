@@ -6,13 +6,19 @@ import { SuinsName } from '@/hooks/useOwnedSuiNSNames';
 import { createContext, useContext } from 'react';
 
 export type AppContextType = {
-    selectedSuinsName: SuinsName | null;
+    value: {
+        selectedSuinsName: SuinsName | null;
+    };
+    setValue: (value: AppContextType['value']) => void;
 }
 
 export const AppContext = createContext<AppContextType>({
-    selectedSuinsName: null,
+    value: {
+        selectedSuinsName: null,
+    },
+    setValue: () => {},
 });
 
-export function useApp() {
+export function useAppState() {
 	return useContext(AppContext);
 }
