@@ -53,7 +53,6 @@ export default function Packages() {
   ) {
     return (
       <>
-        <NetworkMissmatch expectedNetwork={selectedNetwork} />
         <EmptyState
           icon={Content.emptyStates.package.icon}
           title={Content.emptyStates.package.title}
@@ -79,7 +78,6 @@ export default function Packages() {
   if (!packageInfos || packageInfos[selectedNetwork].length === 0) {
     return (
       <>
-        <NetworkMissmatch expectedNetwork={selectedNetwork} />
         <EmptyState
           icon={Content.package.icon}
           title={Content.package.title}
@@ -136,7 +134,7 @@ export default function Packages() {
           ))}
         </div>
         <div className="block break-words p-Large">
-          <NetworkMissmatch expectedNetwork={selectedNetwork} />
+
           {selectedPackage && (
             <PackageInfoViewer packageInfo={selectedPackage} />
           )}

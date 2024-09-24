@@ -1,5 +1,6 @@
 "use client";
 
+import { NetworkMissmatch } from "@/components/NetworkMissmatch";
 import { useMVRContext } from "@/components/providers/mvr-provider";
 import { PackagesNetworkContext } from "@/components/providers/packages-provider";
 import { TabTitle } from "@/components/ui/TabTitle";
@@ -35,6 +36,8 @@ export default function PackagesLayout({
           ))}
         </div>
       </div>
+
+      <NetworkMissmatch expectedNetwork={network} />
       {children}
     </PackagesNetworkContext.Provider>
   );

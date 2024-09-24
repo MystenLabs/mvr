@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../../ui/dialog";
 import { usePackagesNetwork } from "../../providers/packages-provider";
 import { useGetUpgradeCaps } from "@/hooks/useGetUpgradeCaps";
@@ -17,7 +16,6 @@ import {
   PackageDisplayType,
   useGetPackageInfoObjects,
 } from "@/hooks/useGetPackageInfoObjects";
-import { Button } from "../../ui/button";
 import { PackageInfoStep1 } from "./Step1";
 import { PackageInfoStep2 } from "./Step2";
 import { useCreatePackageInfoMutation } from "@/mutations/packageInfoMutations";

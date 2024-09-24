@@ -4,17 +4,10 @@ import { useActiveAddress } from "./useActiveAddress";
 import { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
 import { Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
-
-// TODO: Replace with `MVR` resolution when GQL goes live.
-export const PackageInfoPackageIds = {
-  mainnet: "",
-  testnet: "0x4433047b14865ef466c55c35ec0f8a55726628e729d21345f2c4673582ec15a8",
-  devnet: "",
-  localnet: "",
-};
+import { Constants } from "@/lib/constants";
 
 const packageInfoType = (network: Network) =>
-  `${PackageInfoPackageIds[network]}::package_info::PackageInfo`;
+  `${Constants.packageInfoIds[network]}::package_info::PackageInfo`;
 
 export const DefaultPackageDisplay = {
   gradientFrom: "E0E1EC",

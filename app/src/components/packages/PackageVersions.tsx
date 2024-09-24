@@ -80,7 +80,6 @@ export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
 
       {updates.length > 0 && (
         <>
-        <hr/>
         <Text variant="xsmall/bold" color="primary" className="uppercase">
           Changes to save
         </Text>
