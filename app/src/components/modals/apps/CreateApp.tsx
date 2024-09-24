@@ -9,6 +9,15 @@ import {
 } from "../../ui/dialog";
 import { ModalFooter } from "../ModalFooter";
 import { useOwnedApps } from "@/hooks/useOwnedApps";
+import { z } from "zod";
+
+const formSchema = z.object({
+  nsNftId: z.string(),
+  name: z.string(),
+  mainnet: z.string().optional(),
+  testnet: z.string().optional(),
+});
+
 
 export default function CreteAppDialog({
   closeDialog,
