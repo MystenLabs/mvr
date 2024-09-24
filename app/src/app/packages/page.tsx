@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
 import { useActiveAddress } from "@/hooks/useActiveAddress";
+import { NetworkMissmatch } from "@/components/NetworkMissmatch";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
@@ -51,48 +52,59 @@ export default function Packages() {
     (!packageInfos || packageInfos[selectedNetwork].length === 0)
   ) {
     return (
-      <EmptyState
-        icon={Content.emptyStates.package.icon}
-        title={Content.emptyStates.package.title}
-        description={Content.emptyStates.package.description}
-      >
-        <Button variant="secondary" asChild>
-          <Link
-            href={Content.emptyStates.package.url}
-            target={
-              Content.emptyStates.package.url.startsWith("http")
-                ? "_blank"
-                : "_self"
-            }
-          >
-            {Content.emptyStates.package.button}
-          </Link>
-        </Button>
-      </EmptyState>
+      <>
+        <NetworkMissmatch expectedNetwork={selectedNetwork} />
+        <EmptyState
+          icon={Content.emptyStates.package.icon}
+          title={Content.emptyStates.package.title}
+          description={Content.emptyStates.package.description}
+        >
+          <Button variant="secondary" asChild>
+            <Link
+              href={Content.emptyStates.package.url}
+              target={
+                Content.emptyStates.package.url.startsWith("http")
+                  ? "_blank"
+                  : "_self"
+              }
+            >
+              {Content.emptyStates.package.button}
+            </Link>
+          </Button>
+        </EmptyState>
+      </>
     );
   }
 
   if (!packageInfos || packageInfos[selectedNetwork].length === 0) {
     return (
-      <EmptyState
-        icon={Content.package.icon}
-        title={Content.package.title}
-        description={Content.package.description}
-      >
-        <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
-          <DialogTrigger>
-            <Button variant="default">{Content.package.button}</Button>
-          </DialogTrigger>
-          <CreatePackageInfo closeDialog={() => setShowCreationDialog(false)} />
-        </Dialog>
-      </EmptyState>
+      <>
+        <NetworkMissmatch expectedNetwork={selectedNetwork} />
+        <EmptyState
+          icon={Content.package.icon}
+          title={Content.package.title}
+          description={Content.package.description}
+        >
+          <Dialog
+            open={showCreationDialog}
+            onOpenChange={setShowCreationDialog}
+          >
+            <DialogTrigger>
+              <Button variant="default">{Content.package.button}</Button>
+            </DialogTrigger>
+            <CreatePackageInfo
+              closeDialog={() => setShowCreationDialog(false)}
+            />
+          </Dialog>
+        </EmptyState>
+      </>
     );
   }
 
   return (
     <main className="container flex-grow">
       <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-XSmall overflow-y-auto lg:border-r border-border-classic p-Regular lg:h-[75vh] lg:flex lg:flex-col lg:w-[300px]">
+        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic p-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
           <Dialog
             open={showCreationDialog}
             onOpenChange={setShowCreationDialog}
@@ -124,6 +136,7 @@ export default function Packages() {
           ))}
         </div>
         <div className="block break-words p-Large">
+          <NetworkMissmatch expectedNetwork={selectedNetwork} />
           {selectedPackage && (
             <PackageInfoViewer packageInfo={selectedPackage} />
           )}

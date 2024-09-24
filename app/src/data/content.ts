@@ -38,5 +38,5 @@ export const Content = {
 
     addressPlaceholder: 'Enter your custom address (e.g. 0xdee)',
     
-    networkMissmatch: (network: string) => `The wallet\'s network does not match the network of the application (${network}). Please switch your wallet to the correct network to continue.`,
+    networkMissmatch: (network: string) => `The active wallet\'s network does not match the network of the application (${network}). Switch your wallet's network to avoid unexpected failures.`,
 }

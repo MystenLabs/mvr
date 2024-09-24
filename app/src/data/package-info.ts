@@ -47,7 +47,7 @@ export class PackageInfo {
 
   setDisplay(
     label: string,
-    gradientFrom: string,
+    gradientFrom: string, 
     gradientTo: string,
     textColor: string,
   ) {

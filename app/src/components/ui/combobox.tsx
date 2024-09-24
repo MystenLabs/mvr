@@ -53,7 +53,15 @@ export function ComboBox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
-        <Command>
+        <Command filter={(value, search) => {
+
+          const valueLabel = options.find((option) => option.value === value)?.label;
+
+          const labelMatch = valueLabel?.toLowerCase().includes(search.toLowerCase());
+          const valueMatch = value?.toLowerCase().includes(search.toLowerCase());
+
+          return (labelMatch || valueMatch ? 1 : 0);
+        }}>
           <CommandInput placeholder={searchText}/>
           <CommandList className="overflow-y-auto">
             <CommandEmpty>{emptyState}</CommandEmpty>

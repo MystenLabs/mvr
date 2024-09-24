@@ -6,14 +6,22 @@ import { fetchAllOwnedObjects } from "@/utils/query";
 import { SuiObjectResponse } from "@mysten/sui/client";
 import { normalizeSuiNSName } from "@mysten/sui/utils";
 
+export type SuinsName = {
+  nftId: string;
+  domainName: string;
+  expirationTimestampMs: number;
+  kiosk?: string;
+  kioskCap?: string;
+};
+
 const parseName = (response: SuiObjectResponse) => {
   if (response.data?.content?.dataType !== 'moveObject') throw new Error('Invalid object type');
   const fields = response.data.content.fields as Record<string, any>;
   return {
     ...fields,
-    domain_name: normalizeSuiNSName(fields.domain_name, 'at'),
-    kiosk: null,
-    kioskCap: null,
+    nftId: fields.id.id,
+    expirationTimestampMs: fields.expiration_timestamp_ms,
+    domainName: normalizeSuiNSName(fields.domain_name, 'at'),
   };
 }
 
@@ -40,7 +48,7 @@ export function useOwnedSuinsNames() {
     enabled: !!activeAddress,
 
     select: (data) => {
-      return data.map(parseName);
+      return data.map(parseName) as SuinsName[];
     },
   })
 }
