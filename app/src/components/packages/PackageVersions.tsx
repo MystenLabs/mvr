@@ -9,10 +9,11 @@ import { useMemo, useState } from "react";
 import { useUpdatePackageInfoMutation } from "@/mutations/packageInfoMutations";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import { PackageInfo } from "@/hooks/useGetPackageInfoObjects";
+import { Text } from "../ui/Text";
 
 export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
   const network = usePackagesNetwork();
-  const { data: versions } = useVersionsTable(packageInfo.gitVersionsTableId);
+  const { data: versions, refetch } = useVersionsTable(packageInfo.gitVersionsTableId);
 
   const orderedVersions = useMemo(() => {
     return versions?.sort((a, b) => b.version - a.version);
@@ -40,7 +41,11 @@ export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
       updates,
       network,
     });
-    console.log(res);
+
+    if (res) {
+      refetch();
+      setUpdates([]);
+    }
   };
 
   if (
@@ -72,9 +77,20 @@ export function PackageVersions({ packageInfo }: { packageInfo: PackageInfo }) {
       />
       <div className="mb-Regular grid grid-cols-1 gap-Regular px-Small">
         {orderedVersions?.map((x) => <Version key={x.version} version={x} />)}
+
+      {updates.length > 0 && (
+        <>
+        <hr/>
+        <Text variant="xsmall/bold" color="primary" className="uppercase">
+          Changes to save
+        </Text>
         {updates.map((x) => (
           <Version key={x.version} version={x} />
         ))}
+        </>
+
+      )}
+        
       </div>
 
       <div className="flex flex-wrap gap-Small px-Small">

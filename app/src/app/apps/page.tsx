@@ -10,14 +10,14 @@ export default function App() {
   const { data: suinsNames } = useOwnedSuinsNames();
 
   console.log(suinsNames);
-  if (true)
+  if (suinsNames?.length === 0)
     return (
       <EmptyState
         icon={Content.emptyStates.suinsNames.icon}
         title={Content.emptyStates.suinsNames.title}
         description={Content.emptyStates.suinsNames.description}
       >
-        <Button size="lg" asChild>
+        <Button size="lg" variant="outline" asChild>
           <Link href="https://www.suins.io" target="_blank">
             {Content.emptyStates.suinsNames.button}
           </Link>

@@ -20,7 +20,7 @@ export const Content = {
             icon: '🚀',
             title: 'Let\'s get started!',
             description: 'You need a SuiNS name to register your first app. Create a SuiNS name by clicking the button below.',
-            button: 'Create a SuiNS name'
+            button: 'Visit suins.io to get a name'
         },
         versions: {
             title: 'No versions found',

@@ -57,7 +57,7 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
         ))}
       </div>
       <div className="py-Regular">
-        <PackageVersions packageInfo={packageInfo} />
+        { activeTab === 'source-code' && <PackageVersions packageInfo={packageInfo} />}
       </div>
     </div>
   );

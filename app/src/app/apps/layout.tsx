@@ -8,7 +8,7 @@ import { useWalletNetwork } from "@/hooks/useWalletNetwork";
 import { AvailableNetworks, Network } from "@/utils/types";
 import { useEffect, useState } from "react";
 
-export default function PackagesLayout({
+export default function AppsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { isCustom } = useMVRContext();
