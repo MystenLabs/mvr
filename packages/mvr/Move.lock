@@ -2,7 +2,7 @@
 
 [move]
 version = 2
-manifest_digest = "CED39E66101804B3F2912EAFDDBD80B9A9E04796886E8231A7117BEE63EE69A8"
+manifest_digest = "002F4917F585FCDFC494B4A4FD377B35E6AEF7ADC8FF11F43A263DACB0554299"
 deps_digest = "060AD7E57DFB13104F21BE5F5C3759D03F0553FC3229247D9A7A6B45F50D03A3"
 dependencies = [
   { name = "Sui" },
@@ -12,7 +12,7 @@ dependencies = [
 
 [[move.package]]
 name = "Codec"
-source = { git = "https://github.com/sui-potatoes/app.git", rev = "codec@testnet-v1", subdir = "packages/codec" }
+source = { git = "https://github.com/sui-potatoes/app.git", rev = "codec@mainnet-v1", subdir = "packages/codec" }
 
 dependencies = [
   { name = "Sui" },
@@ -41,7 +41,7 @@ dependencies = [
 
 [[move.package]]
 name = "suins"
-source = { git = "https://github.com/mystenlabs/suins-contracts/", rev = "releases/testnet/core/v2", subdir = "packages/suins" }
+source = { git = "https://github.com/mystenlabs/suins-contracts/", rev = "releases/mainnet/core/v3", subdir = "packages/suins" }
 
 dependencies = [
   { name = "Sui" },
@@ -51,11 +51,3 @@ dependencies = [
 compiler-version = "1.33.0"
 edition = "2024.alpha"
 flavor = "sui"
-
-[env]
-
-[env.mainnet]
-chain-id = "35834a8a"
-original-published-id = "0xaee5759aedf6c533634cdd2de412f6e6dfc754a89b0ec554a73597348f334477"
-latest-published-id = "0xaee5759aedf6c533634cdd2de412f6e6dfc754a89b0ec554a73597348f334477"
-published-version = "1"
