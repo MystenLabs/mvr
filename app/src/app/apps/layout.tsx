@@ -7,6 +7,7 @@ import {
 } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
 import { Text } from "@/components/ui/Text";
+import { LocalStorageKeys } from "@/data/localStorage";
 import {
   formatNamesForComboBox,
   useOwnedSuinsNames,
@@ -17,9 +18,10 @@ export default function AppsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { data: ownedNames } = useOwnedSuinsNames();
+  console.log(JSON.parse(localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? '')?.selectedSuinsName);
 
   const [appValue, setAppValue] = useState<AppContextType["value"]>({
-    selectedSuinsName: null,
+    selectedSuinsName: JSON.parse(localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? '')?.selectedSuinsName ?? null,
   });
 
   const selectSuinsName = (nftId: string) => {
@@ -28,6 +30,11 @@ export default function AppsLayout({
     if (!selectedSuinsName) return;
     setAppValue({ selectedSuinsName });
   };
+
+  const setAndCacheValue = (value: AppContextType["value"]) => {
+    localStorage.setItem(LocalStorageKeys.SELECTED_NS_NAME, JSON.stringify(value));
+    setAppValue(value);
+  }
 
   useEffect(() => {
     if (
@@ -38,7 +45,7 @@ export default function AppsLayout({
   }, [ownedNames]);
 
   return (
-    <AppContext.Provider value={{ value: appValue, setValue: setAppValue }}>
+    <AppContext.Provider value={{ value: appValue, setValue: setAndCacheValue }}>
       <div className="border-b border-border-classic">
         <div className="container flex items-center gap-Regular pb-Regular">
           <Text variant="xsmall/semibold" family="inter">

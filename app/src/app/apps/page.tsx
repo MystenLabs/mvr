@@ -11,13 +11,15 @@ import { useAppState } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
 import { useOwnedApps } from "@/hooks/useOwnedApps";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import CreateApp from "@/components/modals/apps/CreateApp";
+import { useState } from "react";
 
 export default function App() {
   const { data: suinsNames } = useOwnedSuinsNames();
   const { data: apps } = useOwnedApps();
   const { value: appValue, setValue } = useAppState();
 
-  console.log(apps);
+  const [showCreateApp, setShowCreateApp] = useState(false);
 
   const selectSuinsName = (nftId: string) => {
     const selectedSuinsName =
@@ -50,7 +52,8 @@ export default function App() {
 
   if (apps?.length === 0) {
     return (
-      <Dialog>
+      <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
+        <CreateApp suins={appValue.selectedSuinsName} closeDialog={() => setShowCreateApp(false)} />
         <EmptyState
           icon={Content.emptyStates.apps.icon}
           title={Content.emptyStates.apps.title}
