@@ -43,12 +43,14 @@ export default function App() {
     setValue({ selectedSuinsName });
   };
 
+  const state = suinsNames?.length ? Content.suinsNames : Content.emptyStates.suinsNames;
+
   if (suinsNames?.length === 0 || !appValue.selectedSuinsName)
     return (
       <EmptyState
-        icon={Content.emptyStates.suinsNames.icon}
-        title={Content.emptyStates.suinsNames.title}
-        description={Content.emptyStates.suinsNames.description}
+        icon={state.icon}
+        title={state.title}
+        description={state.description}
       >
         <ComboBox
           placeholder="Select a name..."
@@ -59,7 +61,7 @@ export default function App() {
         <Button size="lg" variant="outline" asChild className="mt-Large">
           <Link href="https://www.suins.io" target="_blank">
             {formatNamesForComboBox(suinsNames ?? []).length > 0 && "or"}{" "}
-            {Content.emptyStates.suinsNames.button}
+            {state.button}
           </Link>
         </Button>
       </EmptyState>

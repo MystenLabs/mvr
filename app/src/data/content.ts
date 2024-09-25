@@ -34,6 +34,12 @@ export const Content = {
             button: 'Add an Application'
         }
     },
+    suinsNames: {
+        icon: '🚀',
+        title: 'Let\'s get started!',
+        description: 'Select a name from your owned names to start managing your applications.',
+        button: 'Visit suins.io to get a name'
+    },
     package: {
         icon: '📦',
         title: 'Let\'s get started!',

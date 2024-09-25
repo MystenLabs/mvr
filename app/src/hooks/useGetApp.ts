@@ -7,7 +7,6 @@ import { Constants } from "@/lib/constants";
 export function useGetAppFromCap(cap: AppCap) {
     const client = useSuiClientsContext().mainnet;
 
-    console.log(cap.dfName);
     return useQuery({
         queryKey: [AppQueryKeys.APP, cap.appName],
         queryFn: async () => {
@@ -20,5 +19,6 @@ export function useGetAppFromCap(cap: AppCap) {
 
             return data;
         },
+
     })
 }
