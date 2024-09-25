@@ -3,6 +3,18 @@ name = "mvr"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "mvr"
+path = "src/main.rs"
+
+[lib]
+name = "mvr"
+path = "src/lib.rs"
+
+[[test]]
+name = "unit_tests"
+path = "src/tests/unit_tests.rs"
+
 [dependencies]
 sui-sdk = { git = "https://github.com/MystenLabs/sui.git", package = "sui-sdk" }
 sui-config = { git = "https://github.com/MystenLabs/sui.git", package = "sui-config" }
