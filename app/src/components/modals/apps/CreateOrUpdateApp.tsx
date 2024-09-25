@@ -142,7 +142,7 @@ export default function CreateOrUpdateApp({
     <DialogContent>
       <DialogHeader>
         <DialogContent>
-          <DialogTitle>Create Application</DialogTitle>
+          <DialogTitle>{isUpdate ? "Updating" : "Create" } Application {isUpdate && `: ${appRecord.normalized}`}</DialogTitle>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
               <div className="grid grid-cols-1 gap-Small">
