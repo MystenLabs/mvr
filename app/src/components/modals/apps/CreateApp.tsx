@@ -1,12 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../../ui/dialog";
+import { useEffect, useState } from "react";
+import { DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { ModalFooter } from "../ModalFooter";
 import { useOwnedApps } from "@/hooks/useOwnedApps";
 import { z } from "zod";
@@ -26,24 +21,26 @@ import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
 import { PackageInfoSelector } from "@/components/ui/package-info-selector";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Text } from "@/components/ui/Text";
 
-const formSchema = z.object({
-  nsName: z.string().readonly(),
-  name: z.string().min(3),
-  mainnet: z.string().optional(),
-  testnet: z.string().optional(),
-  acceptMainnetWarning: z.boolean().optional(),
-}).superRefine((data, ctx) => {
-  console.log(data);
-  if (data.mainnet && !data.acceptMainnetWarning) {
-    ctx.addIssue({
-      path: ['acceptMainnetWarning'],
-      message: "You've set a mainnet package so you need to accept the warning before proceeding.",
-      code: z.ZodIssueCode.custom,
-    });
-  }
-});
+const formSchema = z
+  .object({
+    nsName: z.string().readonly(),
+    name: z.string().min(3),
+    mainnet: z.string().optional(),
+    testnet: z.string().optional(),
+    acceptMainnetWarning: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    console.log(data);
+    if (data.mainnet && !data.acceptMainnetWarning) {
+      ctx.addIssue({
+        path: ["acceptMainnetWarning"],
+        message:
+          "You've set a mainnet package so you need to accept the warning before proceeding.",
+        code: z.ZodIssueCode.custom,
+      });
+    }
+  });
 
 export default function CreateApp({
   suins,
@@ -118,7 +115,7 @@ export default function CreateApp({
                   )}
                 />
 
-                <div className="grid grid-cols-1 gap-Regular rounded-2xl border border-border-classic p-Regular mt-Regular">
+                <div className="mt-Regular grid grid-cols-1 gap-Regular rounded-2xl border border-border-classic p-Regular">
                   <FormField
                     control={form.control}
                     name="mainnet"
@@ -154,7 +151,7 @@ export default function CreateApp({
                   />
                 </div>
 
-                {!!form.getValues('mainnet') && (
+                {!!form.getValues("mainnet") && (
                   <FormField
                     control={form.control}
                     name="acceptMainnetWarning"
@@ -162,7 +159,7 @@ export default function CreateApp({
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
                         <FormControl>
                           <Checkbox
-                          className="mt-1"
+                            className="mt-1"
                             checked={field.value}
                             onCheckedChange={(value) => {
                               console.log(value);
@@ -183,8 +180,6 @@ export default function CreateApp({
                           </FormDescription>
                           <FormMessage />
                         </div>
-   
-       
                       </FormItem>
                     )}
                   />
