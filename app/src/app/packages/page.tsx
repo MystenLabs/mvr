@@ -47,6 +47,10 @@ export default function Packages() {
     }
   }, [packageInfos]);
 
+  useEffect(() => {
+    setSelectedPackage(packageInfos?.[0] ?? null);
+  }, [selectedNetwork]);
+
   if (capsLoading || packageInfosLoading) return <LoadingState />;
 
   if (
@@ -135,8 +139,7 @@ export default function Packages() {
             </div>
           ))}
         </div>
-        <div className="block break-words p-Large">
-
+        <div className="block break-words p-Large w-full">
           {selectedPackage && (
             <PackageInfoViewer packageInfo={selectedPackage} />
           )}
