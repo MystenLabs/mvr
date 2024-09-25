@@ -12,6 +12,18 @@ export type AppInfo = {
   packageInfoId: string;
 };
 
+export type AppRecord = {
+    objectId: string;
+    mainnet?: AppInfo | null;
+    testnet?: AppInfo | null;
+    appCapId: string;
+    metadata: any;
+    nsNftId: string;
+    appName: string;
+    orgName: string;
+    normalized: string;
+}
+
 const parseAppInfo = (field: any): AppInfo => {
   return {
     packageAddress: field.package_address,
@@ -20,7 +32,11 @@ const parseAppInfo = (field: any): AppInfo => {
   };
 };
 
-const format = (response: SuiObjectResponse) => {
+const format = (response: SuiObjectResponse & {
+    appName: string;
+    orgName: string;
+    normalized: string;
+}) => {
   if (response.data?.content?.dataType !== "moveObject")
     throw new Error("Invalid object type");
 
@@ -46,8 +62,10 @@ const format = (response: SuiObjectResponse) => {
     appCapId: data.app_cap_id,
     metadata: data.metadata.fields.contents,
     nsNftId: data.ns_nft_id,
-    app_info: data.app_info,
-  };
+    appName: response.appName,
+    orgName: response.orgName,
+    normalized: response.normalized,
+  } as AppRecord;
 };
 
 export function useGetAppFromCap(cap: AppCap) {
@@ -61,9 +79,7 @@ export function useGetAppFromCap(cap: AppCap) {
         name: cap.dfName,
       });
 
-      console.log(data);
-
-      return data;
+      return {...data, appName: cap.appName, orgName: cap.orgName, normalized: cap.normalizedName };
     },
     select: (data) => {
       return format(data);

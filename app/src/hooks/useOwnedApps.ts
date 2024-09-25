@@ -70,7 +70,6 @@ export function useOwnedApps() {
     enabled: !!activeAddress,
 
     select: (data) => {
-      console.log(data);
       return data.map(parseName) as AppCap[];
     },
   });

@@ -19,7 +19,9 @@ export function PackageInfoSelector({
   placeholder = "Select an option...",
   value,
   onChange,
+  disabled = false,
 }: {
+  disabled?: boolean;
   placeholder?: string;
   options: PackageInfo[];
   value: any;
@@ -39,7 +41,7 @@ export function PackageInfoSelector({
             variant="secondary"
             role="combobox"
             aria-expanded={open}
-            disabled={options.length === 0}
+            disabled={disabled || options.length === 0}
             className="w-full justify-between font-normal text-sm"
           >
             {selectedValue?.display.name || placeholder}
@@ -75,9 +77,9 @@ export function PackageInfoSelector({
           </div>
         </PopoverContent>
       </Popover>
-      {value && (
+      {value && !disabled && (
         <Button type="button" variant="outline-hover" className="px-2" onClick={() =>{
-          onChange(undefined);
+          onChange(null);
         }}>
           <XCircleIcon className="h-4 w-4" />
         </Button>

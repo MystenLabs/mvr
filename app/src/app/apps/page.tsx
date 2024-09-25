@@ -11,15 +11,15 @@ import { useAppState } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
 import { AppCap, useOwnedApps } from "@/hooks/useOwnedApps";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import CreateApp from "@/components/modals/apps/CreateApp";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Text } from "@/components/ui/Text";
 import { AppViewer } from "@/components/apps/AppViewer";
+import CreateOrUpdateApp from "@/components/modals/apps/CreateOrUpdateApp";
 
 export default function App() {
   const { data: suinsNames } = useOwnedSuinsNames();
-  const { data: apps, error } = useOwnedApps();
+  const { data: apps } = useOwnedApps();
   const { value: appValue, setValue } = useAppState();
 
   const [showCreateApp, setShowCreateApp] = useState(false);
@@ -27,6 +27,9 @@ export default function App() {
 
   const nsMatchingApps = useMemo(() => {
     if (!apps || !appValue.selectedSuinsName) return [];
+    console.log(apps.filter(
+      (app) => app.orgName === appValue.selectedSuinsName?.domainName,
+    ));
     return apps.filter(
       (app) => app.orgName === appValue.selectedSuinsName?.domainName,
     );
@@ -34,7 +37,7 @@ export default function App() {
 
   useEffect(() => {
     setSelectedAppCap(nsMatchingApps[0] ?? null);
-  }, [nsMatchingApps]);
+  }, [appValue.selectedSuinsName]);
 
   const selectSuinsName = (nftId: string) => {
     const selectedSuinsName =
@@ -72,7 +75,7 @@ export default function App() {
   if (!nsMatchingApps.length) {
     return (
       <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
-        <CreateApp
+        <CreateOrUpdateApp
           suins={appValue.selectedSuinsName}
           closeDialog={() => setShowCreateApp(false)}
         />
@@ -93,7 +96,7 @@ export default function App() {
       <div className="gap-Regular lg:flex lg:flex-grow">
         <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic p-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
           <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
-            <CreateApp
+            <CreateOrUpdateApp
               suins={appValue.selectedSuinsName}
               closeDialog={() => setShowCreateApp(false)}
             />
@@ -103,7 +106,7 @@ export default function App() {
           </Dialog>
           {nsMatchingApps.map((app) => (
             <div
-              key={app.orgName}
+              key={app.objectId}
               className={cn(
                 "cursor-pointer px-Small py-XSmall text-content-tertiary",
                 selectedAppCap?.objectId === app.objectId &&

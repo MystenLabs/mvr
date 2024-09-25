@@ -56,7 +56,13 @@ export const Content = {
         title: 'Loading...',
         description: 'Please wait while we fetch the data for you.'
     },
-
+    noPackageConnected: {
+        icon: '📦',
+        title: 'You have not connected any package.',
+        description: 'Connect your package so MVR resolution gets enabled.',
+        button: 'Edit connected packages'
+    },
+    
     app: {
         button: 'Create another Application'
     },

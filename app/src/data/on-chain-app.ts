@@ -29,19 +29,41 @@ export const registerApp = ({
   });
 
   if (mainnetPackageInfo) {
-    tx.moveCall({
-      target: `${Constants.appsPackageId}::move_registry::assign_package`,
-      arguments: [
-        tx.object(Constants.appsRegistryId),
-        appCap,
-        tx.object(mainnetPackageInfo),
-      ],
-    });
+    assignMainnetPackage({
+      tx,
+      appCap,
+      packageInfo: mainnetPackageInfo
+    })
   }
 
   return appCap;
 };
 
+export const assignMainnetPackage = ({
+  tx,
+  appCap,
+  packageInfo,
+}: {
+  tx: Transaction;
+  appCap: TransactionObjectArgument | string;
+  packageInfo: PackageInfo | TransactionObjectArgument | string;
+}) => {
+
+  const pkgInfoArg = (typeof packageInfo === 'object' && 'objectId' in packageInfo) ? tx.object(packageInfo.objectId) : tx.object(packageInfo);
+
+  tx.moveCall({
+    target: `${Constants.appsPackageId}::move_registry::assign_package`,
+    arguments: [
+      tx.object(Constants.appsRegistryId),
+      tx.object(appCap),
+      pkgInfoArg,
+    ],
+  });
+};
+
+/**
+ * Sets the external network for the given app.
+ */
 export const setExternalNetwork = async ({
   tx,
   appCap,
@@ -72,3 +94,26 @@ export const setExternalNetwork = async ({
     ],
   });
 };
+
+
+/**
+ * Unsets the external network for the given app.
+ */
+export const unsetExternalNetwork = async ({
+  tx,
+  appCap,
+  chainId,
+}: {
+  tx: Transaction;
+  appCap: TransactionObjectArgument | string;
+  chainId: string;
+}) => {
+  tx.moveCall({
+    target: `${Constants.appsPackageId}::move_registry::unset_network`,
+    arguments: [
+      tx.object(Constants.appsRegistryId),
+      tx.object(appCap),
+      tx.pure.string(chainId),
+    ],
+  });
+}

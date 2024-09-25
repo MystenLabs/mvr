@@ -17,24 +17,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
 import { PackageInfoSelector } from "@/components/ui/package-info-selector";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useCreateAppMutation } from "@/mutations/appMutations";
+import {
+  useCreateAppMutation,
+  useUpdateAppMutation,
+} from "@/mutations/appMutations";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppQueryKeys } from "@/utils/types";
+import { AppRecord } from "@/hooks/useGetApp";
 
 const formSchema = z
   .object({
     nsName: z.string().readonly(),
     name: z.string().min(3),
-    mainnet: z.string().optional(),
-    testnet: z.string().optional(),
+    mainnet: z.string().nullable().optional(),
+    testnet: z.string().nullable().optional(),
     acceptMainnetWarning: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
-    console.log(data);
     if (data.mainnet && !data.acceptMainnetWarning) {
       ctx.addIssue({
         path: ["acceptMainnetWarning"],
@@ -45,30 +47,51 @@ const formSchema = z
     }
   });
 
-export default function CreateApp({
+export default function CreateOrUpdateApp({
   suins,
   closeDialog,
+  appRecord,
 }: {
-  suins: SuinsName;
+  appRecord?: AppRecord;
+  suins?: { nftId: string; domainName: string };
   closeDialog: () => void;
 }) {
   const { data: mainnetPackageInfos } = useGetPackageInfoObjects("mainnet");
   const { data: testnetPackageInfos } = useGetPackageInfoObjects("testnet");
   const client = useQueryClient();
 
-  const { mutateAsync, isPending } = useCreateAppMutation();
+  const isUpdate = !!appRecord;
+
+  const { mutateAsync: create, isPending } = useCreateAppMutation();
+  const { mutateAsync: update, isPending: isUpdatePending } =
+    useUpdateAppMutation();
 
   const postCreation = async () => {
     form.reset();
     closeDialog();
     client.invalidateQueries({
       queryKey: [AppQueryKeys.OWNED_APPS],
-    });    
+    });
   };
 
   useEffect(() => {
+    if (!suins) return;
     form.setValue("nsName", suins.domainName);
   }, [suins]);
+
+  useEffect(() => {
+    if (!isUpdate) return;
+    if (!appRecord) return;
+    form.setValue("name", appRecord.appName);
+    form.setValue("mainnet", appRecord.mainnet?.packageInfoId);
+    form.setValue("testnet", appRecord.testnet?.packageInfoId);
+    form.setValue("nsName", appRecord.orgName);
+
+    // by default, if we've already set this, we should accept the warning
+    if (appRecord.mainnet) {
+      form.setValue("acceptMainnetWarning", true);
+    }
+  }, [appRecord]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "onChange",
@@ -76,20 +99,37 @@ export default function CreateApp({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const execution = await mutateAsync({
-      name: values.name,
-      suins,
-      mainnetPackageInfo: values.mainnet
-        ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
-        : undefined,
-      testnetPackageInfo: values.testnet
-        ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
-        : undefined
-    });
+    let isSuccess = false;
 
-    if (execution) {
-      postCreation();
+    if (isUpdate) {
+      if (!appRecord) throw new Error("No app record provided");
+      const execution = await update({
+        record: appRecord,
+        mainnetPackageInfo: values.mainnet
+          ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
+          : undefined,
+        testnetPackageInfo: values.testnet
+          ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
+          : undefined,
+      });
+
+      isSuccess = !!execution;
+    } else {
+      if (!suins) throw new Error("No suins provided");
+      const execution = await create({
+        name: values.name,
+        suinsObjectId: suins.nftId,
+        mainnetPackageInfo: values.mainnet
+          ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
+          : undefined,
+        testnetPackageInfo: values.testnet
+          ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
+          : undefined,
+      });
+      isSuccess = !!execution;
     }
+
+    if (isSuccess) postCreation();
   }
 
   return (
@@ -124,6 +164,7 @@ export default function CreateApp({
                         <Input
                           placeholder="Type your application name"
                           {...field}
+                          disabled={isUpdate || field.disabled}
                         />
                       </FormControl>
                       <FormMessage />
@@ -140,6 +181,7 @@ export default function CreateApp({
                         <FormLabel>Mainnet package (optional)</FormLabel>
                         <FormControl>
                           <PackageInfoSelector
+                            disabled={isUpdate && !!appRecord.mainnet}
                             options={mainnetPackageInfos ?? []}
                             {...field}
                           />
@@ -154,7 +196,9 @@ export default function CreateApp({
                     name="testnet"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Testnet package (optional)</FormLabel>
+                        <FormLabel>
+                          Testnet package (optional)
+                        </FormLabel>
                         <FormControl>
                           <PackageInfoSelector
                             options={testnetPackageInfos ?? []}
@@ -167,7 +211,7 @@ export default function CreateApp({
                   />
                 </div>
 
-                {!!form.getValues("mainnet") && (
+                {!!form.getValues("mainnet") && (!isUpdate || !appRecord?.mainnet)  && (
                   <FormField
                     control={form.control}
                     name="acceptMainnetWarning"
@@ -178,7 +222,6 @@ export default function CreateApp({
                             className="mt-1"
                             checked={field.value}
                             onCheckedChange={(value) => {
-                              console.log(value);
                               if (value === "indeterminate") return;
                               form.setValue("acceptMainnetWarning", value);
                               form.trigger("acceptMainnetWarning");
@@ -202,9 +245,10 @@ export default function CreateApp({
                 )}
 
                 <ModalFooter
-                  loading={isPending}
-                  leftBtnHandler={closeDialog}
+                  loading={isPending || isUpdatePending}
+                  leftBtnHandler={() => {form.reset(); closeDialog();}}
                   rightBtnDisabled={!form.formState.isValid}
+                  rightBtnText={isUpdate ? "Update" : "Create"}
                   rightBtnHandler={async () => {
                     const values = form.getValues();
                     if (values.mainnet && !values.acceptMainnetWarning) {
