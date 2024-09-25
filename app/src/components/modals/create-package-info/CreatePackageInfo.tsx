@@ -69,8 +69,8 @@ export default function CreatePackageInfo({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Create Package Info - Step {step}</DialogTitle>
-        <DialogDescription>
+        <DialogContent>
+          <DialogTitle>Create Package Info - Step {step}</DialogTitle>
           <div className="grid grid-cols-1 gap-Large py-Regular">
             {step === 1 && (
               <PackageInfoStep1
@@ -96,7 +96,10 @@ export default function CreatePackageInfo({
               rightBtnText={step === 1 ? "Next" : "Create"}
               loading={isPending}
               rightBtnType={step === 1 ? "button" : "submit"}
-              rightBtnDisabled={step === 1  && !selectedPackage || step === 2 && !display.name}
+              rightBtnDisabled={
+                (step === 1 && !selectedPackage) ||
+                (step === 2 && !display.name)
+              }
               leftBtnHandler={() => {
                 if (step === 1) {
                   closeDialog();
@@ -126,7 +129,7 @@ export default function CreatePackageInfo({
               }}
             />
           </div>
-        </DialogDescription>
+        </DialogContent>
       </DialogHeader>
     </DialogContent>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DialogContent,
   DialogDescription,
@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,12 +25,24 @@ import { Input } from "@/components/ui/input";
 import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
 import { PackageInfoSelector } from "@/components/ui/package-info-selector";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Text } from "@/components/ui/Text";
 
 const formSchema = z.object({
   nsName: z.string().readonly(),
-  name: z.string(),
+  name: z.string().min(3),
   mainnet: z.string().optional(),
   testnet: z.string().optional(),
+  acceptMainnetWarning: z.boolean().optional(),
+}).superRefine((data, ctx) => {
+  console.log(data);
+  if (data.mainnet && !data.acceptMainnetWarning) {
+    ctx.addIssue({
+      path: ['acceptMainnetWarning'],
+      message: "You've set a mainnet package so you need to accept the warning before proceeding.",
+      code: z.ZodIssueCode.custom,
+    });
+  }
 });
 
 export default function CreateApp({
@@ -56,6 +69,7 @@ export default function CreateApp({
   }, [suins]);
 
   const form = useForm<z.infer<typeof formSchema>>({
+    mode: "onChange",
     resolver: zodResolver(formSchema),
   });
 
@@ -68,8 +82,8 @@ export default function CreateApp({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Create Application - Step {step}</DialogTitle>
-        <DialogDescription>
+        <DialogContent>
+          <DialogTitle>Create Application</DialogTitle>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
               <div className="grid grid-cols-1 gap-Small">
@@ -104,13 +118,13 @@ export default function CreateApp({
                   )}
                 />
 
-                <div className="border border-border-classic p-Regular rounded-2xl grid grid-cols-1 gap-Regular">
+                <div className="grid grid-cols-1 gap-Regular rounded-2xl border border-border-classic p-Regular mt-Regular">
                   <FormField
                     control={form.control}
                     name="mainnet"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mainnet package</FormLabel>
+                        <FormLabel>Mainnet package (optional)</FormLabel>
                         <FormControl>
                           <PackageInfoSelector
                             options={mainnetPackageInfos?.mainnet ?? []}
@@ -127,7 +141,7 @@ export default function CreateApp({
                     name="testnet"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Testnet package</FormLabel>
+                        <FormLabel>Testnet package (optional)</FormLabel>
                         <FormControl>
                           <PackageInfoSelector
                             options={testnetPackageInfos?.testnet ?? []}
@@ -140,21 +154,53 @@ export default function CreateApp({
                   />
                 </div>
 
+                {!!form.getValues('mainnet') && (
+                  <FormField
+                    control={form.control}
+                    name="acceptMainnetWarning"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
+                        <FormControl>
+                          <Checkbox
+                          className="mt-1"
+                            checked={field.value}
+                            onCheckedChange={(value) => {
+                              console.log(value);
+                              if (value === "indeterminate") return;
+                              form.setValue("acceptMainnetWarning", value);
+                              form.trigger("acceptMainnetWarning");
+                            }}
+                          />
+                        </FormControl>
+                        <div className="space-y-1">
+                          <FormLabel className="cursor-pointer font-bold">
+                            I understand this action is irreversible
+                          </FormLabel>
+                          <FormDescription className="leading-normal">
+                            I understand that after attaching a mainnet package
+                            info, this app name will be permanently associated
+                            with the selected package.
+                          </FormDescription>
+                          <FormMessage />
+                        </div>
+   
+       
+                      </FormItem>
+                    )}
+                  />
+                )}
+
                 <ModalFooter
-                  leftBtnText={step === 1 ? "Cancel" : "Previous"}
-                  rightBtnText={step === 1 ? "Next" : "Create"}
                   loading={false}
-                  rightBtnType={step === 1 ? "button" : "submit"}
-                  leftBtnHandler={() => {
-                    if (step === 1) {
-                      closeDialog();
-                      return;
-                    }
-                    setStep(1);
-                  }}
+                  leftBtnHandler={closeDialog}
+                  rightBtnDisabled={!form.formState.isValid}
                   rightBtnHandler={async () => {
-                    if (step === 1) {
-                      setStep(2);
+                    const values = form.getValues();
+                    if (values.mainnet && !values.acceptMainnetWarning) {
+                      form.setError("acceptMainnetWarning", {
+                        type: "manual",
+                        message: "Please accept the warning",
+                      });
                       return;
                     }
                   }}
@@ -162,7 +208,7 @@ export default function CreateApp({
               </div>
             </form>
           </Form>
-        </DialogDescription>
+        </DialogContent>
       </DialogHeader>
     </DialogContent>
   );

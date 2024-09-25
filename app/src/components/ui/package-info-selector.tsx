@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, XCircleIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +11,8 @@ import {
 import { PackageInfo } from "@/hooks/useGetPackageInfoObjects";
 import { PackageInfoDisplay } from "@/icons/PackageInfoDisplay";
 import { Text } from "./Text";
+import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function PackageInfoSelector({
   options,
@@ -24,41 +25,63 @@ export function PackageInfoSelector({
   value: any;
   onChange: (value: any) => void;
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+
+  const selectedValue = useMemo(() => {
+    return options.find((framework) => framework.objectId === value);
+  }, [value]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          role="combobox"
-          aria-expanded={open}
-          disabled={options.length === 0}
-          className="w-full justify-between"
-        >
-          { 
-          options.find((framework) => framework.objectId === value)?.display.name ||
-          placeholder }
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[400px] max-h-[350px] overflow-y-auto p-Large">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-Small">
-          <Text variant="small/semibold" className="lg:col-span-2">Select a package</Text>
-          {
-            options.map((option) => (
-              <div 
-                className="border-4 rounded-lg border-border-classic hover:border-opacity-100 ease-in-out duration-300 hover:border-primary cursor-pointer" 
+    <div className="flex gap-Small">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="secondary"
+            role="combobox"
+            aria-expanded={open}
+            disabled={options.length === 0}
+            className="w-full justify-between font-normal text-sm"
+          >
+            {selectedValue?.display.name || placeholder}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="max-h-[350px] w-full max-w-[80vw] max-md:mx-auto md:max-w-[550px] overflow-y-auto p-Small">
+          <div className="grid grid-cols-2 gap-XSmall md:grid-cols-3 ">
+            <Text variant="small/semibold" className="col-span-2 md:col-span-3 border-b border-border-classic pb-Small mb-XSmall">
+              Select a package
+            </Text>
+            {options.map((option) => (
+              <div
+                key={option.objectId}
+                className={cn(
+                  "cursor-pointer rounded-lg border-4 border-border-classic duration-300 ease-in-out hover:border-primary hover:border-opacity-100",
+                  option.objectId === selectedValue?.objectId &&
+                    "border-primary",
+                )}
                 onClick={() => {
                   onChange(option.objectId);
                   setOpen(false);
-                }}>
-                <PackageInfoDisplay width="100%" height="auto" {...option.display} packageAddr={option.packageAddress} />
+                }}
+              >
+                <PackageInfoDisplay
+                  width="100%"
+                  height="auto"
+                  {...option.display}
+                  packageAddr={option.packageAddress}
+                />
               </div>
-            ))
-          }
+            ))}
           </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+      {value && (
+        <Button type="button" variant="outline-hover" className="px-2" onClick={() =>{
+          onChange(undefined);
+        }}>
+          <XCircleIcon className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   );
 }

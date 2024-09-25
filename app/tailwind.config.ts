@@ -6,6 +6,7 @@ export default {
     content: ["./src/**/*.tsx"],
   theme: {
 	colors: {
+		transparent: 'transparent',
 		white: 'rgb(var(--white))',
 		background: 'rgb(var(--background))',
 		'background-dark': 'rgb(var(--background-dark))',

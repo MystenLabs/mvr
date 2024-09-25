@@ -43,16 +43,16 @@ export default function CreateVersion({
 }) {
   /// Validate the version and do not allow duplicates
   const extraValidations = () => {
-    if (taken.map(x => +x).includes(+form.getValues().version)) {
+    if (taken.map((x) => +x).includes(+form.getValues().version)) {
       form.setError("version", {
         type: "manual",
         message: "Version has to be unique per package",
       });
     } else {
       form.clearErrors("version");
-      if(!!form.getValues().version) form.trigger("version");
+      if (!!form.getValues().version) form.trigger("version");
     }
-  }
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,8 +78,8 @@ export default function CreateVersion({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Create Version</DialogTitle>
-        <DialogDescription>
+        <DialogContent>
+          <DialogTitle>Create Version</DialogTitle>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
               <div className="grid grid-cols-1 gap-Small">
@@ -165,7 +165,7 @@ export default function CreateVersion({
               </div>
             </form>
           </Form>
-        </DialogDescription>
+        </DialogContent>
       </DialogHeader>
     </DialogContent>
   );

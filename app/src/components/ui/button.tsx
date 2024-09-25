@@ -18,6 +18,7 @@ const buttonVariants = cva(
         secondary: 'bg-background-secondary text-white hover:bg-secondary-hover',
         header: 'bg-background-secondary text-white border border-border-classic',
         tertiary: 'bg-background-tertiary text-white hover:bg-secondary-hover',
+        'outline-hover': 'border border-transparent hover:bg-secondary-hover',
 
         custom: 'bg-transparent text-content-primary',
       },
