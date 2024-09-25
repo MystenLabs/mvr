@@ -55,6 +55,7 @@ export default function CreateVersion({
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
+    mode: 'onChange',
     resolver: zodResolver(formSchema),
   });
 
