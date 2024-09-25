@@ -33,23 +33,22 @@ export default function Packages() {
 
   // reset selected package when address changes
   useEffect(() => {
-    setSelectedPackage(packageInfos?.[selectedNetwork][0] ?? null);
+    setSelectedPackage(packageInfos?.[0] ?? null);
   }, [activeAddress]);
 
   useEffect(() => {
     if (
       !selectedPackage &&
       packageInfos &&
-      packageInfos[selectedNetwork] &&
-      packageInfos[selectedNetwork].length > 0
+      packageInfos.length > 0
     ) {
-      setSelectedPackage(packageInfos[selectedNetwork][0] ?? null);
+      setSelectedPackage(packageInfos[0] ?? null);
     }
   }, [packageInfos]);
 
   if (
-    (!upgradeCaps || upgradeCaps[selectedNetwork].length === 0) &&
-    (!packageInfos || packageInfos[selectedNetwork].length === 0)
+    (!upgradeCaps || !upgradeCaps.length) &&
+    (!packageInfos || !packageInfos.length)
   ) {
     return (
       <>
@@ -75,7 +74,7 @@ export default function Packages() {
     );
   }
 
-  if (!packageInfos || packageInfos[selectedNetwork].length === 0) {
+  if (!packageInfos || !packageInfos.length) {
     return (
       <>
         <EmptyState
@@ -114,7 +113,7 @@ export default function Packages() {
               <Button variant="link">{Content.package.button}</Button>
             </DialogTrigger>
           </Dialog>
-          {packageInfos[selectedNetwork].map((packageInfo) => (
+          {packageInfos.map((packageInfo) => (
             <div
               key={packageInfo.objectId}
               className={cn(

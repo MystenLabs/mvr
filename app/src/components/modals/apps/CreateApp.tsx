@@ -55,8 +55,6 @@ export default function CreateApp({
   const { data: mainnetPackageInfos } = useGetPackageInfoObjects("mainnet");
   const { data: testnetPackageInfos } = useGetPackageInfoObjects("testnet");
 
-  console.log(mainnetPackageInfos?.mainnet, testnetPackageInfos?.testnet);
-
   const postCreation = async () => {
     closeDialog();
   };
@@ -124,7 +122,7 @@ export default function CreateApp({
                         <FormLabel>Mainnet package (optional)</FormLabel>
                         <FormControl>
                           <PackageInfoSelector
-                            options={mainnetPackageInfos?.mainnet ?? []}
+                            options={mainnetPackageInfos ?? []}
                             {...field}
                           />
                         </FormControl>
@@ -141,7 +139,7 @@ export default function CreateApp({
                         <FormLabel>Testnet package (optional)</FormLabel>
                         <FormControl>
                           <PackageInfoSelector
-                            options={testnetPackageInfos?.testnet ?? []}
+                            options={testnetPackageInfos ?? []}
                             {...field}
                           />
                         </FormControl>

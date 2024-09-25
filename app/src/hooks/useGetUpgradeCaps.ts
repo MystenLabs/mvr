@@ -40,55 +40,20 @@ const parseUpgradeCapContent = (cap?: SuiObjectResponse): UpgradeCap => {
   };
 };
 
-export function useGetUpgradeCaps(network?: Network | "all") {
+export function useGetUpgradeCaps(network: Network) {
   const address = useActiveAddress();
   const clients = useSuiClientsContext();
 
   return useQuery({
     queryKey: ["getUpgradeCaps", address, network],
     queryFn: async () => {
-      // if no network is supplied, we want to lookup all networks
-      if (network === "all") {
-        const [mainnet, testnet, devnet, localnet] = await Promise.all(
-          [
-            getUpgradeCaps(clients.mainnet, address!),
-            getUpgradeCaps(clients.testnet, address!),
-            getUpgradeCaps(clients.devnet, address!),
-            getUpgradeCaps(clients.localnet, address!),
-          ].map((p) => p.catch(() => undefined)),
-        );
-
-        return {
-          mainnet,
-          testnet,
-          devnet,
-          localnet,
-        };
-      } else {
-        return {
-          [network as Network]:
-            (await getUpgradeCaps(clients[network as Network], address!)) ?? [],
-        };
-      }
+      return await getUpgradeCaps(clients[network], address!);
     },
     enabled: !!address,
     refetchOnMount: false,
     refetchOnReconnect: false,
     select(data) {
-      const res: Record<string, UpgradeCap[]> = {};
-
-      for (const key of Object.keys(data)) {
-        if (!data[key as Network]) continue;
-        res[key] =
-          data[key as Network]?.map((x) => parseUpgradeCapContent(x)) ?? [];
-      }
-
-      return {
-        mainnet: res.mainnet ?? [],
-        testnet: res.testnet ?? [],
-        devnet: res.devnet ?? [],
-        localnet: res.localnet ?? [],
-      };
+      return data.map(parseUpgradeCapContent) ?? [];
     },
   });
 }

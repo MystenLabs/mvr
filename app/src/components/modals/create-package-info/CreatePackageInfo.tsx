@@ -1,12 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../../ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { usePackagesNetwork } from "../../providers/packages-provider";
 import { useGetUpgradeCaps } from "@/hooks/useGetUpgradeCaps";
 import { formatAddress } from "@mysten/sui/utils";
@@ -53,13 +48,8 @@ export default function CreatePackageInfo({
   const availableUpgradeCaps = useMemo(() => {
     if (!upgradeCaps || !packageInfos) return [];
 
-    return upgradeCaps[selectedNetwork]
-      .filter(
-        (x) =>
-          !packageInfos[selectedNetwork].some(
-            (y) => y.upgradeCapId === x.objectId,
-          ),
-      )
+    return upgradeCaps
+      .filter((x) => !packageInfos.some((y) => y.upgradeCapId === x.objectId))
       .map((x) => ({
         label: formatAddress(x.objectId),
         value: x.package,
@@ -113,7 +103,7 @@ export default function CreatePackageInfo({
                   return;
                 }
 
-                const upgradeCap = upgradeCaps?.[selectedNetwork].find(
+                const upgradeCap = upgradeCaps?.find(
                   (x) => x.package === selectedPackage,
                 );
 
