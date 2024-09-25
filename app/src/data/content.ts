@@ -40,6 +40,9 @@ export const Content = {
         description: 'It seems like you have some packages. Create a new package metadata object by clicking the button below.',
         button: 'Create a Package metadata NFT'
     },
+    app: {
+        button: 'Create another Application'
+    },
 
     addressPlaceholder: 'Enter your custom address (e.g. 0xdee)',
     

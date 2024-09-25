@@ -9,17 +9,32 @@ import {
 } from "@/hooks/useOwnedSuiNSNames";
 import { useAppState } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
-import { useOwnedApps } from "@/hooks/useOwnedApps";
+import { AppCap, useOwnedApps } from "@/hooks/useOwnedApps";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CreateApp from "@/components/modals/apps/CreateApp";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
+import { Text } from "@/components/ui/Text";
+import { AppViewer } from "@/components/apps/AppViewer";
 
 export default function App() {
   const { data: suinsNames } = useOwnedSuinsNames();
-  const { data: apps } = useOwnedApps();
+  const { data: apps, error } = useOwnedApps();
   const { value: appValue, setValue } = useAppState();
 
   const [showCreateApp, setShowCreateApp] = useState(false);
+  const [selectedAppCap, setSelectedAppCap] = useState<AppCap | null>(null);
+
+  const nsMatchingApps = useMemo(() => {
+    if (!apps || !appValue.selectedSuinsName) return [];
+    return apps.filter(
+      (app) => app.orgName === appValue.selectedSuinsName?.domainName,
+    );
+  }, [apps, appValue.selectedSuinsName]);
+
+  useEffect(() => {
+    setSelectedAppCap(nsMatchingApps[0] ?? null);
+  }, [nsMatchingApps]);
 
   const selectSuinsName = (nftId: string) => {
     const selectedSuinsName =
@@ -50,29 +65,61 @@ export default function App() {
       </EmptyState>
     );
 
-  if (apps?.length === 0) {
+  if (!nsMatchingApps.length) {
     return (
       <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
-        <CreateApp suins={appValue.selectedSuinsName} closeDialog={() => setShowCreateApp(false)} />
+        <CreateApp
+          suins={appValue.selectedSuinsName}
+          closeDialog={() => setShowCreateApp(false)}
+        />
         <EmptyState
           icon={Content.emptyStates.apps.icon}
           title={Content.emptyStates.apps.title}
           description={Content.emptyStates.apps.description}
         >
           <DialogTrigger asChild>
-            <Button size="lg">
-              {
-                Content.emptyStates.apps.button
-              }
-            </Button>
+            <Button size="lg">{Content.emptyStates.apps.button}</Button>
           </DialogTrigger>
         </EmptyState>
       </Dialog>
     );
   }
   return (
-    <main>
-      <h1>This is Move Registry packages..</h1>
+    <main className="container flex-grow">
+      <div className="gap-Regular lg:flex lg:flex-grow">
+        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic p-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
+          <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
+            <CreateApp
+              suins={appValue.selectedSuinsName}
+              closeDialog={() => setShowCreateApp(false)}
+            />
+            <DialogTrigger>
+              <Button variant="link">{Content.app.button}</Button>
+            </DialogTrigger>
+          </Dialog>
+          {nsMatchingApps.map((app) => (
+            <div
+              key={app.orgName}
+              className={cn(
+                "cursor-pointer px-Small py-XSmall text-content-tertiary",
+                selectedAppCap?.objectId === app.objectId &&
+                  "rounded-md bg-primary",
+              )}
+              onClick={() => setSelectedAppCap(app)}
+            >
+              <Text variant="xsmall/regular" className="block max-w-[250px]">
+                {app.normalizedName}
+              </Text>
+            </div>
+          ))}
+        </div>
+
+        <div className="block break-words p-Large">
+          {
+            selectedAppCap && <AppViewer cap={selectedAppCap} />
+          }
+        </div>
+      </div>
     </main>
   );
 }

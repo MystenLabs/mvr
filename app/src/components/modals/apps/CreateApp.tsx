@@ -21,6 +21,9 @@ import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
 import { PackageInfoSelector } from "@/components/ui/package-info-selector";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useCreateAppMutation } from "@/mutations/appMutations";
+import { useQueryClient } from "@tanstack/react-query";
+import { AppQueryKeys } from "@/utils/types";
 
 const formSchema = z
   .object({
@@ -49,14 +52,18 @@ export default function CreateApp({
   suins: SuinsName;
   closeDialog: () => void;
 }) {
-  const [step, setStep] = useState(1);
-  const { data: apps } = useOwnedApps();
-
   const { data: mainnetPackageInfos } = useGetPackageInfoObjects("mainnet");
   const { data: testnetPackageInfos } = useGetPackageInfoObjects("testnet");
+  const client = useQueryClient();
+
+  const { mutateAsync, isPending } = useCreateAppMutation();
 
   const postCreation = async () => {
+    form.reset();
     closeDialog();
+    client.invalidateQueries({
+      queryKey: [AppQueryKeys.OWNED_APPS],
+    });    
   };
 
   useEffect(() => {
@@ -68,10 +75,21 @@ export default function CreateApp({
     resolver: zodResolver(formSchema),
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // form.reset();
-    // closeDialog();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const execution = await mutateAsync({
+      name: values.name,
+      suins,
+      mainnetPackageInfo: values.mainnet
+        ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
+        : undefined,
+      testnetPackageInfo: values.testnet
+        ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
+        : undefined
+    });
+
+    if (execution) {
+      postCreation();
+    }
   }
 
   return (
@@ -184,7 +202,7 @@ export default function CreateApp({
                 )}
 
                 <ModalFooter
-                  loading={false}
+                  loading={isPending}
                   leftBtnHandler={closeDialog}
                   rightBtnDisabled={!form.formState.isValid}
                   rightBtnHandler={async () => {

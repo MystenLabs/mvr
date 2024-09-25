@@ -2,7 +2,7 @@ import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
 import { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
-import { Network } from "@/utils/types";
+import { AppQueryKeys, Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
 import { Constants } from "@/lib/constants";
 
@@ -91,7 +91,7 @@ export function useGetPackageInfoObjects(network: Network) {
   const clients = useSuiClientsContext();
 
   return useQuery({
-    queryKey: ["getPackageInfoObjects", address, network],
+    queryKey: [AppQueryKeys.OWNED_PACKAGE_INFOS, address, network],
     queryFn: async () => {
       return await getPackageInfoObjects(
         clients[network],

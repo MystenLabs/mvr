@@ -5,6 +5,7 @@ import { useActiveAddress } from "./useActiveAddress";
 import { fetchAllOwnedObjects } from "@/utils/query";
 import { SuiObjectResponse } from "@mysten/sui/client";
 import { normalizeSuiNSName } from "@mysten/sui/utils";
+import { AppQueryKeys } from "@/utils/types";
 
 export type SuinsName = {
   nftId: string;
@@ -33,7 +34,7 @@ export function useOwnedSuinsNames() {
   const client = useSuiClientsContext().mainnet;
 
   return useQuery({
-    queryKey: ['ownedSuinsNames', activeAddress],
+    queryKey: [AppQueryKeys.OWNED_SUINS_NAMES, activeAddress],
     queryFn: async () => {
       const ownedNames = await fetchAllOwnedObjects({
         client,

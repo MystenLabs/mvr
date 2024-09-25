@@ -1,5 +1,6 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { usePackagesNetwork } from "@/components/providers/packages-provider";
+import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 
 export function usePackageModules(packageId: string) {
@@ -9,7 +10,7 @@ export function usePackageModules(packageId: string) {
   const client = clients[selectedNetwork];
 
   return useQuery({
-    queryKey: ["packageModule", packageId],
+    queryKey: [AppQueryKeys.UPGRADE_CAP_MODULE, packageId],
 
     queryFn: async () => {
       const modules = await client.getNormalizedMoveModulesByPackage({

@@ -2,7 +2,7 @@ import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
 import { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
-import { Network } from "@/utils/types";
+import { AppQueryKeys, Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
 
 export type UpgradeCap = {
@@ -45,7 +45,7 @@ export function useGetUpgradeCaps(network: Network) {
   const clients = useSuiClientsContext();
 
   return useQuery({
-    queryKey: ["getUpgradeCaps", address, network],
+    queryKey: [AppQueryKeys.OWNED_UPGRADE_CAPS, address, network],
     queryFn: async () => {
       return await getUpgradeCaps(clients[network], address!);
     },

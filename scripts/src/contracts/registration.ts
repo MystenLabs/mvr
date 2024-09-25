@@ -1,75 +1,77 @@
 import { CorePackageData } from "../publish";
-import { Transaction, TransactionObjectArgument } from "@mysten/sui/transactions";
+import {
+  Transaction,
+  TransactionObjectArgument,
+} from "@mysten/sui/transactions";
 
-export const registerDotMove = (txb: Transaction, name: string, constants: CorePackageData) => {
-  return txb.moveCall({
-      target: `${constants.packageId}::registration::register`,
-      arguments: [
-              txb.object(constants.nameRegistry),
-              txb.pure.string(name),
-              txb.object.clock(),
-      ],
-  });
-}
-
+/// Registers an app with the given name.
+/// Optionally assigns a package to the app.
 export const registerApp = ({
-  txb, name, dotMove, packageInfo,
-  constants
+  txb,
+  name,
+  mainnetPackageInfo,
+  suinsObjectId,
+  constants,
 }: {
   txb: Transaction;
   name: string;
-  dotMove: TransactionObjectArgument | string;
-  packageInfo?: TransactionObjectArgument | string;
+  suinsObjectId: TransactionObjectArgument | string;
+  mainnetPackageInfo?: TransactionObjectArgument | string;
   constants: CorePackageData;
 }) => {
   const appCap = txb.moveCall({
-    target: `${constants.packageId}::app_registry::register`,
+    target: `${constants.packageId}::move_registry::register`,
     arguments: [
       txb.object(constants.appRegistry),
+      txb.object(suinsObjectId),
       txb.pure.string(name),
-      txb.object(dotMove),
-      txb.object.clock()
-    ]
+      txb.object.clock(),
+    ],
   });
 
-  if (packageInfo) {
+  if (mainnetPackageInfo) {
     txb.moveCall({
-      target: `${constants.packageId}::app_registry::assign_package`,
+      target: `${constants.packageId}::move_registry::assign_package`,
       arguments: [
         txb.object(constants.appRegistry),
         appCap,
-        txb.object(packageInfo)
-      ]
+        txb.object(mainnetPackageInfo),
+      ],
     });
   }
 
   return appCap;
-}
+};
 
-export const setExternalNetwork = async (
-  txb: Transaction, 
-  appCap: string, 
-  network: string, 
-  value: { packageAddress: string; packageInfoId: string; }, 
-  constants: CorePackageData
-) => {
-
-  const appInfo = txb.moveCall({
+export const setExternalNetwork = async ({
+  tx,
+  appCap,
+  chainId,
+  value,
+  constants,
+}: {
+  tx: Transaction;
+  appCap: string;
+  chainId: string;
+  value: { packageAddress: string; packageInfoId: string };
+  constants: CorePackageData;
+}) => {
+  const appInfo = tx.moveCall({
     target: `${constants.packageId}::app_info::new`,
     arguments: [
-      txb.pure.option('address', value.packageInfoId),
-      txb.pure.option('address', value.packageAddress),
-      txb.pure.option('address', null)
-    ]
+      tx.pure.option("address", value.packageInfoId),
+      tx.pure.option("address", value.packageAddress),
+      tx.pure.option("address", null),
+    ],
   });
 
-  txb.moveCall({
-    target: `${constants.packageId}::app_registry::set_network`,
+  tx.moveCall({
+    target: `${constants.packageId}::move_registry::set_network`,
     arguments: [
-      txb.object(constants.appRegistry),
-      txb.object(appCap),
-      txb.pure.string(network),
-      appInfo
-    ]
-  })
+      tx.object(constants.appRegistry),
+      tx.object(appCap),
+      tx.pure.string(chainId),
+      appInfo,
+    ],
+  });
 };
