@@ -35,7 +35,7 @@ export function PackageInfoSelector({
 
   return (
     <div className="flex gap-Small">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
             variant="secondary"
@@ -68,7 +68,7 @@ export function PackageInfoSelector({
               >
                 <PackageInfoDisplay
                   width="100%"
-                  height="auto"
+                  height="100%"
                   {...option.display}
                   packageAddr={option.packageAddress}
                 />
