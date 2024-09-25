@@ -48,8 +48,8 @@ export default function AppsLayout({
     <AppContext.Provider value={{ value: appValue, setValue: setAndCacheValue }}>
       <div className="border-b border-border-classic">
         <div className="container flex items-center gap-Regular pb-Regular">
-          <Text variant="xsmall/semibold" family="inter">
-            Select an org name
+          <Text variant="xsmall/semibold" family="inter" className="max-md:hidden">
+            Selected Organization:
           </Text>
           <div className="w-[300px]">
             <ComboBox

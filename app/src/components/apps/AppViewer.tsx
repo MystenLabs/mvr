@@ -61,11 +61,11 @@ const AppViewerWrapper = ({
         appRecord={record}
         closeDialog={() => setShowDialog(false)}
       />
-      <Text variant="heading/bold" color="secondary" className="max-w-[750px]">
+      <Text variant="heading/bold" color="secondary" className="max-w-[750px] pb-Regular">
         {name}
       </Text>
       <DialogTrigger>
-        <Button variant="link">Edit package</Button>
+        <Button variant="outline">Edit Application</Button>
       </DialogTrigger>
       <div className="py-Regular">{children}</div>
     </Dialog>
@@ -78,22 +78,26 @@ const SinglePackageView = ({ appInfo }: { appInfo?: AppInfo | null }) => {
     return (
       <EmptyState size="md" {...Content.noPackageConnected}>
         <DialogTrigger>
-          <Button variant="link">{Content.noPackageConnected.button}</Button>
+          <Button variant="default">{Content.noPackageConnected.button}</Button>
         </DialogTrigger>
       </EmptyState>
     );
 
   return (
     <div>
-      <Text variant="small/regular" color="secondary">
-        Package Address: {appInfo.packageAddress}
-      </Text>
-      <Text variant="small/regular" color="secondary">
-        Upgrade Cap ID: {appInfo.upgradeCapId}
-      </Text>
-      <Text variant="small/regular" color="secondary">
-        Package Info ID: {appInfo.packageInfoId}
-      </Text>
+      <EmptyState icon="⚠️" title="TODO: Finish this page">
+        <>
+          <Text variant="small/regular" color="secondary">
+            Package Address: {appInfo.packageAddress}
+          </Text>
+          <Text variant="small/regular" color="secondary">
+            Upgrade Cap ID: {appInfo.upgradeCapId}
+          </Text>
+          <Text variant="small/regular" color="secondary">
+            Package Info ID: {appInfo.packageInfoId}
+          </Text>
+        </>
+      </EmptyState>
     </div>
   );
 };

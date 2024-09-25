@@ -72,7 +72,7 @@ export function useGetAppFromCap(cap: AppCap) {
   const client = useSuiClientsContext().mainnet;
 
   return useQuery({
-    queryKey: [AppQueryKeys.APP, cap.appName],
+    queryKey: [AppQueryKeys.APP, cap.normalizedName],
     queryFn: async () => {
       const data = await client.getDynamicFieldObject({
         parentId: Constants.appsRegistryTableId,

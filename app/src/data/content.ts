@@ -58,11 +58,11 @@ export const Content = {
     },
     noPackageConnected: {
         icon: '📦',
-        title: 'You have not connected any package.',
-        description: 'Connect your package so MVR resolution gets enabled.',
-        button: 'Edit connected packages'
+        title: 'No package connection.',
+        description: 'This application does not have a package connected on this network. Connect your package so MVR resolution gets enabled.',
+        button: 'Edit Application'
     },
-    
+
     app: {
         button: 'Create another Application'
     },

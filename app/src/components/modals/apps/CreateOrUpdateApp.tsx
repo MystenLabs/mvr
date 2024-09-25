@@ -72,6 +72,11 @@ export default function CreateOrUpdateApp({
     client.invalidateQueries({
       queryKey: [AppQueryKeys.OWNED_APPS],
     });
+
+    if (isUpdate)
+      client.invalidateQueries({
+        queryKey: [AppQueryKeys.APP, appRecord.normalized],
+      });
   };
 
   useEffect(() => {
@@ -196,9 +201,7 @@ export default function CreateOrUpdateApp({
                     name="testnet"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          Testnet package (optional)
-                        </FormLabel>
+                        <FormLabel>Testnet package (optional)</FormLabel>
                         <FormControl>
                           <PackageInfoSelector
                             options={testnetPackageInfos ?? []}
@@ -211,42 +214,46 @@ export default function CreateOrUpdateApp({
                   />
                 </div>
 
-                {!!form.getValues("mainnet") && (!isUpdate || !appRecord?.mainnet)  && (
-                  <FormField
-                    control={form.control}
-                    name="acceptMainnetWarning"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
-                        <FormControl>
-                          <Checkbox
-                            className="mt-1"
-                            checked={field.value}
-                            onCheckedChange={(value) => {
-                              if (value === "indeterminate") return;
-                              form.setValue("acceptMainnetWarning", value);
-                              form.trigger("acceptMainnetWarning");
-                            }}
-                          />
-                        </FormControl>
-                        <div className="space-y-1">
-                          <FormLabel className="cursor-pointer font-bold">
-                            I understand this action is irreversible
-                          </FormLabel>
-                          <FormDescription className="leading-normal">
-                            I understand that after attaching a mainnet package
-                            info, this app name will be permanently associated
-                            with the selected package.
-                          </FormDescription>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                )}
+                {!!form.getValues("mainnet") &&
+                  !(isUpdate && appRecord.mainnet) && (
+                    <FormField
+                      control={form.control}
+                      name="acceptMainnetWarning"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
+                          <FormControl>
+                            <Checkbox
+                              className="mt-1"
+                              checked={field.value}
+                              onCheckedChange={(value) => {
+                                if (value === "indeterminate") return;
+                                form.setValue("acceptMainnetWarning", value);
+                                form.trigger("acceptMainnetWarning");
+                              }}
+                            />
+                          </FormControl>
+                          <div className="space-y-1">
+                            <FormLabel className="cursor-pointer font-bold">
+                              I understand this action is irreversible
+                            </FormLabel>
+                            <FormDescription className="leading-normal">
+                              I understand that after attaching a mainnet
+                              package info, this app name will be permanently
+                              associated with the selected package.
+                            </FormDescription>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                 <ModalFooter
                   loading={isPending || isUpdatePending}
-                  leftBtnHandler={() => {form.reset(); closeDialog();}}
+                  leftBtnHandler={() => {
+                    form.reset();
+                    closeDialog();
+                  }}
                   rightBtnDisabled={!form.formState.isValid}
                   rightBtnText={isUpdate ? "Update" : "Create"}
                   rightBtnHandler={async () => {
