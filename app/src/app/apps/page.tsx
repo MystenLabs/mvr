@@ -43,7 +43,9 @@ export default function App() {
     setValue({ selectedSuinsName });
   };
 
-  const state = suinsNames?.length ? Content.suinsNames : Content.emptyStates.suinsNames;
+  const state = suinsNames?.length
+    ? Content.suinsNames
+    : Content.emptyStates.suinsNames;
 
   if (suinsNames?.length === 0 || !appValue.selectedSuinsName)
     return (
@@ -116,10 +118,8 @@ export default function App() {
           ))}
         </div>
 
-        <div className="block break-words p-Large">
-          {
-            selectedAppCap && <AppViewer cap={selectedAppCap} />
-          }
+        <div className="block w-full break-words p-Large">
+          {selectedAppCap && <AppViewer cap={selectedAppCap} />}
         </div>
       </div>
     </main>

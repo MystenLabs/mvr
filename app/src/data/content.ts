@@ -46,6 +46,17 @@ export const Content = {
         description: 'It seems like you have some packages. Create a new package metadata object by clicking the button below.',
         button: 'Create a Package metadata NFT'
     },
+    invalidCap: {
+        icon: '❌',
+        title: 'Invalid Cap',
+        description: 'The cap you are using is no longer valid to manage this app. Please make sure you are using the correct cap.',
+        button: 'Burn object'
+    },
+    loading: {
+        title: 'Loading...',
+        description: 'Please wait while we fetch the data for you.'
+    },
+
     app: {
         button: 'Create another Application'
     },
