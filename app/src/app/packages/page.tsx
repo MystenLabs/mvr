@@ -18,14 +18,15 @@ import { cn } from "@/lib/utils";
 import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
 import { useActiveAddress } from "@/hooks/useActiveAddress";
 import { NetworkMissmatch } from "@/components/NetworkMissmatch";
+import LoadingState from "@/components/LoadingState";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
   const activeAddress = useActiveAddress();
 
   const [showCreationDialog, setShowCreationDialog] = useState(false);
-  const { data: upgradeCaps } = useGetUpgradeCaps(selectedNetwork);
-  const { data: packageInfos } = useGetPackageInfoObjects(selectedNetwork);
+  const { data: upgradeCaps, isLoading: capsLoading } = useGetUpgradeCaps(selectedNetwork);
+  const { data: packageInfos, isLoading: packageInfosLoading } = useGetPackageInfoObjects(selectedNetwork);
 
   const [selectedPackage, setSelectedPackage] = useState<PackageInfo | null>(
     null,
@@ -45,6 +46,8 @@ export default function Packages() {
       setSelectedPackage(packageInfos[0] ?? null);
     }
   }, [packageInfos]);
+
+  if (capsLoading || packageInfosLoading) return <LoadingState />;
 
   if (
     (!upgradeCaps || !upgradeCaps.length) &&

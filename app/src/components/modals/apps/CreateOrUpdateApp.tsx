@@ -27,6 +27,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { AppQueryKeys } from "@/utils/types";
 import { AppRecord } from "@/hooks/useGetApp";
+import { AlertCircleIcon } from "lucide-react";
 
 const formSchema = z
   .object({
@@ -191,6 +192,13 @@ export default function CreateOrUpdateApp({
                             {...field}
                           />
                         </FormControl>
+                        {isUpdate && appRecord.mainnet && (
+                          <FormDescription className="flex items-center gap-Small">
+                            <AlertCircleIcon size={15} />
+                            Mainnet package has already been assigned and cannot
+                            change.
+                          </FormDescription>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
