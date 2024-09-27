@@ -1,4 +1,4 @@
-import { formatAddress } from '@mysten/sui.js/utils';
+import { formatAddress } from '@mysten/sui/utils';
 import { useResolveSuiNSName } from '@mysten/dapp-kit';
 import { normalizeSuiNSName } from "@mysten/sui/utils"
 
