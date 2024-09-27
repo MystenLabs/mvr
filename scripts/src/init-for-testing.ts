@@ -1,8 +1,7 @@
 import path from "path";
-import { publishDotMove } from "./publish";
 import { publish } from "./publish-package-info"
 import { unlinkSync } from "fs";
-import { getActiveNetwork, Network, parseCorePackageObjects, publishPackage, sender, signAndExecute, sleep } from "../utils";
+import { getActiveNetwork, parseCorePackageObjects, publishPackage, signAndExecute, sleep } from "../utils";
 import { Transaction } from "@mysten/sui/transactions";
 import { PackageInfo } from "./contracts/package-info";
 import { registerApp, registerDotMove } from "./contracts/registration";
@@ -46,7 +45,7 @@ export const setupOnLocalnet = async () => {
     const pkgInfo = new PackageInfo(tx, packageInfoDetails.packageId);
     pkgInfo
         .new(demoPkg.upgradeCap)
-        .setDisplay("Demo NFT trying an even bigger label that will work fine in lines", "E0E1EC", "BDBFEC")
+        .setDisplay("Demo NFT trying an even bigger label that will work fine in lines", "E0E1EC", "BDBFEC", '030F1C')
         .setGitVersioning(1, {
             gitRepository: "https://github.com/MystenLabs/dot_move",
             gitSubdirectory: "packages/demo",
@@ -56,7 +55,7 @@ export const setupOnLocalnet = async () => {
     const pkgInfo2 = new PackageInfo(tx, packageInfoDetails.packageId);
     pkgInfo2
         .new(demoPkg.upgradeCap)
-        .setDisplay("Pink Version of my package", "E9E0EC", "DDB1EC")
+        .setDisplay("Pink Version of my package", "E9E0EC", "DDB1EC", '030F1C')
         .setGitVersioning(1, {
             gitRepository: "https://github.com/MystenLabs/dot_move",
             gitSubdirectory: "packages/demo",
@@ -66,7 +65,7 @@ export const setupOnLocalnet = async () => {
     const pkgInfo3 = new PackageInfo(tx, packageInfoDetails.packageId);
     pkgInfo3
         .new(demoPkg.upgradeCap)
-        .setDisplay("Green Version of my package", "E0ECE6", "BDECD5")
+        .setDisplay("Green Version of my package", "E0ECE6", "BDECD5", '030F1C')
         .setGitVersioning(1, {
             gitRepository: "https://github.com/MystenLabs/dot_move",
             gitSubdirectory: "packages/demo",

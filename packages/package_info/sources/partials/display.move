@@ -14,6 +14,9 @@ const SVG_INITIAL_Y: u64 = 70;
 const SVG_LINE_HEIGHT: u64 = 46;
 const NAME_FONT_SIZE: u64 = 41;
 const PACKAGE_FONT_SIZE: u64 = 18;
+
+const DEFAULT_GRADIENT_FROM_COLOR: vector<u8> = b"E0E1EC";
+const DEFAULT_GRADIENT_TO_COLOR: vector<u8> = b"BDBFEC";
 const DEFAULT_TEXT_COLOR: vector<u8> = b"030F1C";
 
 public struct PackageDisplay has copy, store, drop {
@@ -25,16 +28,17 @@ public struct PackageDisplay has copy, store, drop {
 }
 
 public fun new(
+    name: String,
     gradient_from: String,
     gradient_to: String,
-    name: String,
+    text_color: String,
 ): PackageDisplay {
     assert!(name.length() <= MAX_NAME_LENGTH, EMaxNameLengthExceeded);
     PackageDisplay {
         gradient_from,
         gradient_to,
         name,
-        text_color: DEFAULT_TEXT_COLOR.to_string(),
+        text_color,
         // We keep empty for now. The uri encoding happens when we call
         // `encode_label`. That happens when `set_display` is called on
         // `PackageInfo`.
@@ -44,9 +48,10 @@ public fun new(
 
 public fun default(name: String): PackageDisplay {
     new(
-        b"E0E1EC".to_string(),
-        b"BDBFEC".to_string(),
         name,
+        DEFAULT_GRADIENT_FROM_COLOR.to_string(),
+        DEFAULT_GRADIENT_TO_COLOR.to_string(),
+        DEFAULT_TEXT_COLOR.to_string(),
     )
 }
 

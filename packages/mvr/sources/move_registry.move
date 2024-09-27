@@ -63,7 +63,7 @@ fun init(otw: MOVE_REGISTRY, ctx: &mut TxContext) {
 /// The `SuinsRegistration` object is used for validation.
 ///
 /// Aborts if:
-/// 1. The app is already registered and is immutable 
+/// 1. The app is already registered and is immutable
 /// 2. The given `SuinsRegistration` object has expired
 /// 3. The given `SuinsRegistration` object is a subdomain
 public fun register(
@@ -85,9 +85,8 @@ public fun register(
 }
 
 /// Allows removing an app from the registry,
-/// only if the app is not immutable 
-/// (no mainnet package has been assigned).
-/// 
+/// only if the app is not immutable (no mainnet package has been assigned).
+///
 /// Aborts if:
 /// 1. The app does not exist
 /// 2. The app is immutable
@@ -163,7 +162,6 @@ fun borrow_record_mut(
     assert!(cap.is_valid_for(record), EUnauthorized);
     record
 }
-
 
 #[test_only]
 public(package) fun init_for_testing(ctx: &mut TxContext) {

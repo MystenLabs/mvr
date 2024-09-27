@@ -39,15 +39,16 @@ export class PackageInfo {
         return this;
     }
 
-    setDisplay(label: string, gradientFrom: string, gradientTo: string) {
+    setDisplay(label: string, gradientFrom: string, gradientTo: string, textColor: string) {
         this.#checkInitialized();
 
         const display = this.transaction.moveCall({
             target: `${this.packageId}::display::new`,
             arguments: [
+                this.transaction.pure.string(label),
                 this.transaction.pure.string(gradientFrom),
                 this.transaction.pure.string(gradientTo),
-                this.transaction.pure.string(label),
+                this.transaction.pure.string(textColor),
             ],
         });
 

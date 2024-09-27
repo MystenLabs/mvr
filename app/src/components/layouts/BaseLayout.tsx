@@ -6,13 +6,8 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import Header from "../Header";
 import Footer from "../Footer";
 import { LocalStorageKeys } from "@/data/localStorage";
-import { useActiveAddress } from "@/hooks/useActiveAddress";
-import { EmptyState } from "../EmptyState";
-import { Content } from "@/data/content";
-import { Button } from "../ui/button";
-import Link from "next/link";
-import { useCurrentAccount } from "@mysten/dapp-kit";
 import { BaseContent } from "./BaseContent";
+import { Toaster } from 'sonner'
 
 export function BaseLayout({ children }: { children: React.ReactNode }) {
   const [mvrSetup, setMVRSetup] = useState<MVRSetup>({
@@ -46,9 +41,13 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <MVRContext.Provider value={mvrSetup}>
-      <Header updateUseCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
-      <BaseContent>{children}</BaseContent>
-      <Footer />
+      <div className="min-h-screen flex flex-col">
+        <Toaster />
+        <Header updateUseCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
+        <BaseContent>{children}</BaseContent>
+        <Footer />
+      </div>
+
     </MVRContext.Provider>
   );
 }
