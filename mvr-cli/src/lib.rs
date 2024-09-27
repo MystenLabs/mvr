@@ -37,7 +37,6 @@ const MAINNET_CHAIN_ID: &str = "35834a8a";
 
 #[derive(Debug, Deserialize, Serialize)]
 struct MoveRegistryDependency {
-    resolver: String,
     network: String,
     packages: Vec<String>,
 }
@@ -96,15 +95,13 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
     let dependency: MoveRegistryDependency = move_toml
         .dependencies
         .get(key)
-        .ok_or_else(|| anyhow!("Expected dependency group '{key}' in [dependencies]"))?
+        .ok_or_else(|| anyhow!("Expected dependency '{key}' in [dependencies]"))?
         .clone()
         .try_into()
-        .map_err(|_| {
-            anyhow!("The TOML for external dependency '{key}' doesn't make sense to me")
-        })?;
+        .map_err(|_| anyhow!("Unable to parse TOML for external dependency '{key}'"))?;
     eprintln!(
-        "Resolving key = '{}' for resolver = {}, packages = {:?}",
-        key, dependency.resolver, dependency.packages
+        "Resolving key = '{}', packages = {:?}",
+        key, dependency.packages
     );
 
     let config_path = sui_config_dir()?.join(SUI_CLIENT_CONFIG);
