@@ -101,7 +101,7 @@ export default function App() {
               closeDialog={() => setShowCreateApp(false)}
             />
             <DialogTrigger>
-              <Button variant="link">{Content.app.button}</Button>
+              <Button variant="outline" className="w-full mb-Small">{Content.app.button}</Button>
             </DialogTrigger>
           </Dialog>
           {nsMatchingApps.map((app) => (

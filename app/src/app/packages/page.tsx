@@ -117,7 +117,7 @@ export default function Packages() {
               closeDialog={() => setShowCreationDialog(false)}
             />
             <DialogTrigger>
-              <Button variant="link">{Content.package.button}</Button>
+              <Button variant="outline" className="w-full mb-Small">{Content.package.button}</Button>
             </DialogTrigger>
           </Dialog>
           {packageInfos.map((packageInfo) => (
