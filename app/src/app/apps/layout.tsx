@@ -18,10 +18,9 @@ export default function AppsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { data: ownedNames } = useOwnedSuinsNames();
-  console.log(JSON.parse(localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? '')?.selectedSuinsName);
 
   const [appValue, setAppValue] = useState<AppContextType["value"]>({
-    selectedSuinsName: JSON.parse(localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? '')?.selectedSuinsName ?? null,
+    selectedSuinsName: JSON.parse(localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? '{}')?.selectedSuinsName ?? null,
   });
 
   const selectSuinsName = (nftId: string) => {
