@@ -3,8 +3,8 @@ name = "nftmaker"
 edition = "2024.beta"
 
 [dependencies]
-mvr = { r."./mvr" = "hi", network = "testnet", packages = [ "nft/sample", "nft/sample" ] }
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
+mvr = { r."./mvr" = "./mvr", network = "mainnet", packages = [ "mvr-tst/first-app" ] }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
 
 [addresses]
 nftmaker = "0x0"

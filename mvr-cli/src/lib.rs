@@ -23,7 +23,7 @@ use sui_sdk::{
 };
 
 const APP_REGISTRY_TABLE_ID: &str =
-    "0x250b60446b8e7b8d9d7251600a7228dbfda84ccb4b23a56a700d833e221fae4f";
+    "0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163";
 
 /// RPC endpoint
 pub const SUI_MAINNET_URL: &str = "https://fullnode.mainnet.sui.io:443";
@@ -154,8 +154,43 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
 
     let resolved_packages =
         resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
-    check_address_consistency(&resolved_packages, network).await?;
-    let lock_files = build_lock_files(&resolved_packages).await?;
+    if resolved_packages.len() != dependency.packages.len() {
+        bail!(
+            "Resolved fewer dependencies than expected. Some may not exist on-chain {network}, please check and try again. \
+             Expected dependencies {:?} but resolved {:?} on-chain.",
+            dependency.packages,
+            resolved_packages.keys()
+        );
+    }
+
+    let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
+    let mut fetched_files: HashMap<String, (PathBuf, PathBuf)> = HashMap::new();
+
+    for (name_with_version, package_info) in &resolved_packages {
+        let (name, version) = parse_package_version(name_with_version)?;
+        let version = match version {
+            Some(v) => v,
+            None => package_info
+                .git_versioning
+                .keys()
+                .max()
+                .copied()
+                .ok_or_else(|| {
+                    anyhow!("No version specified and no versions found in git_versioning")
+                })?,
+        };
+
+        let git_info = package_info
+            .git_versioning
+            .get(&version)
+            .ok_or_else(|| anyhow!("version {version} does not exist on-chain PackageInfo"))?;
+
+        let (move_toml_path, move_lock_path) = fetch_move_files(&name, git_info, &temp_dir).await?;
+        fetched_files.insert(name_with_version.clone(), (move_toml_path, move_lock_path));
+    }
+
+    check_address_consistency(&resolved_packages, network, &fetched_files).await?;
+    let lock_files = build_lock_files(&resolved_packages, &fetched_files).await?;
 
     // Output each lock file content separated by null characters
     for (i, content) in lock_files.iter().enumerate() {
@@ -181,6 +216,7 @@ async fn resolve_on_chain_package_info(
 ) -> Result<HashMap<String, PackageInfo>> {
     let app_registry_id = ObjectID::from_hex_literal(APP_REGISTRY_TABLE_ID)?;
     let package_set: HashSet<String> = dependency.packages.iter().cloned().collect();
+    eprintln!("package set: {:#?}", package_set);
     let mut cursor = None;
     let mut resolved_packages: HashMap<String, PackageInfo> = HashMap::new();
     loop {
@@ -194,8 +230,11 @@ async fn resolve_on_chain_package_info(
                 get_dynamic_field_object(mainnet_client, app_registry_id, &dynamic_field_info.name)
                     .await?;
             let name = get_normalized_app_name(&name_object)?;
+            eprintln!("normalized: {}", name);
             if package_set.contains(&name) {
+                eprintln!("success");
                 if let Some(package_info) = get_package_info(&name_object, client, network).await? {
+                    eprintln!("resolved {:#?} => {:#?}", name, package_info);
                     resolved_packages.insert(name, package_info);
                 } else {
                     bail!("No on-chain PackageInfo for package {name} on {} (it may not be registered).", dependency.network);
@@ -215,6 +254,7 @@ async fn resolve_on_chain_package_info(
 async fn check_address_consistency(
     resolved_packages: &HashMap<String, PackageInfo>,
     network: &PackageInfoNetwork,
+    fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
 ) -> Result<()> {
     for (name_with_version, package_info) in resolved_packages {
         let (name, version) = parse_package_version(name_with_version)?;
@@ -246,7 +286,9 @@ async fn check_address_consistency(
             .get(&version)
             .ok_or_else(|| anyhow!("version {version} does not exist in on-chain PackageInfo"))?;
 
-        let (move_toml_path, move_lock_path) = fetch_move_files(&name, git_info).await?;
+        let (move_toml_path, move_lock_path) = fetched_files
+            .get(name_with_version)
+            .ok_or_else(|| anyhow!("Failed to find fetched files for {}", name_with_version))?;
         let move_toml_content = fs::read_to_string(move_toml_path)?;
         let move_lock_content = fs::read_to_string(move_lock_path)?;
 
@@ -414,11 +456,14 @@ fn get_original_published_id(move_toml_content: &str, target_chain_id: &str) -> 
 /// Since we want to communicate `foo` (and the URL where it can be found) to `sui move build`,
 /// we create a dependency graph in the `Move.lock` derived from `foo`'s original lock file
 /// that contains `foo`. See `insert_root_dependency` for how this works.
-async fn build_lock_files(resolved_packages: &HashMap<String, PackageInfo>) -> Result<Vec<String>> {
+async fn build_lock_files(
+    resolved_packages: &HashMap<String, PackageInfo>,
+    fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
+) -> Result<Vec<String>> {
     let mut lock_files: Vec<String> = vec![];
 
     for (name_with_version, package_info) in resolved_packages {
-        let (name, version) = parse_package_version(name_with_version)?;
+        let (_name, version) = parse_package_version(name_with_version)?;
         // Use version or default to the highest (i.e., latest) version number otherwise.
         let version = match version {
             Some(v) => v,
@@ -437,7 +482,9 @@ async fn build_lock_files(resolved_packages: &HashMap<String, PackageInfo>) -> R
             .get(&version)
             .ok_or_else(|| anyhow!("version {version} does not exist in on-chain PackageInfo"))?;
 
-        let (move_toml_path, move_lock_path) = fetch_move_files(&name, git_info).await?;
+        let (move_toml_path, move_lock_path) = fetched_files
+            .get(name_with_version)
+            .ok_or_else(|| anyhow!("Failed to find fetched files for {}", name_with_version))?;
         let move_toml_content = fs::read_to_string(move_toml_path)?;
         let move_lock_content = fs::read_to_string(move_lock_path)?;
         let root_name_from_source = parse_source_package_name(&move_toml_content)?;
@@ -468,20 +515,37 @@ async fn get_dynamic_field_object(
 }
 
 fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<String> {
-    dynamic_field_object
+    let content = dynamic_field_object
         .data
         .as_ref()
         .and_then(|data| data.content.as_ref())
-        .and_then(|content| content.try_as_move())
+        .and_then(|content| content.try_as_move());
+
+    let name = content
         .and_then(|move_data| move_data.fields.field_value("name"))
-        .map(|name_field| name_field.to_json_value())
-        .and_then(|json_value| {
-            json_value
-                .get("normalized")
-                .and_then(|v| v.as_str())
-                .map(String::from)
-        })
-        .ok_or_else(|| anyhow!("No normalized package name"))
+        .map(|name_field| name_field.to_json_value());
+
+    if let Some(JValue::Object(name_obj)) = name {
+        let org_name = name_obj
+            .get("org")
+            .and_then(|org| org.as_object())
+            .and_then(|org| org.get("labels"))
+            .and_then(|labels| labels.as_array())
+            .and_then(|labels| labels.get(1))
+            .and_then(|label| label.as_str())
+            .unwrap_or("unknown");
+
+        let app_name = name_obj
+            .get("app")
+            .and_then(|app| app.as_array())
+            .and_then(|app| app.get(0))
+            .and_then(|app| app.as_str())
+            .unwrap_or("unknown");
+
+        Ok(format!("{}/{}", org_name, app_name))
+    } else {
+        Err(anyhow!("Invalid name structure"))
+    }
 }
 
 fn get_package_info_id(
@@ -497,25 +561,30 @@ fn get_package_info_id(
         .map(|value| value.to_json_value())
         .ok_or_else(|| anyhow!("Failed to extract value field as JSON"))?;
 
-    let networks = json_value["networks"]["contents"]
-        .as_array()
-        .ok_or_else(|| anyhow!("Networks is not an array"))?;
+    let package_info_id_str = match network {
+        PackageInfoNetwork::Mainnet => json_value["app_info"]["package_info_id"].as_str(),
+        PackageInfoNetwork::Testnet => {
+            let networks = json_value["networks"]["contents"]
+                .as_array()
+                .ok_or_else(|| anyhow!("Networks is not an array"))?;
 
-    let network = match network {
-        PackageInfoNetwork::Mainnet => "mainnet",
-        PackageInfoNetwork::Testnet => "testnet",
+            networks
+                .iter()
+                .find(|entry| entry["key"] == "testnet")
+                .and_then(|testnet_entry| testnet_entry["value"]["package_info_id"].as_str())
+        }
     };
-
-    let package_info_id_str = networks
-        .iter()
-        .find(|entry| entry["key"] == network)
-        .and_then(|testnet_entry| testnet_entry["value"]["package_info_id"].as_str());
 
     match package_info_id_str {
         Some(id_str) => ObjectID::from_hex_literal(id_str)
             .map(Some)
             .map_err(|e| anyhow!("Failed to parse PackageInfo ID: {e}")),
-        None => Ok(None),
+        None => {
+            bail!(
+                "No PackageInfo ID string found in response {:#?} for on {network}",
+                json_value,
+            )
+        }
     }
 }
 
@@ -751,8 +820,11 @@ fn format_github_raw_url(
 }
 
 /// Fetches `Move.toml` and `Move.lock` files from a source repository.
-async fn fetch_move_files(name: &str, git_info: &GitInfo) -> Result<(PathBuf, PathBuf)> {
-    let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
+async fn fetch_move_files(
+    name: &str,
+    git_info: &GitInfo,
+    temp_dir: &TempDir,
+) -> Result<(PathBuf, PathBuf)> {
     let client = Client::new();
 
     let files_to_fetch = ["Move.toml", "Move.lock"];
@@ -831,6 +903,7 @@ fn insert_root_dependency(
     let new_dep = {
         let mut table = InlineTable::new();
         table.insert("name", Value::String(Formatted::new(root_name.to_string())));
+        table.insert("id", Value::String(Formatted::new(root_name.to_string())));
         Value::InlineTable(table)
     };
     let mut new_deps = Array::new();
@@ -839,7 +912,7 @@ fn insert_root_dependency(
 
     // Create a new root package entry, set its dependencies to the original top-level dependencies, and persist.
     let mut new_package = Table::new();
-    new_package.insert("name", value(root_name));
+    new_package.insert("id", value(root_name));
 
     let mut source = Table::new();
     source.insert("git", value(&git_info.repository));
@@ -858,6 +931,7 @@ fn insert_root_dependency(
         .ok_or_else(|| anyhow!("Failed to get or create package array"))?;
     packages.push(new_package);
 
+    eprintln!("New lock: {}", doc);
     Ok(doc.to_string())
 }
 
