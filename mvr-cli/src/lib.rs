@@ -265,7 +265,6 @@ async fn check_address_consistency(
     fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
 ) -> Result<()> {
     for (name_with_version, package_info) in resolved_packages {
-        eprintln!("parsing {name_with_version})");
         let (name, version) = parse_package_version(name_with_version)?;
         // Use version or default to the highest (i.e., latest) version number otherwise.
         let version = match version {
