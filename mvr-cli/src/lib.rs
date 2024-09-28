@@ -77,12 +77,9 @@ impl fmt::Display for PackageInfoNetwork {
 
 /// Resolves move registry packages. This function is invoked by `sui move build` and given the
 /// a key associated with the external resolution in a Move.toml file. For example, this
-/// TOML would trigger sui move build to call this binary and hit this function with value `key`:
+/// TOML would trigger sui move build to call this binary and hit this function with value `mvr`:
 ///
-/// [dependencies.key]
-/// resolver = "mvr"
-/// network = "mainnet"
-/// packages = [ "foo/bar", "baz/qux/v1" ]
+/// mvr = { r."./mvr" = "./mvr", network = "mainnet", packages = [ "@mvr-tst/first-app" ] }
 ///
 /// The high-level logic of this function is as follows:
 /// 1) Fetch on-chain data for `packages`: the GitHub repository, branch, and subpath
@@ -156,7 +153,8 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
         resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
     if resolved_packages.len() != dependency.packages.len() {
         bail!(
-            "Resolved fewer dependencies than expected. Some may not exist on-chain {network}, please check and try again. \
+            "Resolved fewer dependencies than expected. Some may not exist on-chain {network}, \
+             please check and try again. \
              Expected dependencies {:?} but resolved {:?} on-chain.",
             dependency.packages,
             resolved_packages.keys()
@@ -180,10 +178,12 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
                 })?,
         };
 
-        let git_info = package_info
-            .git_versioning
-            .get(&version)
-            .ok_or_else(|| anyhow!("version {version} does not exist on-chain PackageInfo"))?;
+        let git_info = package_info.git_versioning.get(&version).ok_or_else(|| {
+            anyhow!(
+                "version {version} of {name} does not exist in on-chain PackageInfo. \
+                 Please check that it is valid and try again."
+            )
+        })?;
 
         let (move_toml_path, move_lock_path) = fetch_move_files(&name, git_info, &temp_dir).await?;
         fetched_files.insert(name_with_version.clone(), (move_toml_path, move_lock_path));
@@ -215,8 +215,14 @@ async fn resolve_on_chain_package_info(
     dependency: &MoveRegistryDependency,
 ) -> Result<HashMap<String, PackageInfo>> {
     let app_registry_id = ObjectID::from_hex_literal(APP_REGISTRY_TABLE_ID)?;
-    let package_set: HashSet<String> = dependency.packages.iter().cloned().collect();
-    eprintln!("package set: {:#?}", package_set);
+    let package_name_map: Result<HashMap<String, String>> = dependency
+        .packages
+        .iter()
+        .map(|package| parse_package_version(package).map(|(name, _)| (name, package.clone())))
+        .collect();
+    let package_name_map = package_name_map?;
+    // Create set of package names with version stripped (we check version info later).
+    let package_set: HashSet<String> = package_name_map.keys().cloned().collect();
     let mut cursor = None;
     let mut resolved_packages: HashMap<String, PackageInfo> = HashMap::new();
     loop {
@@ -230,12 +236,14 @@ async fn resolve_on_chain_package_info(
                 get_dynamic_field_object(mainnet_client, app_registry_id, &dynamic_field_info.name)
                     .await?;
             let name = get_normalized_app_name(&name_object)?;
-            eprintln!("normalized: {}", name);
             if package_set.contains(&name) {
-                eprintln!("success");
                 if let Some(package_info) = get_package_info(&name_object, client, network).await? {
-                    eprintln!("resolved {:#?} => {:#?}", name, package_info);
-                    resolved_packages.insert(name, package_info);
+                    if let Some(full_name) = package_name_map.get(&name) {
+                        resolved_packages.insert(full_name.clone(), package_info);
+                    } else {
+                        // Invariant: should never happen if package_set and package_name_map are in sync
+                        eprintln!("Warning: Found package in set but not in map: {}", name);
+                    }
                 } else {
                     bail!("No on-chain PackageInfo for package {name} on {} (it may not be registered).", dependency.network);
                 }
@@ -257,6 +265,7 @@ async fn check_address_consistency(
     fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
 ) -> Result<()> {
     for (name_with_version, package_info) in resolved_packages {
+        eprintln!("parsing {name_with_version})");
         let (name, version) = parse_package_version(name_with_version)?;
         // Use version or default to the highest (i.e., latest) version number otherwise.
         let version = match version {
@@ -270,6 +279,7 @@ async fn check_address_consistency(
                     anyhow!("No version specified and no versions found in git_versioning")
                 })?,
         };
+        eprintln!("Using on-chain version {version}");
 
         let original_address_on_chain = if version > 1 {
             package_at_version(&package_info.package_address.to_string(), 1, &network)
@@ -281,10 +291,12 @@ async fn check_address_consistency(
             package_info.package_address.to_string()
         };
 
-        let git_info = package_info
-            .git_versioning
-            .get(&version)
-            .ok_or_else(|| anyhow!("version {version} does not exist in on-chain PackageInfo"))?;
+        let git_info = package_info.git_versioning.get(&version).ok_or_else(|| {
+            anyhow!(
+                "version {version} of {name} does not exist in on-chain PackageInfo. \
+                 Please check that it is valid and try again."
+            )
+        })?;
 
         let (move_toml_path, move_lock_path) = fetched_files
             .get(name_with_version)
@@ -542,7 +554,7 @@ fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<S
             .and_then(|app| app.as_str())
             .unwrap_or("unknown");
 
-        Ok(format!("{}/{}", org_name, app_name))
+        Ok(format!("@{}/{}", org_name, app_name))
     } else {
         Err(anyhow!("Invalid name structure"))
     }
@@ -551,7 +563,7 @@ fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<S
 fn get_package_info_id(
     dynamic_field: &SuiObjectResponse,
     network: &PackageInfoNetwork,
-) -> Result<Option<ObjectID>> {
+) -> Result<ObjectID> {
     let json_value = dynamic_field
         .data
         .as_ref()
@@ -562,7 +574,9 @@ fn get_package_info_id(
         .ok_or_else(|| anyhow!("Failed to extract value field as JSON"))?;
 
     let package_info_id_str = match network {
-        PackageInfoNetwork::Mainnet => json_value["app_info"]["package_info_id"].as_str(),
+        PackageInfoNetwork::Mainnet => json_value["app_info"]["package_info_id"]
+            .as_str()
+            .ok_or_else(|| anyhow!("PackageInfo ID not found for Mainnet"))?,
         PackageInfoNetwork::Testnet => {
             let networks = json_value["networks"]["contents"]
                 .as_array()
@@ -572,20 +586,12 @@ fn get_package_info_id(
                 .iter()
                 .find(|entry| entry["key"] == "testnet")
                 .and_then(|testnet_entry| testnet_entry["value"]["package_info_id"].as_str())
+                .ok_or_else(|| anyhow!("PackageInfo ID not found for Testnet"))?
         }
     };
 
-    match package_info_id_str {
-        Some(id_str) => ObjectID::from_hex_literal(id_str)
-            .map(Some)
-            .map_err(|e| anyhow!("Failed to parse PackageInfo ID: {e}")),
-        None => {
-            bail!(
-                "No PackageInfo ID string found in response {:#?} for on {network}",
-                json_value,
-            )
-        }
-    }
+    ObjectID::from_hex_literal(package_info_id_str)
+        .map_err(|e| anyhow!("Failed to parse PackageInfo ID: {e}"))
 }
 
 async fn get_package_info(
@@ -593,9 +599,7 @@ async fn get_package_info(
     client: &SuiClient,
     network: &PackageInfoNetwork,
 ) -> Result<Option<PackageInfo>> {
-    let Some(package_info_id) = get_package_info_id(&name_object, network)? else {
-        return Ok(None);
-    };
+    let package_info_id = get_package_info_id(&name_object, network)?;
     let package_info = get_package_info_by_id(&client, package_info_id).await?;
     let upgrade_cap_id = get_upgrade_cap_id(&package_info)?;
     let package_address = get_package_address(&package_info)?;
@@ -782,9 +786,20 @@ fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
             None,
         )),
         [base_org, base_name, version] => {
-            let version = version
+            let version: u64 = version
                 .parse::<u64>()
-                .map_err(|_| anyhow!("Invalid version {version} for package {name}"))?;
+                .map_err(|_| {
+                    anyhow!("Cannot parse version \"{version}\". Version must be 1 or greater.")
+                })
+                .and_then(|v| {
+                    if v >= 1 {
+                        Ok(v)
+                    } else {
+                        Err(anyhow!(
+                            "Invalid version number {v}. Version must be 1 or greater."
+                        ))
+                    }
+                })?;
             Ok((
                 format!("{}/{}", base_org.to_string(), base_name.to_string()),
                 Some(version),
@@ -930,8 +945,6 @@ fn insert_root_dependency(
         .as_array_of_tables_mut()
         .ok_or_else(|| anyhow!("Failed to get or create package array"))?;
     packages.push(new_package);
-
-    eprintln!("New lock: {}", doc);
     Ok(doc.to_string())
 }
 
@@ -1081,27 +1094,30 @@ fn update_mvr_packages(move_toml_path: &Path, package_name: &str, network: &str)
 macro_rules! print_package_info {
     ($name_object:expr, $client:expr, $network:expr) => {
         println!("  [{}]", $network);
-        if let Some(PackageInfo {
-            upgrade_cap_id,
-            package_address,
-            git_versioning,
-        }) = get_package_info(&$name_object, $client, $network).await? {
-            println!("  Package Addr: {package_address}");
-            println!("  Upgrade Cap : {upgrade_cap_id}");
-            for (
-                k,
-                GitInfo {
-                    repository,
-                    tag,
-                    path,
-                },
-            ) in git_versioning.iter() {
-                println!(
-                    "    v{k}\n      Repository: {repository}\n      Tag: {tag}\n      Path: {path}"
-                );
+        match get_package_info(&$name_object, $client, $network).await {
+            Ok(Some(PackageInfo {
+                upgrade_cap_id,
+                package_address,
+                git_versioning,
+            })) => {
+                println!("    Package Addr: {package_address}");
+                println!("    Upgrade Cap : {upgrade_cap_id}");
+                for (
+                    k,
+                    GitInfo {
+                        repository,
+                        tag,
+                        path,
+                    },
+                ) in git_versioning.iter() {
+                    println!(
+                        "      v{k}\n      Repository: {repository}\n      Tag: {tag}\n      Path: {path}"
+                    );
+                }
+            },
+            Ok(None) | Err(_) => {
+                println!("      <Not found>");
             }
-        } else {
-                println!("    <empty>");
         };
     }
 }
