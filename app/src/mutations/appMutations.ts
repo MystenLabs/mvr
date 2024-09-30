@@ -7,16 +7,19 @@ import {
 } from "@/data/on-chain-app";
 import { useChainIdentifier } from "@/hooks/useChainIdentifier";
 import { AppRecord } from "@/hooks/useGetApp";
+import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { type PackageInfoData } from "@/utils/types";
+import { KioskTransaction } from "@mysten/kiosk";
 import {
   Transaction,
   TransactionObjectArgument,
+  TransactionResult,
 } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 
 export function useCreateAppMutation() {
-  const { mainnet: client } = useSuiClientsContext();
+  const { mainnet: client, mainnetKioskClient } = useSuiClientsContext();
   const { executeTransaction } = useTransactionExecution(client);
   const { data: testnetChainIdentifier } = useChainIdentifier("testnet");
 
@@ -24,21 +27,40 @@ export function useCreateAppMutation() {
     mutationKey: ["create-app"],
     mutationFn: async ({
       name,
-      suinsObjectId,
+      suins,
       mainnetPackageInfo,
       testnetPackageInfo,
     }: {
       name: string;
-      suinsObjectId: TransactionObjectArgument | string;
+      suins: SuinsName;
       mainnetPackageInfo?: PackageInfoData;
       testnetPackageInfo?: PackageInfoData;
     }) => {
       const tx = new Transaction();
 
+      let kioskTx;
+      let nsObject, promise;
+      
+      if (suins.kioskCap) {
+        kioskTx = new KioskTransaction({
+          transaction: tx,
+          kioskClient: mainnetKioskClient,
+          cap: suins.kioskCap,
+        });
+
+        const [item, returnPromise] = kioskTx.borrow({
+          itemId: suins.nftId,
+          itemType: suins.objectType!,
+        });
+
+        nsObject = item;
+        promise = returnPromise;
+      }
+
       const appCap = registerApp({
         tx,
         name,
-        suinsObjectId,
+        suinsObjectId: nsObject ?? suins.nftId,
         mainnetPackageInfo: mainnetPackageInfo?.objectId,
       });
 
@@ -49,6 +71,16 @@ export function useCreateAppMutation() {
           chainId: testnetChainIdentifier!,
           packageInfo: testnetPackageInfo,
         });
+      }
+
+      if (nsObject && promise) {
+        kioskTx?.return({
+          itemType: suins.objectType!,
+          item: nsObject,
+          promise,
+        });
+
+        kioskTx?.finalize();
       }
 
       tx.transferObjects(

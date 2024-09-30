@@ -5,7 +5,7 @@ import { Content } from "../../data/content";
 import Link from "next/link";
 import {
   formatNamesForComboBox,
-  useOwnedSuinsNames,
+  useOwnedAndKioskSuinsNames,
 } from "@/hooks/useOwnedSuiNSNames";
 import { useAppState } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
@@ -18,7 +18,7 @@ import { AppViewer } from "@/components/apps/AppViewer";
 import CreateOrUpdateApp from "@/components/modals/apps/CreateOrUpdateApp";
 
 export default function App() {
-  const { data: suinsNames } = useOwnedSuinsNames();
+  const { names: suinsNames } = useOwnedAndKioskSuinsNames();
   const { data: apps } = useOwnedApps();
   const { value: appValue, setValue } = useAppState();
 

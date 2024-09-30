@@ -28,6 +28,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AppQueryKeys } from "@/utils/types";
 import { AppRecord } from "@/hooks/useGetApp";
 import { AlertCircleIcon } from "lucide-react";
+import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 
 const formSchema = z
   .object({
@@ -54,7 +55,7 @@ export default function CreateOrUpdateApp({
   appRecord,
 }: {
   appRecord?: AppRecord;
-  suins?: { nftId: string; domainName: string };
+  suins?: SuinsName;
   closeDialog: () => void;
 }) {
   const { data: mainnetPackageInfos } = useGetPackageInfoObjects("mainnet");
@@ -124,7 +125,7 @@ export default function CreateOrUpdateApp({
       if (!suins) throw new Error("No suins provided");
       const execution = await create({
         name: values.name,
-        suinsObjectId: suins.nftId,
+        suins,
         mainnetPackageInfo: values.mainnet
           ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
           : undefined,

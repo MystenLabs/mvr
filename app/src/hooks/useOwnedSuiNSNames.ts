@@ -6,25 +6,31 @@ import { fetchAllOwnedObjects } from "@/utils/query";
 import { SuiObjectResponse } from "@mysten/sui/client";
 import { normalizeSuiNSName } from "@mysten/sui/utils";
 import { AppQueryKeys } from "@/utils/types";
+import { useKioskItems } from "./useKioskItems";
+import { useFetchObjectByIds } from "./useGetObjectsById";
+import { KioskOwnerCap } from "@mysten/kiosk";
+
+const NS_MAINNET_TYPE = `${MAINNET_CONFIG.suinsPackageId!.v1}::suins_registration::SuinsRegistration`;
 
 export type SuinsName = {
   nftId: string;
   domainName: string;
   expirationTimestampMs: number;
-  kiosk?: string;
-  kioskCap?: string;
+  kioskCap?: KioskOwnerCap;
+  objectType?: string;
 };
 
 const parseName = (response: SuiObjectResponse) => {
-  if (response.data?.content?.dataType !== 'moveObject') throw new Error('Invalid object type');
+  if (response.data?.content?.dataType !== "moveObject")
+    throw new Error("Invalid object type");
   const fields = response.data.content.fields as Record<string, any>;
   return {
     ...fields,
     nftId: fields.id.id,
     expirationTimestampMs: fields.expiration_timestamp_ms,
-    domainName: normalizeSuiNSName(fields.domain_name, 'at'),
+    domainName: normalizeSuiNSName(fields.domain_name, "at"),
   };
-}
+};
 
 // we default these to mainnet, as we don't have cross-network support
 // for apps registration
@@ -40,8 +46,8 @@ export function useOwnedSuinsNames() {
         client,
         address: activeAddress!,
         filter: {
-          StructType: `${MAINNET_CONFIG.suinsPackageId!.v1}::suins_registration::SuinsRegistration`
-        }
+          StructType: NS_MAINNET_TYPE,
+        },
       });
 
       return ownedNames;
@@ -51,7 +57,38 @@ export function useOwnedSuinsNames() {
     select: (data) => {
       return data.map(parseName) as SuinsName[];
     },
-  })
+  });
+}
+
+/** Returns */
+export function useOwnedAndKioskSuinsNames() {
+  const { data: kioskItems, isLoading: kioskItemsLoading } = useKioskItems();
+  const { data: suinsNames, isLoading: ownedNamesLoading } =
+    useOwnedSuinsNames();
+
+  const ids = kioskItems?.filter((x) => x.type === NS_MAINNET_TYPE) ?? [];
+
+  const { data: kioskSuinsObjects } = useFetchObjectByIds(
+    ids.map((x) => x.objectId),
+    "mainnet",
+  );
+
+  const parsed =
+    kioskSuinsObjects?.map(parseName).map((nsName) => {
+      const name = { ...nsName } as SuinsName;
+
+      name.kioskCap = kioskItems?.find(
+        (x) => x.objectId === nsName.nftId,
+      )?.kioskCap;
+      name.objectType = NS_MAINNET_TYPE;
+
+      return name;
+    }) ?? [];
+
+  return {
+    isLoading: ownedNamesLoading || kioskItemsLoading,
+    names: [...(suinsNames ?? []), ...parsed],
+  };
 }
 
 export function formatNamesForComboBox(names: SuinsName[]) {
