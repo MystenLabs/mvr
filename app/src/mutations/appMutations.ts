@@ -81,8 +81,6 @@ export function useUpdateAppMutation() {
       const tx = new Transaction();
       let updates = 0;
 
-      console.log({record, mainnetPackageInfo, testnetPackageInfo});
-
       if (
         record.mainnet &&
         record.mainnet?.packageInfoId !== mainnetPackageInfo?.objectId

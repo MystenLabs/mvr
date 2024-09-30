@@ -27,9 +27,6 @@ export default function App() {
 
   const nsMatchingApps = useMemo(() => {
     if (!apps || !appValue.selectedSuinsName) return [];
-    console.log(apps.filter(
-      (app) => app.orgName === appValue.selectedSuinsName?.domainName,
-    ));
     return apps.filter(
       (app) => app.orgName === appValue.selectedSuinsName?.domainName,
     );

@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import CreateOrUpdateApp from "../modals/apps/CreateOrUpdateApp";
 import { useGetPackageInfo } from "@/hooks/useGetPackageInfo";
 import { PackageInfoViewer } from "../packages/PackageInfoViewer";
+import { PackagesNetworkContext } from "../providers/packages-provider";
 
 export function AppViewer({ cap }: { cap: AppCap }) {
   const [network, setNetwork] = useState<Network>("mainnet");
@@ -106,10 +107,10 @@ const SinglePackageView = ({
   if (isLoading) return <LoadingState />;
 
   return (
-    <div>
+    <PackagesNetworkContext.Provider value={network}>
       {packageInfoDetails && (
         <PackageInfoViewer packageInfo={packageInfoDetails} disableEdits />
       )}
-    </div>
+    </PackagesNetworkContext.Provider>
   );
 };

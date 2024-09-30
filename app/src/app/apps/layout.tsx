@@ -56,7 +56,6 @@ export default function AppsLayout({
               value={appValue.selectedSuinsName?.nftId}
               options={formatNamesForComboBox(ownedNames ?? [])}
               setValue={selectSuinsName}
-              showSearch={false}
             />
           </div>
         </div>
