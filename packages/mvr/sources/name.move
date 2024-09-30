@@ -14,9 +14,12 @@ use suins::constants as ns_constants;
 use suins::domain::Domain;
 use suins::suins_registration::SuinsRegistration;
 
-const EInvalidName: u64 = 1;
-const ENotAnName: u64 = 2;
-const EUnknownTLD: u64 = 3;
+#[error]
+const EInvalidName: vector<u8> = b"Name format is invalid.";
+#[error]
+const ENotAName: vector<u8> = b"Something went extremely wrong.";
+#[error]
+const EUnknownTLD: vector<u8> = b"Unknown TLD.";
 
 /// A name format is `@org/app`
 /// We keep "org" part flexible, in a future world where SuiNS subdomains could
@@ -51,7 +54,7 @@ public fun has_valid_org(name: &Name, org: &SuinsRegistration): bool {
 /// Get the `app` from an `Name`.
 /// E.g. `@org/example` returns `example`
 public fun app(app: &Name): &String {
-    assert!(app.app.length() == 1, ENotAnName);
+    assert!(app.app.length() == 1, ENotAName);
     &app.app[0]
 }
 
@@ -133,10 +136,10 @@ fun get_tld_symbol(tld: &String): String {
     abort EUnknownTLD
 }
 
-/// Converts a TLD symbol to a TLD string.
-fun symbol_to_tld(symbol: &String): String {
-    if (symbol == constants::sui_tld_separator!()) {
-        return ns_constants::sui_tld()
-    };
-    abort EUnknownTLD
-}
+// /// Converts a TLD symbol to a TLD string.
+// fun symbol_to_tld(symbol: &String): String {
+//     if (symbol == constants::sui_tld_separator!()) {
+//         return ns_constants::sui_tld()
+//     };
+//     abort EUnknownTLD
+// }

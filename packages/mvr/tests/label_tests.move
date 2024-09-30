@@ -50,6 +50,11 @@ fun create_invalid_tld_failure() {
     name::new(b"ap@o".to_string(), classic_domain());
 }
 
+#[test, expected_failure(abort_code = ::mvr::name::EInvalidName)]
+fun test_invalid_label() {
+    name::validate_labels(&vector[]);
+}
+
 fun classic_domain(): Domain {
     domain::new(b"org.sui".to_string())
 }

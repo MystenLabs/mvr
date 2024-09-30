@@ -26,18 +26,19 @@ use sui::package;
 use sui::table::{Self, Table};
 use suins::suins_registration::SuinsRegistration;
 
-/// The app is already registered and is immutable.
-const EAppAlreadyRegistered: u64 = 1;
-/// The user is not authorized to perform the action.
-const EUnauthorized: u64 = 2;
-/// The app does not exist.
-const EAppDoesNotExist: u64 = 3;
-/// The given `SuinsRegistration` object has expired.
-const ENSNameExpired: u64 = 4;
-/// We do not allow subnames in the current phase.
-const ECannotRegisterWithSubname: u64 = 5;
-/// The app is immutable and cannot be removed.
-const EAlreadyImmutable: u64 = 6;
+#[error]
+const EAppAlreadyRegistered: vector<u8> =
+    b"App has already been assigned and is immutable.";
+#[error]
+const EUnauthorized: vector<u8> = b"Unauthorized access to the app.";
+#[error]
+const EAppDoesNotExist: vector<u8> = b"App does not exist.";
+#[error]
+const ENSNameExpired: vector<u8> =
+    b"SuiNS name has expired and cannot be used.";
+#[error]
+const ECannotRegisterWithSubname: vector<u8> =
+    b"SuiNS subnames cannot be used yet.";
 
 /// The shared object holding the registry of packages.
 /// There are no "admin" actions for this registry.
@@ -103,8 +104,6 @@ public fun remove(
     assert!(registry.registry.contains(app_name), EAppDoesNotExist);
 
     let record = registry.registry.remove(app_name);
-    assert!(!record.is_immutable(), EAlreadyImmutable);
-
     record.burn();
 }
 
@@ -143,6 +142,20 @@ public fun unset_network(
 ) {
     let record = registry.borrow_record_mut(cap);
     record.unset_network(network);
+}
+
+/// Burns a cap and the record associated with it, if the cap is still valid for
+/// that record.
+public fun burn_cap(registry: &mut MoveRegistry, cap: AppCap) {
+    let record = registry.registry.borrow(cap.app());
+
+    // If the cap is still valid for the record, we can remove the record too.
+    if (cap.is_valid_for(record)) {
+        let record = registry.registry.remove(cap.app());
+        record.burn();
+    };
+
+    cap.burn_cap();
 }
 
 /// Check if an app is part of the registry.
