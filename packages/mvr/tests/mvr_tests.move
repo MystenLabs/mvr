@@ -1,6 +1,7 @@
 #[test_only]
 module mvr::mvr_tests;
 
+use mvr::app_info;
 use mvr::move_registry::{Self, MoveRegistry};
 use mvr::name;
 use package_info::package_info;
@@ -26,7 +27,7 @@ fun test_move_registry_plain() {
 
     let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
     // register first app!
-    let app_cap = registry.register(
+    let cap = registry.register(
         &ns_nft,
         APP_1.to_string(),
         &clock,
@@ -37,6 +38,16 @@ fun test_move_registry_plain() {
 
     scenario.next_tx(ADDR_1);
 
+    let cid = b"rand".to_string();
+    // set a network with a valid cap.
+    registry.set_network(
+        &cap,
+        cid,
+        app_info::default(),
+    );
+
+    registry.unset_network(&cap, cid);
+
     // remove the app normally since we have not yet assigned a pkg.
     registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
 
@@ -44,7 +55,7 @@ fun test_move_registry_plain() {
         !registry.app_exists(name::new(APP_1.to_string(), ns_nft.domain())),
     );
 
-    transfer::public_transfer(app_cap, scenario.ctx().sender());
+    transfer::public_transfer(cap, scenario.ctx().sender());
     transfer::public_transfer(ns_nft, scenario.ctx().sender());
 
     scenario.cleanup(registry, clock);
@@ -82,7 +93,83 @@ fun test_immutable_packages() {
     scenario.cleanup(registry, clock);
 }
 
-#[test, expected_failure(abort_code = ::mvr::move_registry::EAlreadyImmutable)]
+#[test]
+fun test_burn_cap_with_valid_app() {
+    let (mut scenario, mut registry, clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    // publish ap ackage `0xdee` and create a package info object for the
+    // package.
+    let mut upgrade_cap = package::test_publish(@0xdee.to_id(), scenario.ctx());
+    let pkg_info = package_info::new(&mut upgrade_cap, scenario.ctx());
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+    // register first app!
+    let app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    registry.burn_cap(app_cap);
+    assert!(
+        !registry.app_exists(name::new(APP_1.to_string(), ns_nft.domain())),
+    );
+
+    transfer::public_transfer(upgrade_cap, scenario.ctx().sender());
+    transfer::public_transfer(ns_nft, scenario.ctx().sender());
+    pkg_info.transfer(scenario.ctx().sender());
+
+    scenario.cleanup(registry, clock);
+}
+
+#[test]
+fun test_burn_cap_without_matching_record() {
+    let (mut scenario, mut registry, clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    // publish ap ackage `0xdee` and create a package info object for the
+    // package.
+    let mut upgrade_cap = package::test_publish(@0xdee.to_id(), scenario.ctx());
+    let pkg_info = package_info::new(&mut upgrade_cap, scenario.ctx());
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+    // register first app!
+    let app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
+
+    // re-register same app after removal.
+    let app_cap_2 = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+    // burn the cap
+    registry.burn_cap(app_cap);
+    assert!(registry.app_exists(name::new(APP_1.to_string(), ns_nft.domain())));
+
+    transfer::public_transfer(upgrade_cap, scenario.ctx().sender());
+    transfer::public_transfer(ns_nft, scenario.ctx().sender());
+    transfer::public_transfer(app_cap_2, scenario.ctx().sender());
+    pkg_info.transfer(scenario.ctx().sender());
+
+    scenario.cleanup(registry, clock);
+}
+
+#[
+    test,
+    expected_failure(
+        abort_code = ::mvr::app_record::ECannotBurnImmutableRecord,
+    ),
+]
 fun try_to_remove_immutable() {
     let (mut scenario, mut registry, clock) = test_setup();
     scenario.next_tx(ADDR_1);
@@ -150,8 +237,134 @@ fun try_to_remove_non_existing_app() {
     abort 1337
 }
 
-// Test function helpers
+#[
+    test,
+    expected_failure(
+        abort_code = ::mvr::move_registry::ECannotRegisterWithSubname,
+    ),
+]
+fun try_to_use_subname() {
+    let (mut scenario, mut registry, clock) = test_setup();
+    scenario.next_tx(ADDR_1);
 
+    let ns_nft = scenario.ns_nft(b"sub.domain.sui".to_string(), &clock);
+    let mut _app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    abort 1337
+}
+
+#[test, expected_failure(abort_code = ::mvr::move_registry::ENSNameExpired)]
+fun try_to_use_expired_name() {
+    let (mut scenario, mut registry, mut clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+    clock.set_for_testing(ns_nft.expiration_timestamp_ms() + 1);
+
+    let mut _app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    abort 1337
+}
+
+#[test, expected_failure(abort_code = ::mvr::move_registry::ENSNameExpired)]
+fun try_to_remove_app_with_expired_name() {
+    let (mut scenario, mut registry, mut clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+
+    let mut _app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    clock.set_for_testing(ns_nft.expiration_timestamp_ms() + 1);
+    registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
+
+    abort 1337
+}
+
+#[test, expected_failure(abort_code = ::mvr::move_registry::ENSNameExpired)]
+fun test_app_override_invalid_cap() {
+    let (mut scenario, mut registry, mut clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+
+    let mut _app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    clock.set_for_testing(ns_nft.expiration_timestamp_ms() + 1);
+    registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
+
+    abort 1337
+}
+
+#[test, expected_failure(abort_code = ::mvr::move_registry::EAppDoesNotExist)]
+fun try_to_edit_a_non_existing_record() {
+    let (mut scenario, mut registry, clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+
+    let app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+    registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
+
+    registry.set_network(&app_cap, b"rand".to_string(), app_info::default());
+
+    abort 1337
+}
+
+#[test, expected_failure(abort_code = ::mvr::move_registry::EUnauthorized)]
+fun try_to_use_unauthorized_cap() {
+    let (mut scenario, mut registry, clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+
+    let app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+    registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
+
+    // re-register same app to get another matching appc ap
+    let _app_cap_2 = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    registry.set_network(&app_cap, b"rand".to_string(), app_info::default());
+
+    abort 1337
+}
+
+// Test function helpers
 fun ns_nft(
     scenario: &mut Scenario,
     org: String,

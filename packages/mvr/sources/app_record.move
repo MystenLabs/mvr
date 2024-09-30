@@ -7,11 +7,21 @@ use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::vec_map::{Self, VecMap};
 
-const EPackageAlreadyAssigned: u64 = 1;
+#[error]
+const EPackageAlreadyAssigned: vector<u8> =
+    b"This record is immutable and cannot be re-assigned.";
 /// The network ID was not found.
-const ENetworkNotFound: u64 = 2;
-/// The maximum number of networks has been reached, a cleanup needs to be done.
-const EMaxNetworksReached: u64 = 3;
+#[error]
+const ENetworkNotFound: vector<u8> = b"Network ID not found.";
+#[error]
+const EMaxNetworksReached: vector<u8> =
+    b"Maximum number of networks has been reached.";
+#[error]
+const ECannotBurnImmutableCap: vector<u8> =
+    b"Cannot burn an immutable capability.";
+#[error]
+const ECannotBurnImmutableRecord: vector<u8> =
+    b"Cannot burn an immutable record.";
 
 public struct AppRecord has store {
     /// The Capability object used for managing the `AppRecord`.
@@ -97,9 +107,6 @@ public(package) fun set_network(
     network: String,
     info: AppInfo,
 ) {
-    if (record.networks.contains(&network)) {
-        record.networks.remove(&network);
-    };
     assert!(
         record.networks.size() < constants::max_networks!(),
         EMaxNetworksReached,
@@ -119,9 +126,17 @@ public(package) fun is_immutable(record: &AppRecord): bool {
 }
 
 public(package) fun burn(record: AppRecord) {
+    assert!(!record.is_immutable(), ECannotBurnImmutableRecord);
     let AppRecord { storage, .. } = record;
 
     storage.delete();
+}
+
+public(package) fun burn_cap(cap: AppCap) {
+    assert!(!cap.is_immutable, ECannotBurnImmutableCap);
+    let AppCap { id, .. } = cap;
+
+    id.delete();
 }
 
 /// Checks if the supplied capability is valid for the record.
