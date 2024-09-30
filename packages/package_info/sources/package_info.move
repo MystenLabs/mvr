@@ -11,12 +11,15 @@ use sui::vec_map::{Self, VecMap};
 use fun df::remove as UID.remove;
 use fun df::add as UID.add;
 
-/// Tries to create a package during an upgrade.
-const ECannotCreateDuringUpgrade: u64 = 1;
-/// Tries to remove a version that doesn't exist.
-const EVersionNotFound: u64 = 2;
-/// Tries to add a version that already exists.
-const EVersionAlreadyExists: u64 = 3;
+#[error]
+const ECannotCreateDuringUpgrade: vector<u8> =
+    b"Cannot create a package metadata object during upgrade";
+#[error]
+const EVersionNotFound: vector<u8> =
+    b"Cannot remove a version that does not exist";
+#[error]
+const EVersionAlreadyExists: vector<u8> =
+    b"Cannot override a version that already exists. Call `unset_git_versioning` first";
 
 /// OTW to claim `Display` for this package.
 public struct PACKAGE_INFO has drop {}
