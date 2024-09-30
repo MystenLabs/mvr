@@ -3,8 +3,9 @@ module package_info::display;
 use codec::urlencode;
 use std::string::String;
 
-/// Max length of a package name exceeded.
-const EMaxNameLengthExceeded: u64 = 1;
+#[error]
+const EMaxNameLengthExceeded: vector<u8> =
+    b"Max name length exceeded. Maximum size is 68 characters";
 
 // Max length of a package name. (4 lines x 17 characters)
 const MAX_NAME_LENGTH: u64 = 68;
