@@ -11,7 +11,6 @@ export function useOwnedKiosks() {
     return useQuery({
         queryKey: [AppQueryKeys.OWNED_KIOSKS, address],
         queryFn: async () => {
-
             let hasNextPage = true;
             let nextCursor;
             let caps: KioskOwnerCap[] = [];
