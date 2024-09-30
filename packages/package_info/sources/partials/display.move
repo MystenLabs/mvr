@@ -79,7 +79,7 @@ public(package) fun encode_label(display: &mut PackageDisplay, id: String) {
         );
 
         pre_encoded_name.append(
-            new_text(
+            new_svg_text(
                 part,
                 SVG_X,
                 SVG_INITIAL_Y + (iterations * SVG_LINE_HEIGHT),
@@ -97,7 +97,7 @@ public(package) fun encode_label(display: &mut PackageDisplay, id: String) {
     formatted_id.append(id.substring(id.length() - 6, id.length()));
     // Encode the ID of the package in the display.
     pre_encoded_name.append(
-        new_text(
+        new_svg_text(
             formatted_id,
             SVG_X,
             SVG_INITIAL_Y + (iterations * SVG_LINE_HEIGHT),
@@ -109,7 +109,9 @@ public(package) fun encode_label(display: &mut PackageDisplay, id: String) {
     display.uri_encoded_name = urlencode::encode(*pre_encoded_name.as_bytes());
 }
 
-fun new_text(
+/// Helper function to create a new SVG text element based on our custom display
+/// system.
+public fun new_svg_text(
     part: String,
     x: u64,
     y: u64,
