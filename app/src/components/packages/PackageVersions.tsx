@@ -40,7 +40,6 @@ export function PackageVersions({
 
   const addUpdate = (update: GitVersion) => {
     setUpdates([...updates, update]);
-    console.log(updates);
   };
 
   const saveChanges = async () => {

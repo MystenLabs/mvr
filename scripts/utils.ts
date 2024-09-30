@@ -33,7 +33,6 @@ export const manageInitialPublishForPackage = (path: string, address: string) =>
 export const publishPackage = (txb: Transaction, path: string, clientConfigPath: string) => {
 	const chainId = execSync(`${SUI} client chain-identifier`, { encoding: 'utf8' }).trim();
 
-	console.log(chainId);
 	const { modules, dependencies } = JSON.parse(
 		execFileSync(SUI, ['move','--client.config', clientConfigPath ,'build', '--dump-bytecode-as-base64', '--path', path], {
 			encoding: 'utf-8',

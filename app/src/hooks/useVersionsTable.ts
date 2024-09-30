@@ -1,6 +1,7 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { usePackagesNetwork } from "@/components/providers/packages-provider";
-import { fetchAllDynamicFields, fetchAllPages } from "@/utils/query";
+import { fetchAllDynamicFields } from "@/utils/query";
+import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 
 export type GitVersion = {
@@ -18,7 +19,7 @@ export function useVersionsTable(tableId: string) {
   const client = clients[selectedNetwork];
 
   return useQuery({
-    queryKey: ["versionsTable", tableId],
+    queryKey: [AppQueryKeys.VERSIONS_TABLE, tableId],
 
     queryFn: async () => {
         return fetchAllDynamicFields({

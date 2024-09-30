@@ -23,8 +23,6 @@ export function useGetPackageInfo({
         }
       });
 
-      console.log(infoObj);
-
       return infoObj;
     },
     enabled: !!objectId,
