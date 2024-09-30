@@ -1,8 +1,8 @@
 import { ColorPicker } from "@/components/ui/color-picker";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/Text";
-import { PackageDisplayType } from "@/hooks/useGetPackageInfoObjects";
 import { PackageInfoDisplay } from "@/icons/PackageInfoDisplay";
+import { PackageDisplayType } from "@/utils/types";
 
 export function PackageInfoStep2({
   packageAddress,

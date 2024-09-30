@@ -8,13 +8,13 @@ import { formatAddress } from "@mysten/sui/utils";
 import { Text } from "../../ui/Text";
 import {
   DefaultPackageDisplay,
-  PackageDisplayType,
   useGetPackageInfoObjects,
 } from "@/hooks/useGetPackageInfoObjects";
 import { PackageInfoStep1 } from "./Step1";
 import { PackageInfoStep2 } from "./Step2";
 import { useCreatePackageInfoMutation } from "@/mutations/packageInfoMutations";
 import { ModalFooter } from "../ModalFooter";
+import { PackageDisplayType } from "@/utils/types";
 
 export default function CreatePackageInfo({
   closeDialog,

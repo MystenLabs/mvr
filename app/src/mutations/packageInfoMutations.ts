@@ -1,12 +1,9 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { PackageInfo } from "@/data/package-info";
-import {
-  PackageDisplayType,
-} from "@/hooks/useGetPackageInfoObjects";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { GitVersion } from "@/hooks/useVersionsTable";
 import { Constants } from "@/lib/constants";
-import { Network } from "@/utils/types";
+import { Network, PackageDisplayType } from "@/utils/types";
 import { Transaction } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 

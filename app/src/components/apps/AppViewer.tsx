@@ -10,6 +10,8 @@ import LoadingState from "../LoadingState";
 import { Dialog, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import CreateOrUpdateApp from "../modals/apps/CreateOrUpdateApp";
+import { useGetPackageInfo } from "@/hooks/useGetPackageInfo";
+import { PackageInfoViewer } from "../packages/PackageInfoViewer";
 
 export function AppViewer({ cap }: { cap: AppCap }) {
   const [network, setNetwork] = useState<Network>("mainnet");
@@ -39,7 +41,10 @@ export function AppViewer({ cap }: { cap: AppCap }) {
         ))}
       </div>
 
-      <SinglePackageView appInfo={app[network as "mainnet" | "testnet"]} />
+      <SinglePackageView
+        appInfo={app[network as "mainnet" | "testnet"]}
+        network={network}
+      />
     </AppViewerWrapper>
   );
 }
@@ -61,7 +66,11 @@ const AppViewerWrapper = ({
         appRecord={record}
         closeDialog={() => setShowDialog(false)}
       />
-      <Text variant="heading/bold" color="secondary" className="max-w-[750px] pb-Regular">
+      <Text
+        variant="heading/bold"
+        color="secondary"
+        className="max-w-[750px] pb-Regular"
+      >
         {name}
       </Text>
       <DialogTrigger>
@@ -73,7 +82,18 @@ const AppViewerWrapper = ({
 };
 
 // TODO: Fill this one in.
-const SinglePackageView = ({ appInfo }: { appInfo?: AppInfo | null }) => {
+const SinglePackageView = ({
+  appInfo,
+  network,
+}: {
+  appInfo?: AppInfo | null;
+  network: Network;
+}) => {
+  const { data: packageInfoDetails, isLoading } = useGetPackageInfo({
+    objectId: appInfo?.packageInfoId,
+    network,
+  });
+
   if (!appInfo)
     return (
       <EmptyState size="md" {...Content.noPackageConnected}>
@@ -83,21 +103,13 @@ const SinglePackageView = ({ appInfo }: { appInfo?: AppInfo | null }) => {
       </EmptyState>
     );
 
+  if (isLoading) return <LoadingState />;
+
   return (
     <div>
-      <EmptyState icon="⚠️" title="TODO: Finish this page">
-        <>
-          <Text variant="small/regular" color="secondary">
-            Package Address: {appInfo.packageAddress}
-          </Text>
-          <Text variant="small/regular" color="secondary">
-            Upgrade Cap ID: {appInfo.upgradeCapId}
-          </Text>
-          <Text variant="small/regular" color="secondary">
-            Package Info ID: {appInfo.packageInfoId}
-          </Text>
-        </>
-      </EmptyState>
+      {packageInfoDetails && (
+        <PackageInfoViewer packageInfo={packageInfoDetails} disableEdits />
+      )}
     </div>
   );
 };

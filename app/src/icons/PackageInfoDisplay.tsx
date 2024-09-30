@@ -1,4 +1,4 @@
-import { PackageDisplayType } from "@/hooks/useGetPackageInfoObjects";
+import { PackageDisplayType } from "@/utils/types";
 import { formatAddress, normalizeSuiAddress } from "@mysten/sui/utils";
 import type { SVGProps } from "react";
 

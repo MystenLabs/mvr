@@ -1,5 +1,5 @@
-import { PackageInfo } from "@/hooks/useGetPackageInfoObjects";
 import { Constants } from "@/lib/constants";
+import { type PackageInfoData } from "@/utils/types";
 import {
   Transaction,
   TransactionObjectArgument,
@@ -46,7 +46,7 @@ export const assignMainnetPackage = ({
 }: {
   tx: Transaction;
   appCap: TransactionObjectArgument | string;
-  packageInfo: PackageInfo | TransactionObjectArgument | string;
+  packageInfo: PackageInfoData | TransactionObjectArgument | string;
 }) => {
 
   const pkgInfoArg = (typeof packageInfo === 'object' && 'objectId' in packageInfo) ? tx.object(packageInfo.objectId) : tx.object(packageInfo);
@@ -73,7 +73,7 @@ export const setExternalNetwork = async ({
   tx: Transaction;
   appCap: TransactionObjectArgument | string;
   chainId: string;
-  packageInfo: PackageInfo;
+  packageInfo: PackageInfoData;
 }) => {
   const appInfo = tx.moveCall({
     target: `${Constants.appsPackageId}::app_info::new`,

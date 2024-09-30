@@ -8,11 +8,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { PackageInfo } from "@/hooks/useGetPackageInfoObjects";
-import { PackageInfoDisplay } from "@/icons/PackageInfoDisplay";
 import { Text } from "./Text";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { PackageInfoData } from "@/utils/types";
 
 export function PackageInfoSelector({
   options,
@@ -23,7 +22,7 @@ export function PackageInfoSelector({
 }: {
   disabled?: boolean;
   placeholder?: string;
-  options: PackageInfo[];
+  options: PackageInfoData[];
   value: any;
   onChange: (value: any) => void;
 }) {
@@ -42,15 +41,18 @@ export function PackageInfoSelector({
             role="combobox"
             aria-expanded={open}
             disabled={disabled || options.length === 0}
-            className="w-full justify-between font-normal text-sm"
+            className="w-full justify-between text-sm font-normal"
           >
             {selectedValue?.display.name || placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="max-h-[350px] w-full max-w-[80vw] max-md:mx-auto md:max-w-[550px] overflow-y-auto p-Small">
-          <div className="grid grid-cols-2 gap-XSmall md:grid-cols-3 ">
-            <Text variant="small/semibold" className="col-span-2 md:col-span-3 border-b border-border-classic pb-Small mb-XSmall">
+        <PopoverContent className="max-h-[350px] w-full max-w-[80vw] overflow-y-auto p-Small max-md:mx-auto md:max-w-[550px]">
+          <div className="grid grid-cols-2 gap-XSmall md:grid-cols-3">
+            <Text
+              variant="small/semibold"
+              className="col-span-2 mb-XSmall border-b border-border-classic pb-Small md:col-span-3"
+            >
               Select a package
             </Text>
             {options.map((option) => (
@@ -66,21 +68,21 @@ export function PackageInfoSelector({
                   setOpen(false);
                 }}
               >
-                <PackageInfoDisplay
-                  width="100%"
-                  height="100%"
-                  {...option.display}
-                  packageAddr={option.packageAddress}
-                />
+                <img src={option.suiDisplay?.imageUrl} />
               </div>
             ))}
           </div>
         </PopoverContent>
       </Popover>
       {value && !disabled && (
-        <Button type="button" variant="outline-hover" className="px-2" onClick={() =>{
-          onChange(null);
-        }}>
+        <Button
+          type="button"
+          variant="outline-hover"
+          className="px-2"
+          onClick={() => {
+            onChange(null);
+          }}
+        >
           <XCircleIcon className="h-4 w-4" />
         </Button>
       )}
