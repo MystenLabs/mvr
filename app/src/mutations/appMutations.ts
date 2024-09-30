@@ -7,8 +7,8 @@ import {
 } from "@/data/on-chain-app";
 import { useChainIdentifier } from "@/hooks/useChainIdentifier";
 import { AppRecord } from "@/hooks/useGetApp";
-import { PackageInfo } from "@/hooks/useGetPackageInfoObjects";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
+import { type PackageInfoData } from "@/utils/types";
 import {
   Transaction,
   TransactionObjectArgument,
@@ -30,8 +30,8 @@ export function useCreateAppMutation() {
     }: {
       name: string;
       suinsObjectId: TransactionObjectArgument | string;
-      mainnetPackageInfo?: PackageInfo;
-      testnetPackageInfo?: PackageInfo;
+      mainnetPackageInfo?: PackageInfoData;
+      testnetPackageInfo?: PackageInfoData;
     }) => {
       const tx = new Transaction();
 
@@ -75,8 +75,8 @@ export function useUpdateAppMutation() {
       testnetPackageInfo,
     }: {
       record: AppRecord;
-      mainnetPackageInfo?: PackageInfo;
-      testnetPackageInfo?: PackageInfo;
+      mainnetPackageInfo?: PackageInfoData;
+      testnetPackageInfo?: PackageInfoData;
     }) => {
       const tx = new Transaction();
       let updates = 0;

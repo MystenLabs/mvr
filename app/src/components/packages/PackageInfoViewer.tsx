@@ -1,34 +1,33 @@
-import { type PackageInfo } from "@/hooks/useGetPackageInfoObjects";
 import { Text } from "../ui/Text";
 import { PackageInfoDisplay } from "@/icons/PackageInfoDisplay";
 import { Button } from "../ui/button";
 import { PackageInfoTabs } from "./PackageInfoTabs";
+import { type PackageInfoData } from "@/utils/types";
 
 export function PackageInfoViewer({
   packageInfo,
   disableEdits,
 }: {
-  packageInfo: PackageInfo;
+  packageInfo: PackageInfoData;
   disableEdits?: boolean;
 }) {
   return (
     <div>
-      <Text
-        variant="heading/bold"
-        color="secondary"
-        className="max-w-[750px]"
-      >
-        {packageInfo.display.name}
-      </Text>
+      {!disableEdits && (
+        <Text
+          variant="heading/bold"
+          color="secondary"
+          className="max-w-[750px]"
+        >
+          {packageInfo.display.name}
+        </Text>
+      )}
+
       <div className="grid grid-cols-1 gap-Regular pt-Regular md:grid-cols-12">
-        <div className="pb-Large md:col-span-3 py-Small">
-          <PackageInfoDisplay
-            width="100%"
-            height="auto"
-            className="max-lg:max-w-[300px] !h-auto pb-Small mx-auto"
-            packageAddr={packageInfo.packageAddress}
-            {...packageInfo.display}
-          />
+        <div className="py-Small pb-Large md:col-span-3">
+          {packageInfo.suiDisplay?.imageUrl && (
+            <img src={packageInfo.suiDisplay.imageUrl} />
+          )}
 
           {!disableEdits && (
             <Button variant="secondary" className="w-full">
@@ -37,7 +36,7 @@ export function PackageInfoViewer({
           )}
         </div>
         <div className="md:col-span-9">
-          <PackageInfoTabs packageInfo={packageInfo} />
+          <PackageInfoTabs packageInfo={packageInfo} disableEdits={disableEdits} />
         </div>
       </div>
     </div>

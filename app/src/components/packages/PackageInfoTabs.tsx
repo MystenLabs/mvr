@@ -1,11 +1,8 @@
-import { PackageInfo } from "@/hooks/useGetPackageInfoObjects";
-import { EmptyState } from "../EmptyState";
-import { Content } from "@/data/content";
+
 import { TabTitle } from "../ui/TabTitle";
 import { Text } from "../ui/Text";
-import { useMemo, useState } from "react";
-import { useVersionsTable } from "@/hooks/useVersionsTable";
-import { Network } from "@/utils/types";
+import { useState } from "react";
+import { Network, PackageInfoData } from "@/utils/types";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
 import { PackageVersions } from "./PackageVersions";
@@ -27,7 +24,7 @@ const Tabs = [
   },
 ];
 
-export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
+export function PackageInfoTabs({ packageInfo, disableEdits }: { packageInfo: PackageInfoData, disableEdits?: boolean }) {
   const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
   const network = usePackagesNetwork();
 
@@ -57,7 +54,7 @@ export function PackageInfoTabs({ packageInfo }: { packageInfo: PackageInfo }) {
         ))}
       </div>
       <div className="py-Regular">
-        { activeTab === 'source-code' && <PackageVersions packageInfo={packageInfo} />}
+        { activeTab === 'source-code' && <PackageVersions packageInfo={packageInfo} disableEdits={disableEdits} />}
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { unlinkSync } from "fs";
 import { getActiveNetwork, parseCorePackageObjects, publishPackage, signAndExecute, sleep } from "../utils";
 import { Transaction } from "@mysten/sui/transactions";
 import { PackageInfo } from "./contracts/package-info";
-import { registerApp, registerDotMove } from "./contracts/registration";
 
 const NETWORK = getActiveNetwork();
 console.log(`Using network: ${NETWORK}`);

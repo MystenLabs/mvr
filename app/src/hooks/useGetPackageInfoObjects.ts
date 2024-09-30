@@ -2,12 +2,9 @@ import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
 import { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
-import { AppQueryKeys, Network } from "@/utils/types";
+import { AppQueryKeys, Network, PackageInfoData, packageInfoType } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
-import { Constants } from "@/lib/constants";
-
-const packageInfoType = (network: Network) =>
-  `${Constants.packageInfoIds[network]}::package_info::PackageInfo`;
+import { parsePackageInfoContent } from "@/utils/helpers";
 
 export const DefaultPackageDisplay = {
   gradientFrom: "E0E1EC",
@@ -28,21 +25,6 @@ export const DefaultColors = [
     gradientFrom: "FCE4EC",
   },
 ];
-export type PackageDisplayType = {
-  gradientFrom: string;
-  gradientTo: string;
-  name: string;
-  textColor: string;
-};
-
-export type PackageInfo = {
-  objectId: string;
-  packageAddress: string;
-  upgradeCapId: string;
-  display: PackageDisplayType;
-  gitVersionsTableId: string;
-  metadata: any;
-};
 
 const getPackageInfoObjects = async (
   client: SuiClient,
@@ -60,30 +42,6 @@ const getPackageInfoObjects = async (
       showDisplay: true,
     },
   });
-};
-
-const parsePackageInfoContent = (cap?: SuiObjectResponse): PackageInfo => {
-  if (!cap) throw new Error("Invalid upgrade cap object");
-  if (!cap.data) throw new Error("Invalid upgrade cap object");
-  if (!cap.data.content) throw new Error("Invalid upgrade cap object");
-  if (cap.data.content.dataType !== "moveObject")
-    throw new Error("Invalid upgrade cap object");
-
-  const fields = cap.data.content.fields as Record<string, any>;
-
-  return {
-    objectId: fields.id.id,
-    packageAddress: fields.package_address,
-    upgradeCapId: fields.upgrade_cap_id,
-    display: {
-      gradientFrom: fields.display.fields.gradient_from,
-      gradientTo: fields.display.fields.gradient_to,
-      name: fields.display.fields.name,
-      textColor: fields.display.fields.text_color,
-    },
-    gitVersionsTableId: fields.git_versioning.fields.id.id,
-    metadata: fields.metadata,
-  };
 };
 
 export function useGetPackageInfoObjects(network: Network) {
