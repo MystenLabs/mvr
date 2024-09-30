@@ -3,10 +3,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Content } from "../../data/content";
 import { useGetUpgradeCaps } from "@/hooks/useGetUpgradeCaps";
-import {
-  PackageInfo,
-  useGetPackageInfoObjects,
-} from "@/hooks/useGetPackageInfoObjects";
+import { useGetPackageInfoObjects } from "@/hooks/useGetPackageInfoObjects";
 import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import Link from "next/link";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -17,20 +14,21 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
 import { useActiveAddress } from "@/hooks/useActiveAddress";
-import { NetworkMissmatch } from "@/components/NetworkMissmatch";
 import LoadingState from "@/components/LoadingState";
+import { PackageInfoData } from "@/utils/types";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
   const activeAddress = useActiveAddress();
 
   const [showCreationDialog, setShowCreationDialog] = useState(false);
-  const { data: upgradeCaps, isLoading: capsLoading } = useGetUpgradeCaps(selectedNetwork);
-  const { data: packageInfos, isLoading: packageInfosLoading } = useGetPackageInfoObjects(selectedNetwork);
+  const { data: upgradeCaps, isLoading: capsLoading } =
+    useGetUpgradeCaps(selectedNetwork);
+  const { data: packageInfos, isLoading: packageInfosLoading } =
+    useGetPackageInfoObjects(selectedNetwork);
 
-  const [selectedPackage, setSelectedPackage] = useState<PackageInfo | null>(
-    null,
-  );
+  const [selectedPackage, setSelectedPackage] =
+    useState<PackageInfoData | null>(null);
 
   // reset selected package when address changes
   useEffect(() => {
@@ -38,11 +36,7 @@ export default function Packages() {
   }, [activeAddress]);
 
   useEffect(() => {
-    if (
-      !selectedPackage &&
-      packageInfos &&
-      packageInfos.length > 0
-    ) {
+    if (!selectedPackage && packageInfos && packageInfos.length > 0) {
       setSelectedPackage(packageInfos[0] ?? null);
     }
   }, [packageInfos]);
@@ -117,7 +111,9 @@ export default function Packages() {
               closeDialog={() => setShowCreationDialog(false)}
             />
             <DialogTrigger>
-              <Button variant="outline" className="w-full mb-Small">{Content.package.button}</Button>
+              <Button variant="outline" className="mb-Small w-full">
+                {Content.package.button}
+              </Button>
             </DialogTrigger>
           </Dialog>
           {packageInfos.map((packageInfo) => (
@@ -139,7 +135,7 @@ export default function Packages() {
             </div>
           ))}
         </div>
-        <div className="block break-words p-Large w-full">
+        <div className="block w-full break-words p-Large">
           {selectedPackage && (
             <PackageInfoViewer packageInfo={selectedPackage} />
           )}

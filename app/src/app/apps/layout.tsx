@@ -10,14 +10,14 @@ import { Text } from "@/components/ui/Text";
 import { LocalStorageKeys } from "@/data/localStorage";
 import {
   formatNamesForComboBox,
-  useOwnedSuinsNames,
+  useOwnedAndKioskSuinsNames,
 } from "@/hooks/useOwnedSuiNSNames";
 import { useEffect, useState } from "react";
 
 export default function AppsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { data: ownedNames } = useOwnedSuinsNames();
+  const { names: ownedNames } = useOwnedAndKioskSuinsNames();
 
   const [appValue, setAppValue] = useState<AppContextType["value"]>({
     selectedSuinsName: JSON.parse(localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? '{}')?.selectedSuinsName ?? null,
@@ -38,6 +38,7 @@ export default function AppsLayout({
   useEffect(() => {
     if (
       !ownedNames?.find((x) => x.nftId === appValue.selectedSuinsName?.nftId)
+      && appValue.selectedSuinsName?.nftId
     ) {
       setAppValue({ selectedSuinsName: null });
     }
@@ -54,7 +55,7 @@ export default function AppsLayout({
             <ComboBox
               placeholder="Select a name..."
               value={appValue.selectedSuinsName?.nftId}
-              options={formatNamesForComboBox(ownedNames ?? [])}
+              options={formatNamesForComboBox(ownedNames)}
               setValue={selectSuinsName}
             />
           </div>

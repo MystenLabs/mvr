@@ -45,4 +45,7 @@ export enum AppQueryKeys {
     UPGRADE_CAP_MODULE = 'upgrade-cap-module',
     PACKAGE_INFO_BY_ID = 'package-info-by-id',
     VERSIONS_TABLE = 'versions-table',
+    KIOSK_ITEMS = 'kiosk-items',
+    OWNED_KIOSKS = 'owned-kiosks',
+    LIST_OF_OBJECTS = 'list-of-objects',
 }
