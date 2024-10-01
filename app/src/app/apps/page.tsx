@@ -49,24 +49,26 @@ export default function App() {
 
   if (suinsNames?.length === 0 || !appValue.selectedSuinsName)
     return (
-      <EmptyState
-        icon={state.icon}
-        title={state.title}
-        description={state.description}
-      >
-        <ComboBox
-          placeholder="Select a name..."
-          value={appValue.selectedSuinsName?.nftId}
-          options={formatNamesForComboBox(suinsNames ?? [])}
-          setValue={selectSuinsName}
-        />
-        <Button size="lg" variant="outline" asChild className="mt-Large">
-          <Link href="https://www.suins.io" target="_blank">
-            {formatNamesForComboBox(suinsNames ?? []).length > 0 && "or"}{" "}
-            {state.button}
-          </Link>
-        </Button>
-      </EmptyState>
+      <div className="container flex-grow">
+        <EmptyState
+          icon={state.icon}
+          title={state.title}
+          description={state.description}
+        >
+          <ComboBox
+            placeholder="Select a name..."
+            value={appValue.selectedSuinsName?.nftId}
+            options={formatNamesForComboBox(suinsNames ?? [])}
+            setValue={selectSuinsName}
+          />
+          <Button size="lg" variant="outline" asChild className="mt-Large">
+            <Link href="https://www.suins.io" target="_blank">
+              {formatNamesForComboBox(suinsNames ?? []).length > 0 && "or"}{" "}
+              {state.button}
+            </Link>
+          </Button>
+        </EmptyState>
+      </div>
     );
 
   if (!nsMatchingApps.length) {
@@ -98,7 +100,9 @@ export default function App() {
               closeDialog={() => setShowCreateApp(false)}
             />
             <DialogTrigger>
-              <Button variant="outline" className="w-full mb-Small">{Content.app.button}</Button>
+              <Button variant="outline" className="mb-Small w-full">
+                {Content.app.button}
+              </Button>
             </DialogTrigger>
           </Dialog>
           {nsMatchingApps.map((app) => (

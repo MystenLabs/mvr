@@ -13,13 +13,11 @@ import { type PackageInfoData } from "@/utils/types";
 import { KioskTransaction } from "@mysten/kiosk";
 import {
   Transaction,
-  TransactionObjectArgument,
-  TransactionResult,
 } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 
 export function useCreateAppMutation() {
-  const { mainnet: client, mainnetKioskClient } = useSuiClientsContext();
+  const { mainnet: client, kiosk: {mainnet: kioskClient } } = useSuiClientsContext();
   const { executeTransaction } = useTransactionExecution(client);
   const { data: testnetChainIdentifier } = useChainIdentifier("testnet");
 
@@ -44,7 +42,7 @@ export function useCreateAppMutation() {
       if (suins.kioskCap) {
         kioskTx = new KioskTransaction({
           transaction: tx,
-          kioskClient: mainnetKioskClient,
+          kioskClient,
           cap: suins.kioskCap,
         });
 

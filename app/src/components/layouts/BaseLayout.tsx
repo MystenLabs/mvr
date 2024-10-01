@@ -42,7 +42,7 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
     <MVRContext.Provider value={mvrSetup}>
       <div className="min-h-screen flex flex-col">
         <Toaster />
-        <Header updateUseCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
+        <Header updateUserCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
         {children}
         <Footer />
       </div>
