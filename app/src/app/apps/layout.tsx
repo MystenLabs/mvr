@@ -1,5 +1,6 @@
 "use client";
 
+import { WalletConnectedContent } from "@/components/layouts/WalletConnectedContent";
 import { NetworkMissmatch } from "@/components/NetworkMissmatch";
 import {
   AppContext,
@@ -20,7 +21,10 @@ export default function AppsLayout({
   const { names: ownedNames } = useOwnedAndKioskSuinsNames();
 
   const [appValue, setAppValue] = useState<AppContextType["value"]>({
-    selectedSuinsName: JSON.parse(localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? '{}')?.selectedSuinsName ?? null,
+    selectedSuinsName:
+      JSON.parse(
+        localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? "{}",
+      )?.selectedSuinsName ?? null,
   });
 
   const selectSuinsName = (nftId: string) => {
@@ -31,38 +35,49 @@ export default function AppsLayout({
   };
 
   const setAndCacheValue = (value: AppContextType["value"]) => {
-    localStorage.setItem(LocalStorageKeys.SELECTED_NS_NAME, JSON.stringify(value));
+    localStorage.setItem(
+      LocalStorageKeys.SELECTED_NS_NAME,
+      JSON.stringify(value),
+    );
     setAppValue(value);
-  }
+  };
 
   useEffect(() => {
     if (
-      !ownedNames?.find((x) => x.nftId === appValue.selectedSuinsName?.nftId)
-      && appValue.selectedSuinsName?.nftId
+      !ownedNames?.find((x) => x.nftId === appValue.selectedSuinsName?.nftId) &&
+      appValue.selectedSuinsName?.nftId
     ) {
       setAppValue({ selectedSuinsName: null });
     }
   }, [ownedNames]);
 
   return (
-    <AppContext.Provider value={{ value: appValue, setValue: setAndCacheValue }}>
-      <div className="border-b border-border-classic">
-        <div className="container flex items-center gap-Regular pb-Regular">
-          <Text variant="xsmall/semibold" family="inter" className="max-md:hidden">
-            Selected Organization:
-          </Text>
-          <div className="w-[300px]">
-            <ComboBox
-              placeholder="Select a name..."
-              value={appValue.selectedSuinsName?.nftId}
-              options={formatNamesForComboBox(ownedNames)}
-              setValue={selectSuinsName}
-            />
+    <WalletConnectedContent>
+      <AppContext.Provider
+        value={{ value: appValue, setValue: setAndCacheValue }}
+      >
+        <div className="border-b border-border-classic">
+          <div className="container flex items-center gap-Regular pb-Regular">
+            <Text
+              variant="xsmall/semibold"
+              family="inter"
+              className="max-md:hidden"
+            >
+              Selected Organization:
+            </Text>
+            <div className="w-[300px]">
+              <ComboBox
+                placeholder="Select a name..."
+                value={appValue.selectedSuinsName?.nftId}
+                options={formatNamesForComboBox(ownedNames)}
+                setValue={selectSuinsName}
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <NetworkMissmatch expectedNetwork="mainnet" />
-      {children}
-    </AppContext.Provider>
+        <NetworkMissmatch expectedNetwork="mainnet" />
+        {children}
+      </AppContext.Provider>
+    </WalletConnectedContent>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { WalletConnectedContent } from "@/components/layouts/WalletConnectedContent";
 import { NetworkMissmatch } from "@/components/NetworkMissmatch";
 import { useMVRContext } from "@/components/providers/mvr-provider";
 import { PackagesNetworkContext } from "@/components/providers/packages-provider";
@@ -14,31 +15,39 @@ export default function PackagesLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const { isCustom } = useMVRContext();
   const walletNetwork = useWalletNetwork();
-  const [network, setNetwork] = useState<Network>((isCustom || !walletNetwork) ? 'mainnet' : walletNetwork);
+  const [network, setNetwork] = useState<Network>(
+    isCustom || !walletNetwork ? "mainnet" : walletNetwork,
+  );
 
   useEffect(() => {
     if (isCustom) {
-        setNetwork('mainnet');
-        return;
-    };
+      setNetwork("mainnet");
+      return;
+    }
     if (!walletNetwork) return;
     setNetwork(walletNetwork);
   }, [isCustom, walletNetwork]);
 
   return (
-    <PackagesNetworkContext.Provider value={network}>
-      <div className="border-b border-border-classic">
-        <div className="container flex">
-          {Object.values(AvailableNetworks).map((net) => (
-            <TabTitle key={net} active={net === network} onClick={() => setNetwork(net as Network)}>
-              <Text variant="small/regular">{net}</Text>
-            </TabTitle>
-          ))}
+    <WalletConnectedContent>
+      <PackagesNetworkContext.Provider value={network}>
+        <div className="border-b border-border-classic">
+          <div className="container flex">
+            {Object.values(AvailableNetworks).map((net) => (
+              <TabTitle
+                key={net}
+                active={net === network}
+                onClick={() => setNetwork(net as Network)}
+              >
+                <Text variant="small/regular">{net}</Text>
+              </TabTitle>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <NetworkMissmatch expectedNetwork={network} />
-      {children}
-    </PackagesNetworkContext.Provider>
+        <NetworkMissmatch expectedNetwork={network} />
+        {children}
+      </PackagesNetworkContext.Provider>
+    </WalletConnectedContent>
   );
 }
