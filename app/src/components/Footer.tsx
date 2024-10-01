@@ -39,18 +39,9 @@ const Social = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border-classic max-md:px-Regular">
+    <footer className="border-t border-border-classic">
       <div className="container items-center gap-Small py-Regular md:flex md:justify-between">
-        <div className="items-center gap-Small md:flex">
-          <Text
-            variant="small/regular"
-            mono
-            color="tertiary"
-            family="mono"
-            className="pr-Small uppercase"
-          >
-            © 2024 Sui foundation. All rights reserved.
-          </Text>
+        <div className="items-center gap-Large md:flex">
           {Menu.map(({ name, href }) => (
             <Link key={name} href={href}>
               {
@@ -66,18 +57,29 @@ export default function Footer() {
             </Link>
           ))}
         </div>
-        <div className="flex items-center justify-end gap-Small">
-          {Social.map(({ name, url, icon }) => (
-            <Link
-              key={name}
-              href={url}
-              target="_blank"
-              passHref
-              className="duration-300 ease-in-out hover:scale-110"
-            >
-              {icon}
-            </Link>
-          ))}
+        <div className="flex flex-wrap justify-end gap-Small items-center max-md:pt-Large">
+          <Text
+            variant="xsmall/regular"
+            mono
+            color="tertiary"
+            family="mono"
+            className="pr-Small uppercase max-md:text-right"
+          >
+            © 2024 Sui foundation. All rights reserved
+          </Text>
+          <div className="flex items-center justify-end gap-Small">
+            {Social.map(({ name, url, icon }) => (
+              <Link
+                key={name}
+                href={url}
+                target="_blank"
+                passHref
+                className="duration-300 ease-in-out hover:scale-110"
+              >
+                {icon}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

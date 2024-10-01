@@ -6,7 +6,7 @@ import { KioskOwnerCap } from "@mysten/kiosk";
 
 export function useOwnedKiosks() {
     const address = useActiveAddress();
-    const { mainnetKioskClient } = useSuiClientsContext();
+    const { kiosk } = useSuiClientsContext();
 
     return useQuery({
         queryKey: [AppQueryKeys.OWNED_KIOSKS, address],
@@ -16,7 +16,7 @@ export function useOwnedKiosks() {
             let caps: KioskOwnerCap[] = [];
 
             while (hasNextPage) {
-                const ownedKiosks = await mainnetKioskClient.getOwnedKiosks({
+                const ownedKiosks = await kiosk.mainnet.getOwnedKiosks({
                     address: address!,
                     pagination: {
                         cursor: nextCursor!
@@ -38,13 +38,13 @@ export function useKioskItems() {
     const address = useActiveAddress();
     const ownedKiosks = useOwnedKiosks();
 
-    const { mainnetKioskClient } = useSuiClientsContext();
+    const { kiosk: {mainnet: kioskClient } } = useSuiClientsContext();
 
     return useQuery({
         queryKey: [AppQueryKeys.KIOSK_ITEMS, address],
         queryFn: async () => {
             const items = await Promise.all(ownedKiosks.data!.map(async kiosk => {
-                const kioskData = await mainnetKioskClient.getKiosk({ id: kiosk.kioskId });
+                const kioskData = await kioskClient.getKiosk({ id: kiosk.kioskId });
                 return kioskData.items.map(item => ({
                     ...item,
                     kioskCap: kiosk
