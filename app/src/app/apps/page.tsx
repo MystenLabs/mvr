@@ -49,26 +49,24 @@ export default function App() {
 
   if (suinsNames?.length === 0 || !appValue.selectedSuinsName)
     return (
-      <div className="container flex-grow">
-        <EmptyState
-          icon={state.icon}
-          title={state.title}
-          description={state.description}
-        >
-          <ComboBox
-            placeholder="Select a name..."
-            value={appValue.selectedSuinsName?.nftId}
-            options={formatNamesForComboBox(suinsNames ?? [])}
-            setValue={selectSuinsName}
-          />
-          <Button size="lg" variant="outline" asChild className="mt-Large">
-            <Link href="https://www.suins.io" target="_blank">
-              {formatNamesForComboBox(suinsNames ?? []).length > 0 && "or"}{" "}
-              {state.button}
-            </Link>
-          </Button>
-        </EmptyState>
-      </div>
+      <EmptyState
+        icon={state.icon}
+        title={state.title}
+        description={state.description}
+      >
+        <ComboBox
+          placeholder="Select a name..."
+          value={appValue.selectedSuinsName?.nftId}
+          options={formatNamesForComboBox(suinsNames ?? [])}
+          setValue={selectSuinsName}
+        />
+        <Button size="lg" variant="outline" asChild className="mt-Large">
+          <Link href="https://www.suins.io" target="_blank">
+            {formatNamesForComboBox(suinsNames ?? []).length > 0 && "or"}{" "}
+            {state.button}
+          </Link>
+        </Button>
+      </EmptyState>
     );
 
   if (!nsMatchingApps.length) {
@@ -122,7 +120,7 @@ export default function App() {
           ))}
         </div>
 
-        <div className="block w-full break-words p-Large">
+        <div className="block w-full break-words md:p-Large">
           {selectedAppCap && <AppViewer cap={selectedAppCap} />}
         </div>
       </div>

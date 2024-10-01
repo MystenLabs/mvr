@@ -52,7 +52,7 @@ export default function Header({
             <SuiLogo />
             <Text variant="heading/regular">mvr</Text>
           </div>
-          <div className="text-center max-md:hidden lg:col-span-4">
+          <div className="text-center max-lg:hidden lg:col-span-4">
             <Menu />
           </div>
           <div className="flex items-center justify-end gap-Small lg:col-span-5">
@@ -60,9 +60,9 @@ export default function Header({
 
             <CustomAddressSetup
               {...{ updateUserCustomAddress, updateCustomAddress }}
-              className="flex items-center gap-Small max-md:hidden"
+              className="flex items-center gap-Small max-lg:hidden"
             />
-            <SheetTrigger className="md:hidden">
+            <SheetTrigger className="lg:hidden">
               <MenuIcon />
             </SheetTrigger>
           </div>
@@ -105,11 +105,11 @@ const CustomAddressSetup = ({
           value={mvrContext.customAddress}
           placeholder={Content.addressPlaceholder}
           onChange={(e) => updateCustomAddress(e.target.value)}
-          className="max-md:w-full md:min-w-[400px]"
+          className="max-lg:w-full lg:min-w-[400px]"
         />
       )}
 
-      <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall max-md:mt-Regular max-md:justify-between">
+      <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall max-lg:mt-Regular max-lg:justify-between">
         <Text variant="small/regular" color="secondary">
           Custom
         </Text>
@@ -133,7 +133,7 @@ const Menu = () => {
             asChild
             key={name}
             variant={path === href ? "default" : "link"}
-            className="max-md:w-full"
+            className="max-lg:w-full"
           >
             <Link href={href}>{name}</Link>
           </Button>

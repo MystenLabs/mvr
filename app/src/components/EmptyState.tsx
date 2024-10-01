@@ -33,7 +33,7 @@ export function EmptyState({
   children?: React.ReactNode;
 }) {
   return (
-    <div className={`flex-grow flex items-center justify-center`}>
+    <div className={`flex-grow flex items-center justify-center container`}>
       <div className="text-center">
         {icon && <h1 className={SizeSetup.icon[size]}>{icon}</h1>}
 
