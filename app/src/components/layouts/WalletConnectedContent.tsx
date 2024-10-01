@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { Content } from "@/data/content";
 
-export function BaseContent({ children }: { children: React.ReactNode }) {
+export function WalletConnectedContent({ children }: { children: React.ReactNode }) {
   const activeAddress = useActiveAddress();
 
   if (!activeAddress) {

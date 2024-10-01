@@ -6,7 +6,6 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import Header from "../Header";
 import Footer from "../Footer";
 import { LocalStorageKeys } from "@/data/localStorage";
-import { BaseContent } from "./BaseContent";
 import { Toaster } from 'sonner'
 
 export function BaseLayout({ children }: { children: React.ReactNode }) {
@@ -44,7 +43,7 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex flex-col">
         <Toaster />
         <Header updateUseCustomAddress={updateUseCustomAddress} updateCustomAddress={updateCustomAddress} />
-        <BaseContent>{children}</BaseContent>
+        {children}
         <Footer />
       </div>
 
