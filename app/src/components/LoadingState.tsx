@@ -3,7 +3,7 @@ import { Text } from "./ui/Text";
 
 export default function LoadingState() {
   return (
-    <div className="flex flex-grow items-center justify-center">
+    <div className="flex flex-grow items-center justify-center p-Regular">
       <div className="text-center">
         <div role="status" className="text-center">
           <svg

@@ -10,6 +10,7 @@ import { useUpdatePackageInfoMutation } from "@/mutations/packageInfoMutations";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import { Text } from "../ui/Text";
 import { type PackageInfoData } from "@/utils/types";
+import LoadingState from "../LoadingState";
 
 export function PackageVersions({
   packageInfo,
@@ -19,7 +20,7 @@ export function PackageVersions({
   disableEdits?: boolean;
 }) {
   const network = usePackagesNetwork();
-  const { data: versions, refetch } = useVersionsTable(
+  const { data: versions, refetch, isLoading } = useVersionsTable(
     packageInfo.gitVersionsTableId,
   );
 
@@ -54,6 +55,8 @@ export function PackageVersions({
       setUpdates([]);
     }
   };
+
+  if (isLoading) return <LoadingState />
 
   if (
     !orderedVersions ||
