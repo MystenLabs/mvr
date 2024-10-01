@@ -14,13 +14,11 @@ export function WalletConnectedContent({
 
   if (!activeAddress) {
     return (
-      <div className="container flex-grow">
-        <EmptyState {...Content.emptyStates.wallet}>
-          <Button asChild variant="secondary">
-            <Link href="/faq">{Content.emptyStates.wallet.button}</Link>
-          </Button>
-        </EmptyState>
-      </div>
+      <EmptyState {...Content.emptyStates.wallet}>
+        <Button asChild variant="secondary">
+          <Link href="/faq">{Content.emptyStates.wallet.button}</Link>
+        </Button>
+      </EmptyState>
     );
   }
 
