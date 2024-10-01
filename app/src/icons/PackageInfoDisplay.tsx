@@ -25,10 +25,10 @@ export const PackageInfoDisplay = (props: SVGProps<SVGSVGElement> & PackageDispl
         fill-opacity="0.5"
       />
       <foreignObject x="40" y="30" width="420" height="300">
-        <p className="text-[32px]" style={{color: `#${props.textColor}`, fontFamily: 'monospace'}}>
+        <p className="text-[41px] font-bold" style={{color: `#${props.textColor}`, fontFamily: 'Roboto Mono, Courier, monospace'}}>
             {props.name}
         </p>
-        <p className="font-mono text-[22px] opacity-60" style={{color: `#${props.textColor}`}}>
+        <p className="text-[21px] opacity-60" style={{color: `#${props.textColor}`, fontFamily: 'Roboto Mono, Courier, monospace'}}>
             {formatAddress(props.packageAddr ?? normalizeSuiAddress('0x2'))}
         </p>
     </foreignObject>
