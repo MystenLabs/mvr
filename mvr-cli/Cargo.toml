@@ -29,3 +29,6 @@ tokio = "1.38.0"
 url = "2.5.2"
 toml_edit = "0.22.21"
 toml = "0.8.19"
+
+[dev-dependencies]
+expect-test = "1.1"

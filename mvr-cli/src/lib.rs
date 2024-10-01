@@ -53,17 +53,17 @@ pub enum PackageInfoNetwork {
 }
 
 #[derive(Debug)]
-struct PackageInfo {
-    upgrade_cap_id: ObjectID,
-    package_address: ObjectID,
-    git_versioning: HashMap<u64, GitInfo>,
+pub struct PackageInfo {
+    pub upgrade_cap_id: ObjectID,
+    pub package_address: ObjectID,
+    pub git_versioning: HashMap<u64, GitInfo>,
 }
 
 #[derive(Debug)]
-struct GitInfo {
-    repository: String,
-    tag: String,
-    path: String,
+pub struct GitInfo {
+    pub repository: String,
+    pub tag: String,
+    pub path: String,
 }
 
 impl fmt::Display for PackageInfoNetwork {
@@ -259,7 +259,7 @@ async fn resolve_on_chain_package_info(
     Ok(resolved_packages)
 }
 
-async fn check_address_consistency(
+pub async fn check_address_consistency(
     resolved_packages: &HashMap<String, PackageInfo>,
     network: &PackageInfoNetwork,
     fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
@@ -287,7 +287,7 @@ async fn check_address_consistency(
                     anyhow::anyhow!("Failed to retrieve original package address at version 1")
                 })?
         } else {
-            package_info.package_address.to_string()
+            package_info.package_address
         };
 
         let git_info = package_info.git_versioning.get(&version).ok_or_else(|| {
@@ -299,7 +299,7 @@ async fn check_address_consistency(
 
         let (move_toml_path, move_lock_path) = fetched_files
             .get(name_with_version)
-            .ok_or_else(|| anyhow!("Failed to find fetched files for {}", name_with_version))?;
+            .ok_or_else(|| anyhow!("Failed to find fetched files `Move.toml` and `Move.lock when checking address consistency for {}", name_with_version))?;
         let move_toml_content = fs::read_to_string(move_toml_path)?;
         let move_lock_content = fs::read_to_string(move_lock_path)?;
 
@@ -310,11 +310,35 @@ async fn check_address_consistency(
             PackageInfoNetwork::Mainnet => MAINNET_CHAIN_ID,
             PackageInfoNetwork::Testnet => TESTNET_CHAIN_ID,
         };
+        let address = address
+            .map(|id_str| {
+                ObjectID::from_hex_literal(&id_str).map_err(|e| {
+                    anyhow!(
+                        "Failed to parse address in [addresses] section of Move.toml: {}",
+                        e
+                    )
+                })
+            })
+            .transpose()?;
+        let published_at = published_at
+            .map(|id_str| {
+                ObjectID::from_hex_literal(&id_str).map_err(|e| {
+                    anyhow!("Failed to parse published-at address of Move.toml: {}", e)
+                })
+            })
+            .transpose()?;
+
         // The original-published-id may exist in the Move.lock
         let original_published_id_in_lock =
-            get_original_published_id(&move_lock_content, target_chain_id);
+            get_original_published_id(&move_lock_content, target_chain_id)
+                .map(|id_str| {
+                    ObjectID::from_hex_literal(&id_str).map_err(|e| {
+                        anyhow!("Failed to parse original-published-id in Move.lock: {}", e)
+                    })
+                })
+                .transpose()?;
 
-        let (original_source_id, provenance): (String, String) = match (
+        let (original_source_id, provenance): (ObjectID, String) = match (
             original_published_id_in_lock,
             published_at,
             address,
@@ -325,22 +349,28 @@ async fn check_address_consistency(
                 // to reliably identify it by).
                 // Our best guess is that the published-id refers to the original package (it may not, but
                 // if it doesn't, there is nowhere else to look in this case).
-                (published_at_id, "published-at in the Move.toml".into())
+                (
+                    published_at_id,
+                    "published-at address in the Move.toml".into(),
+                )
             }
             (None, Some(published_at_id), Some(address_id))
-                if address_id == "0x0" || published_at_id == address_id =>
+                if address_id == ObjectID::ZERO || published_at_id == address_id =>
             {
                 // The [addresses] section has a package name set to "0x0" or the same as the published_at_id.
                 // Our best guess is that the published-id refers to the original package (it may not, but
                 // if it doesn't, there is nowhere else to look in this case).
-                (published_at_id, "published-at in the Move.toml".into())
+                (
+                    published_at_id,
+                    "published-at address in the Move.toml".into(),
+                )
             }
             (None, _, Some(address_id)) => {
                 // A published-at ID may or may not exist. In either case, it differs from the
                 // address ID. The address ID that may refer to the original package (e.g., if the
                 // package was upgraded).
                 // Our best guess is that the id in the [addresses] section refers to the original ID.
-                // It may be "0x0" or the original ID
+                // It may be "0x0" or the original ID.
                 (
                     address_id,
                     "address in the [addresses] section of the Move.toml".into(),
@@ -361,7 +391,7 @@ async fn check_address_consistency(
         // Main consistency check: The on-chain package address should correspond to the original ID in the source package.
         if original_address_on_chain != original_source_id {
             bail!(
-                "Mismatch: The original package address for {name} is {original_address_on_chain},\
+                "Mismatch: The original package address for {name} on {network} is {original_address_on_chain}, \
                  but the {provenance} in {name}'s repository was found to be {original_source_id}.\n\
                  Check the configuration of the package's repository {} in branch {} in subdirectory {}",
                 git_info.repository,
@@ -413,13 +443,13 @@ async fn get_published_ids(move_toml_content: &str) -> (Option<String>, Option<S
     // predictable detection, and the caller can raise an error.
     let address = {
         // First, check if any address is set to "0x0"
-        let zero_address = addresses
+        let package_with_zero_address = addresses
             .iter()
             .find(|(_, v)| v.as_str() == Some("0x0"))
             .map(|(k, _)| k.to_string());
 
-        match zero_address {
-            Some(addr) => Some(addr),
+        match package_with_zero_address {
+            Some(_) => Some("0x0".into()),
             None => {
                 let package_name = package_table
                     .get("name")
@@ -467,7 +497,7 @@ fn get_original_published_id(move_toml_content: &str, target_chain_id: &str) -> 
 /// Since we want to communicate `foo` (and the URL where it can be found) to `sui move build`,
 /// we create a dependency graph in the `Move.lock` derived from `foo`'s original lock file
 /// that contains `foo`. See `insert_root_dependency` for how this works.
-async fn build_lock_files(
+pub async fn build_lock_files(
     resolved_packages: &HashMap<String, PackageInfo>,
     fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
 ) -> Result<Vec<String>> {
@@ -493,9 +523,13 @@ async fn build_lock_files(
             .get(&version)
             .ok_or_else(|| anyhow!("version {version} does not exist in on-chain PackageInfo"))?;
 
-        let (move_toml_path, move_lock_path) = fetched_files
-            .get(name_with_version)
-            .ok_or_else(|| anyhow!("Failed to find fetched files for {}", name_with_version))?;
+        let (move_toml_path, move_lock_path) =
+            fetched_files.get(name_with_version).ok_or_else(|| {
+                anyhow!(
+                    "Failed to find fetched files `Move.toml` and `Move.lock` when building package graph for {}",
+                    name_with_version
+                )
+            })?;
         let move_toml_content = fs::read_to_string(move_toml_path)?;
         let move_lock_content = fs::read_to_string(move_lock_path)?;
         let root_name_from_source = parse_source_package_name(&move_toml_content)?;
@@ -703,7 +737,7 @@ async fn package_at_version(
     address: &str,
     version: u64,
     network: &PackageInfoNetwork,
-) -> Result<Option<String>> {
+) -> Result<Option<ObjectID>> {
     let endpoint = match network {
         PackageInfoNetwork::Mainnet => MAINNET_GQL,
         PackageInfoNetwork::Testnet => TESTNET_GQL,
@@ -733,6 +767,16 @@ async fn package_at_version(
     let result = body["data"]["package"]["packageAtVersion"]["address"]
         .as_str()
         .map(String::from);
+    let result = result
+        .map(|id_str| {
+            ObjectID::from_hex_literal(&id_str).map_err(|e| {
+                anyhow!(
+                    "Failed to parse package address for packageAtVersion GQL request: {}",
+                    e
+                )
+            })
+        })
+        .transpose()?;
     Ok(result)
 }
 
@@ -777,7 +821,7 @@ fn extract_git_info(dynamic_field_data: &SuiObjectResponse) -> Result<GitInfo> {
 }
 
 /// Given a normalized Move Registry package name, split out the version number (if any).
-fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
+pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
     let parts: Vec<&str> = name.split('/').collect();
     match parts.as_slice() {
         [base_org, base_name] => Ok((
@@ -961,70 +1005,6 @@ fn parse_source_package_name(toml_content: &str) -> Result<String> {
         .ok_or_else(|| anyhow!("Failed to find 'name' in [package] table"))?;
 
     Ok(name.to_string())
-}
-
-fn _demo_package_move_toml() -> String {
-    String::from(
-        r#"[package]
-name = "demo"
-edition = "2024.beta"
-
-[dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
-
-[addresses]
-demo = "0x0"
-
-[dev-dependencies]
-
-[dev-addresses]
-"#,
-    )
-}
-
-fn _demo_package_move_lock() -> String {
-    String::from(
-        r#"# @generated by Move, please check-in and do not edit manually.
-
-[move]
-version = 2
-manifest_digest = "72EAB20899F5ADF42787258ACEE32F8531E06BB319B82DFA6866FA4807AAC42E"
-deps_digest = "F8BBB0CCB2491CA29A3DF03D6F92277A4F3574266507ACD77214D37ECA3F3082"
-dependencies = [
-  { name = "Sui" },
-]
-
-[[move.package]]
-name = "MoveStdlib"
-source = { git = "https://github.com/MystenLabs/sui.git", rev = "framework/testnet", subdir = "crates/sui-framework/packages/move-stdlib" }
-
-[[move.package]]
-name = "Sui"
-source = { git = "https://github.com/MystenLabs/sui.git", rev = "framework/testnet", subdir = "crates/sui-framework/packages/sui-framework" }
-
-dependencies = [
-  { name = "MoveStdlib" },
-]
-
-[move.toolchain-version]
-compiler-version = "1.33.0"
-edition = "2024.beta"
-flavor = "sui"
-
-[env]
-
-[env.testnet]
-chain-id = "4c78adac"
-original-published-id = "0x2c6aa312fbba13c0184b10a53273b58fda1e9f6119ce8a55fd2d7ea452c56bd8"
-latest-published-id = "0x2c6aa312fbba13c0184b10a53273b58fda1e9f6119ce8a55fd2d7ea452c56bd8"
-published-version = "1"
-
-[env.mainnet]
-chain-id = "35834a8a"
-original-published-id = "0x6ad6692327074e360e915401812aa3192e88f6effb02b3d67a970e57dd11f1b0"
-latest-published-id = "0x6ad6692327074e360e915401812aa3192e88f6effb02b3d67a970e57dd11f1b0"
-published-version = "1""#,
-    )
 }
 
 fn update_mvr_packages(move_toml_path: &Path, package_name: &str, network: &str) -> Result<()> {
