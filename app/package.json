@@ -15,6 +15,7 @@
     "@mysten/kiosk": "^0.9.20",
     "@mysten/sui": "^1.11.0",
     "@mysten/suins": "^0.4.0",
+    "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",

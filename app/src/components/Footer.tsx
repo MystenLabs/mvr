@@ -6,15 +6,19 @@ import Link from "next/link";
 import { Text } from "./ui/Text";
 
 const Menu = [
-    {
-        name: "Terms of Use",
-        href: "/terms",
-    },
-    {
-        name: "Privacy Policy",
-        href: "/privacy-policy",
-    },
-]
+  {
+    name: "FAQ",
+    href: "/faq",
+  },
+  {
+    name: "Terms of Use",
+    href: "/terms",
+  },
+  {
+    name: "Privacy Policy",
+    href: "/privacy-policy",
+  },
+];
 const Social = [
   {
     name: "Discord",
@@ -36,24 +40,41 @@ const Social = [
 export default function Footer() {
   return (
     <footer className="border-t border-border-classic max-md:px-Regular">
-      <div className="container md:flex items-center gap-Small py-Regular md:justify-between">
-        <div className="md:flex items-center gap-Small">
-          <Text variant="small/regular" mono color="tertiary" family="mono" className="uppercase pr-Small">
+      <div className="container items-center gap-Small py-Regular md:flex md:justify-between">
+        <div className="items-center gap-Small md:flex">
+          <Text
+            variant="small/regular"
+            mono
+            color="tertiary"
+            family="mono"
+            className="pr-Small uppercase"
+          >
             © 2024 Sui foundation. All rights reserved.
           </Text>
-          {
-            Menu.map(({ name, href }) => (
-                <Link key={name} href={href}>{
-                    <Text variant="small/regular" family="mono" color="tertiary" className="uppercase hover:underline">
-                        {name}
-                    </Text>
-                }</Link>
-            ))
-          }
+          {Menu.map(({ name, href }) => (
+            <Link key={name} href={href}>
+              {
+                <Text
+                  variant="small/regular"
+                  family="mono"
+                  color="tertiary"
+                  className="uppercase hover:underline"
+                >
+                  {name}
+                </Text>
+              }
+            </Link>
+          ))}
         </div>
-        <div className="flex justify-end gap-Small items-center">
+        <div className="flex items-center justify-end gap-Small">
           {Social.map(({ name, url, icon }) => (
-            <Link key={name} href={url} target="_blank" passHref className="hover:scale-110 ease-in-out duration-300">
+            <Link
+              key={name}
+              href={url}
+              target="_blank"
+              passHref
+              className="duration-300 ease-in-out hover:scale-110"
+            >
               {icon}
             </Link>
           ))}
