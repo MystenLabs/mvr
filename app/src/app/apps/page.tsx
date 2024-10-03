@@ -54,12 +54,15 @@ export default function App() {
         title={state.title}
         description={state.description}
       >
-        <ComboBox
-          placeholder="Select a name..."
-          value={appValue.selectedSuinsName?.nftId}
-          options={formatNamesForComboBox(suinsNames ?? [])}
-          setValue={selectSuinsName}
-        />
+        {suinsNames.length > 0 && (
+          <ComboBox
+            placeholder="Select a name..."
+            value={appValue.selectedSuinsName?.nftId}
+            options={formatNamesForComboBox(suinsNames ?? [])}
+            setValue={selectSuinsName}
+          />
+        )}
+
         <Button size="lg" variant="outline" asChild className="mt-Large">
           <Link href="https://www.suins.io" target="_blank">
             {formatNamesForComboBox(suinsNames ?? []).length > 0 && "or"}{" "}
