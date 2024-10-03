@@ -1078,8 +1078,6 @@ fn update_mvr_packages(move_toml_path: &Path, package_name: &str, network: &str)
         Item::Value(Value::InlineTable(todo_table)),
     );
 
-    // dependencies.insert("TODO", Item::Value(Value::InlineTable(todo_table)));
-
     let network_exists = doc
         .get(RESOLVER_PREFIX_KEY)
         .and_then(|r| r.as_table())
@@ -1097,11 +1095,13 @@ fn update_mvr_packages(move_toml_path: &Path, package_name: &str, network: &str)
     }
 
     let r_table = doc[RESOLVER_PREFIX_KEY].as_table_mut().unwrap();
+    // expecting to create `[r.mvr]` section only
+    r_table.set_dotted(true);
 
     if !r_table.contains_key(MVR_RESOLVER_KEY) {
         r_table.insert(MVR_RESOLVER_KEY, Item::Table(Table::new()));
     }
-    r_table.set_dotted(true);
+    
     let mvr_table = r_table[MVR_RESOLVER_KEY].as_table_mut().unwrap();
 
     mvr_table.insert(NETWORK_KEY, toml_edit::value(network));
