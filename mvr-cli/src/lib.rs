@@ -22,6 +22,10 @@ use sui_sdk::{
     SuiClient, SuiClientBuilder,
 };
 
+const RESOLVER_PREFIX_KEY: &str = "r";
+const MVR_RESOLVER_KEY: &str = "mvr";
+const NETWORK_KEY: &str = "network";
+
 const APP_REGISTRY_TABLE_ID: &str =
     "0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163";
 
@@ -78,9 +82,9 @@ impl fmt::Display for PackageInfoNetwork {
 fn find_mvr_package(value: &toml::Value) -> Option<String> {
     value
         .as_table()
-        .and_then(|table| table.get("r"))
+        .and_then(|table| table.get(RESOLVER_PREFIX_KEY))
         .and_then(|r| r.as_table())
-        .and_then(|r_table| r_table.get("mvr"))
+        .and_then(|r_table| r_table.get(MVR_RESOLVER_KEY))
         .and_then(|mvr| mvr.as_str())
         .map(String::from)
 }
@@ -100,9 +104,9 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
 
     // Get the network from the [r.mvr] section
     let network = toml_value
-        .get("r")
-        .and_then(|r| r.get("mvr"))
-        .and_then(|mvr| mvr.get("network"))
+        .get(RESOLVER_PREFIX_KEY)
+        .and_then(|r| r.get(MVR_RESOLVER_KEY))
+        .and_then(|mvr| mvr.get(NETWORK_KEY))
         .and_then(|n| n.as_str())
         .ok_or_else(|| anyhow!("Expected [r.mvr].network to be a string"))?
         .to_string();
@@ -300,6 +304,7 @@ pub async fn check_address_consistency(
     resolved_packages: &HashMap<String, PackageInfo>,
     network: &PackageInfoNetwork,
     fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
+    // TODO: return package name
 ) -> Result<()> {
     for (name_with_version, package_info) in resolved_packages {
         let (name, version) = parse_package_version(name_with_version)?;
@@ -1052,58 +1057,58 @@ fn update_mvr_packages(move_toml_path: &Path, package_name: &str, network: &str)
         .parse::<DocumentMut>()
         .context("Failed to parse TOML content")?;
 
-    if let Some(dependencies) = doc.get_mut("dependencies") {
-        let mut mvr_found = false;
-        for (_, value) in dependencies
-            .as_table_mut()
-            .expect("dependencies should be a table")
-            .iter_mut()
-        {
-            if let Some(resolver) = value.get("resolver") {
-                if resolver.as_str() == Some("mvr") {
-                    mvr_found = true;
-                    if let Some(packages) = value.get_mut("packages") {
-                        let packages_array = packages
-                            .as_array_mut()
-                            .expect("packages should be an array");
-                        if !packages_array
-                            .iter()
-                            .any(|p| p.as_str() == Some(package_name))
-                        {
-                            packages_array.push(package_name);
-                        }
-                    }
-                    break;
-                }
-            }
-        }
+    if !doc.contains_key("dependencies") {
+        doc["dependencies"] = Item::Table(Table::new());
+    }
+    let dependencies = doc["dependencies"].as_table_mut().unwrap();
 
-        if !mvr_found {
-            let mut new_mvr = toml_edit::Table::new();
-            new_mvr.insert("resolver", Item::from("mvr"));
-            new_mvr.insert("network", Item::from(network));
-            let mut packages = Array::new();
-            packages.push(package_name);
-            new_mvr.insert("packages", value(packages));
-            dependencies
-                .as_table_mut()
-                .expect("dependencies should be a table")
-                .insert("mvr", Item::Table(new_mvr));
-        }
-    } else {
-        let mut dependencies = toml_edit::Table::new();
-        let mut mvr = toml_edit::Table::new();
-        mvr.insert("resolver", Item::from("mvr"));
-        mvr.insert("network", Item::from(network));
-        let mut packages = Array::new();
-        packages.push(package_name);
-        mvr.insert("packages", value(packages));
-        dependencies.insert("mvr", Item::Table(mvr));
-        doc.insert("dependencies", Item::Table(dependencies));
+    let mut todo_table = InlineTable::new();
+    let mut r_table = InlineTable::new();
+
+    // our `r.mvr` is a dotted table
+    r_table.set_dotted(true);
+
+    r_table.insert(
+        MVR_RESOLVER_KEY,
+        Value::String(Formatted::new(package_name.to_string())),
+    );
+    todo_table.insert(RESOLVER_PREFIX_KEY, Value::InlineTable(r_table));
+    dependencies.insert(
+        "ToDoReplaceWithDependencyName",
+        Item::Value(Value::InlineTable(todo_table)),
+    );
+
+    let network_exists = doc
+        .get(RESOLVER_PREFIX_KEY)
+        .and_then(|r| r.as_table())
+        .and_then(|r_table| r_table.get(MVR_RESOLVER_KEY))
+        .and_then(|mvr| mvr.as_table())
+        .and_then(|mvr_table| mvr_table.get(NETWORK_KEY))
+        .is_some();
+
+    if network_exists {
+        eprintln!("Network value already exists in r.mvr section. It will be overwritten.");
     }
 
-    fs::write(&move_toml_path, doc.to_string())
-        .with_context(|| format!("Failed to write to file: {:?}", move_toml_path))?;
+    if !doc.contains_key(RESOLVER_PREFIX_KEY) {
+        doc[RESOLVER_PREFIX_KEY] = Item::Table(Table::new());
+    }
+
+    let r_table = doc[RESOLVER_PREFIX_KEY].as_table_mut().unwrap();
+    // expecting to create `[r.mvr]` section only
+    r_table.set_dotted(true);
+
+    if !r_table.contains_key(MVR_RESOLVER_KEY) {
+        r_table.insert(MVR_RESOLVER_KEY, Item::Table(Table::new()));
+    }
+    
+    let mvr_table = r_table[MVR_RESOLVER_KEY].as_table_mut().unwrap();
+
+    mvr_table.insert(NETWORK_KEY, toml_edit::value(network));
+
+    fs::write(move_toml_path, doc.to_string())
+        .with_context(|| format!("Failed to write updated TOML to file: {:?}", move_toml_path))?;
+
     Ok(())
 }
 
@@ -1176,19 +1181,6 @@ pub async fn subcommand_list() -> Result<()> {
     list_apps().await
 }
 
-/// Adds the following TOML for a `package_name` and `network`:
-///
-/// [dependencies.mvr]
-/// resolver = "mvr"
-/// network = `network`
-/// packages = ["`package_name`" ]
-///
-/// If a resolver `mvr` already exists, the `package_name` is appended to `packages`.
-///
-/// Note, some limitations that can improve UX:
-/// 1) --network must be supplied. To improve, we can detect the current env.
-/// 2) Accept a Move.toml path outside the current directory.
-/// 3) Only one entry with a `network` can be exist in the `Move.toml` at a time
 pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<()> {
     if network != "testnet" && network != "mainnet" {
         bail!("network must be one of \"testnet\" or \"mainnet\"");
