@@ -22,6 +22,10 @@ use sui_sdk::{
     SuiClient, SuiClientBuilder,
 };
 
+const RESOLVER_PREFIX_KEY: &str = "r";
+const MVR_RESOLVER_KEY: &str = "mvr";
+const NETWORK_KEY: &str = "network";
+
 const APP_REGISTRY_TABLE_ID: &str =
     "0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163";
 
@@ -78,9 +82,9 @@ impl fmt::Display for PackageInfoNetwork {
 fn find_mvr_package(value: &toml::Value) -> Option<String> {
     value
         .as_table()
-        .and_then(|table| table.get("r"))
+        .and_then(|table| table.get(RESOLVER_PREFIX_KEY))
         .and_then(|r| r.as_table())
-        .and_then(|r_table| r_table.get("mvr"))
+        .and_then(|r_table| r_table.get(MVR_RESOLVER_KEY))
         .and_then(|mvr| mvr.as_str())
         .map(String::from)
 }
@@ -100,9 +104,9 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
 
     // Get the network from the [r.mvr] section
     let network = toml_value
-        .get("r")
-        .and_then(|r| r.get("mvr"))
-        .and_then(|mvr| mvr.get("network"))
+        .get(RESOLVER_PREFIX_KEY)
+        .and_then(|r| r.get(MVR_RESOLVER_KEY))
+        .and_then(|mvr| mvr.get(NETWORK_KEY))
         .and_then(|n| n.as_str())
         .ok_or_else(|| anyhow!("Expected [r.mvr].network to be a string"))?
         .to_string();
@@ -1058,38 +1062,49 @@ fn update_mvr_packages(move_toml_path: &Path, package_name: &str, network: &str)
     }
     let dependencies = doc["dependencies"].as_table_mut().unwrap();
 
-    let mut todo_table = Table::new();
+    let mut todo_table = InlineTable::new();
     let mut r_table = InlineTable::new();
+
+    // our `r.mvr` is a dotted table
+    r_table.set_dotted(true);
+
     r_table.insert(
-        "mvr",
+        MVR_RESOLVER_KEY,
         Value::String(Formatted::new(package_name.to_string())),
     );
-    todo_table.insert("r", Item::Value(Value::InlineTable(r_table)));
-    dependencies.insert("TODO", Item::Table(todo_table));
+    todo_table.insert(RESOLVER_PREFIX_KEY, Value::InlineTable(r_table));
+    dependencies.insert(
+        "ToDoReplaceWithDependencyName",
+        Item::Value(Value::InlineTable(todo_table)),
+    );
+
+    // dependencies.insert("TODO", Item::Value(Value::InlineTable(todo_table)));
 
     let network_exists = doc
-        .get("r")
+        .get(RESOLVER_PREFIX_KEY)
         .and_then(|r| r.as_table())
-        .and_then(|r_table| r_table.get("mvr"))
+        .and_then(|r_table| r_table.get(MVR_RESOLVER_KEY))
         .and_then(|mvr| mvr.as_table())
-        .and_then(|mvr_table| mvr_table.get("network"))
+        .and_then(|mvr_table| mvr_table.get(NETWORK_KEY))
         .is_some();
 
     if network_exists {
         eprintln!("Network value already exists in r.mvr section. It will be overwritten.");
     }
 
-    if !doc.contains_key("r") {
-        doc["r"] = Item::Table(Table::new());
+    if !doc.contains_key(RESOLVER_PREFIX_KEY) {
+        doc[RESOLVER_PREFIX_KEY] = Item::Table(Table::new());
     }
-    let r_table = doc["r"].as_table_mut().unwrap();
 
-    if !r_table.contains_key("mvr") {
-        r_table.insert("mvr", Item::Table(Table::new()));
+    let r_table = doc[RESOLVER_PREFIX_KEY].as_table_mut().unwrap();
+
+    if !r_table.contains_key(MVR_RESOLVER_KEY) {
+        r_table.insert(MVR_RESOLVER_KEY, Item::Table(Table::new()));
     }
-    let mvr_table = r_table["mvr"].as_table_mut().unwrap();
+    r_table.set_dotted(true);
+    let mvr_table = r_table[MVR_RESOLVER_KEY].as_table_mut().unwrap();
 
-    mvr_table.insert("network", toml_edit::value(network));
+    mvr_table.insert(NETWORK_KEY, toml_edit::value(network));
 
     fs::write(move_toml_path, doc.to_string())
         .with_context(|| format!("Failed to write updated TOML to file: {:?}", move_toml_path))?;
