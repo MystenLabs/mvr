@@ -41,9 +41,9 @@ struct MoveRegistryDependency {
     packages: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
-struct MoveToml {
-    dependencies: HashMap<String, toml::Value>,
+#[derive(Debug, Deserialize, Serialize)]
+struct RConfig {
+    network: String,
 }
 
 #[derive(PartialEq)]
@@ -75,11 +75,55 @@ impl fmt::Display for PackageInfoNetwork {
     }
 }
 
+fn find_mvr_package(value: &toml::Value) -> Option<String> {
+    value
+        .as_table()
+        .and_then(|table| table.get("r"))
+        .and_then(|r| r.as_table())
+        .and_then(|r_table| r_table.get("mvr"))
+        .and_then(|mvr| mvr.as_str())
+        .map(String::from)
+}
+
+/// Parse out packages with the following structure:
+///
+/// [dependencies]
+/// mvr = { r.mvr = "@mvr-tst/first-app" }
+///
+/// ...
+///
+/// [r.mvr]
+/// network = "mainnet"
+fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
+    use toml::Value;
+    let toml_value: Value = toml::from_str(content)?;
+
+    // Get the network from the [r.mvr] section
+    let network = toml_value
+        .get("r")
+        .and_then(|r| r.get("mvr"))
+        .and_then(|mvr| mvr.get("network"))
+        .and_then(|n| n.as_str())
+        .ok_or_else(|| anyhow!("Expected [r.mvr].network to be a string"))?
+        .to_string();
+
+    let mut packages = Vec::new();
+    if let Some(dependencies) = toml_value.get("dependencies").and_then(|d| d.as_table()) {
+        for (_, dep_value) in dependencies {
+            if let Some(package) = find_mvr_package(dep_value) {
+                packages.push(package);
+            }
+        }
+    }
+
+    Ok(MoveRegistryDependency { network, packages })
+}
+
 /// Resolves move registry packages. This function is invoked by `sui move build` and given the
 /// a key associated with the external resolution in a Move.toml file. For example, this
 /// TOML would trigger sui move build to call this binary and hit this function with value `mvr`:
 ///
-/// mvr = { r."./mvr" = "./mvr", network = "mainnet", packages = [ "@mvr-tst/first-app" ] }
+/// mvr = { r.mvr = "@mvr-tst/first-app" }
 ///
 /// The high-level logic of this function is as follows:
 /// 1) Fetch on-chain data for `packages`: the GitHub repository, branch, and subpath
@@ -88,14 +132,7 @@ impl fmt::Display for PackageInfoNetwork {
 ///    for each package, allow the `sui move build` command to resolve packages from GitHub.
 pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
     let content = fs::read_to_string("Move.toml")?;
-    let move_toml: MoveToml = toml::from_str(&content)?;
-    let dependency: MoveRegistryDependency = move_toml
-        .dependencies
-        .get(key)
-        .ok_or_else(|| anyhow!("Expected dependency '{key}' in [dependencies]"))?
-        .clone()
-        .try_into()
-        .map_err(|_| anyhow!("Unable to parse TOML for external dependency '{key}'"))?;
+    let dependency: MoveRegistryDependency = parse_move_toml(&content)?;
     eprintln!(
         "Resolving key = '{}', packages = {:?}",
         key, dependency.packages
