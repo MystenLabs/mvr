@@ -3,12 +3,15 @@ name = "nftmaker"
 edition = "2024.beta"
 
 [dependencies]
-mvr = { r.mvr = "@mvr-tst/first-app/1" }
-
-[r.mvr]
-network = "mainnet"
-
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
+
+[dependencies.TODO]
+r = { mvr = "@mvr-tst/first-app/1" }
 
 [addresses]
 nftmaker = "0x0"
+
+[r]
+
+[r.mvr]
+network = "mainnet"
