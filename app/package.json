@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
-    "@mysten/dapp-kit": "^0.14.20",
+    "@mysten/dapp-kit": "^0.14.24",
     "@mysten/kiosk": "^0.9.20",
     "@mysten/sui": "^1.11.0",
     "@mysten/suins": "^0.4.0",
