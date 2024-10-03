@@ -21,11 +21,17 @@ export default function AppsLayout({
   const { names: ownedNames } = useOwnedAndKioskSuinsNames();
 
   const [appValue, setAppValue] = useState<AppContextType["value"]>({
-    selectedSuinsName:
-      JSON.parse(
-        localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? "{}",
-      )?.selectedSuinsName ?? null,
+    selectedSuinsName: null
   });
+
+  useEffect(() => {
+    const localStorageEntry = JSON.parse(
+      localStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? "{}",
+    )?.selectedSuinsName ?? null;
+    if (localStorageEntry) {
+      setAppValue({ selectedSuinsName: localStorageEntry });
+    }
+  }, []);
 
   const selectSuinsName = (nftId: string) => {
     const selectedSuinsName =

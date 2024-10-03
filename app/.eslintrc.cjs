@@ -5,6 +5,7 @@ const config = {
     "project": true
   },
   "plugins": [
+    // @ts-ignore
     "@typescript-eslint"
   ],
   "extends": [

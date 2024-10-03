@@ -128,7 +128,7 @@ const Menu = () => {
   return (
     <>
       {Links.map(({ name, href }) => (
-        <SheetClose asChild>
+        <SheetClose key={name} asChild>
           <Button
             asChild
             key={name}
