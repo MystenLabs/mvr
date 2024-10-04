@@ -1,6 +1,6 @@
 [package]
 name = "mvr"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 
 [[bin]]
@@ -29,6 +29,7 @@ tokio = "1.38.0"
 url = "2.5.2"
 toml_edit = "0.22.21"
 toml = "0.8.19"
+regex = "1.10.5"
 
 [dev-dependencies]
 expect-test = "1.1"
