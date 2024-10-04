@@ -5,7 +5,7 @@ pub enum EnvVariables {
 }
 
 impl EnvVariables {
-    pub fn get_env_var(&self) -> String {
+    pub fn to_string(&self) -> String {
         match self {
             EnvVariables::SuiBinaryPath => "SUI_BINARY_PATH".to_string(),
         }

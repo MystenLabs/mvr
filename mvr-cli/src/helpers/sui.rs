@@ -8,7 +8,7 @@ const VERSION_REGEX: &str = r"(\d+)\.(\d+)\.(\d+)";
 /// Check the sui binary's version and print it to the console.
 /// This can be used
 pub fn check_sui_version(expected_version: (u32, u32)) {
-    let env = EnvVariables::SuiBinaryPath.get_env_var();
+    let env = EnvVariables::SuiBinaryPath.to_string();
 
     let sui_bin = env::var(env.clone()).unwrap_or("sui".to_string());
 
