@@ -1,18 +1,15 @@
 use regex::Regex;
 use std::{env, process::Command};
 
-use super::constants::EnvVariables;
+use super::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
 
 const VERSION_REGEX: &str = r"(\d+)\.(\d+)\.(\d+)";
 
 /// Check the sui binary's version and print it to the console.
 /// This can be used
 pub fn check_sui_version(expected_version: (u32, u32)) {
-    let env = EnvVariables::SuiBinaryPath.to_string();
-
-    let sui_bin = env::var(env.clone()).unwrap_or("sui".to_string());
-
-    let output = Command::new(sui_bin)
+    let (bin, env) = get_sui_binary();
+    let output = Command::new(bin)
         .arg("--version")
         .output()
         .expect(&format!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env));
@@ -42,7 +39,7 @@ pub fn check_sui_version(expected_version: (u32, u32)) {
                 major >= expected_version.0 && minor >= expected_version.1,
                 "{}",
                 &format!(
-                    "SUI version is too low. Please upgrade to at least {}.{}",
+                    "SUI version is too low. Please upgrade to at least {}.{} in order to build your code using mvr.",
                     &expected_version.0, &expected_version.1
                 ),
             );
@@ -59,4 +56,21 @@ pub fn check_sui_version(expected_version: (u32, u32)) {
             String::from_utf8_lossy(&output.stderr)
         );
     }
+}
+
+/// Calls `{sui} move build`. Currently needed when:
+/// 1. Adding a new dependency (mvr add)
+/// 2. Setting the network (mvr set-network)
+pub fn force_build() {
+    check_sui_version(MINIMUM_BUILD_SUI_VERSION);
+    let (bin, env) = get_sui_binary();
+    Command::new(bin)
+        .args(&["move", "build"])
+        .output()
+        .expect(&format!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env));
+}
+
+fn get_sui_binary() -> (String, String) {
+    let env = EnvVariables::SuiBinaryPath.to_string();
+    (env::var(env.clone()).unwrap_or("sui".to_string()), env)
 }

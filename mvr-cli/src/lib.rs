@@ -1,6 +1,7 @@
 pub mod helpers;
 
 use anyhow::{anyhow, bail, Context, Result};
+use helpers::sui::force_build;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
@@ -15,6 +16,7 @@ use toml_edit::{
     value, Array, ArrayOfTables, DocumentMut, Formatted, InlineTable, Item, Table, Value,
 };
 use url::Url;
+use yansi::Paint;
 
 use sui_config::{sui_config_dir, SUI_CLIENT_CONFIG};
 use sui_sdk::{
@@ -1177,6 +1179,16 @@ async fn update_mvr_packages(
     mvr_table.insert(NETWORK_KEY, toml_edit::value(network.to_string()));
     fs::write(move_toml_path, doc.to_string())
         .with_context(|| format!("Failed to write updated TOML to file: {:?}", move_toml_path))?;
+
+    println!(
+        "{}\nYou can use this dependency in your modules by calling: {}",
+        &format!(
+            "\nSuccessfully added dependency {} to your Move.toml\n",
+            package_name.green()
+        ),
+        &format!("use {}::<module>;\n", name).green()
+    );
+    force_build();
 
     Ok(())
 }
