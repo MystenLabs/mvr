@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::{env, process::Command};
+use std::{env, process::{Command, Output}};
 
 use super::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
 
@@ -8,11 +8,7 @@ const VERSION_REGEX: &str = r"(\d+)\.(\d+)\.(\d+)";
 /// Check the sui binary's version and print it to the console.
 /// This can be used
 pub fn check_sui_version(expected_version: (u32, u32)) {
-    let (bin, env) = get_sui_binary();
-    let output = Command::new(bin)
-        .arg("--version")
-        .output()
-        .expect(&format!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env));
+    let output = sui_command(["--version"].to_vec());
 
     // Check if the command was successful
     if output.status.success() {
@@ -63,13 +59,17 @@ pub fn check_sui_version(expected_version: (u32, u32)) {
 /// 2. Setting the network (mvr set-network)
 pub fn force_build() {
     check_sui_version(MINIMUM_BUILD_SUI_VERSION);
-    let (bin, env) = get_sui_binary();
-    Command::new(bin)
-        .args(&["move", "build"])
-        .output()
-        .expect(&format!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env));
+    sui_command(["move", "build"].to_vec());
 }
 
+fn sui_command(args: Vec<&str>) -> Output {
+    let (bin, env) = get_sui_binary();
+    Command::new(bin)
+        .args(args)
+        .output()
+        .expect(&format!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env))
+        
+}
 fn get_sui_binary() -> (String, String) {
     let env = EnvVariables::SuiBinaryPath.to_string();
     (env::var(env.clone()).unwrap_or("sui".to_string()), env)
