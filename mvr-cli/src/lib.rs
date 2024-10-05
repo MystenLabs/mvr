@@ -918,10 +918,7 @@ fn extract_git_info(dynamic_field_data: &SuiObjectResponse) -> Result<GitInfo> {
 pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
     let parts: Vec<&str> = name.split('/').collect();
     match parts.as_slice() {
-        [base_org, base_name] => Ok((
-            format!("{}/{}", base_org, base_name),
-            None,
-        )),
+        [base_org, base_name] => Ok((format!("{}/{}", base_org, base_name), None)),
         [base_org, base_name, version] => {
             let version: u64 = version
                 .parse::<u64>()
@@ -937,10 +934,7 @@ pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)
                         ))
                     }
                 })?;
-            Ok((
-                format!("{}/{}", base_org, base_name),
-                Some(version),
-            ))
+            Ok((format!("{}/{}", base_org, base_name), Some(version)))
         }
         _ => Err(anyhow!(
             "Invalid package name format when parsing version: {name}"
@@ -1105,9 +1099,7 @@ async fn update_mvr_packages(
     move_toml_path: &Path,
     package_name: &str,
     network: &str,
-) -> Result<()> {
-    let config_path = sui_config_dir()?.join(SUI_CLIENT_CONFIG);
-    let context = WalletContext::new(&config_path, None, None)?;
+) -> Result<String> {
     let (mainnet_client, testnet_client) = setup_sui_clients().await?;
 
     let dependency = MoveRegistryDependency {
@@ -1192,7 +1184,7 @@ async fn update_mvr_packages(
     fs::write(move_toml_path, doc.to_string())
         .with_context(|| format!("Failed to write updated TOML to file: {:?}", move_toml_path))?;
 
-    println!(
+    let output_msg = format!(
         "{}\nYou can use this dependency in your modules by calling: {}",
         &format!(
             "\nSuccessfully added dependency {} to your Move.toml\n",
@@ -1202,7 +1194,7 @@ async fn update_mvr_packages(
     );
     force_build();
 
-    Ok(())
+    Ok(output_msg)
 }
 
 /// List the App Registry
@@ -1270,14 +1262,9 @@ pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Res
     if !move_toml_path.exists() {
         return Err(anyhow!("Move.toml not found in the current directory"));
     }
-    let cmd = update_mvr_packages(&move_toml_path, package_name, network).await;
-    match cmd {
-        Ok(_) => Ok(CommandOutput::Add(format!(
-            "Successfully added {} to registry",
-            package_name
-        ))),
-        Err(e) => Err(e),
-    }
+    let cmd_output = update_mvr_packages(&move_toml_path, package_name, network).await?;
+
+    Ok(CommandOutput::Add(cmd_output))
 }
 
 pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
