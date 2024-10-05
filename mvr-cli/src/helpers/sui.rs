@@ -70,6 +70,7 @@ fn sui_command(args: Vec<&str>) -> Output {
         .expect(&format!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env))
         
 }
+
 fn get_sui_binary() -> (String, String) {
     let env = EnvVariables::SuiBinaryPath.to_string();
     (env::var(env.clone()).unwrap_or("sui".to_string()), env)
