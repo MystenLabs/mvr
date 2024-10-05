@@ -16,6 +16,16 @@ pub(crate) struct App {
 
 impl Display for App {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
+        writeln!(f, "\x1b[1m{}\x1b[0m", self.name)?;
+        for (network, package_info) in &self.package_info {
+            writeln!(f, "  [\x1b[1m{network}\x1b[0m]")?;
+            if let Some(package_info) = package_info {
+                writeln!(f, "    Package Info: \n{}\n", package_info)?;
+            } else {
+            }
+            writeln!(f, "    Package Info: None")?;
+        }
+
+        Ok(())
     }
 }

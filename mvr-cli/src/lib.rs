@@ -86,6 +86,14 @@ impl fmt::Display for PackageInfoNetwork {
     }
 }
 
+impl fmt::Display for PackageInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "      Upgrade Cap ID: {}\n", self.upgrade_cap_id)?;
+        write!(f, "      Package Address: {}\n", self.package_address)?;
+        write!(f, "      Git Versioning: {:?}", self.git_versioning)
+    }
+}
+
 fn find_mvr_package(value: &toml::Value) -> Option<String> {
     value
         .as_table()
@@ -1246,32 +1254,37 @@ async fn list_apps() -> Result<()> {
             )
             .await?;
             let name = get_normalized_app_name(&name_object)?;
-            // let app = App {
-            //     name,
-            //     package_info: vec![
-            //         (
-            //             PackageInfoNetwork::Testnet,
-            //             get_package_info(
-            //                 &name_object,
-            //                 &testnet_client,
-            //                 &PackageInfoNetwork::Testnet,
-            //             )
-            //             .await?,
-            //         ),
-            //         (
-            //             PackageInfoNetwork::Mainnet,
-            //             get_package_info(
-            //                 &name_object,
-            //                 &mainnet_client,
-            //                 &PackageInfoNetwork::Mainnet,
-            //             )
-            //             .await?,
-            //         ),
-            //     ],
-            // };
-            println!("{name}");
-            print_package_info!(&name_object, &testnet_client, &PackageInfoNetwork::Testnet);
+            let app = App {
+                name: name.clone(),
+                package_info: vec![
+                    (
+                        PackageInfoNetwork::Testnet,
+                        get_package_info(
+                            &name_object,
+                            &testnet_client,
+                            &PackageInfoNetwork::Testnet,
+                        )
+                        .await
+                        .unwrap_or(None),
+                    ),
+                    (
+                        PackageInfoNetwork::Mainnet,
+                        get_package_info(
+                            &name_object,
+                            &mainnet_client,
+                            &PackageInfoNetwork::Mainnet,
+                        )
+                        .await
+                        .unwrap_or(None),
+                    ),
+                ],
+            };
+            println!("{app}");
+            println!("---------------------------------");
+            // println!("{name}");
+            // print_package_info!(&name_object, &testnet_client, &PackageInfoNetwork::Testnet);
             // print_package_info!(&name_object, &mainnet_client, &PackageInfoNetwork::Mainnet);
+            // println!("");
             // println!("{app}");
         }
 
