@@ -46,6 +46,7 @@ impl Command {
 
 #[derive(Serialize)]
 pub enum CommandOutput {
+    #[serde(rename = "added_to_registry")]
     Add(String),
     #[serde(rename = "apps")]
     List(Vec<App>),

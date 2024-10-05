@@ -90,8 +90,8 @@ impl fmt::Display for PackageInfoNetwork {
 
 impl fmt::Display for PackageInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "      Upgrade Cap ID: {}\n", self.upgrade_cap_id)?;
-        write!(f, "      Package Address: {}\n", self.package_address)?;
+        writeln!(f, "      Upgrade Cap ID: {}", self.upgrade_cap_id)?;
+        writeln!(f, "      Package Address: {}", self.package_address)?;
         write!(f, "      Git Versioning: {:?}", self.git_versioning)
     }
 }
@@ -198,10 +198,9 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
             bail!(message)
         }
         _ => {
-            let message = format!(
-                "Unrecognized chain: expected environment to be either `testnet` or `mainnet`.\n\
+            let message = "Unrecognized chain: expected environment to be either `testnet` or `mainnet`.\n\
                  Consider switching your sui client to an environment that uses one of these chains\n\
-                 For example: `sui client switch --env testnet`");
+                 For example: `sui client switch --env testnet`".to_string();
             bail!(message);
         }
     };
@@ -365,7 +364,7 @@ async fn check_single_package_consistency(
     eprintln!("Using on-chain version {version}");
 
     let original_address_on_chain = if version > 1 {
-        package_at_version(&package_info.package_address.to_string(), 1, &network)
+        package_at_version(&package_info.package_address.to_string(), 1, network)
             .await?
             .ok_or_else(|| {
                 anyhow::anyhow!("Failed to retrieve original package address at version 1")
@@ -678,7 +677,7 @@ fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<S
         let app_name = name_obj
             .get("app")
             .and_then(|app| app.as_array())
-            .and_then(|app| app.get(0))
+            .and_then(|app| app.first())
             .and_then(|app| app.as_str())
             .unwrap_or("unknown");
 
@@ -727,8 +726,8 @@ async fn get_package_info(
     client: &SuiClient,
     network: &PackageInfoNetwork,
 ) -> Result<Option<PackageInfo>> {
-    let package_info_id = get_package_info_id(&name_object, network)?;
-    let package_info = get_package_info_by_id(&client, package_info_id).await?;
+    let package_info_id = get_package_info_id(name_object, network)?;
+    let package_info = get_package_info_by_id(client, package_info_id).await?;
     let upgrade_cap_id = get_upgrade_cap_id(&package_info)?;
     let package_address = get_package_address(&package_info)?;
     let git_versioning = get_git_versioning(&package_info, client).await?;
@@ -771,7 +770,7 @@ async fn get_git_versioning(
     package_info: &SuiObjectResponse,
     client: &SuiClient,
 ) -> Result<HashMap<u64, GitInfo>> {
-    let git_versioning_id = get_git_versioning_id(&package_info)?;
+    let git_versioning_id = get_git_versioning_id(package_info)?;
     let mut result = HashMap::new();
     let mut cursor = None;
 
@@ -920,7 +919,7 @@ pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)
     let parts: Vec<&str> = name.split('/').collect();
     match parts.as_slice() {
         [base_org, base_name] => Ok((
-            format!("{}/{}", base_org.to_string(), base_name.to_string()),
+            format!("{}/{}", base_org, base_name),
             None,
         )),
         [base_org, base_name, version] => {
@@ -939,7 +938,7 @@ pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)
                     }
                 })?;
             Ok((
-                format!("{}/{}", base_org.to_string(), base_name.to_string()),
+                format!("{}/{}", base_org, base_name),
                 Some(version),
             ))
         }
@@ -1130,7 +1129,7 @@ async fn update_mvr_packages(
 
     let resolved_packages =
         resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
-    let toml_content = fs::read_to_string(&move_toml_path)
+    let toml_content = fs::read_to_string(move_toml_path)
         .with_context(|| format!("Failed to read file: {:?}", move_toml_path))?;
     let mut doc = toml_content
         .parse::<DocumentMut>()
@@ -1252,8 +1251,6 @@ pub async fn subcommand_list() -> Result<CommandOutput> {
                 ],
             };
             output.push(app);
-            // println!("------------------------------------------------------------------------------------------");
-            // println!("{app}");
         }
 
         if !dynamic_fields.has_next_page {
@@ -1277,7 +1274,7 @@ pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Res
     match cmd {
         Ok(_) => Ok(CommandOutput::Add(format!(
             "Successfully added {} to registry",
-            package_name.to_string()
+            package_name
         ))),
         Err(e) => Err(e),
     }
