@@ -1,13 +1,10 @@
 use anyhow::Result;
 use expect_test::expect;
 use mvr::{
-    build_lock_files, check_address_consistency, parse_package_version, resolve_move_dependencies,
-    subcommand_add_dependency, subcommand_list, subcommand_register_name, subcommand_resolve_name,
-    GitInfo, PackageInfo, PackageInfoNetwork,
+    build_lock_files, check_address_consistency, parse_package_version, GitInfo, PackageInfo, PackageInfoNetwork,
 };
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
 use sui_sdk::types::base_types::ObjectID;
 use tempfile::tempdir;
 

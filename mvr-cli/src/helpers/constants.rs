@@ -1,4 +1,4 @@
-pub const MINIMUM_BUILD_SUI_VERSION: (u32, u32) = (1, 34);
+pub const MINIMUM_BUILD_SUI_VERSION: (u32, u32) = (1, 35);
 
 pub enum EnvVariables {
     SuiBinaryPath,
