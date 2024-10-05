@@ -33,6 +33,22 @@ pub enum Command {
     },
 }
 
+#[derive(Serialize)]
+pub enum CommandOutput {
+    #[serde(rename = "added_to_registry")]
+    Add(String),
+    #[serde(rename = "apps")]
+    List(Vec<App>),
+    Register,
+    Resolve,
+}
+
+#[derive(Serialize)]
+pub struct App {
+    pub name: String,
+    pub package_info: Vec<(PackageInfoNetwork, Option<PackageInfo>)>,
+}
+
 impl Command {
     pub async fn execute(self) -> Result<CommandOutput> {
         match self {
@@ -42,16 +58,6 @@ impl Command {
             Command::Resolve { name } => subcommand_resolve_name(&name).await,
         }
     }
-}
-
-#[derive(Serialize)]
-pub enum CommandOutput {
-    #[serde(rename = "added_to_registry")]
-    Add(String),
-    #[serde(rename = "apps")]
-    List(Vec<App>),
-    Register,
-    Resolve,
 }
 
 impl Display for CommandOutput {
@@ -74,12 +80,6 @@ impl Display for CommandOutput {
     }
 }
 
-#[derive(Serialize)]
-pub struct App {
-    pub name: String,
-    pub package_info: Vec<(PackageInfoNetwork, Option<PackageInfo>)>,
-}
-
 impl Display for App {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut package_table = Table::new();
@@ -93,7 +93,7 @@ impl Display for App {
         writeln!(f, "{}", package_table)?;
 
         for (network, package) in self.package_info.iter() {
-            writeln!(f, "\n [{}]", network)?;
+            writeln!(f, "\n  [{}]", network)?;
             let mut table = Table::new();
             table.load_preset(comfy_table::presets::NOTHING); // Remove borders
 
