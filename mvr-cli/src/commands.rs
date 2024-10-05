@@ -90,7 +90,7 @@ impl Display for App {
             .add_row(Row::from(vec!["Package:", name]));
 
         // Print the package table
-        println!("{}", package_table);
+        writeln!(f, "{}", package_table)?;
 
         for (network, package) in self.package_info.iter() {
             writeln!(f, "\n [{}]", network)?;

@@ -1,13 +1,15 @@
+use std::fmt::{self, Display, Formatter};
+
 pub const MINIMUM_BUILD_SUI_VERSION: (u32, u32) = (1, 35);
 
 pub enum EnvVariables {
     SuiBinaryPath,
 }
 
-impl EnvVariables {
-    pub fn to_string(&self) -> String {
+impl Display for EnvVariables {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            EnvVariables::SuiBinaryPath => "SUI_BINARY_PATH".to_string(),
+            EnvVariables::SuiBinaryPath => write!(f, "SUI_BINARY_PATH"),
         }
     }
 }
