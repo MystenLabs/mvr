@@ -31,6 +31,7 @@ toml_edit = "0.22.21"
 toml = "0.8.19"
 regex = "1.10.5"
 yansi = "1.0.1"
+comfy-table = "7.1.1"
 
 [dev-dependencies]
 expect-test = "1.1"

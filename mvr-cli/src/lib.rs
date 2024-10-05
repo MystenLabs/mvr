@@ -1,3 +1,4 @@
+mod commands;
 pub mod helpers;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -25,6 +26,8 @@ use sui_sdk::{
     wallet_context::WalletContext,
     SuiClient, SuiClientBuilder,
 };
+
+use crate::commands::App;
 
 const RESOLVER_PREFIX_KEY: &str = "r";
 const MVR_RESOLVER_KEY: &str = "mvr";
@@ -1243,10 +1246,33 @@ async fn list_apps() -> Result<()> {
             )
             .await?;
             let name = get_normalized_app_name(&name_object)?;
+            // let app = App {
+            //     name,
+            //     package_info: vec![
+            //         (
+            //             PackageInfoNetwork::Testnet,
+            //             get_package_info(
+            //                 &name_object,
+            //                 &testnet_client,
+            //                 &PackageInfoNetwork::Testnet,
+            //             )
+            //             .await?,
+            //         ),
+            //         (
+            //             PackageInfoNetwork::Mainnet,
+            //             get_package_info(
+            //                 &name_object,
+            //                 &mainnet_client,
+            //                 &PackageInfoNetwork::Mainnet,
+            //             )
+            //             .await?,
+            //         ),
+            //     ],
+            // };
             println!("{name}");
             print_package_info!(&name_object, &testnet_client, &PackageInfoNetwork::Testnet);
-            print_package_info!(&name_object, &mainnet_client, &PackageInfoNetwork::Mainnet);
-            println!("");
+            // print_package_info!(&name_object, &mainnet_client, &PackageInfoNetwork::Mainnet);
+            // println!("{app}");
         }
 
         if !dynamic_fields.has_next_page {

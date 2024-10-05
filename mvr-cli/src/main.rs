@@ -25,6 +25,7 @@ enum Commands {
         #[arg(short, long)]
         network: String,
     },
+    /// List every app in the move registry.
     List,
     Register {
         name: String,
