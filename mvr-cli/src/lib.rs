@@ -1,4 +1,8 @@
 mod commands;
+use commands::App;
+pub use commands::Command;
+pub use commands::CommandOutput;
+
 pub mod helpers;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -26,8 +30,6 @@ use sui_sdk::{
     wallet_context::WalletContext,
     SuiClient, SuiClientBuilder,
 };
-
-use crate::commands::App;
 
 const RESOLVER_PREFIX_KEY: &str = "r";
 const MVR_RESOLVER_KEY: &str = "mvr";
@@ -57,20 +59,20 @@ struct RConfig {
     network: String,
 }
 
-#[derive(PartialEq)]
+#[derive(Serialize, PartialEq)]
 pub enum PackageInfoNetwork {
     Mainnet,
     Testnet,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct PackageInfo {
     pub upgrade_cap_id: ObjectID,
     pub package_address: ObjectID,
     pub git_versioning: HashMap<u64, GitInfo>,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct GitInfo {
     pub repository: String,
     pub tag: String,
@@ -1236,10 +1238,11 @@ macro_rules! print_package_info {
 }
 
 /// List the App Registry
-async fn list_apps() -> Result<()> {
+pub async fn subcommand_list() -> Result<CommandOutput> {
     let (mainnet_client, testnet_client) = setup_sui_clients().await?;
     let app_registry_id = ObjectID::from_hex_literal(APP_REGISTRY_TABLE_ID)?;
     let mut cursor = None;
+    let mut output = vec![];
     loop {
         let dynamic_fields = mainnet_client
             .read_api()
@@ -1279,12 +1282,8 @@ async fn list_apps() -> Result<()> {
                     ),
                 ],
             };
-            println!("{app}");
-            println!("---------------------------------");
-            // println!("{name}");
-            // print_package_info!(&name_object, &testnet_client, &PackageInfoNetwork::Testnet);
-            // print_package_info!(&name_object, &mainnet_client, &PackageInfoNetwork::Mainnet);
-            // println!("");
+            output.push(app);
+            // println!("------------------------------------------------------------------------------------------");
             // println!("{app}");
         }
 
@@ -1293,12 +1292,7 @@ async fn list_apps() -> Result<()> {
         }
         cursor = dynamic_fields.next_cursor;
     }
-    Ok(())
-}
-
-/// List the App Registry
-pub async fn subcommand_list() -> Result<()> {
-    list_apps().await
+    Ok(CommandOutput::List(output))
 }
 
 pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<()> {
