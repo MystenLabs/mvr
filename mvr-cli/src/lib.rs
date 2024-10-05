@@ -1206,37 +1206,6 @@ async fn update_mvr_packages(
     Ok(())
 }
 
-macro_rules! print_package_info {
-    ($name_object:expr, $client:expr, $network:expr) => {
-        println!("  [{}]", $network);
-        match get_package_info(&$name_object, $client, $network).await {
-            Ok(Some(PackageInfo {
-                upgrade_cap_id,
-                package_address,
-                git_versioning,
-            })) => {
-                println!("    Package Addr: {package_address}");
-                println!("    Upgrade Cap : {upgrade_cap_id}");
-                for (
-                    k,
-                    GitInfo {
-                        repository,
-                        tag,
-                        path,
-                    },
-                ) in git_versioning.iter() {
-                    println!(
-                        "      v{k}\n      Repository: {repository}\n      Tag: {tag}\n      Path: {path}"
-                    );
-                }
-            },
-            Ok(None) | Err(_) => {
-                println!("      <Not found>");
-            }
-        };
-    }
-}
-
 /// List the App Registry
 pub async fn subcommand_list() -> Result<CommandOutput> {
     let (mainnet_client, testnet_client) = setup_sui_clients().await?;
@@ -1295,7 +1264,7 @@ pub async fn subcommand_list() -> Result<CommandOutput> {
     Ok(CommandOutput::List(output))
 }
 
-pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<()> {
+pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<CommandOutput> {
     if network != "testnet" && network != "mainnet" {
         bail!("network must be one of \"testnet\" or \"mainnet\"");
     }
@@ -1304,16 +1273,23 @@ pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Res
     if !move_toml_path.exists() {
         return Err(anyhow!("Move.toml not found in the current directory"));
     }
-    update_mvr_packages(&move_toml_path, package_name, network).await
+    let cmd = update_mvr_packages(&move_toml_path, package_name, network).await;
+    match cmd {
+        Ok(_) => Ok(CommandOutput::Add(format!(
+            "Successfully added {} to registry",
+            package_name.to_string()
+        ))),
+        Err(e) => Err(e),
+    }
 }
 
-pub async fn subcommand_register_name(_name: &str) -> Result<()> {
+pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
     println!("tbd!");
-    Ok(())
+    Ok(CommandOutput::Register)
 }
 
 /// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
-pub async fn subcommand_resolve_name(_name: &str) -> Result<()> {
+pub async fn subcommand_resolve_name(_name: &str) -> Result<CommandOutput> {
     println!("tbd!");
-    Ok(())
+    Ok(CommandOutput::Resolve)
 }

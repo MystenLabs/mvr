@@ -2,6 +2,7 @@ use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
 
+use anyhow::Result;
 use clap::Subcommand;
 use comfy_table::Row;
 use comfy_table::Table;
@@ -15,6 +16,7 @@ use crate::PackageInfo;
 use crate::PackageInfoNetwork;
 
 #[derive(Serialize, Subcommand)]
+#[serde()]
 pub enum Command {
     Add {
         name: String,
@@ -32,20 +34,20 @@ pub enum Command {
 }
 
 impl Command {
-    pub async fn execute(self) -> Result<CommandOutput, anyhow::Error> {
+    pub async fn execute(self) -> Result<CommandOutput> {
         match self {
-            // Command::Add { name, network } => subcommand_add_dependency(name, network).await?,
+            Command::Add { name, network } => subcommand_add_dependency(&name, &network).await,
             Command::List => subcommand_list().await,
-            // Command::Register { name } => subcommand_register_name(name).await?,
-            // Command::Resolve { name } => subcommand_resolve_name(name).await?,
-            _ => unimplemented!(),
+            Command::Register { name } => subcommand_register_name(&name).await,
+            Command::Resolve { name } => subcommand_resolve_name(&name).await,
         }
     }
 }
 
 #[derive(Serialize)]
 pub enum CommandOutput {
-    Add,
+    Add(String),
+    #[serde(rename = "apps")]
     List(Vec<App>),
     Register,
     Resolve,
@@ -54,7 +56,7 @@ pub enum CommandOutput {
 impl Display for CommandOutput {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            CommandOutput::Add => write!(f, "Added"),
+            CommandOutput::Add(output) => write!(f, "{}", output),
             CommandOutput::List(apps) => {
                 for app in apps {
                     writeln!(
