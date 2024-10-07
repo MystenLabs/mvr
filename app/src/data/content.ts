@@ -74,6 +74,12 @@ export const Content = {
 
   app: {
     button: "Create another Application",
+    connected: {
+      title: 'There is an active connection',
+      description: 'This package is connected to the application on',
+      button: 'View Package Details',
+  
+    }
   },
 
   addressPlaceholder: "Enter your custom address (e.g. 0xdee)",

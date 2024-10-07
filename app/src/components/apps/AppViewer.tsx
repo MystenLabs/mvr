@@ -3,7 +3,7 @@ import { AppCap } from "@/hooks/useOwnedApps";
 import { Text } from "../ui/Text";
 import { AvailableNetworks, Network } from "@/utils/types";
 import { TabTitle } from "../ui/TabTitle";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { EmptyState } from "../EmptyState";
 import { Content } from "@/data/content";
 import LoadingState from "../LoadingState";
@@ -13,6 +13,7 @@ import CreateOrUpdateApp from "../modals/apps/CreateOrUpdateApp";
 import { useGetPackageInfo } from "@/hooks/useGetPackageInfo";
 import { PackageInfoViewer } from "../packages/PackageInfoViewer";
 import { PackagesNetworkContext } from "../providers/packages-provider";
+import { AnimatedCheckmark } from "@/icons/AnimatedCheckmark";
 
 export function AppViewer({ cap }: { cap: AppCap }) {
   const [network, setNetwork] = useState<Network>("mainnet");
@@ -95,6 +96,12 @@ const SinglePackageView = ({
     network,
   });
 
+  const [showDetails, setShowDetails] = useState(false);
+
+  useEffect(() => {
+    setShowDetails(false);
+  }, [appInfo]);
+
   if (!appInfo)
     return (
       <EmptyState size="md" {...Content.noPackageConnected}>
@@ -108,7 +115,24 @@ const SinglePackageView = ({
 
   return (
     <PackagesNetworkContext.Provider value={network}>
-      {packageInfoDetails && (
+      {!showDetails && (
+        <div className="mx-auto flex max-w-[450px] flex-col gap-Small py-Large text-center">
+          <AnimatedCheckmark />
+          <Text variant="heading/bold">{ Content.app.connected.title }</Text>
+          <Text variant="regular/regular" color="tertiary" family="inter">
+            {Content.app.connected.description} <strong>{network}</strong>
+          </Text>
+
+          <Button
+            variant="outline"
+            onClick={() => setShowDetails(!showDetails)}
+          >
+            {Content.app.connected.button}
+          </Button>
+        </div>
+      )}
+
+      {showDetails && packageInfoDetails && (
         <PackageInfoViewer packageInfo={packageInfoDetails} disableEdits />
       )}
     </PackagesNetworkContext.Provider>
