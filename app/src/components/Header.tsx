@@ -48,10 +48,13 @@ export default function Header({
     <header>
       <Sheet>
         <div className="container grid grid-cols-2 items-center justify-between py-Regular lg:grid-cols-12">
-          <div className="flex items-center gap-Small lg:col-span-3">
+          <Link
+            href="/apps"
+            className="flex items-center gap-Small lg:col-span-3"
+          >
             <SuiLogo />
             <Text variant="heading/regular">mvr</Text>
-          </div>
+          </Link>
           <div className="text-center max-lg:hidden lg:col-span-4">
             <Menu />
           </div>

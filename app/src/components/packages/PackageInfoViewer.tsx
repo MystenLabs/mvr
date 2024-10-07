@@ -29,11 +29,11 @@ export function PackageInfoViewer({
             <img src={packageInfo.suiDisplay.imageUrl} />
           )}
 
-          {!disableEdits && (
+          {/* {!disableEdits && (
             <Button variant="secondary" className="w-full">
               Edit NFT
             </Button>
-          )}
+          )} */}
         </div>
         <div className="md:col-span-9">
           <PackageInfoTabs packageInfo={packageInfo} disableEdits={disableEdits} />
