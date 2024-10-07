@@ -32,7 +32,7 @@ export function ComboBox({
   placeholder?: string;
   emptyState?: string;
   searchText?: string;
-  options: { value: any; label: string }[];
+  options: { value: any; label: string, search?: string }[];
   value: any;
   setValue: (value: any) => void;
 }) {
@@ -60,6 +60,9 @@ export function ComboBox({
             const valueLabel = options.find(
               (option) => option.value === value,
             )?.label;
+            const valueSearch = options.find(
+              (option) => option.value === value,
+            )?.search;
 
             const labelMatch = valueLabel
               ?.toLowerCase()
@@ -68,7 +71,9 @@ export function ComboBox({
               ?.toLowerCase()
               .includes(search.toLowerCase());
 
-            return labelMatch || valueMatch ? 1 : 0;
+            const searchMatch = valueSearch?.toLowerCase().includes(search.toLowerCase());
+
+            return labelMatch || searchMatch || valueMatch ? 1 : 0;
           }}
         >
           {showSearch && <CommandInput placeholder={searchText} />}

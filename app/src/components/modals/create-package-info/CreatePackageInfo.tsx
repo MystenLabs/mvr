@@ -53,6 +53,7 @@ export default function CreatePackageInfo({
       .map((x) => ({
         label: formatAddress(x.objectId),
         value: x.package,
+        search: x.objectId,
       }));
   }, [upgradeCaps, packageInfos]);
 
