@@ -7,6 +7,7 @@ module demo::demo {
 
     public struct DemoWitness has drop {}
     public struct NestedDemoWitness<phantom T: drop> has drop {}
+    public struct NewVersionWitness has drop {}
 
     public fun new_nft(ctx: &mut TxContext): DemoNFT {
         DemoNFT { 
