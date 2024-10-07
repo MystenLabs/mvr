@@ -32,8 +32,6 @@ const GithubUrl = (props: {owner: string; repository: string; tagOrHash: string,
 const parseGitUrl = (url: string) => {
     const [provider, owner, repo] = url.replace('://', '').split("/");
 
-    console.log(provider, owner, repo);
-
     if (provider?.includes(GitProviderUrls[GitProvider.Github])) {
         return { owner, repo, provider: GitProvider.Github }
     }
