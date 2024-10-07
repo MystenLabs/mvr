@@ -51,7 +51,7 @@ export const Content = {
     title: "Let's get started!",
     description:
       "It seems like you have some packages. Create a new package metadata object by clicking the button below.",
-    button: "Create a Package metadata NFT",
+    button: "Create new Package Metadata",
   },
   invalidCap: {
     icon: "❌",
@@ -76,7 +76,7 @@ export const Content = {
     button: "Create another Application",
     connected: {
       title: 'There is an active connection',
-      description: 'This package is connected to the application on',
+      description: 'This application is connected to a package on',
       button: 'View Package Details',
   
     }

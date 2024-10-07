@@ -16,6 +16,8 @@ import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
 import { useActiveAddress } from "@/hooks/useActiveAddress";
 import LoadingState from "@/components/LoadingState";
 import { PackageInfoData } from "@/utils/types";
+import { PackageInfoSelector } from "@/components/ui/package-info-selector";
+import { Label } from "@/components/ui/label";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
@@ -116,7 +118,24 @@ export default function Packages() {
               </Button>
             </DialogTrigger>
           </Dialog>
-          {packageInfos.map((packageInfo) => (
+
+          <div>
+            <Label className="mb-Small block">Select a package</Label>
+            <PackageInfoSelector
+              disableClear
+              value={selectedPackage?.objectId}
+              options={packageInfos ?? []}
+              onChange={(value) => {
+                setSelectedPackage(
+                  packageInfos.find(
+                    (packageInfo) => packageInfo.objectId === value,
+                  ) ?? null,
+                );
+              }}
+            />
+          </div>
+
+          {/* {packageInfos.map((packageInfo) => (
             <div
               key={packageInfo.objectId}
               className={cn(
@@ -133,7 +152,7 @@ export default function Packages() {
                 {formatAddress(packageInfo.objectId)}
               </Text>
             </div>
-          ))}
+          ))} */}
         </div>
         <div className="block w-full break-words p-Large">
           {selectedPackage && (

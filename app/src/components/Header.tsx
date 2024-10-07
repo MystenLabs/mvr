@@ -50,7 +50,7 @@ export default function Header({
         <div className="container grid grid-cols-2 items-center justify-between py-Regular lg:grid-cols-12">
           <Link
             href="/apps"
-            className="flex items-center gap-Small lg:col-span-3"
+            className="flex items-center gap-Small lg:col-span-3 w-fit"
           >
             <SuiLogo />
             <Text variant="heading/regular">mvr</Text>

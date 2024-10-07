@@ -19,11 +19,13 @@ export function PackageInfoSelector({
   value,
   onChange,
   disabled = false,
+  disableClear = false,
 }: {
   disabled?: boolean;
   placeholder?: string;
   options: PackageInfoData[];
   value: any;
+  disableClear?: boolean;
   onChange: (value: any) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -33,18 +35,27 @@ export function PackageInfoSelector({
   }, [value]);
 
   return (
-    <div className="flex gap-Small">
+    <div className="flex items-center gap-Small">
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
-            variant="secondary"
+            variant="outline"
             role="combobox"
             aria-expanded={open}
             disabled={disabled || options.length === 0}
-            className="w-full justify-between text-sm font-normal"
+            className="h-[45px] w-full justify-between overflow-hidden rounded-sm pr-2 text-sm font-normal"
           >
-            {selectedValue?.display.name || placeholder}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <div className="flex items-center gap-Small overflow-ellipsis max-w-[85%]">
+              {selectedValue && (
+                <img
+                  src={selectedValue?.suiDisplay?.imageUrl}
+                  className="h-8 w-8 rounded-sm"
+                />
+              )}
+              <p className=" text-ellipsis overflow-hidden"> {selectedValue?.display.name || placeholder}</p>
+            </div>
+
+            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="max-h-[350px] w-full max-w-[80vw] overflow-y-auto p-Small max-md:mx-auto md:max-w-[550px]">
@@ -74,7 +85,7 @@ export function PackageInfoSelector({
           </div>
         </PopoverContent>
       </Popover>
-      {value && !disabled && (
+      {!disableClear && value && !disabled && (
         <Button
           type="button"
           variant="outline-hover"
