@@ -135,7 +135,7 @@ export default function Packages() {
             />
           </div>
         </div>
-        <div className="block w-full break-words p-Large">
+        <div className="block w-full break-words max-lg:py-Large lg:p-Large">
           {selectedPackage && (
             <PackageInfoViewer packageInfo={selectedPackage} />
           )}
