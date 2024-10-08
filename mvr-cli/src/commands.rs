@@ -113,7 +113,7 @@ impl Display for App {
                     table.add_row(Row::from(vec!["    Path", &v.1.path]));
                 }
             } else {
-                table.add_row(Row::from(vec!["    Not found", ""]));
+                table.add_row(Row::from(vec!["    Registered address not found", ""]));
             }
             writeln!(f, "{}", table)?;
         }
