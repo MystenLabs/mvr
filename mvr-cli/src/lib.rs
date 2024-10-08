@@ -1305,11 +1305,12 @@ pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
 }
 
 /// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
-pub async fn subcommand_resolve_name(_name: &str) -> Result<CommandOutput> {
-    println!("tbd!");
-    Ok(CommandOutput::Resolve)
+pub async fn subcommand_resolve_name(name: &str) -> Result<CommandOutput> {
+    subcommand_list(Some(name.to_string())).await
 }
 
+/// Check if the provided name is a name or an address.
+// TODO this should use manos' checks from GraphQL
 fn is_name(name: &str) -> bool {
     name.starts_with("@")
 }

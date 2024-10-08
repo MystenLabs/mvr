@@ -69,6 +69,13 @@ impl Display for CommandOutput {
         match self {
             CommandOutput::Add(output) => write!(f, "{}", output),
             CommandOutput::List(apps) => {
+                if apps.is_empty() {
+                    return write!(f, "No registered apps found");
+                }
+                if apps.len() == 1 {
+                    return write!(f, "{}", apps[0]);
+                }
+
                 for app in apps {
                     writeln!(
                         f,
