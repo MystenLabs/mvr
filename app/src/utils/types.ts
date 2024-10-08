@@ -50,4 +50,5 @@ export enum AppQueryKeys {
     LIST_OF_OBJECTS = 'list-of-objects',
     GIT_SOURCE = 'git-source',
     PACKAGE_LATEST_VERSION = 'package-latest-version',
+    PACKAGE_INIT_AND_AT_VERSION = 'package-init-and-at-version',
 }

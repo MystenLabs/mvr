@@ -1,16 +1,42 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { AppQueryKeys, Network } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
-import { graphql } from '@mysten/sui/graphql/schemas/2024.4';
+import { graphql } from "@mysten/sui/graphql/schemas/2024.4";
+import { SuiGraphQLClient } from "@mysten/sui/graphql";
 
-const PACKAGE_AT_VERSION_QUERY = graphql(`
-      query ($address: String!) {
+const LATEST_PACKAGE_VERSION_QUERY = graphql(`
+  query ($address: String!) {
     package(address: $address) {
       latestPackage {
         version
       }
     }
-}`);
+  }
+`);
+
+const PACKAGE_AT_VERSION_QUERY = graphql(`
+  query ($address: String!, $version: Int!) {
+    atVersion: package(address: $address) {
+      packageAtVersion(version: $version) {
+        address
+      }
+    }
+    original: package(address: $address) {
+      packageAtVersion(version: 1) {
+        address
+      }
+    }
+  }
+`);
+
+export const queryVersions = async (client: SuiGraphQLClient, pkg: string, version: number) => {
+    const result = await client.query({
+        query: PACKAGE_AT_VERSION_QUERY,
+        variables: { address: pkg, version },
+    });
+    
+    return result;
+}
 
 export function useGetPackageLatestVersion(
   packageId: string,
@@ -25,14 +51,15 @@ export function useGetPackageLatestVersion(
       if (!client) throw new Error("Invalid network");
 
       const result = await client.query({
-        query: PACKAGE_AT_VERSION_QUERY,
+        query: LATEST_PACKAGE_VERSION_QUERY,
         variables: { address: packageId },
       });
 
       return result;
     },
     select: (data) => {
-        return (data?.data?.package as Record<string, any>)?.latestPackage?.version;
+      return (data?.data?.package as Record<string, any>)?.latestPackage
+        ?.version;
     },
     // let's avoid hitting rate limits.
     refetchOnMount: false,
