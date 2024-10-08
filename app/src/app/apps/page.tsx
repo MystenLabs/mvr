@@ -103,8 +103,8 @@ export default function App() {
               suins={appValue.selectedSuinsName}
               closeDialog={() => setShowCreateApp(false)}
             />
-            <DialogTrigger>
-              <Button variant="outline" className="mb-Small w-full">
+            <DialogTrigger asChild>
+              <Button variant="outline" className="mb-Large lg:mb-Small w-full">
                 {Content.app.button}
               </Button>
             </DialogTrigger>
