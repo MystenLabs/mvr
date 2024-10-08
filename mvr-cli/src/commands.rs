@@ -40,6 +40,7 @@ pub enum CommandOutput {
     #[serde(rename = "apps")]
     List(Vec<App>),
     Register,
+    #[serde(rename = "resolved_name")]
     Resolve,
 }
 
