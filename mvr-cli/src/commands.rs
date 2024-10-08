@@ -28,6 +28,7 @@ pub enum Command {
     Register {
         name: String,
     },
+    /// Resolve a name to an address and show all known related metadata.
     Resolve {
         name: String,
     },
@@ -41,7 +42,7 @@ pub enum CommandOutput {
     List(Vec<App>),
     Register,
     #[serde(rename = "resolved_name")]
-    Resolve,
+    Resolve(Option<App>),
 }
 
 #[derive(Serialize)]
@@ -76,7 +77,13 @@ impl Display for CommandOutput {
                 Ok(())
             }
             CommandOutput::Register => write!(f, "Registered"),
-            CommandOutput::Resolve => write!(f, "Resolved"),
+            CommandOutput::Resolve(app) => {
+                if let Some(app) = app {
+                    writeln!(f, "{}", app)
+                } else {
+                    write!(f, "No address found for the given name")
+                }
+            }
         }
     }
 }

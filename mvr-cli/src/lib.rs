@@ -1274,6 +1274,10 @@ pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
 
 /// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
 pub async fn subcommand_resolve_name(_name: &str) -> Result<CommandOutput> {
-    println!("tbd!");
-    Ok(CommandOutput::Resolve)
+    let list = subcommand_list().await?;
+    let app = match list {
+        CommandOutput::List(list) => list.into_iter().find(|f| f.name == _name),
+        _ => None,
+    };
+    Ok(CommandOutput::Resolve(app))
 }
