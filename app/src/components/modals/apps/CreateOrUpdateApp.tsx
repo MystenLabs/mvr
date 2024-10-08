@@ -142,145 +142,146 @@ export default function CreateOrUpdateApp({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogContent>
-          <DialogTitle>{isUpdate ? "Updating" : "Create" } Application {isUpdate && `: ${appRecord.normalized}`}</DialogTitle>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
-              <div className="grid grid-cols-1 gap-Small">
-                <FormField
-                  control={form.control}
-                  name="nsName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Application Organization</FormLabel>
-                      <FormControl>
-                        <Input {...field} disabled={true} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <DialogTitle>
+          {isUpdate ? "Updating" : "Create"} Application{" "}
+          {isUpdate && `: ${appRecord.normalized}`}
+        </DialogTitle>
+      </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
+          <div className="grid grid-cols-1 gap-Small">
+            <FormField
+              control={form.control}
+              name="nsName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Application Organization</FormLabel>
+                  <FormControl>
+                    <Input {...field} disabled={true} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Application name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Type your application name"
+                      {...field}
+                      disabled={isUpdate || field.disabled}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="mt-Regular grid grid-cols-1 gap-Regular rounded-2xl border border-border-classic p-Regular">
+              <FormField
+                control={form.control}
+                name="mainnet"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mainnet package (optional)</FormLabel>
+                    <FormControl>
+                      <PackageInfoSelector
+                        disabled={isUpdate && !!appRecord.mainnet}
+                        options={mainnetPackageInfos ?? []}
+                        {...field}
+                      />
+                    </FormControl>
+                    {isUpdate && appRecord.mainnet && (
+                      <FormDescription className="flex items-center gap-Small">
+                        <AlertCircleIcon size={15} />
+                        Mainnet package has already been assigned and cannot
+                        change.
+                      </FormDescription>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="testnet"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Testnet package (optional)</FormLabel>
+                    <FormControl>
+                      <PackageInfoSelector
+                        options={testnetPackageInfos ?? []}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {!!form.getValues("mainnet") &&
+              !(isUpdate && appRecord.mainnet) && (
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="acceptMainnetWarning"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Application name</FormLabel>
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
                       <FormControl>
-                        <Input
-                          placeholder="Type your application name"
-                          {...field}
-                          disabled={isUpdate || field.disabled}
+                        <Checkbox
+                          className="mt-1"
+                          checked={field.value}
+                          onCheckedChange={(value) => {
+                            if (value === "indeterminate") return;
+                            form.setValue("acceptMainnetWarning", value);
+                            form.trigger("acceptMainnetWarning");
+                          }}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className="space-y-1">
+                        <FormLabel className="cursor-pointer font-bold">
+                          I understand this action is irreversible
+                        </FormLabel>
+                        <FormDescription className="leading-normal">
+                          I understand that after attaching a mainnet package
+                          info, this app name will be permanently associated
+                          with the selected package.
+                        </FormDescription>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
+              )}
 
-                <div className="mt-Regular grid grid-cols-1 gap-Regular rounded-2xl border border-border-classic p-Regular">
-                  <FormField
-                    control={form.control}
-                    name="mainnet"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mainnet package (optional)</FormLabel>
-                        <FormControl>
-                          <PackageInfoSelector
-                            disabled={isUpdate && !!appRecord.mainnet}
-                            options={mainnetPackageInfos ?? []}
-                            {...field}
-                          />
-                        </FormControl>
-                        {isUpdate && appRecord.mainnet && (
-                          <FormDescription className="flex items-center gap-Small">
-                            <AlertCircleIcon size={15} />
-                            Mainnet package has already been assigned and cannot
-                            change.
-                          </FormDescription>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="testnet"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Testnet package (optional)</FormLabel>
-                        <FormControl>
-                          <PackageInfoSelector
-                            options={testnetPackageInfos ?? []}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {!!form.getValues("mainnet") &&
-                  !(isUpdate && appRecord.mainnet) && (
-                    <FormField
-                      control={form.control}
-                      name="acceptMainnetWarning"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
-                          <FormControl>
-                            <Checkbox
-                              className="mt-1"
-                              checked={field.value}
-                              onCheckedChange={(value) => {
-                                if (value === "indeterminate") return;
-                                form.setValue("acceptMainnetWarning", value);
-                                form.trigger("acceptMainnetWarning");
-                              }}
-                            />
-                          </FormControl>
-                          <div className="space-y-1">
-                            <FormLabel className="cursor-pointer font-bold">
-                              I understand this action is irreversible
-                            </FormLabel>
-                            <FormDescription className="leading-normal">
-                              I understand that after attaching a mainnet
-                              package info, this app name will be permanently
-                              associated with the selected package.
-                            </FormDescription>
-                            <FormMessage />
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                <ModalFooter
-                  loading={isPending || isUpdatePending}
-                  leftBtnHandler={() => {
-                    form.reset();
-                    closeDialog();
-                  }}
-                  rightBtnDisabled={!form.formState.isValid}
-                  rightBtnText={isUpdate ? "Update" : "Create"}
-                  rightBtnHandler={async () => {
-                    const values = form.getValues();
-                    if (values.mainnet && !values.acceptMainnetWarning) {
-                      form.setError("acceptMainnetWarning", {
-                        type: "manual",
-                        message: "Please accept the warning",
-                      });
-                      return;
-                    }
-                  }}
-                />
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </DialogHeader>
+            <ModalFooter
+              loading={isPending || isUpdatePending}
+              leftBtnHandler={() => {
+                form.reset();
+                closeDialog();
+              }}
+              rightBtnDisabled={!form.formState.isValid}
+              rightBtnText={isUpdate ? "Update" : "Create"}
+              rightBtnHandler={async () => {
+                const values = form.getValues();
+                if (values.mainnet && !values.acceptMainnetWarning) {
+                  form.setError("acceptMainnetWarning", {
+                    type: "manual",
+                    message: "Please accept the warning",
+                  });
+                  return;
+                }
+              }}
+            />
+          </div>
+        </form>
+      </Form>
     </DialogContent>
   );
 }

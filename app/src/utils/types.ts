@@ -49,4 +49,5 @@ export enum AppQueryKeys {
     OWNED_KIOSKS = 'owned-kiosks',
     LIST_OF_OBJECTS = 'list-of-objects',
     GIT_SOURCE = 'git-source',
+    PACKAGE_LATEST_VERSION = 'package-latest-version',
 }

@@ -60,68 +60,65 @@ export default function CreatePackageInfo({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogContent>
-          <DialogTitle>Create Package Info - Step {step}</DialogTitle>
-          <div className="grid grid-cols-1 gap-Large py-Regular">
-            {step === 1 && (
-              <PackageInfoStep1
-                selectedPackage={selectedPackage}
-                setSelectedPackage={setSelectedPackage}
-                availableUpgradeCaps={availableUpgradeCaps}
-              />
-            )}
-            {step === 2 && (
-              <PackageInfoStep2
-                packageAddress={selectedPackage ?? ""}
-                display={display}
-                setDisplay={setDisplay}
-              />
-            )}
-
-            <Text variant="small/regular" family="inter" color="tertiary">
-              Selected Upgrade Cap: {formatAddress(selectedPackage ?? "")}
-            </Text>
-
-            <ModalFooter
-              leftBtnText={step === 1 ? "Cancel" : "Previous"}
-              rightBtnText={step === 1 ? "Next" : "Create"}
-              loading={isPending}
-              rightBtnType={step === 1 ? "button" : "submit"}
-              rightBtnDisabled={
-                (step === 1 && !selectedPackage) ||
-                (step === 2 && !display.name)
-              }
-              leftBtnHandler={() => {
-                if (step === 1) {
-                  closeDialog();
-                  return;
-                }
-                setStep(1);
-              }}
-              rightBtnHandler={async () => {
-                if (step === 1) {
-                  setStep(2);
-                  return;
-                }
-
-                const upgradeCap = upgradeCaps?.find(
-                  (x) => x.package === selectedPackage,
-                );
-
-                if (!upgradeCap) return;
-
-                const res = await execute({
-                  upgradeCapId: upgradeCap?.objectId,
-                  display,
-                  network: selectedNetwork,
-                });
-
-                if (res) await postCreation();
-              }}
-            />
-          </div>
-        </DialogContent>
+        <DialogTitle>Create Package Info - Step {step}</DialogTitle>
       </DialogHeader>
+      <div className="grid grid-cols-1 gap-Large py-Regular">
+        {step === 1 && (
+          <PackageInfoStep1
+            selectedPackage={selectedPackage}
+            setSelectedPackage={setSelectedPackage}
+            availableUpgradeCaps={availableUpgradeCaps}
+          />
+        )}
+        {step === 2 && (
+          <PackageInfoStep2
+            packageAddress={selectedPackage ?? ""}
+            display={display}
+            setDisplay={setDisplay}
+          />
+        )}
+
+        <Text variant="small/regular" family="inter" color="tertiary">
+          Selected Upgrade Cap: {formatAddress(selectedPackage ?? "")}
+        </Text>
+
+        <ModalFooter
+          leftBtnText={step === 1 ? "Cancel" : "Previous"}
+          rightBtnText={step === 1 ? "Next" : "Create"}
+          loading={isPending}
+          rightBtnType={step === 1 ? "button" : "submit"}
+          rightBtnDisabled={
+            (step === 1 && !selectedPackage) || (step === 2 && !display.name)
+          }
+          leftBtnHandler={() => {
+            if (step === 1) {
+              closeDialog();
+              return;
+            }
+            setStep(1);
+          }}
+          rightBtnHandler={async () => {
+            if (step === 1) {
+              setStep(2);
+              return;
+            }
+
+            const upgradeCap = upgradeCaps?.find(
+              (x) => x.package === selectedPackage,
+            );
+
+            if (!upgradeCap) return;
+
+            const res = await execute({
+              upgradeCapId: upgradeCap?.objectId,
+              display,
+              network: selectedNetwork,
+            });
+
+            if (res) await postCreation();
+          }}
+        />
+      </div>
     </DialogContent>
   );
 }

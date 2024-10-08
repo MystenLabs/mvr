@@ -11,6 +11,7 @@ import { usePackagesNetwork } from "../providers/packages-provider";
 import { Text } from "../ui/Text";
 import { type PackageInfoData } from "@/utils/types";
 import LoadingState from "../LoadingState";
+import { useGetPackageLatestVersion } from "@/hooks/useGetLatestVersion";
 
 export function PackageVersions({
   packageInfo,
@@ -20,8 +21,15 @@ export function PackageVersions({
   disableEdits?: boolean;
 }) {
   const network = usePackagesNetwork();
-  const { data: versions, refetch, isLoading } = useVersionsTable(
-    packageInfo.gitVersionsTableId,
+  const {
+    data: versions,
+    refetch,
+    isLoading,
+  } = useVersionsTable(packageInfo.gitVersionsTableId);
+
+  const { data: latestVersion } = useGetPackageLatestVersion(
+    packageInfo.packageAddress,
+    network,
   );
 
   const orderedVersions = useMemo(() => {
@@ -56,7 +64,7 @@ export function PackageVersions({
     }
   };
 
-  if (isLoading) return <LoadingState />
+  if (isLoading) return <LoadingState />;
 
   if (
     !orderedVersions ||
@@ -65,6 +73,7 @@ export function PackageVersions({
     return (
       <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
         <CreateVersion
+          maxVersion={latestVersion}
           closeDialog={() => setShowCreationDialog(false)}
           addUpdate={addUpdate}
         />
@@ -79,6 +88,7 @@ export function PackageVersions({
   return (
     <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
       <CreateVersion
+        maxVersion={latestVersion}
         taken={takenVersions}
         closeDialog={() => setShowCreationDialog(false)}
         addUpdate={addUpdate}

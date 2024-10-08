@@ -34,10 +34,12 @@ export default function CreateVersion({
   type = "add",
   closeDialog,
   addUpdate,
+  maxVersion,
   taken = [],
 }: {
   taken?: (number | string)[];
   type?: "add" | "update" | "delete";
+  maxVersion?: number;
   addUpdate: (update: GitVersion) => void;
   closeDialog: () => void;
 }) {
@@ -55,7 +57,7 @@ export default function CreateVersion({
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
-    mode: 'onChange',
+    mode: "onChange",
     resolver: zodResolver(formSchema),
   });
 
@@ -79,95 +81,93 @@ export default function CreateVersion({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogContent>
-          <DialogTitle>Create Version</DialogTitle>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
-              <div className="grid grid-cols-1 gap-Small">
-                <FormField
-                  control={form.control}
-                  name="version"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your version</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Enter your version"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="repository"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Package's repository</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your repository (e.g. https://github.com/MystenLabs/sui.git)"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="path"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Package's path</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter the path in the repository (e.g. crates/sui-framework/packages/sui-framework)"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Leave empty if the `Move.toml` file is in the root of
-                        the repository.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="tag"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Version tag</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter the tag or branch the source code lives in (e.g. framework/mainnet)"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Click here to learn more about how to version your
-                        package in a re-usable fashion.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <ModalFooter
-                  rightBtnDisabled={!form.formState.isValid}
-                  rightBtnText="Create Version"
-                  leftBtnHandler={closeDialog}
-                />
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
+        <DialogTitle>Create Version</DialogTitle>{" "}
       </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
+          <div className="grid grid-cols-1 gap-Small">
+            <FormField
+              control={form.control}
+              name="version"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Your version</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter your version"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="repository"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Package's repository</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your repository (e.g. https://github.com/MystenLabs/sui.git)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="path"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Package's path</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter the path in the repository (e.g. crates/sui-framework/packages/sui-framework)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Leave empty if the `Move.toml` file is in the root of the
+                    repository.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="tag"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Version tag</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter the tag or branch the source code lives in (e.g. framework/mainnet)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Click here to learn more about how to version your package
+                    in a re-usable fashion.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <ModalFooter
+              rightBtnDisabled={!form.formState.isValid}
+              rightBtnText="Create Version"
+              leftBtnHandler={closeDialog}
+            />
+          </div>
+        </form>
+      </Form>
     </DialogContent>
   );
 }
