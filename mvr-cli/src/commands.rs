@@ -24,7 +24,11 @@ pub enum Command {
         network: String,
     },
     /// List every app in the move registry.
-    List,
+    List {
+        /// Filter the list of apps by name (@....) or package address (0x).
+        #[arg(short, long)]
+        filter: Option<String>,
+    },
     Register {
         name: String,
     },
@@ -53,7 +57,7 @@ impl Command {
     pub async fn execute(self) -> Result<CommandOutput> {
         match self {
             Command::Add { name, network } => subcommand_add_dependency(&name, &network).await,
-            Command::List => subcommand_list().await,
+            Command::List { filter } => subcommand_list(filter).await,
             Command::Register { name } => subcommand_register_name(&name).await,
             Command::Resolve { name } => subcommand_resolve_name(&name).await,
         }
