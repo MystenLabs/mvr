@@ -1,5 +1,6 @@
-import { AppQueryKeys } from "@/utils/types";
+import { AppQueryKeys, Network } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
+import { parse } from 'smol-toml';
 
 enum GitProvider { 
     Github = 'Github',
@@ -11,6 +12,14 @@ const GitProviderUrls = {
     [GitProvider.Github]: "github.com",
     [GitProvider.Gitlab]: "gitlab.com",
     [GitProvider.Bitbucket]: "bitbucket.org"
+}
+
+export const parseEnvironmentsFromLockfile = (lockfile: string, network: Network) => {
+    const file = parse(lockfile);
+    if (!file.env) throw new Error("Environment is missing from the lockfile");
+    const env = file.env as Record<string, any>;
+    if (!env[network]) throw new Error(`Network ${network} is missing from the lockfile`);
+    return env[network] as Record<string, string>;
 }
 
 const GithubUrl = (props: {owner: string; repository: string; tagOrHash: string, subPath: string; file: string, provider: GitProvider }) =>  {
@@ -48,22 +57,25 @@ const parseGitUrl = (url: string) => {
 export const querySource = async ({
     url,
     subPath,
-    tagOrHash
+    tagOrHash,
+    file = "Move.lock"
 }: {
     url: string,
     subPath: string,
-    tagOrHash: string
+    tagOrHash: string,
+    file?: string
 }) => {
     const {provider, repo, owner } = parseGitUrl(url);
     
     if (!provider || !repo || !owner)  throw new Error("Invalid URL");
 
-    const response = await fetch(GithubUrl({owner, repository: repo, tagOrHash, subPath, file: "Move.lock" , provider}));
+    const response = await fetch(GithubUrl({owner, repository: repo, tagOrHash, subPath, file, provider}));
 
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
-    return response.json();
+
+    return response.text();
 }
 
 export function useGetSourceFromGit({

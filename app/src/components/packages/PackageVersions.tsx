@@ -73,13 +73,18 @@ export function PackageVersions({
     return (
       <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
         <CreateVersion
+          packageAddress={packageInfo.packageAddress}
           maxVersion={latestVersion}
           closeDialog={() => setShowCreationDialog(false)}
           addUpdate={addUpdate}
         />
         <div className="p-Regular">
           <EmptyState size="sm" {...Content.emptyStates.versions}>
-            <CreateVersionTrigger disableEdits={disableEdits} />
+            <CreateVersionTrigger
+              disableEdits={
+                disableEdits || takenVersions.length >= latestVersion
+              }
+            />
           </EmptyState>
         </div>
       </Dialog>
@@ -88,6 +93,7 @@ export function PackageVersions({
   return (
     <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
       <CreateVersion
+        packageAddress={packageInfo.packageAddress}
         maxVersion={latestVersion}
         taken={takenVersions}
         closeDialog={() => setShowCreationDialog(false)}
