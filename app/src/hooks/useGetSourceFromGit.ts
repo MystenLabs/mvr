@@ -54,7 +54,6 @@ export const querySource = async ({
     subPath: string,
     tagOrHash: string
 }) => {
-    console.log(url, subPath, tagOrHash);
     const {provider, repo, owner } = parseGitUrl(url);
     
     if (!provider || !repo || !owner)  throw new Error("Invalid URL");
