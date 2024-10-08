@@ -1,3 +1,8 @@
+mod commands;
+use commands::App;
+pub use commands::Command;
+pub use commands::CommandOutput;
+
 pub mod helpers;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -54,20 +59,20 @@ struct RConfig {
     network: String,
 }
 
-#[derive(PartialEq)]
+#[derive(Serialize, PartialEq)]
 pub enum PackageInfoNetwork {
     Mainnet,
     Testnet,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct PackageInfo {
     pub upgrade_cap_id: ObjectID,
     pub package_address: ObjectID,
     pub git_versioning: HashMap<u64, GitInfo>,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct GitInfo {
     pub repository: String,
     pub tag: String,
@@ -80,6 +85,14 @@ impl fmt::Display for PackageInfoNetwork {
             PackageInfoNetwork::Mainnet => write!(f, "mainnet"),
             PackageInfoNetwork::Testnet => write!(f, "testnet"),
         }
+    }
+}
+
+impl fmt::Display for PackageInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "      Upgrade Cap ID: {}", self.upgrade_cap_id)?;
+        writeln!(f, "      Package Address: {}", self.package_address)?;
+        write!(f, "      Git Versioning: {:?}", self.git_versioning)
     }
 }
 
@@ -185,10 +198,9 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
             bail!(message)
         }
         _ => {
-            let message = format!(
-                "Unrecognized chain: expected environment to be either `testnet` or `mainnet`.\n\
+            let message = "Unrecognized chain: expected environment to be either `testnet` or `mainnet`.\n\
                  Consider switching your sui client to an environment that uses one of these chains\n\
-                 For example: `sui client switch --env testnet`");
+                 For example: `sui client switch --env testnet`".to_string();
             bail!(message);
         }
     };
@@ -352,7 +364,7 @@ async fn check_single_package_consistency(
     eprintln!("Using on-chain version {version}");
 
     let original_address_on_chain = if version > 1 {
-        package_at_version(&package_info.package_address.to_string(), 1, &network)
+        package_at_version(&package_info.package_address.to_string(), 1, network)
             .await?
             .ok_or_else(|| {
                 anyhow::anyhow!("Failed to retrieve original package address at version 1")
@@ -665,7 +677,7 @@ fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<S
         let app_name = name_obj
             .get("app")
             .and_then(|app| app.as_array())
-            .and_then(|app| app.get(0))
+            .and_then(|app| app.first())
             .and_then(|app| app.as_str())
             .unwrap_or("unknown");
 
@@ -714,8 +726,8 @@ async fn get_package_info(
     client: &SuiClient,
     network: &PackageInfoNetwork,
 ) -> Result<Option<PackageInfo>> {
-    let package_info_id = get_package_info_id(&name_object, network)?;
-    let package_info = get_package_info_by_id(&client, package_info_id).await?;
+    let package_info_id = get_package_info_id(name_object, network)?;
+    let package_info = get_package_info_by_id(client, package_info_id).await?;
     let upgrade_cap_id = get_upgrade_cap_id(&package_info)?;
     let package_address = get_package_address(&package_info)?;
     let git_versioning = get_git_versioning(&package_info, client).await?;
@@ -758,7 +770,7 @@ async fn get_git_versioning(
     package_info: &SuiObjectResponse,
     client: &SuiClient,
 ) -> Result<HashMap<u64, GitInfo>> {
-    let git_versioning_id = get_git_versioning_id(&package_info)?;
+    let git_versioning_id = get_git_versioning_id(package_info)?;
     let mut result = HashMap::new();
     let mut cursor = None;
 
@@ -906,10 +918,7 @@ fn extract_git_info(dynamic_field_data: &SuiObjectResponse) -> Result<GitInfo> {
 pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
     let parts: Vec<&str> = name.split('/').collect();
     match parts.as_slice() {
-        [base_org, base_name] => Ok((
-            format!("{}/{}", base_org.to_string(), base_name.to_string()),
-            None,
-        )),
+        [base_org, base_name] => Ok((format!("{}/{}", base_org, base_name), None)),
         [base_org, base_name, version] => {
             let version: u64 = version
                 .parse::<u64>()
@@ -925,10 +934,7 @@ pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)
                         ))
                     }
                 })?;
-            Ok((
-                format!("{}/{}", base_org.to_string(), base_name.to_string()),
-                Some(version),
-            ))
+            Ok((format!("{}/{}", base_org, base_name), Some(version)))
         }
         _ => Err(anyhow!(
             "Invalid package name format when parsing version: {name}"
@@ -1093,9 +1099,7 @@ async fn update_mvr_packages(
     move_toml_path: &Path,
     package_name: &str,
     network: &str,
-) -> Result<()> {
-    let config_path = sui_config_dir()?.join(SUI_CLIENT_CONFIG);
-    let context = WalletContext::new(&config_path, None, None)?;
+) -> Result<String> {
     let (mainnet_client, testnet_client) = setup_sui_clients().await?;
 
     let dependency = MoveRegistryDependency {
@@ -1117,7 +1121,7 @@ async fn update_mvr_packages(
 
     let resolved_packages =
         resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
-    let toml_content = fs::read_to_string(&move_toml_path)
+    let toml_content = fs::read_to_string(move_toml_path)
         .with_context(|| format!("Failed to read file: {:?}", move_toml_path))?;
     let mut doc = toml_content
         .parse::<DocumentMut>()
@@ -1180,7 +1184,7 @@ async fn update_mvr_packages(
     fs::write(move_toml_path, doc.to_string())
         .with_context(|| format!("Failed to write updated TOML to file: {:?}", move_toml_path))?;
 
-    println!(
+    let output_msg = format!(
         "{}\nYou can use this dependency in your modules by calling: {}",
         &format!(
             "\nSuccessfully added dependency {} to your Move.toml\n",
@@ -1190,45 +1194,15 @@ async fn update_mvr_packages(
     );
     force_build();
 
-    Ok(())
-}
-
-macro_rules! print_package_info {
-    ($name_object:expr, $client:expr, $network:expr) => {
-        println!("  [{}]", $network);
-        match get_package_info(&$name_object, $client, $network).await {
-            Ok(Some(PackageInfo {
-                upgrade_cap_id,
-                package_address,
-                git_versioning,
-            })) => {
-                println!("    Package Addr: {package_address}");
-                println!("    Upgrade Cap : {upgrade_cap_id}");
-                for (
-                    k,
-                    GitInfo {
-                        repository,
-                        tag,
-                        path,
-                    },
-                ) in git_versioning.iter() {
-                    println!(
-                        "      v{k}\n      Repository: {repository}\n      Tag: {tag}\n      Path: {path}"
-                    );
-                }
-            },
-            Ok(None) | Err(_) => {
-                println!("      <Not found>");
-            }
-        };
-    }
+    Ok(output_msg)
 }
 
 /// List the App Registry
-async fn list_apps() -> Result<()> {
+pub async fn subcommand_list() -> Result<CommandOutput> {
     let (mainnet_client, testnet_client) = setup_sui_clients().await?;
     let app_registry_id = ObjectID::from_hex_literal(APP_REGISTRY_TABLE_ID)?;
     let mut cursor = None;
+    let mut output = vec![];
     loop {
         let dynamic_fields = mainnet_client
             .read_api()
@@ -1243,10 +1217,32 @@ async fn list_apps() -> Result<()> {
             )
             .await?;
             let name = get_normalized_app_name(&name_object)?;
-            println!("{name}");
-            print_package_info!(&name_object, &testnet_client, &PackageInfoNetwork::Testnet);
-            print_package_info!(&name_object, &mainnet_client, &PackageInfoNetwork::Mainnet);
-            println!("");
+            let app = App {
+                name: name.clone(),
+                package_info: vec![
+                    (
+                        PackageInfoNetwork::Testnet,
+                        get_package_info(
+                            &name_object,
+                            &testnet_client,
+                            &PackageInfoNetwork::Testnet,
+                        )
+                        .await
+                        .unwrap_or(None),
+                    ),
+                    (
+                        PackageInfoNetwork::Mainnet,
+                        get_package_info(
+                            &name_object,
+                            &mainnet_client,
+                            &PackageInfoNetwork::Mainnet,
+                        )
+                        .await
+                        .unwrap_or(None),
+                    ),
+                ],
+            };
+            output.push(app);
         }
 
         if !dynamic_fields.has_next_page {
@@ -1254,15 +1250,10 @@ async fn list_apps() -> Result<()> {
         }
         cursor = dynamic_fields.next_cursor;
     }
-    Ok(())
+    Ok(CommandOutput::List(output))
 }
 
-/// List the App Registry
-pub async fn subcommand_list() -> Result<()> {
-    list_apps().await
-}
-
-pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<()> {
+pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<CommandOutput> {
     if network != "testnet" && network != "mainnet" {
         bail!("network must be one of \"testnet\" or \"mainnet\"");
     }
@@ -1271,16 +1262,18 @@ pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Res
     if !move_toml_path.exists() {
         return Err(anyhow!("Move.toml not found in the current directory"));
     }
-    update_mvr_packages(&move_toml_path, package_name, network).await
+    let cmd_output = update_mvr_packages(&move_toml_path, package_name, network).await?;
+
+    Ok(CommandOutput::Add(cmd_output))
 }
 
-pub async fn subcommand_register_name(_name: &str) -> Result<()> {
+pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
     println!("tbd!");
-    Ok(())
+    Ok(CommandOutput::Register)
 }
 
 /// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
-pub async fn subcommand_resolve_name(_name: &str) -> Result<()> {
+pub async fn subcommand_resolve_name(_name: &str) -> Result<CommandOutput> {
     println!("tbd!");
-    Ok(())
+    Ok(CommandOutput::Resolve)
 }

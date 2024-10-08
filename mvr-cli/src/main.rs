@@ -1,12 +1,8 @@
 use anyhow::Result;
-use clap::CommandFactory;
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use mvr::helpers::constants::MINIMUM_BUILD_SUI_VERSION;
 use mvr::helpers::sui::check_sui_version;
-use mvr::{
-    resolve_move_dependencies, subcommand_add_dependency, subcommand_list,
-    subcommand_register_name, subcommand_resolve_name,
-};
+use mvr::{resolve_move_dependencies, Command};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -15,23 +11,11 @@ struct Cli {
     resolve_move_dependencies: Option<String>,
 
     #[command(subcommand)]
-    command: Option<Commands>,
-}
+    command: Command,
 
-#[derive(Subcommand)]
-enum Commands {
-    Add {
-        name: String,
-        #[arg(short, long)]
-        network: String,
-    },
-    List,
-    Register {
-        name: String,
-    },
-    Resolve {
-        name: String,
-    },
+    /// Output the result in JSON format
+    #[arg(long, global = true)]
+    json: bool,
 }
 
 #[tokio::main]
@@ -43,16 +27,11 @@ async fn main() -> Result<()> {
         // Resolver function that `sui move build` expects to call.
         resolve_move_dependencies(value).await?;
     } else {
-        match &cli.command {
-            Some(Commands::Add { name, network }) => {
-                subcommand_add_dependency(name, network).await?
-            }
-            Some(Commands::List) => subcommand_list().await?,
-            Some(Commands::Register { name }) => subcommand_register_name(name).await?,
-            Some(Commands::Resolve { name }) => subcommand_resolve_name(name).await?,
-            None => {
-                Cli::command().print_help()?;
-            }
+        let output = cli.command.execute().await?;
+        if cli.json {
+            println!("{}", serde_json::to_string_pretty(&output)?);
+        } else {
+            println!("{}", output);
         }
     }
     Ok(())
