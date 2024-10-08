@@ -104,7 +104,7 @@ export default function Packages() {
   return (
     <main className="container flex-grow">
       <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic p-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
+        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic max-lg:border-b max-lg:py-Large lg:p-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
           <Dialog
             open={showCreationDialog}
             onOpenChange={setShowCreationDialog}
@@ -134,25 +134,6 @@ export default function Packages() {
               }}
             />
           </div>
-
-          {/* {packageInfos.map((packageInfo) => (
-            <div
-              key={packageInfo.objectId}
-              className={cn(
-                "cursor-pointer px-Small py-XSmall text-content-tertiary",
-                selectedPackage?.objectId === packageInfo.objectId &&
-                  "rounded-md bg-primary",
-              )}
-              onClick={() => setSelectedPackage(packageInfo)}
-            >
-              <Text variant="xsmall/regular" className="block max-w-[250px]">
-                {packageInfo.display.name}
-              </Text>
-              <Text variant="xxsmall/regular" className="block opacity-75">
-                {formatAddress(packageInfo.objectId)}
-              </Text>
-            </div>
-          ))} */}
         </div>
         <div className="block w-full break-words p-Large">
           {selectedPackage && (

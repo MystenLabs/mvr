@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Label } from "./label";
 
 export function ComboBox({
   options,
@@ -25,6 +26,7 @@ export function ComboBox({
   emptyState = "No options found.",
   searchText = "Search...",
   showSearch = true,
+  title,
   value,
   setValue,
 }: {
@@ -32,7 +34,8 @@ export function ComboBox({
   placeholder?: string;
   emptyState?: string;
   searchText?: string;
-  options: { value: any; label: string, search?: string }[];
+  title?: string;
+  options: { value: any; label: string; search?: string }[];
   value: any;
   setValue: (value: any) => void;
 }) {
@@ -41,18 +44,21 @@ export function ComboBox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          role="combobox"
-          aria-expanded={open}
-          disabled={options.length === 0}
-          className="w-full justify-between"
-        >
-          {value
-            ? options.find((framework) => framework.value === value)?.label
-            : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+        <div>
+          {title && <Label className="mb-Small block">{title}</Label>}
+          <Button
+            variant="secondary"
+            role="combobox"
+            aria-expanded={open}
+            disabled={options.length === 0}
+            className="w-full justify-between"
+          >
+            {value
+              ? options.find((framework) => framework.value === value)?.label
+              : placeholder}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
         <Command
@@ -71,7 +77,9 @@ export function ComboBox({
               ?.toLowerCase()
               .includes(search.toLowerCase());
 
-            const searchMatch = valueSearch?.toLowerCase().includes(search.toLowerCase());
+            const searchMatch = valueSearch
+              ?.toLowerCase()
+              .includes(search.toLowerCase());
 
             return labelMatch || searchMatch || valueMatch ? 1 : 0;
           }}

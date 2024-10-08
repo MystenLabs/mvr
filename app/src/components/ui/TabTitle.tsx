@@ -21,7 +21,7 @@ type TabStyleProps = VariantProps<typeof styles>;
 
 export interface TabTitleProps extends TabStyleProps {
   children: ReactNode;
-  active: boolean;
+  active?: boolean;
   className?: string;
 }
 
