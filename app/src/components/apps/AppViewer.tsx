@@ -100,7 +100,7 @@ const SinglePackageView = ({
 
   useEffect(() => {
     setShowDetails(false);
-  }, [appInfo]);
+  }, [appInfo, network]);
 
   if (!appInfo)
     return (

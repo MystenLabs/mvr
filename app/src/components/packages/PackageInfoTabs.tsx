@@ -12,10 +12,10 @@ const Tabs = [
     key: "source-code",
     title: "Source Code",
   },
-  {
-    key: "metadata",
-    title: "Metadata",
-  },
+  // {
+  //   key: "metadata",
+  //   title: "Metadata",
+  // },
   {
     key: "view-on-explorer",
     title: "Explorer",

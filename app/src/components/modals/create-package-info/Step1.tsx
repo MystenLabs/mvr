@@ -10,7 +10,7 @@ export function PackageInfoStep1({
 }: {
   selectedPackage: string | null;
   setSelectedPackage: (upgradeCap: string) => void;
-  availableUpgradeCaps: { label: string; value: string }[];
+  availableUpgradeCaps: { label: string; value: string, search?: string }[];
 }) {
   const { data: packageModules } = usePackageModules(selectedPackage ?? "");
 
