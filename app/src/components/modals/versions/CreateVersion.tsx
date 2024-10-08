@@ -45,10 +45,16 @@ export default function CreateVersion({
 }) {
   /// Validate the version and do not allow duplicates
   const extraValidations = () => {
-    if (taken.map((x) => +x).includes(+form.getValues().version)) {
+    const current = +form.getValues().version;
+    if (taken.map((x) => +x).includes(current)) {
       form.setError("version", {
         type: "manual",
         message: "Version has to be unique per package",
+      });
+    } else if (current > (maxVersion ?? 0)) {
+      form.setError("version", {
+        type: "manual",
+        message: `Version has to be less than or equal to ${maxVersion} (maximum package version)`,
       });
     } else {
       form.clearErrors("version");
@@ -65,7 +71,7 @@ export default function CreateVersion({
 
   useEffect(() => {
     extraValidations();
-  }, [watch]);
+  }, [watch, maxVersion]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     addUpdate({
@@ -81,7 +87,7 @@ export default function CreateVersion({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Create Version</DialogTitle>{" "}
+        <DialogTitle>Create Version</DialogTitle>
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
