@@ -1042,8 +1042,12 @@ fn shallow_clone_repo(
     git_info: &GitInfo,
     temp_dir: &TempDir,
 ) -> Result<PathBuf> {
+    if Command::new("git").arg("--version").output().is_err() {
+        return Err(anyhow!(
+            "Git is not available in the system PATH. Please install git and try again.".red()
+        ));
+    }
     let repo_dir = temp_dir.path().join("repo");
-
     let output = Command::new("git")
         .arg("clone")
         .arg("--depth=1")
