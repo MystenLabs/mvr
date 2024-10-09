@@ -27,10 +27,8 @@ export function PackageVersions({
     isLoading,
   } = useVersionsTable(packageInfo.gitVersionsTableId);
 
-  const { data: latestVersion } = useGetPackageLatestVersion(
-    packageInfo.packageAddress,
-    network,
-  );
+  const { data: latestVersion, isLoading: isLoadingLatestVersion } =
+    useGetPackageLatestVersion(packageInfo.packageAddress, network);
 
   const orderedVersions = useMemo(() => {
     return versions?.sort((a, b) => b.version - a.version);
@@ -44,8 +42,14 @@ export function PackageVersions({
   const [updates, setUpdates] = useState<GitVersion[]>([]);
 
   const takenVersions = useMemo(() => {
-    return orderedVersions?.map((x) => x.version) ?? [];
-  }, [orderedVersions]);
+    const updateTakenVersions = updates
+      .map((x) => (x.action === "add" ? x.version : null))
+      .filter((x) => x !== null);
+    return [
+      ...(orderedVersions?.map((x) => x.version) ?? []),
+      ...updateTakenVersions,
+    ];
+  }, [orderedVersions, updates]);
 
   const addUpdate = (update: GitVersion) => {
     setUpdates([...updates, update]);
@@ -82,7 +86,9 @@ export function PackageVersions({
           <EmptyState size="sm" {...Content.emptyStates.versions}>
             <CreateVersionTrigger
               disableEdits={
-                disableEdits || takenVersions.length >= latestVersion
+                isLoadingLatestVersion ||
+                takenVersions.length >= latestVersion ||
+                disableEdits
               }
             />
           </EmptyState>
@@ -115,7 +121,13 @@ export function PackageVersions({
       </div>
 
       <div className="flex flex-wrap gap-Small px-Small">
-        <CreateVersionTrigger disableEdits={disableEdits} />
+        <CreateVersionTrigger
+          disableEdits={
+            isLoadingLatestVersion ||
+            disableEdits ||
+            takenVersions.length >= latestVersion
+          }
+        />
 
         {updates.length > 0 && (
           <Button isLoading={isPending} onClick={saveChanges}>

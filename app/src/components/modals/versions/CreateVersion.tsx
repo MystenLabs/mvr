@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "../../ui/dialog";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
+import { set, z } from "zod";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,9 +21,8 @@ import {
 } from "@/components/ui/form";
 import { ModalFooter } from "../ModalFooter";
 import { GitVersion } from "@/hooks/useVersionsTable";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideFileWarning, Terminal } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,6 +35,13 @@ import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { queryVersions } from "@/hooks/useGetLatestVersion";
 import { Text } from "@/components/ui/Text";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   version: z.coerce.number().positive(),
@@ -61,6 +67,7 @@ export default function CreateVersion({
 }) {
   const [configError, setConfigError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [isValidatingConfig, setIsValidatingConfig] = useState(false);
   const network = usePackagesNetwork();
   const { graphql } = useSuiClientsContext();
 
@@ -75,39 +82,10 @@ export default function CreateVersion({
     return true;
   };
 
-  /// Validate the version and do not allow duplicates
-  const extraValidations = () => {
-    const current = +form.getValues().version;
-    if (taken.map((x) => +x).includes(current)) {
-      form.setError("version", {
-        type: "manual",
-        message: "Version has to be unique per package",
-      });
-    } else if (current > (maxVersion ?? 0)) {
-      form.setError("version", {
-        type: "manual",
-        message: `Version has to be less than or equal to ${maxVersion} (maximum package version)`,
-      });
-    } else {
-      form.clearErrors("version");
-      if (!!form.getValues().version) form.trigger("version");
-    }
-  };
-
   const form = useForm<z.infer<typeof formSchema>>({
-    mode: "onChange",
+    mode: "onBlur",
     resolver: zodResolver(formSchema),
   });
-
-  const watch = useWatch(form);
-
-  useEffect(() => {
-    // reset error when we change.
-    setConfigError("");
-    setSuccess(false);
-
-    extraValidations();
-  }, [watch, maxVersion]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     addUpdate({
@@ -120,16 +98,35 @@ export default function CreateVersion({
     closeDialog();
   }
 
+  const formChanges = useWatch(form);
+
+  useEffect(() => {
+    setConfigError("");
+    setSuccess(false);
+  }, [formChanges]);
+
   const isComplete = () => {
     const values = form.getValues();
 
+    console.log(values);
+    console.log(isVersionValid());
     return (
       values.version && values.repository && values.tag && isVersionValid()
     );
   };
 
+  const versionOptions = useMemo(() => {
+    const options = [];
+    for (let i = 1; i < (maxVersion ?? 0) + 1; i++) {
+      if (!taken.includes(+i)) options.push({ value: i, label: i.toString() });
+    }
+
+    return options;
+  }, [maxVersion, taken]);
+
   const validateConfig = async () => {
     if (!isComplete()) return;
+    setIsValidatingConfig(true);
 
     const values = form.getValues();
 
@@ -153,10 +150,9 @@ export default function CreateVersion({
       const envSetup = parseEnvironmentsFromLockfile(source, network);
 
       if (+(envSetup["published-version"] ?? 0) !== +values.version) {
-        setConfigError(
-          "The version in the Move.lock file does not match the version you're trying to create.",
+        throw new Error(
+          `The version in the Move.lock file does not match the version you're trying to create.`,
         );
-        return;
       }
 
       const originalId = envSetup["original-published-id"];
@@ -189,17 +185,13 @@ export default function CreateVersion({
       )?.packageAtVersion?.address;
 
       if (original !== originalId) {
-        setConfigError(
-          `Version 1 Package ID missmatch - Found ${originalId}, expected ${original}`,
-        );
-        return;
+        throw new Error(`
+          Original Package ID missmatch - Found ${originalId}, expected ${original}`);
       }
 
       if (atVersion !== publishedId) {
-        setConfigError(
-          `Version ${values.version} Package ID missmatch - Found ${publishedId}, expected ${atVersion}`,
-        );
-        return;
+        throw new Error(`
+          Version ${values.version} Package ID missmatch - Found ${publishedId}, expected ${atVersion}`);
       }
 
       setSuccess(true);
@@ -210,6 +202,7 @@ export default function CreateVersion({
           "Failed to retreive your source code's `Move.lock` file. Ignore this error if if your repository is private.",
       );
     }
+    setIsValidatingConfig(false);
   };
 
   return (
@@ -226,14 +219,26 @@ export default function CreateVersion({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Your version</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter your version"
-                      {...field}
-                      onInput={extraValidations}
-                    />
-                  </FormControl>
+                  <Select
+                    onValueChange={(val) => field.onChange(+val)}
+                    defaultValue={field.value?.toString()}
+                  >
+                    <FormControl>
+                      <SelectTrigger disabled={versionOptions.length === 0}>
+                        <SelectValue placeholder="Select a version" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {versionOptions.map((option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value.toString()}
+                        >
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -301,6 +306,7 @@ export default function CreateVersion({
                 <Button
                   type="button"
                   className="w-fit"
+                  isLoading={isValidatingConfig}
                   onClick={() => validateConfig()}
                 >
                   Validate configuration
@@ -312,15 +318,17 @@ export default function CreateVersion({
                     Validation works only on open source repositories
                   </AlertTitle>
                   <AlertDescription className="pt-XSmall font-inter text-xs">
-
-                    <Text variant="xsmall/regular" color="tertiary" family="inter">
-
-                    Validation tries to download your `Move.lock` file from the
-                    specified repository, and checks if the version there
-                    matches the version you're trying to create, as well as the
-                    package ids (original / published-at). <br /><br/>* This does not
-                    verify the source, it only verifies the configuration, and
-                    might report false positives.
+                    <Text
+                      variant="xsmall/regular"
+                      color="tertiary"
+                      family="inter"
+                    >
+                      Validation tries to download your `Move.lock` file from
+                      the specified repository, and checks if the version there
+                      matches the version you're trying to create, as well as
+                      the package ids (original / published-at). <br />
+                      <br />* This does not verify the source, it only verifies
+                      the configuration, and might report false positives.
                     </Text>
                   </AlertDescription>
                 </Alert>
@@ -333,9 +341,14 @@ export default function CreateVersion({
                   <LucideFileWarning className="h-4 w-4" />
                   <AlertTitle>Failed to validate configuration</AlertTitle>
                   <AlertDescription>
-                  <Text variant="xsmall/regular" color="tertiary" family="inter">
-                  {configError}
-                  </Text></AlertDescription>
+                    <Text
+                      variant="xsmall/regular"
+                      color="tertiary"
+                      family="inter"
+                    >
+                      {configError}
+                    </Text>
+                  </AlertDescription>
                 </Alert>
               </>
             )}
