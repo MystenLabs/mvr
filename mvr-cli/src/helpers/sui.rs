@@ -1,5 +1,9 @@
 use regex::Regex;
-use std::{env, process::{Command, Output}};
+use std::{
+    env,
+    process::{Command, Output},
+};
+use yansi::Paint;
 
 use super::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
 
@@ -22,10 +26,12 @@ pub fn check_sui_version(expected_version: (u32, u32)) {
             let minor_str = caps.get(2).unwrap().as_str();
 
             // Extract the major and minor version numbers
-            let major: u32 = major_str.parse().unwrap_or_else(|_| panic!("Major version {} of SUI Binary is not a number.",
-                major_str));
-            let minor: u32 = minor_str.parse().unwrap_or_else(|_| panic!("Minor version {} of SUI Binary is not a number.",
-                minor_str));
+            let major: u32 = major_str.parse().unwrap_or_else(|_| {
+                panic!("Major version {} of SUI Binary is not a number.", major_str)
+            });
+            let minor: u32 = minor_str.parse().unwrap_or_else(|_| {
+                panic!("Minor version {} of SUI Binary is not a number.", minor_str)
+            });
 
             assert!(
                 major >= expected_version.0 && minor >= expected_version.1,
@@ -36,10 +42,15 @@ pub fn check_sui_version(expected_version: (u32, u32)) {
                 ),
             );
 
-            println!("Major version: {}", major);
-            println!("Minor version: {}", minor);
+            eprintln!(
+                "{} {}{}{}",
+                "DETECTED sui VERSION".blue(),
+                major.blue().bold(),
+                ".".blue().bold(),
+                minor.blue().bold()
+            );
         } else {
-            println!("Could not find version components in the output.");
+            eprintln!("Could not find version components in the output.");
         }
     } else {
         // If the command fails, handle the error
@@ -63,8 +74,7 @@ fn sui_command(args: Vec<&str>) -> Output {
     Command::new(bin)
         .args(args)
         .output()
-        .unwrap_or_else(|_| panic!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env))
-        
+        .expect(&format!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env))
 }
 
 fn get_sui_binary() -> (String, String) {
