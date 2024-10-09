@@ -150,10 +150,9 @@ export default function CreateVersion({
       const envSetup = parseEnvironmentsFromLockfile(source, network);
 
       if (+(envSetup["published-version"] ?? 0) !== +values.version) {
-        setConfigError(
-          "The version in the Move.lock file does not match the version you're trying to create.",
+        throw new Error(
+          `The version in the Move.lock file does not match the version you're trying to create.`,
         );
-        return;
       }
 
       const originalId = envSetup["original-published-id"];
@@ -186,17 +185,13 @@ export default function CreateVersion({
       )?.packageAtVersion?.address;
 
       if (original !== originalId) {
-        setConfigError(
-          `Version 1 Package ID missmatch - Found ${originalId}, expected ${original}`,
-        );
-        return;
+        throw new Error(`
+          Original Package ID missmatch - Found ${originalId}, expected ${original}`);
       }
 
       if (atVersion !== publishedId) {
-        setConfigError(
-          `Version ${values.version} Package ID missmatch - Found ${publishedId}, expected ${atVersion}`,
-        );
-        return;
+        throw new Error(`
+          Version ${values.version} Package ID missmatch - Found ${publishedId}, expected ${atVersion}`);
       }
 
       setSuccess(true);
