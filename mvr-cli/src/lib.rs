@@ -1198,7 +1198,7 @@ async fn update_mvr_packages(
 }
 
 /// List the App Registry
-pub async fn subcommand_list() -> Result<CommandOutput> {
+pub async fn subcommand_list(filter: Option<String>) -> Result<CommandOutput> {
     let (mainnet_client, testnet_client) = setup_sui_clients().await?;
     let app_registry_id = ObjectID::from_hex_literal(APP_REGISTRY_TABLE_ID)?;
     let mut cursor = None;
@@ -1217,29 +1217,57 @@ pub async fn subcommand_list() -> Result<CommandOutput> {
             )
             .await?;
             let name = get_normalized_app_name(&name_object)?;
+            let pkg_testnet =
+                get_package_info(&name_object, &testnet_client, &PackageInfoNetwork::Testnet)
+                    .await
+                    .unwrap_or(None);
+            let pkg_mainnet =
+                get_package_info(&name_object, &mainnet_client, &PackageInfoNetwork::Mainnet)
+                    .await
+                    .unwrap_or(None);
+            if let Some(ref filter) = filter {
+                if is_name(filter) {
+                    if &name == filter {
+                        return Ok(CommandOutput::List(vec![App {
+                            name: name.clone(),
+                            package_info: vec![
+                                (PackageInfoNetwork::Testnet, pkg_testnet),
+                                (PackageInfoNetwork::Mainnet, pkg_mainnet),
+                            ],
+                        }]));
+                    }
+                }
+                // it is an address
+                else {
+                    if let Some(ref pkg) = pkg_testnet {
+                        if &pkg.package_address.to_string() == filter {
+                            return Ok(CommandOutput::List(vec![App {
+                                name: name.clone(),
+                                package_info: vec![
+                                    (PackageInfoNetwork::Testnet, pkg_testnet),
+                                    (PackageInfoNetwork::Mainnet, pkg_mainnet),
+                                ],
+                            }]));
+                        }
+                    }
+                    if let Some(ref pkg) = pkg_mainnet {
+                        if &pkg.package_address.to_string() == filter {
+                            return Ok(CommandOutput::List(vec![App {
+                                name: name.clone(),
+                                package_info: vec![
+                                    (PackageInfoNetwork::Testnet, pkg_testnet),
+                                    (PackageInfoNetwork::Mainnet, pkg_mainnet),
+                                ],
+                            }]));
+                        }
+                    }
+                }
+            }
             let app = App {
                 name: name.clone(),
                 package_info: vec![
-                    (
-                        PackageInfoNetwork::Testnet,
-                        get_package_info(
-                            &name_object,
-                            &testnet_client,
-                            &PackageInfoNetwork::Testnet,
-                        )
-                        .await
-                        .unwrap_or(None),
-                    ),
-                    (
-                        PackageInfoNetwork::Mainnet,
-                        get_package_info(
-                            &name_object,
-                            &mainnet_client,
-                            &PackageInfoNetwork::Mainnet,
-                        )
-                        .await
-                        .unwrap_or(None),
-                    ),
+                    (PackageInfoNetwork::Testnet, pkg_testnet),
+                    (PackageInfoNetwork::Mainnet, pkg_mainnet),
                 ],
             };
             output.push(app);
@@ -1250,7 +1278,11 @@ pub async fn subcommand_list() -> Result<CommandOutput> {
         }
         cursor = dynamic_fields.next_cursor;
     }
-    Ok(CommandOutput::List(output))
+    if filter.is_some() {
+        Ok(CommandOutput::List(vec![]))
+    } else {
+        Ok(CommandOutput::List(output))
+    }
 }
 
 pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<CommandOutput> {
@@ -1273,7 +1305,12 @@ pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
 }
 
 /// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
-pub async fn subcommand_resolve_name(_name: &str) -> Result<CommandOutput> {
-    println!("tbd!");
-    Ok(CommandOutput::Resolve)
+pub async fn subcommand_resolve_name(name: &str) -> Result<CommandOutput> {
+    subcommand_list(Some(name.to_string())).await
+}
+
+/// Check if the provided name is a name or an address.
+// TODO this should use manos' checks from GraphQL
+fn is_name(name: &str) -> bool {
+    name.starts_with("@")
 }
