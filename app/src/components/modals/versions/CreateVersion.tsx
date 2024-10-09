@@ -35,7 +35,13 @@ import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { queryVersions } from "@/hooks/useGetLatestVersion";
 import { Text } from "@/components/ui/Text";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   version: z.coerce.number().positive(),
@@ -61,6 +67,7 @@ export default function CreateVersion({
 }) {
   const [configError, setConfigError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [isValidatingConfig, setIsValidatingConfig] = useState(false);
   const network = usePackagesNetwork();
   const { graphql } = useSuiClientsContext();
 
@@ -96,7 +103,7 @@ export default function CreateVersion({
   useEffect(() => {
     setConfigError("");
     setSuccess(false);
-  }, [formChanges])
+  }, [formChanges]);
 
   const isComplete = () => {
     const values = form.getValues();
@@ -119,6 +126,7 @@ export default function CreateVersion({
 
   const validateConfig = async () => {
     if (!isComplete()) return;
+    setIsValidatingConfig(true);
 
     const values = form.getValues();
 
@@ -199,6 +207,7 @@ export default function CreateVersion({
           "Failed to retreive your source code's `Move.lock` file. Ignore this error if if your repository is private.",
       );
     }
+    setIsValidatingConfig(false);
   };
 
   return (
@@ -216,7 +225,7 @@ export default function CreateVersion({
                 <FormItem>
                   <FormLabel>Your version</FormLabel>
                   <Select
-                    onValueChange={val => field.onChange(+val)}
+                    onValueChange={(val) => field.onChange(+val)}
                     defaultValue={field.value?.toString()}
                   >
                     <FormControl>
@@ -225,13 +234,14 @@ export default function CreateVersion({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {
-                        versionOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value.toString()}>
-                            {option.label}
-                          </SelectItem>
-                        ))
-                      }
+                      {versionOptions.map((option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value.toString()}
+                        >
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -301,6 +311,7 @@ export default function CreateVersion({
                 <Button
                   type="button"
                   className="w-fit"
+                  isLoading={isValidatingConfig}
                   onClick={() => validateConfig()}
                 >
                   Validate configuration
