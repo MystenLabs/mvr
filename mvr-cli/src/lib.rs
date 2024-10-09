@@ -33,6 +33,11 @@ use sui_sdk::{
 const RESOLVER_PREFIX_KEY: &str = "r";
 const MVR_RESOLVER_KEY: &str = "mvr";
 const NETWORK_KEY: &str = "network";
+const DEPENDENCIES_KEY: &str = "dependencies";
+
+const LOCK_MOVE_KEY: &str = "move";
+const LOCK_PACKAGE_KEY: &str = "package";
+const LOCK_PACKAGE_NAME_KEY: &str = "name";
 
 const APP_REGISTRY_TABLE_ID: &str =
     "0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163";
@@ -1088,9 +1093,14 @@ fn insert_root_dependency(
         .parse::<DocumentMut>()
         .context("Failed to parse TOML content")?;
 
-    let move_section = doc["move"]
-        .as_table_mut()
-        .ok_or_else(|| anyhow!("Expected [move] table to construct graph in lock file".red()))?;
+    let move_section = doc[LOCK_MOVE_KEY].as_table_mut().ok_or_else(|| {
+        anyhow!(
+            "{}{}{}",
+            "Expected [".red(),
+            LOCK_MOVE_KEY.red(),
+            "] table to construct graph in lock file".red()
+        )
+    })?;
 
     // Save the top-level `dependencies`, which will become the dependencies of the new root package.
     let original_deps = move_section.get("dependencies").cloned();
@@ -1134,13 +1144,27 @@ fn parse_source_package_name(toml_content: &str) -> Result<String> {
         .parse::<DocumentMut>()
         .context("Failed to parse TOML content in lock file".red())?;
 
-    let package_table = doc["package"]
-        .as_table()
-        .ok_or_else(|| anyhow!("Failed to find [package] table in lock file".red()))?;
+    let package_table = doc[LOCK_PACKAGE_KEY].as_table().ok_or_else(|| {
+        anyhow!(
+            "{}{}{}",
+            "Failed to find [".red(),
+            LOCK_PACKAGE_KEY.red(),
+            "] table in lock file".red()
+        )
+    })?;
 
-    let name = package_table["name"]
+    let name = package_table[LOCK_PACKAGE_NAME_KEY]
         .as_str()
-        .ok_or_else(|| anyhow!("Failed to find 'name' in [package] table in lock file".red()))?;
+        .ok_or_else(|| {
+            anyhow!(
+                "{}{}{}{}{}",
+                "Failed to find '".red(),
+                LOCK_PACKAGE_NAME_KEY.red(),
+                "' in [".red(),
+                LOCK_PACKAGE_KEY.red(),
+                "] table in lock file".red()
+            )
+        })?;
 
     Ok(name.to_string())
 }
@@ -1183,10 +1207,10 @@ async fn update_mvr_packages(
         .parse::<DocumentMut>()
         .context("Failed to parse TOML content")?;
 
-    if !doc.contains_key("dependencies") {
-        doc["dependencies"] = Item::Table(Table::new());
+    if !doc.contains_key(DEPENDENCIES_KEY) {
+        doc[DEPENDENCIES_KEY] = Item::Table(Table::new());
     }
-    let dependencies = doc["dependencies"].as_table_mut().unwrap();
+    let dependencies = doc[DEPENDENCIES_KEY].as_table_mut().unwrap();
     let mut new_dep_table = InlineTable::new();
     let mut r_table = InlineTable::new();
     r_table.set_dotted(true); // our `r.mvr` is a dotted table
