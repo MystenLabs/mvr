@@ -121,3 +121,61 @@ impl Display for App {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use std::str::FromStr;
+
+    use sui_sdk::types::base_types::ObjectID;
+
+    use crate::commands::App;
+    use crate::commands::PackageInfo;
+    use crate::commands::PackageInfoNetwork;
+    use crate::GitInfo;
+
+    #[test]
+    fn test_display_app() {
+        let app =
+            App {
+                name: "@mvr-tst/first-app".to_string(),
+                package_info: vec![(PackageInfoNetwork::Testnet, None),(
+                PackageInfoNetwork::Mainnet,
+                Some(PackageInfo {
+                    package_address: ObjectID::from_str(
+                        "0xd94df18bd28e31c65241e2db942920cd6d92f69531b7bff5eccebdaf8fcfc8bf",
+                    )
+                    .unwrap(),
+                    upgrade_cap_id: ObjectID::from_str(
+                        "0x764aa368ce52fd7e5612fc6c244b01b0eea232cbdc22a1661785d24e2d252a3e",
+                    )
+                    .unwrap(),
+                    git_versioning: HashMap::from([(
+                        1,
+                        GitInfo {
+                            repository: "https://github.com/MystenLabs/demo-package-for-testing"
+                                .to_string(),
+                            tag: "main".to_string(),
+                            path: "0x7328/demo-mainnet".to_string(),
+                        },
+                    )]),
+                }),
+            )],
+            };
+        let expected = r#" Package:  @mvr-tst/first-app 
+
+  [testnet]
+     Registered address not found    
+
+  [mainnet]
+     Package Address  0xd94df18bd28e31c65241e2db942920cd6d92f69531b7bff5eccebdaf8fcfc8bf 
+     Upgrade Cap      0x764aa368ce52fd7e5612fc6c244b01b0eea232cbdc22a1661785d24e2d252a3e 
+     Version          1                                                                  
+     Repository       https://github.com/MystenLabs/demo-package-for-testing             
+     Tag              main                                                               
+     Path             0x7328/demo-mainnet                                                
+"#;
+        let app_str = format!("{}", app);
+        assert_eq!(app_str, expected);
+    }
+}
