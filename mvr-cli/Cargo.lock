@@ -3536,7 +3536,6 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "clap",
- "colored",
  "comfy-table",
  "expect-test",
  "regex",
