@@ -1,26 +1,25 @@
 mod commands;
 use commands::App;
-pub use commands::Command;
+pub use commands::Command as CliCommand;
 pub use commands::CommandOutput;
 
 pub mod helpers;
 
 use anyhow::{anyhow, bail, Context, Result};
 use helpers::sui::force_build;
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fmt;
-use std::fs::{self, File};
+use std::fs::{self};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use tempfile::TempDir;
 use toml_edit::{
     value, Array, ArrayOfTables, DocumentMut, Formatted, InlineTable, Item, Table, Value,
 };
-use url::Url;
 use yansi::Paint;
 
 use sui_config::{sui_config_dir, SUI_CLIENT_CONFIG};
@@ -109,7 +108,7 @@ fn find_mvr_package(value: &toml::Value) -> Option<String> {
 /// Parse out packages with the following structure:
 ///
 /// [dependencies]
-/// mvr = { r.mvr = "@mvr-tst/first-app" }
+/// MyDep = { r.mvr = "@mvr-tst/first-app" }
 ///
 /// ...
 ///
@@ -125,7 +124,7 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
         .and_then(|r| r.get(MVR_RESOLVER_KEY))
         .and_then(|mvr| mvr.get(NETWORK_KEY))
         .and_then(|n| n.as_str())
-        .ok_or_else(|| anyhow!("Expected [r.mvr].network to be a string"))?
+        .ok_or_else(|| anyhow!("Expected [r.mvr].network to be a string".red()))?
         .to_string();
 
     let mut packages = Vec::new();
@@ -144,7 +143,7 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
 /// a key associated with the external resolution in a Move.toml file. For example, this
 /// TOML would trigger sui move build to call this binary and hit this function with value `mvr`:
 ///
-/// mvr = { r.mvr = "@mvr-tst/first-app" }
+/// MyDep = { r.mvr = "@mvr-tst/first-app" }
 ///
 /// The high-level logic of this function is as follows:
 /// 1) Fetch on-chain data for `packages`: the GitHub repository, branch, and subpath
@@ -155,15 +154,22 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
     let content = fs::read_to_string("Move.toml")?;
     let dependency: MoveRegistryDependency = parse_move_toml(&content)?;
     eprintln!(
-        "Resolving key = '{}', packages = {:?}",
-        key, dependency.packages
+        "{} {}: {:?} {} {}",
+        "RESOLVING".blue(),
+        key.blue().bold(),
+        dependency.packages.blue().bold(),
+        "ON".blue(),
+        dependency.network.blue().bold(),
     );
     let network = match dependency.network.as_str() {
         "testnet" => &PackageInfoNetwork::Testnet,
         "mainnet" => &PackageInfoNetwork::Mainnet,
         _ => bail!(
-            "Unrecognized network {} specified in resolver {key}",
-            dependency.network
+            "{} {} {} {}",
+            "Unrecognized network".red(),
+            dependency.network.red().bold(),
+            "specified in resolver".red(),
+            key.red().bold(),
         ),
     };
 
@@ -188,19 +194,26 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
                 "an unknown network"
             };
             let message = format!(
-                "Network mismatch: The package resolver says it is using packages from {} but \
-                 your environment is using {env_network}.\n\
+                "{} {} {} {} {}",
+                "Network mismatch: The package resolver says it is using packages from".red(),
+                dependency.network.red().bold(),
+                "but your environment is using".red(),
+                env_network.red().bold(),
+                ".\n\
                  Consider either:\n\
                  - Changing your environment to match the network expected by packages (with `sui client switch --env`); OR\n\
                  - Changing the network for the resolver {key} in your `Move.toml` to match your environment \
-                 (either \"testnet\" or \"mainnet\")",
-                dependency.network);
+                 (either \"testnet\" or \"mainnet\")".red()
+            );
             bail!(message)
         }
         _ => {
-            let message = "Unrecognized chain: expected environment to be either `testnet` or `mainnet`.\n\
+            let message = format!(
+                "{}",
+                "Unrecognized chain: expected environment to be either `testnet` or `mainnet`.\n\
                  Consider switching your sui client to an environment that uses one of these chains\n\
-                 For example: `sui client switch --env testnet`".to_string();
+                 For example: `sui client switch --env testnet`".red()
+            );
             bail!(message);
         }
     };
@@ -247,7 +260,7 @@ async fn fetch_package_files(
             .max()
             .copied()
             .ok_or_else(|| {
-                anyhow!("No version specified and no versions found in git_versioning")
+                anyhow!("No version specified and no versions found in git_versioning".red())
             })?,
     };
 
@@ -255,6 +268,7 @@ async fn fetch_package_files(
         anyhow!(
             "version {version} of {name} does not exist in on-chain PackageInfo. \
              Please check that it is valid and try again."
+                .red()
         )
     })?;
 
@@ -305,7 +319,14 @@ async fn resolve_on_chain_package_info(
                         eprintln!("Warning: Found package in set but not in map: {}", name);
                     }
                 } else {
-                    bail!("No on-chain PackageInfo for package {name} on {} (it may not be registered).", dependency.network);
+                    bail!(
+                        "{} {} {} {} {}",
+                        "No on-chain PackageInfo for package".red(),
+                        name.red().bold(),
+                        "on".red(),
+                        dependency.network.red().bold(),
+                        "(it may not be registered).".red()
+                    );
                 }
             }
         }
@@ -322,9 +343,12 @@ async fn resolve_on_chain_package_info(
     if !unresolved.is_empty() {
         // Emit one unresolved dependency
         bail!(
-            "Could not resolve dependency {} on chain {network}. \
-             It may not exist, please check and try again.",
-            dependency.packages[0], // Invariant: guaranteed by construction.
+            "{} {} {} {}{}",
+            "Could not resolve dependency".red(),
+            dependency.packages[0].red().bold(), // Invariant: packages[0] guaranteed by construction
+            "on chain".red(),
+            network.red().bold(),
+            ". It may not exist, please check and try again.".red(),
         )
     }
     Ok(resolved_packages)
@@ -358,16 +382,22 @@ async fn check_single_package_consistency(
             .max()
             .copied()
             .ok_or_else(|| {
-                anyhow!("No version specified and no versions found in git_versioning")
+                anyhow!("No version specified and no versions found in git_versioning".red())
             })?,
     };
-    eprintln!("Using on-chain version {version}");
+    eprintln!(
+        "{} {} {} {}",
+        "USING ON-CHAIN VERSION".blue(),
+        version.blue().bold(),
+        "OF".blue(),
+        name_with_version.blue().bold(),
+    );
 
     let original_address_on_chain = if version > 1 {
         package_at_version(&package_info.package_address.to_string(), 1, network)
             .await?
             .ok_or_else(|| {
-                anyhow::anyhow!("Failed to retrieve original package address at version 1")
+                anyhow::anyhow!("Failed to retrieve original package address at version 1".red())
             })?
     } else {
         package_info.package_address
@@ -377,15 +407,18 @@ async fn check_single_package_consistency(
         anyhow!(
             "version {version} of {name} does not exist in on-chain PackageInfo. \
              Please check that it is valid and try again."
+                .red()
         )
     })?;
 
     let (move_toml_path, move_lock_path) =
         fetched_files.get(name_with_version).ok_or_else(|| {
             anyhow!(
+                "{} {}",
                 "Failed to find fetched files `Move.toml` and \
-                 `Move.lock when checking address consistency for {}",
-                name_with_version
+                 `Move.lock when checking address consistency for"
+                    .red(),
+                name_with_version.red().bold()
             )
         })?;
     let move_toml_content = fs::read_to_string(move_toml_path)?;
@@ -403,16 +436,22 @@ async fn check_single_package_consistency(
         .map(|id_str| {
             ObjectID::from_hex_literal(&id_str).map_err(|e| {
                 anyhow!(
-                    "Failed to parse address in [addresses] section of Move.toml: {}",
-                    e
+                    "{} {}",
+                    "Failed to parse address in [addresses] section of Move.toml:".red(),
+                    e.red()
                 )
             })
         })
         .transpose()?;
     let published_at = published_at
         .map(|id_str| {
-            ObjectID::from_hex_literal(&id_str)
-                .map_err(|e| anyhow!("Failed to parse published-at address of Move.toml: {}", e))
+            ObjectID::from_hex_literal(&id_str).map_err(|e| {
+                anyhow!(
+                    "{} {}",
+                    "Failed to parse published-at address of Move.toml:".red(),
+                    e.red()
+                )
+            })
         })
         .transpose()?;
 
@@ -421,7 +460,11 @@ async fn check_single_package_consistency(
         get_original_published_id(&move_lock_content, target_chain_id)
             .map(|id_str| {
                 ObjectID::from_hex_literal(&id_str).map_err(|e| {
-                    anyhow!("Failed to parse original-published-id in Move.lock: {}", e)
+                    anyhow!(
+                        "{} {}",
+                        "Failed to parse original-published-id in Move.lock:".red(),
+                        e.red()
+                    )
                 })
             })
             .transpose()?;
@@ -608,20 +651,24 @@ pub async fn build_lock_files(
                 .max()
                 .copied()
                 .ok_or_else(|| {
-                    anyhow!("No version specified and no versions found in git_versioning")
+                    anyhow!("No version specified and no versions found in git_versioning".red())
                 })?,
         };
 
-        let git_info = package_info
-            .git_versioning
-            .get(&version)
-            .ok_or_else(|| anyhow!("version {version} does not exist in on-chain PackageInfo"))?;
+        let git_info = package_info.git_versioning.get(&version).ok_or_else(|| {
+            anyhow!(
+                "{} {} {}",
+                "version".red(),
+                version.red().bold(),
+                "does not exist in on-chain PackageInfo".red()
+            )
+        })?;
 
         let (move_toml_path, move_lock_path) =
             fetched_files.get(name_with_version).ok_or_else(|| {
-                anyhow!(
-                    "Failed to find fetched files `Move.toml` and `Move.lock` when building package graph for {}",
-                    name_with_version
+                anyhow!("{} {}",
+                    "Failed to find fetched files `Move.toml` and `Move.lock` when building package graph for".red(),
+                    name_with_version.red().bold()
                 )
             })?;
         let move_toml_content = fs::read_to_string(move_toml_path)?;
@@ -650,7 +697,7 @@ async fn get_dynamic_field_object(
         .read_api()
         .get_dynamic_field_object(parent_object_id, name.clone())
         .await
-        .map_err(|e| anyhow!("{e}"))
+        .map_err(|e| anyhow!("{}", e.red()))
 }
 
 fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<String> {
@@ -683,7 +730,9 @@ fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<S
 
         Ok(format!("@{}/{}", org_name, app_name))
     } else {
-        Err(anyhow!("Invalid name structure"))
+        Err(anyhow!(
+            "Invalid name structure when fetching on-chain data for package".red()
+        ))
     }
 }
 
@@ -698,27 +747,27 @@ fn get_package_info_id(
         .and_then(|content| content.try_as_move())
         .and_then(|move_data| move_data.fields.field_value("value"))
         .map(|value| value.to_json_value())
-        .ok_or_else(|| anyhow!("Failed to extract value field as JSON"))?;
+        .ok_or_else(|| anyhow!("Failed to extract value field as JSON for PackageInfo ID".red()))?;
 
     let package_info_id_str = match network {
         PackageInfoNetwork::Mainnet => json_value["app_info"]["package_info_id"]
             .as_str()
-            .ok_or_else(|| anyhow!("PackageInfo ID not found for Mainnet"))?,
+            .ok_or_else(|| anyhow!("PackageInfo ID not found for Mainnet".red()))?,
         PackageInfoNetwork::Testnet => {
             let networks = json_value["networks"]["contents"]
                 .as_array()
-                .ok_or_else(|| anyhow!("Networks is not an array"))?;
+                .ok_or_else(|| anyhow!("Expected networks array for PackageInfo ID".red()))?;
 
             networks
                 .iter()
                 .find(|entry| entry["key"] == "testnet")
                 .and_then(|testnet_entry| testnet_entry["value"]["package_info_id"].as_str())
-                .ok_or_else(|| anyhow!("PackageInfo ID not found for Testnet"))?
+                .ok_or_else(|| anyhow!("PackageInfo ID not found for testnet".red()))?
         }
     };
 
     ObjectID::from_hex_literal(package_info_id_str)
-        .map_err(|e| anyhow!("Failed to parse PackageInfo ID: {e}"))
+        .map_err(|e| anyhow!("{} {}", "Failed to parse PackageInfo ID:".red(), e.red()))
 }
 
 async fn get_package_info(
@@ -746,10 +795,15 @@ fn get_upgrade_cap_id(package_info: &SuiObjectResponse) -> Result<ObjectID> {
         .and_then(|content| content.try_as_move())
         .and_then(|move_data| move_data.fields.field_value("upgrade_cap_id"))
         .map(|id| id.to_string())
-        .ok_or_else(|| anyhow!("Expected upgrade_cap_id field"))?;
+        .ok_or_else(|| anyhow!("Expected upgrade_cap_id field".red()))?;
 
-    ObjectID::from_hex_literal(&id_str)
-        .map_err(|e| anyhow!("Failed to PackageInfo Upgrade Cap ID: {e}"))
+    ObjectID::from_hex_literal(&id_str).map_err(|e| {
+        anyhow!(
+            "{} {}",
+            "Failed to PackageInfo Upgrade Cap ID:".red(),
+            e.red()
+        )
+    })
 }
 
 fn get_package_address(package_info: &SuiObjectResponse) -> Result<ObjectID> {
@@ -760,10 +814,15 @@ fn get_package_address(package_info: &SuiObjectResponse) -> Result<ObjectID> {
         .and_then(|content| content.try_as_move())
         .and_then(|move_data| move_data.fields.field_value("package_address"))
         .map(|id| id.to_string())
-        .ok_or_else(|| anyhow!("Expected package_address field"))?;
+        .ok_or_else(|| anyhow!("Expected package_address field".red()))?;
 
-    ObjectID::from_hex_literal(&id_str)
-        .map_err(|e| anyhow!("Failed to PackageInfo Package Address: {e}"))
+    ObjectID::from_hex_literal(&id_str).map_err(|e| {
+        anyhow!(
+            "{} {}",
+            "Failed to PackageInfo Package Address:".red(),
+            e.red()
+        )
+    })
 }
 
 async fn get_git_versioning(
@@ -807,7 +866,7 @@ async fn get_package_info_by_id(
         .read_api()
         .get_object_with_options(package_info_id, SuiObjectDataOptions::full_content())
         .await
-        .map_err(|e| anyhow!("No package info: {e}"))
+        .map_err(|e| anyhow!("{} {}", "No package info:".red(), e.red()))
 }
 
 fn get_git_versioning_id(package_info: &SuiObjectResponse) -> Result<ObjectID> {
@@ -818,13 +877,14 @@ fn get_git_versioning_id(package_info: &SuiObjectResponse) -> Result<ObjectID> {
         .and_then(|content| content.try_as_move())
         .and_then(|move_object| move_object.fields.field_value("git_versioning"))
         .map(|git_versioning| git_versioning.to_json_value())
-        .ok_or_else(|| anyhow!("No git_versioning field"))?;
+        .ok_or_else(|| anyhow!("No git_versioning field".red()))?;
 
     let id_str = json_value["id"]["id"]
         .as_str()
-        .ok_or_else(|| anyhow!("Expected git_versioning string"))?;
+        .ok_or_else(|| anyhow!("Expected git_versioning string".red()))?;
 
-    ObjectID::from_hex_literal(id_str).map_err(|e| anyhow!("Invalid git versioning ID: {e}"))
+    ObjectID::from_hex_literal(id_str)
+        .map_err(|e| anyhow!("{} {}", "Invalid git versioning ID:".red(), e.red()))
 }
 
 async fn package_at_version(
@@ -865,8 +925,9 @@ async fn package_at_version(
         .map(|id_str| {
             ObjectID::from_hex_literal(&id_str).map_err(|e| {
                 anyhow!(
-                    "Failed to parse package address for packageAtVersion GQL request: {}",
-                    e
+                    "{} {}",
+                    "Failed to parse package address for packageAtVersion GQL request:".red(),
+                    e.red()
                 )
             })
         })
@@ -878,9 +939,11 @@ fn extract_index(dynamic_field_name: &DynamicFieldName) -> Result<u64> {
     match &dynamic_field_name.value {
         JValue::String(s) => s
             .parse::<u64>()
-            .map_err(|e| anyhow!("Failed to parse index: {}", e)),
-        JValue::Number(n) => n.as_u64().ok_or_else(|| anyhow!("Index is not a u64")),
-        _ => Err(anyhow!("Unexpected index type")),
+            .map_err(|e| anyhow!("{} {}", "Failed to parse index:".red(), e.red())),
+        JValue::Number(n) => n
+            .as_u64()
+            .ok_or_else(|| anyhow!("Index is not a u64".red())),
+        _ => Err(anyhow!("Unexpected index type".red())),
     }
 }
 
@@ -891,20 +954,20 @@ fn extract_git_info(dynamic_field_data: &SuiObjectResponse) -> Result<GitInfo> {
         .and_then(|data| data.content.as_ref())
         .and_then(|content| content.try_as_move())
         .and_then(|move_object| move_object.fields.field_value("value"))
-        .ok_or_else(|| anyhow!("Failed to extract git info"))?
+        .ok_or_else(|| anyhow!("Failed to extract git info".red()))?
         .to_json_value();
 
     let repository = git_info["repository"]
         .as_str()
-        .ok_or_else(|| anyhow!("No repository field"))?
+        .ok_or_else(|| anyhow!("No repository field".red()))?
         .to_string();
     let tag = git_info["tag"]
         .as_str()
-        .ok_or_else(|| anyhow!("No tag field"))?
+        .ok_or_else(|| anyhow!("No tag field".red()))?
         .to_string();
     let path = git_info["path"]
         .as_str()
-        .ok_or_else(|| anyhow!("No path field"))?
+        .ok_or_else(|| anyhow!("No path field".red()))?
         .to_string();
 
     Ok(GitInfo {
@@ -923,105 +986,88 @@ pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)
             let version: u64 = version
                 .parse::<u64>()
                 .map_err(|_| {
-                    anyhow!("Cannot parse version \"{version}\". Version must be 1 or greater.")
+                    anyhow!(
+                        "{}{}{}",
+                        "Cannot parse version \"".red(),
+                        version.red().bold(),
+                        "\". Version must be 1 or greater.".red()
+                    )
                 })
                 .and_then(|v| {
                     if v >= 1 {
                         Ok(v)
                     } else {
                         Err(anyhow!(
-                            "Invalid version number {v}. Version must be 1 or greater."
+                            "{} {}{}",
+                            "Invalid version number".red(),
+                            v.red().bold(),
+                            ". Version must be 1 or greater.".red()
                         ))
                     }
                 })?;
             Ok((format!("{}/{}", base_org, base_name), Some(version)))
         }
         _ => Err(anyhow!(
-            "Invalid package name format when parsing version: {name}"
+            "{} {}",
+            "Invalid package name format when parsing version:".red(),
+            name.red()
         )),
     }
 }
 
-fn format_github_raw_url(
-    repository: &str,
-    tag: &str,
-    path: &str,
-    file_name: &str,
-) -> Result<String> {
-    let repo_url = Url::parse(repository).context("Failed to parse repository URL")?;
-    let path_segments: Vec<&str> = repo_url.path().trim_start_matches('/').split('/').collect();
-    if path_segments.len() < 2 {
-        return Err(anyhow!("Invalid repository format. Expected 'owner/repo'"));
-    }
-    let (owner, repo) = (path_segments[0], path_segments[1]);
-    // TODO: raw.githubusercontent is perhaps not the way to go long-term (or short-term).
-    Ok(format!(
-        "https://raw.githubusercontent.com/{}/{}/{}/{}/{}",
-        owner,
-        repo,
-        tag,
-        path.trim_start_matches('/'),
-        file_name
-    ))
-}
-
-/// Fetches `Move.toml` and `Move.lock` files from a source repository.
 async fn fetch_move_files(
     name: &str,
     git_info: &GitInfo,
     temp_dir: &TempDir,
 ) -> Result<(PathBuf, PathBuf)> {
-    let client = Client::new();
-
     let files_to_fetch = ["Move.toml", "Move.lock"];
+    let repo_dir = shallow_clone_repo(name, git_info, temp_dir)?;
+
     let mut file_paths = Vec::new();
-
     for file_name in &files_to_fetch {
-        let url = format_github_raw_url(
-            &git_info.repository,
-            &git_info.tag,
-            &git_info.path,
-            file_name,
-        )?;
+        let source_path = repo_dir.join(&git_info.path).join(file_name);
+        let dest_path = temp_dir.path().join(file_name);
 
-        let response = client
-            .get(&url)
-            .send()
-            .await
-            .context("Failed to send request")?;
+        fs::copy(&source_path, &dest_path)
+            .with_context(|| format!("Failed to copy {} for package {}", file_name, name))?;
 
-        if !response.status().is_success() {
-            match response.status().as_u16() {
-                404 => {
-                    return Err(anyhow!(
-                    "File '{}' for package {name} does not exist in the upstream repository at {}",
-                    file_name,
-                    url
-                ))
-                }
-                status => {
-                    return Err(anyhow!(
-                        "Failed to fetch '{}' for package {name}: HTTP status code {}",
-                        file_name,
-                        status
-                    ))
-                }
-            }
-        };
-
-        let content = response
-            .text()
-            .await
-            .context("Failed to read response content")?;
-        let file_path = temp_dir.path().join(file_name);
-        let mut file = File::create(&file_path).context("Failed to create file")?;
-        file.write_all(content.as_bytes())
-            .context("Failed to write file content")?;
-
-        file_paths.push(file_path);
+        file_paths.push(dest_path);
     }
 
     Ok((file_paths[0].clone(), file_paths[1].clone()))
+}
+
+fn shallow_clone_repo(
+    package_name: &str,
+    git_info: &GitInfo,
+    temp_dir: &TempDir,
+) -> Result<PathBuf> {
+    let repo_dir = temp_dir.path().join("repo");
+
+    let output = Command::new("git")
+        .arg("clone")
+        .arg("--depth=1")
+        .arg("--branch")
+        .arg(&git_info.tag)
+        .arg(&git_info.repository)
+        .arg(&repo_dir)
+        .output()
+        .context("Failed to execute git clone command")?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(anyhow!(
+            "{} {} {} {} {} {}",
+            "Failed to clone repository for package".red(),
+            package_name.red().bold(),
+            ": Git error:".red(),
+            stderr.red().bold(),
+            "Repository:".red(),
+            git_info.repository.red().bold(),
+        ));
+    }
+
+    Ok(repo_dir)
 }
 
 /// For a given package `foo` and its original `Move.lock` (containing transitive dependencies),
@@ -1040,7 +1086,7 @@ fn insert_root_dependency(
 
     let move_section = doc["move"]
         .as_table_mut()
-        .ok_or_else(|| anyhow!("Failed to get [move] table"))?;
+        .ok_or_else(|| anyhow!("Expected [move] table to construct graph in lock file".red()))?;
 
     // Save the top-level `dependencies`, which will become the dependencies of the new root package.
     let original_deps = move_section.get("dependencies").cloned();
@@ -1074,7 +1120,7 @@ fn insert_root_dependency(
         .entry("package")
         .or_insert(Item::ArrayOfTables(ArrayOfTables::new()))
         .as_array_of_tables_mut()
-        .ok_or_else(|| anyhow!("Failed to get or create package array"))?;
+        .ok_or_else(|| anyhow!("Failed to get or create package array in lock file".red()))?;
     packages.push(new_package);
     Ok(doc.to_string())
 }
@@ -1082,15 +1128,15 @@ fn insert_root_dependency(
 fn parse_source_package_name(toml_content: &str) -> Result<String> {
     let doc = toml_content
         .parse::<DocumentMut>()
-        .context("Failed to parse TOML content")?;
+        .context("Failed to parse TOML content in lock file".red())?;
 
     let package_table = doc["package"]
         .as_table()
-        .ok_or_else(|| anyhow!("Failed to find [package] table"))?;
+        .ok_or_else(|| anyhow!("Failed to find [package] table in lock file".red()))?;
 
     let name = package_table["name"]
         .as_str()
-        .ok_or_else(|| anyhow!("Failed to find 'name' in [package] table"))?;
+        .ok_or_else(|| anyhow!("Failed to find 'name' in [package] table in lock file".red()))?;
 
     Ok(name.to_string())
 }
@@ -1101,7 +1147,6 @@ async fn update_mvr_packages(
     network: &str,
 ) -> Result<String> {
     let (mainnet_client, testnet_client) = setup_sui_clients().await?;
-
     let dependency = MoveRegistryDependency {
         network: network.to_string(),
         packages: vec![package_name.to_string()],
@@ -1110,8 +1155,10 @@ async fn update_mvr_packages(
         "testnet" => &PackageInfoNetwork::Testnet,
         "mainnet" => &PackageInfoNetwork::Mainnet,
         _ => bail!(
-            "Unrecognized network {} specified for this dependency: Must be one of mainnet or testnet",
-            dependency.network
+            "{} {} {}",
+            "Unrecognized network".red(),
+            dependency.network.red().bold(),
+            "specified for this dependency: Must be one of mainnet or testnet".red()
         ),
     };
     let client = match network {
@@ -1121,8 +1168,13 @@ async fn update_mvr_packages(
 
     let resolved_packages =
         resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
-    let toml_content = fs::read_to_string(move_toml_path)
-        .with_context(|| format!("Failed to read file: {:?}", move_toml_path))?;
+    let toml_content = fs::read_to_string(&move_toml_path).with_context(|| {
+        format!(
+            "{} {}",
+            "Failed to read file:".red(),
+            move_toml_path.display().red().bold()
+        )
+    })?;
     let mut doc = toml_content
         .parse::<DocumentMut>()
         .context("Failed to parse TOML content")?;
@@ -1156,6 +1208,7 @@ async fn update_mvr_packages(
              please give this dependency an appropriate name and add it under \
              [dependencies] as follows: \
              YourName = {{ r.mvr = \"{package_name}\" }}"
+                .red()
         );
     };
     dependencies.insert(&name, Item::Value(Value::InlineTable(new_dep_table)));
@@ -1168,7 +1221,10 @@ async fn update_mvr_packages(
         .and_then(|mvr_table| mvr_table.get(NETWORK_KEY))
         .is_some();
     if network_exists {
-        eprintln!("Network value already exists in r.mvr section. It will be overwritten.");
+        eprintln!(
+            "{}",
+            "Network value already exists in r.mvr section. It will be overwritten.".yellow()
+        );
     }
 
     if !doc.contains_key(RESOLVER_PREFIX_KEY) {
@@ -1287,12 +1343,12 @@ pub async fn subcommand_list(filter: Option<String>) -> Result<CommandOutput> {
 
 pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<CommandOutput> {
     if network != "testnet" && network != "mainnet" {
-        bail!("network must be one of \"testnet\" or \"mainnet\"");
+        bail!("network must be one of \"testnet\" or \"mainnet\"".red());
     }
     let current_dir = env::current_dir().context("Failed to get current directory")?;
     let move_toml_path = current_dir.join("Move.toml");
     if !move_toml_path.exists() {
-        return Err(anyhow!("Move.toml not found in the current directory"));
+        return Err(anyhow!("Move.toml not found in the current directory".red()));
     }
     let cmd_output = update_mvr_packages(&move_toml_path, package_name, network).await?;
 

@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 use mvr::helpers::constants::MINIMUM_BUILD_SUI_VERSION;
 use mvr::helpers::sui::check_sui_version;
-use mvr::{resolve_move_dependencies, Command};
+use mvr::{resolve_move_dependencies, CliCommand};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -11,7 +11,7 @@ struct Cli {
     resolve_move_dependencies: Option<String>,
 
     #[command(subcommand)]
-    command: Command,
+    command: CliCommand,
 
     /// Output the result in JSON format
     #[arg(long, global = true)]
