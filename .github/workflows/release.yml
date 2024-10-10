@@ -39,13 +39,14 @@ jobs:
         os:
           [
             ubuntu-ghcloud, # ubuntu-x86_64
-            ubuntu-arm64, # ubuntu-arm64
-            windows-ghcloud, # windows-x86_64
-            macos-latest-xl, # macos-x86_64
-            macos-latest-xlarge # macos-arm64
+            # ubuntu-arm64, # ubuntu-arm64
+            # windows-ghcloud, # windows-x86_64
+            # macos-latest-xl, # macos-x86_64
+            # macos-latest-xlarge # macos-arm64
           ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Clean up and validate ${{ env.TAG_NAME }} tag name
         shell: bash
@@ -82,28 +83,20 @@ jobs:
       - name: Cargo build for ${{ matrix.os }} platform
         shell: bash
         run: |
-          [ -f ~/.cargo/env ] && source ~/.cargo/env ; cd mvr-cli && cargo build --release
+          mkdir -p ${{ env.TMP_BUILD_DIR }}
+          [ -f ~/.cargo/env ] && source ~/.cargo/env 
+          cd mvr-cli
+          cargo build --release 
+          ls -la target/release
+          echo ${{ env.os_type }}
+          echo ${{ env.extension }}
+          echo $(./target/release/mvr --version)
+          cp target/release/mvr${{ env.extension }} target/release/mvr-${{ env.os_type }}${{ env.extension }}
 
       - name: Attach artifacts to ${{ env.mvr_tag }} release in GH
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # pin@v1
         with:
           files: |
-            ./mvr-cli/target/release/mvr-${{ env.os_type }}${{ env.extension }}
+            mvr-cli/target/release/mvr-${{ env.os_type }}${{ env.extension }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Rename and compress binaries for ${{ matrix.os }}
-      #   shell: bash
-      #   run: |
-      #     mkdir -p ${{ env.TMP_BUILD_DIR }}
-      #     export binary="mvr"
-      #     mv mvr-cli/target/release/${binary}${{ env.extension }} ${{ env.TMP_BUILD_DIR }}/${binary}-${{ env.os_type }}${{ env.extension }}
-      #     done
-      #
-      # - name: Attach artifacts to ${{ env.mvr_tag }} release in GH
-      #   uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # pin@v1
-      #   with:
-      #     files: |
-      #       ./tmp/mvr-${{ env.os_type }}${{ env.extension }}
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
