@@ -9,8 +9,11 @@ package_info = { local = "../package_info" }
 # SuiNS dependency. TODO: Replace with MVR style :))
 # mainnet
 suins = { git = "https://github.com/mystenlabs/suins-contracts/", subdir = "packages/suins", rev = "releases/mainnet/core/v3" }
+Codec = { git = "https://github.com/sui-potatoes/app.git", subdir = "packages/codec", rev = "codec@mainnet-v1" }
+
 # testnet
 # suins = { git = "https://github.com/mystenlabs/suins-contracts/", subdir = "packages/suins", rev = "releases/testnet/core/v2" }
+# Codec = { git = "https://github.com/sui-potatoes/app.git", subdir = "packages/codec", rev = "codec@testnet-v1" }
 
 [addresses]
 mvr = "0x0"

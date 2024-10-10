@@ -61,6 +61,17 @@ public fun app(app: &Name): &String {
 /// Converts an `Name` to its string representation (e.g. `@org/app`,
 /// `inner@org/app`)
 public fun to_string(app: &Name): String {
+    // start with the "org" part.
+    let mut name = app.org_to_string();
+    // now we process the app part.
+    // we add the `/` separator
+    name.append(constants::app_separator!());
+    // append the "app" part
+    name.append(app.app_to_string());
+    name
+}
+
+public(package) fun org_to_string(app: &Name): String {
     let mut name = b"".to_string();
 
     // construct the "org" part.
@@ -80,11 +91,13 @@ public fun to_string(app: &Name): String {
     // We add the domain. E.g. `example.sui` -> `@example`.
     name.append(*domain.sld());
 
-    // now we process the app part.
-    // we add the `/` separator
-    name.append(constants::app_separator!());
+    name
+}
 
-    // now we process the app parts.
+public(package) fun app_to_string(app: &Name): String {
+    let mut name = b"".to_string();
+
+    // Process the app labels (1 by 1, separated with dot for now).
     let app_labels = app.app;
     let mut labels_len = app_labels.length();
 
@@ -96,9 +109,6 @@ public fun to_string(app: &Name): String {
 
     name
 }
-
-/// TODO: implement
-// public fun from_string(name: String): Name { }
 
 public(package) fun validate_labels(labels: &vector<String>) {
     assert!(!labels.is_empty(), EInvalidName);

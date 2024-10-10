@@ -3,6 +3,7 @@ module mvr::app_record;
 use mvr::app_info::{Self, AppInfo};
 use mvr::constants;
 use mvr::name::Name;
+use mvr::app_cap_display::{Self, AppCapDisplay};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::vec_map::{Self, VecMap};
@@ -48,6 +49,8 @@ public struct AppCap has key, store {
     /// Whether the app is immutable on the main network.
     /// Also utilized for `Display` purposes.
     is_immutable: bool,
+    /// The display setup for AppCap.
+    display: AppCapDisplay,
 }
 
 public fun is_cap_immutable(cap: &AppCap): bool {
@@ -68,6 +71,7 @@ public(package) fun new(
         id: object::new(ctx),
         name,
         is_immutable: false,
+        display: app_cap_display::new(name, false)
     };
 
     (
@@ -91,6 +95,7 @@ public(package) fun assign_package(
 ) {
     assert!(record.app_info.is_none(), EPackageAlreadyAssigned);
     cap.is_immutable = true;
+    cap.display.set_link_opacity(true);
     record.app_info =
         option::some(
             app_info::new(
