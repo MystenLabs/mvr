@@ -7,6 +7,8 @@ pub mod helpers;
 
 use anyhow::{anyhow, bail, Context, Result};
 use helpers::sui::force_build;
+use once_cell::sync::Lazy;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use std::collections::{HashMap, HashSet};
@@ -16,6 +18,7 @@ use std::fs::{self};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::str::FromStr;
 use tempfile::TempDir;
 use toml_edit::{
     value, Array, ArrayOfTables, DocumentMut, Formatted, InlineTable, Item, Table, Value,
@@ -52,6 +55,17 @@ const MAINNET_GQL: &str = "https://sui-mainnet.mystenlabs.com/graphql";
 const TESTNET_CHAIN_ID: &str = "4c78adac";
 const MAINNET_CHAIN_ID: &str = "35834a8a";
 
+const VERSIONED_NAME_REGEX: &str = concat!(
+    "^",
+    r"([a-z0-9.\-@]*)",
+    r"\/",
+    "([a-z0-9.-]*)",
+    r"(?:\/(\d+))?",
+    "$"
+);
+
+static VERSIONED_NAME_REG: Lazy<Regex> = Lazy::new(|| Regex::new(VERSIONED_NAME_REGEX).unwrap());
+
 #[derive(Debug, Deserialize, Serialize)]
 struct MoveRegistryDependency {
     network: String,
@@ -83,6 +97,11 @@ pub struct GitInfo {
     pub path: String,
 }
 
+struct VersionedName {
+    name: String,
+    version: Option<u64>,
+}
+
 impl fmt::Display for PackageInfoNetwork {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -97,6 +116,37 @@ impl fmt::Display for PackageInfo {
         writeln!(f, "      Upgrade Cap ID: {}", self.upgrade_cap_id)?;
         writeln!(f, "      Package Address: {}", self.package_address)?;
         write!(f, "      Git Versioning: {:?}", self.git_versioning)
+    }
+}
+
+impl FromStr for VersionedName {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let caps = VERSIONED_NAME_REG
+            .captures(s)
+            .ok_or_else(|| anyhow!("Invalid name format: {}", s))?;
+
+        let org_name = caps
+            .get(1)
+            .map(|x| x.as_str())
+            .ok_or_else(|| anyhow!("Invalid organization name in: {}", s))?;
+
+        let app_name = caps
+            .get(2)
+            .map(|x| x.as_str())
+            .ok_or_else(|| anyhow!("Invalid application name in: {}", s))?;
+
+        let version = caps
+            .get(3)
+            .map(|x| x.as_str().parse::<u64>())
+            .transpose()
+            .map_err(|_| anyhow!("Invalid version number. Version must be 1 or greater."))?;
+
+        Ok(Self {
+            name: format!("{}/{}", org_name, app_name),
+            version,
+        })
     }
 }
 
@@ -984,40 +1034,8 @@ fn extract_git_info(dynamic_field_data: &SuiObjectResponse) -> Result<GitInfo> {
 
 /// Given a normalized Move Registry package name, split out the version number (if any).
 pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
-    let parts: Vec<&str> = name.split('/').collect();
-    match parts.as_slice() {
-        [base_org, base_name] => Ok((format!("{}/{}", base_org, base_name), None)),
-        [base_org, base_name, version] => {
-            let version: u64 = version
-                .parse::<u64>()
-                .map_err(|_| {
-                    anyhow!(
-                        "{}{}{}",
-                        "Cannot parse version \"".red(),
-                        version.red().bold(),
-                        "\". Version must be 1 or greater.".red()
-                    )
-                })
-                .and_then(|v| {
-                    if v >= 1 {
-                        Ok(v)
-                    } else {
-                        Err(anyhow!(
-                            "{} {}{}",
-                            "Invalid version number".red(),
-                            v.red().bold(),
-                            ". Version must be 1 or greater.".red()
-                        ))
-                    }
-                })?;
-            Ok((format!("{}/{}", base_org, base_name), Some(version)))
-        }
-        _ => Err(anyhow!(
-            "{} {}",
-            "Invalid package name format when parsing version:".red(),
-            name.red()
-        )),
-    }
+    let versioned_name = VersionedName::from_str(name)?;
+    Ok((versioned_name.name, versioned_name.version))
 }
 
 async fn fetch_move_files(

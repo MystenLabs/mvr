@@ -154,15 +154,20 @@ async fn test_parse_package_version() -> Result<()> {
     let result = parse_package_version("@foo/bar/baz");
     expect![[r#"
         Err(
-            "\u{1b}[31mCannot parse version \"\u{1b}[0m\u{1b}[1;31mbaz\u{1b}[0m\u{1b}[31m\". Version must be 1 or greater.\u{1b}[0m",
+            "Invalid name format: @foo/bar/baz",
         )
     "#]]
     .assert_debug_eq(&result);
 
     let result = parse_package_version("@foo/bar/0");
     expect![[r#"
-        Err(
-            "\u{1b}[31mInvalid version number\u{1b}[0m \u{1b}[1;31m0\u{1b}[0m\u{1b}[31m. Version must be 1 or greater.\u{1b}[0m",
+        Ok(
+            (
+                "@foo/bar",
+                Some(
+                    0,
+                ),
+            ),
         )
     "#]]
     .assert_debug_eq(&result);
