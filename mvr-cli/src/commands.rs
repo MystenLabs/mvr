@@ -18,23 +18,23 @@ use crate::PackageInfoNetwork;
 #[derive(Serialize, Subcommand)]
 #[serde()]
 pub enum Command {
+    /// Add a new dependency from the move registry to your Move.toml file.
     Add {
         name: String,
         #[arg(short, long)]
         network: String,
     },
     /// List every app in the move registry.
+    #[clap(hide = true)]
     List {
-        /// Filter the list of apps by name (@....) or package address (0x).
-        #[arg(short, long)]
+        /// Filter the list of apps by name (@....).
+        #[arg(long)]
         filter: Option<String>,
     },
-    Register {
-        name: String,
-    },
-    Resolve {
-        name: String,
-    },
+    /// Register the app name to the move registry.
+    Register { name: String },
+    /// Resolve the app name to a package info.
+    Resolve { name: String },
 }
 
 #[derive(Serialize)]
@@ -138,7 +138,7 @@ mod tests {
     use std::collections::HashMap;
     use std::str::FromStr;
 
-    use sui_sdk::types::base_types::ObjectID;
+    use sui_types::types::ObjectId;
 
     use crate::commands::App;
     use crate::commands::PackageInfo;
@@ -153,11 +153,11 @@ mod tests {
                 package_info: vec![(PackageInfoNetwork::Testnet, None),(
                 PackageInfoNetwork::Mainnet,
                 Some(PackageInfo {
-                    package_address: ObjectID::from_str(
+                    package_address: ObjectId::from_str(
                         "0xd94df18bd28e31c65241e2db942920cd6d92f69531b7bff5eccebdaf8fcfc8bf",
                     )
                     .unwrap(),
-                    upgrade_cap_id: ObjectID::from_str(
+                    upgrade_cap_id: ObjectId::from_str(
                         "0x764aa368ce52fd7e5612fc6c244b01b0eea232cbdc22a1661785d24e2d252a3e",
                     )
                     .unwrap(),

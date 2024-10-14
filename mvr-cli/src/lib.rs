@@ -1,37 +1,49 @@
-mod commands;
-use commands::App;
-pub use commands::Command as CliCommand;
-pub use commands::CommandOutput;
-
+pub mod commands;
 pub mod helpers;
+pub mod types;
+use commands::CommandOutput;
+use types::VersionedName;
 
-use anyhow::{anyhow, bail, Context, Result};
-use helpers::sui::force_build;
-use once_cell::sync::Lazy;
-use regex::Regex;
-use serde::{Deserialize, Serialize};
-use serde_json::Value as JValue;
 use std::collections::{HashMap, HashSet};
 use std::env;
-use std::fmt;
 use std::fs::{self};
 use std::io::{self, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
+
+use crate::commands::App;
+use crate::types::package::PackageInfoNetwork;
+use crate::types::SuiConfig;
+use crate::types::{MoveRegistryDependency, MoveTomlPublishedID};
+use helpers::sui::force_build;
+use types::app_record::AppInfo;
+use types::app_record::AppRecord;
+use types::package::GitInfo;
+use types::package::PackageInfo;
+use types::Name;
+
+use sui_client::Client;
+use sui_client::DynamicFieldOutput;
+use sui_client::PaginationFilter;
+use sui_types::types::Address;
+use sui_types::types::ObjectId;
+use sui_types::types::TypeTag;
+
+use anyhow::{anyhow, bail, Context, Result};
+use once_cell::sync::Lazy;
+use regex::Regex;
+use serde_json::Value as JValue;
 use tempfile::TempDir;
 use toml_edit::{
     value, Array, ArrayOfTables, DocumentMut, Formatted, InlineTable, Item, Table, Value,
 };
 use yansi::Paint;
 
-use sui_config::{sui_config_dir, SUI_CLIENT_CONFIG};
-use sui_sdk::{
-    rpc_types::{SuiData, SuiObjectDataOptions, SuiObjectResponse},
-    types::{base_types::ObjectID, dynamic_field::DynamicFieldName},
-    wallet_context::WalletContext,
-    SuiClient, SuiClientBuilder,
-};
+const SUI_DIR: &str = ".sui";
+const SUI_CONFIG_DIR: &str = "sui_config";
+const SUI_CLIENT_CONFIG: &str = "client.yaml";
 
 const RESOLVER_PREFIX_KEY: &str = "r";
 const MVR_RESOLVER_KEY: &str = "mvr";
@@ -47,13 +59,6 @@ const LOCK_PACKAGE_NAME_KEY: &str = "name";
 const APP_REGISTRY_TABLE_ID: &str =
     "0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163";
 
-/// RPC endpoint
-pub const SUI_MAINNET_URL: &str = "https://fullnode.mainnet.sui.io:443";
-
-/// GQL endpoints
-const TESTNET_GQL: &str = "https://sui-testnet.mystenlabs.com/graphql";
-const MAINNET_GQL: &str = "https://sui-mainnet.mystenlabs.com/graphql";
-
 const TESTNET_CHAIN_ID: &str = "4c78adac";
 const MAINNET_CHAIN_ID: &str = "35834a8a";
 
@@ -67,97 +72,6 @@ const VERSIONED_NAME_REGEX: &str = concat!(
 );
 
 static VERSIONED_NAME_REG: Lazy<Regex> = Lazy::new(|| Regex::new(VERSIONED_NAME_REGEX).unwrap());
-
-#[derive(Debug, Deserialize, Serialize)]
-struct MoveRegistryDependency {
-    network: String,
-    packages: Vec<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct RConfig {
-    network: String,
-}
-
-#[derive(Serialize, PartialEq)]
-pub enum PackageInfoNetwork {
-    Mainnet,
-    Testnet,
-}
-
-#[derive(Serialize, Debug)]
-pub struct PackageInfo {
-    pub upgrade_cap_id: ObjectID,
-    pub package_address: ObjectID,
-    pub git_versioning: HashMap<u64, GitInfo>,
-}
-
-#[derive(Serialize, Debug)]
-pub struct GitInfo {
-    pub repository: String,
-    pub tag: String,
-    pub path: String,
-}
-
-struct VersionedName {
-    name: String,
-    version: Option<u64>,
-}
-
-#[derive(Serialize, Default, Debug)]
-pub struct MoveTomlPublishedID {
-    addresses_id: Option<String>,
-    published_at_id: Option<String>,
-    internal_pkg_name: Option<String>,
-}
-
-impl fmt::Display for PackageInfoNetwork {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            PackageInfoNetwork::Mainnet => write!(f, "mainnet"),
-            PackageInfoNetwork::Testnet => write!(f, "testnet"),
-        }
-    }
-}
-
-impl fmt::Display for PackageInfo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "      Upgrade Cap ID: {}", self.upgrade_cap_id)?;
-        writeln!(f, "      Package Address: {}", self.package_address)?;
-        write!(f, "      Git Versioning: {:?}", self.git_versioning)
-    }
-}
-
-impl FromStr for VersionedName {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let caps = VERSIONED_NAME_REG
-            .captures(s)
-            .ok_or_else(|| anyhow!("Invalid name format: {}", s))?;
-
-        let org_name = caps
-            .get(1)
-            .map(|x| x.as_str())
-            .ok_or_else(|| anyhow!("Invalid organization name in: {}", s))?;
-
-        let app_name = caps
-            .get(2)
-            .map(|x| x.as_str())
-            .ok_or_else(|| anyhow!("Invalid application name in: {}", s))?;
-
-        let version = caps
-            .get(3)
-            .map(|x| x.as_str().parse::<u64>())
-            .transpose()
-            .map_err(|_| anyhow!("Invalid version number. Version must be 1 or greater."))?;
-
-        Ok(Self {
-            name: format!("{}/{}", org_name, app_name),
-            version,
-        })
-    }
-}
 
 fn find_mvr_package(value: &toml::Value) -> Option<String> {
     value
@@ -238,18 +152,15 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
     };
 
     let config_path = sui_config_dir()?.join(SUI_CLIENT_CONFIG);
-    let context = WalletContext::new(&config_path, None, None)?;
-    let client = context.get_client().await?;
-    let client_chain = client.read_api().get_chain_identifier().await.ok();
-    let (mainnet_client, testnet_client) = setup_sui_clients().await?;
+    let config = SuiConfig::read_from_file(&config_path)?;
+    let active_env_rpc = config.active_env()?.rpc();
+    let client = Client::new(active_env_rpc)?;
+    let client_chain = client.chain_id().await?;
+    let (mainnet_client, testnet_client) = setup_sui_clients();
     let client = match (client_chain, network) {
-        (Some(chain_id), PackageInfoNetwork::Testnet) if chain_id == TESTNET_CHAIN_ID => {
-            &testnet_client
-        }
-        (Some(chain_id), PackageInfoNetwork::Mainnet) if chain_id == MAINNET_CHAIN_ID => {
-            &mainnet_client
-        }
-        (Some(chain_id), _) => {
+        (chain_id, PackageInfoNetwork::Testnet) if chain_id == TESTNET_CHAIN_ID => &testnet_client,
+        (chain_id, PackageInfoNetwork::Mainnet) if chain_id == MAINNET_CHAIN_ID => &mainnet_client,
+        (chain_id, _) => {
             let env_network = if chain_id == TESTNET_CHAIN_ID {
                 "the testnet network"
             } else if chain_id == MAINNET_CHAIN_ID {
@@ -270,15 +181,6 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
                  (either \"testnet\" or \"mainnet\")".red()
             );
             bail!(message)
-        }
-        _ => {
-            let message = format!(
-                "{}",
-                "Unrecognized chain: expected environment to be either `testnet` or `mainnet`.\n\
-                 Consider switching your sui client to an environment that uses one of these chains\n\
-                 For example: `sui client switch --env testnet`".red()
-            );
-            bail!(message);
         }
     };
 
@@ -347,12 +249,12 @@ async fn fetch_package_files(
 /// Registry info (IDs associated with name on `mainnet` or `testnet`) is always resolved
 /// from mainnet.
 async fn resolve_on_chain_package_info(
-    mainnet_client: &SuiClient,
-    client: &SuiClient,
+    mainnet_client: &Client,
+    client: &Client,
     network: &PackageInfoNetwork,
     dependency: &MoveRegistryDependency,
 ) -> Result<HashMap<String, PackageInfo>> {
-    let app_registry_id = ObjectID::from_hex_literal(APP_REGISTRY_TABLE_ID)?;
+    let app_registry_id = ObjectId::from_str(APP_REGISTRY_TABLE_ID)?;
     let package_name_map: Result<HashMap<String, String>> = dependency
         .packages
         .iter()
@@ -363,44 +265,53 @@ async fn resolve_on_chain_package_info(
     let package_set: HashSet<String> = package_name_map.keys().cloned().collect();
     let mut cursor = None;
     let mut resolved_packages: HashMap<String, PackageInfo> = HashMap::new();
+
     loop {
-        let dynamic_fields = mainnet_client
-            .read_api()
-            .get_dynamic_fields(app_registry_id, cursor, None)
+        let page = mainnet_client
+            .dynamic_fields(
+                Address::from_str(&app_registry_id.to_string())?,
+                PaginationFilter {
+                    cursor,
+                    ..Default::default()
+                },
+            )
             .await?;
 
-        for dynamic_field_info in dynamic_fields.data.into_iter() {
-            let name_object =
-                get_dynamic_field_object(mainnet_client, app_registry_id, &dynamic_field_info.name)
-                    .await?;
-            let name = get_normalized_app_name(&name_object)?;
-            if package_set.contains(&name) {
-                if let Some(package_info) = get_package_info(&name_object, client, network).await? {
-                    if let Some(full_name) = package_name_map.get(&name) {
-                        resolved_packages.insert(full_name.clone(), package_info);
-                    } else {
-                        // Invariant: should never happen: package_set and package_name_map are set up in sync
-                        eprintln!("Warning: Found package in set but not in map: {}", name);
+        for dynamic_field_info in page.data().iter() {
+            let df_name: Name = dynamic_field_info.try_into()?;
+            let name = normalize_app_name(&df_name)?;
+            let Some(..) = dynamic_field_info.value.as_ref() else {
+                continue;
+            };
+            let app_record: AppRecord = dynamic_field_info.try_into()?;
+            let app_info = match network {
+                PackageInfoNetwork::Mainnet => app_record.networks.get(MAINNET_CHAIN_ID),
+                PackageInfoNetwork::Testnet => app_record.networks.get(TESTNET_CHAIN_ID),
+            };
+
+            if let Some(app_info) = app_info {
+                if package_set.contains(&name) {
+                    let package_info = package_info(app_info, client).await?;
+                    if let Some(package_info) = package_info {
+                        resolved_packages.insert(name.clone(), package_info);
                     }
-                } else {
-                    bail!(
-                        "{} {} {} {} {}",
-                        "No on-chain PackageInfo for package".red(),
-                        name.red().bold(),
-                        "on".red(),
-                        dependency.network.red().bold(),
-                        "(it may not be registered).".red()
-                    );
                 }
+            } else {
+                bail!(
+                    "{} {} {} {} {}",
+                    "No on-chain PackageInfo for package".red(),
+                    name.red().bold(),
+                    "on".red(),
+                    dependency.network.red().bold(),
+                    "(it may not be registered).".red()
+                );
             }
         }
-
-        if !dynamic_fields.has_next_page {
+        if !page.page_info().has_next_page {
             break;
         }
-        cursor = dynamic_fields.next_cursor;
+        cursor = page.page_info().end_cursor.clone();
     }
-
     let resolved_on_chain: HashSet<String> = resolved_packages.keys().cloned().collect();
     let expected_locally: HashSet<String> = package_name_map.values().cloned().collect();
     let unresolved = &expected_locally - &resolved_on_chain;
@@ -494,14 +405,14 @@ async fn check_single_package_consistency(
         addresses_id,
         published_at_id,
         ..
-    } = get_published_ids(&move_toml_content, &original_address_on_chain).await;
+    } = published_ids(&move_toml_content, &original_address_on_chain).await;
     let target_chain_id = match network {
         PackageInfoNetwork::Mainnet => MAINNET_CHAIN_ID,
         PackageInfoNetwork::Testnet => TESTNET_CHAIN_ID,
     };
     let address = addresses_id
         .map(|id_str| {
-            ObjectID::from_hex_literal(&id_str).map_err(|e| {
+            ObjectId::from_str(&id_str).map_err(|e| {
                 anyhow!(
                     "{} {}",
                     "Failed to parse address in [addresses] section of Move.toml:".red(),
@@ -512,7 +423,7 @@ async fn check_single_package_consistency(
         .transpose()?;
     let published_at = published_at_id
         .map(|id_str| {
-            ObjectID::from_hex_literal(&id_str).map_err(|e| {
+            ObjectId::from_str(&id_str).map_err(|e| {
                 anyhow!(
                     "{} {}",
                     "Failed to parse published-at address of Move.toml:".red(),
@@ -523,20 +434,19 @@ async fn check_single_package_consistency(
         .transpose()?;
 
     // The original-published-id may exist in the Move.lock
-    let original_published_id_in_lock =
-        get_original_published_id(&move_lock_content, target_chain_id)
-            .map(|id_str| {
-                ObjectID::from_hex_literal(&id_str).map_err(|e| {
-                    anyhow!(
-                        "{} {}",
-                        "Failed to parse original-published-id in Move.lock:".red(),
-                        e.red()
-                    )
-                })
+    let original_published_id_in_lock = original_published_id(&move_lock_content, target_chain_id)
+        .map(|id_str| {
+            ObjectId::from_str(&id_str).map_err(|e| {
+                anyhow!(
+                    "{} {}",
+                    "Failed to parse original-published-id in Move.lock:".red(),
+                    e.red()
+                )
             })
-            .transpose()?;
+        })
+        .transpose()?;
 
-    let (original_source_id, provenance): (ObjectID, String) = match (
+    let (original_source_id, provenance): (ObjectId, String) = match (
         original_published_id_in_lock,
         published_at,
         address,
@@ -553,7 +463,7 @@ async fn check_single_package_consistency(
             )
         }
         (None, Some(published_at_id), Some(address_id))
-            if address_id == ObjectID::ZERO || published_at_id == address_id =>
+            if address_id == ObjectId::ZERO || published_at_id == address_id =>
         {
             // The [addresses] section has a package name set to "0x0" or the same as the published_at_id.
             // Our best guess is that the published-id refers to the original package (it may not, but
@@ -607,9 +517,9 @@ async fn check_single_package_consistency(
 /// internal package name may be assigned the "0x0" address (if automated address management is
 /// used). Otherwise, it may be assigned the value of the known original_address_on_chain, which is
 /// used to reverse-lookup a candidate package name in the addresses section of the Move.toml.
-pub async fn get_published_ids(
+pub async fn published_ids(
     move_toml_content: &str,
-    original_address_on_chain: &ObjectID,
+    original_address_on_chain: &ObjectId,
 ) -> MoveTomlPublishedID {
     let doc = match move_toml_content.parse::<DocumentMut>() {
         Ok(d) => d,
@@ -706,7 +616,7 @@ pub async fn get_published_ids(
     }
 }
 
-fn get_original_published_id(move_toml_content: &str, target_chain_id: &str) -> Option<String> {
+fn original_published_id(move_toml_content: &str, target_chain_id: &str) -> Option<String> {
     let doc = move_toml_content.parse::<DocumentMut>().ok()?;
     let table = doc
         .get("env")?
@@ -782,104 +692,37 @@ pub async fn build_lock_files(
     Ok(lock_files)
 }
 
-async fn setup_sui_clients() -> Result<(SuiClient, SuiClient)> {
-    let mainnet_client = SuiClientBuilder::default().build(SUI_MAINNET_URL).await?;
-    let testnet_client = SuiClientBuilder::default().build_testnet().await?;
-    Ok((mainnet_client, testnet_client))
+fn setup_sui_clients() -> (Client, Client) {
+    let mainnet_client = Client::new_mainnet();
+    let testnet_client = Client::new_testnet();
+    (mainnet_client, testnet_client)
 }
 
-async fn get_dynamic_field_object(
-    client: &SuiClient,
-    parent_object_id: ObjectID,
-    name: &DynamicFieldName,
-) -> Result<SuiObjectResponse> {
-    client
-        .read_api()
-        .get_dynamic_field_object(parent_object_id, name.clone())
-        .await
-        .map_err(|e| anyhow!("{}", e.red()))
+fn normalize_app_name(name: &Name) -> Result<String> {
+    let unknown = "unknown".to_string();
+    let org_name = name.org.labels.get(1);
+    let app_name = name.app.first();
+
+    Ok(format!(
+        "@{}/{}",
+        org_name.unwrap_or(&unknown),
+        app_name.unwrap_or(&unknown)
+    ))
 }
 
-fn get_normalized_app_name(dynamic_field_object: &SuiObjectResponse) -> Result<String> {
-    let content = dynamic_field_object
-        .data
-        .as_ref()
-        .and_then(|data| data.content.as_ref())
-        .and_then(|content| content.try_as_move());
+async fn package_info(app_info: &AppInfo, client: &Client) -> Result<Option<PackageInfo>> {
+    let package_info_id = app_info
+        .package_info_id
+        .ok_or_else(|| anyhow!("Expected package_info_id field in AppInfo".red()))?;
+    let upgrade_cap_id = app_info
+        .upgrade_cap_id
+        .ok_or_else(|| anyhow!("Expected upgrade_cap_id field in AppInfo".red()))?;
+    let package_address = app_info
+        .package_address
+        .ok_or_else(|| anyhow!("Expected package_address field in AppInfo".red()))?
+        .into();
+    let git_versioning = git_versioning(package_info_id, client).await?;
 
-    let name = content
-        .and_then(|move_data| move_data.fields.field_value("name"))
-        .map(|name_field| name_field.to_json_value());
-
-    if let Some(JValue::Object(name_obj)) = name {
-        let org_name = name_obj
-            .get("org")
-            .and_then(|org| org.as_object())
-            .and_then(|org| org.get("labels"))
-            .and_then(|labels| labels.as_array())
-            .and_then(|labels| labels.get(1))
-            .and_then(|label| label.as_str())
-            .unwrap_or("unknown");
-
-        let app_name = name_obj
-            .get("app")
-            .and_then(|app| app.as_array())
-            .and_then(|app| app.first())
-            .and_then(|app| app.as_str())
-            .unwrap_or("unknown");
-
-        Ok(format!("@{}/{}", org_name, app_name))
-    } else {
-        Err(anyhow!(
-            "Invalid name structure when fetching on-chain data for package".red()
-        ))
-    }
-}
-
-fn get_package_info_id(
-    dynamic_field: &SuiObjectResponse,
-    network: &PackageInfoNetwork,
-) -> Result<ObjectID> {
-    let json_value = dynamic_field
-        .data
-        .as_ref()
-        .and_then(|data| data.content.as_ref())
-        .and_then(|content| content.try_as_move())
-        .and_then(|move_data| move_data.fields.field_value("value"))
-        .map(|value| value.to_json_value())
-        .ok_or_else(|| anyhow!("Failed to extract value field as JSON for PackageInfo ID".red()))?;
-
-    let package_info_id_str = match network {
-        PackageInfoNetwork::Mainnet => json_value["app_info"]["package_info_id"]
-            .as_str()
-            .ok_or_else(|| anyhow!("PackageInfo ID not found for Mainnet".red()))?,
-        PackageInfoNetwork::Testnet => {
-            let networks = json_value["networks"]["contents"]
-                .as_array()
-                .ok_or_else(|| anyhow!("Expected networks array for PackageInfo ID".red()))?;
-
-            networks
-                .iter()
-                .find(|entry| entry["key"] == "testnet")
-                .and_then(|testnet_entry| testnet_entry["value"]["package_info_id"].as_str())
-                .ok_or_else(|| anyhow!("PackageInfo ID not found for testnet".red()))?
-        }
-    };
-
-    ObjectID::from_hex_literal(package_info_id_str)
-        .map_err(|e| anyhow!("{} {}", "Failed to parse PackageInfo ID:".red(), e.red()))
-}
-
-async fn get_package_info(
-    name_object: &SuiObjectResponse,
-    client: &SuiClient,
-    network: &PackageInfoNetwork,
-) -> Result<Option<PackageInfo>> {
-    let package_info_id = get_package_info_id(name_object, network)?;
-    let package_info = get_package_info_by_id(client, package_info_id).await?;
-    let upgrade_cap_id = get_upgrade_cap_id(&package_info)?;
-    let package_address = get_package_address(&package_info)?;
-    let git_versioning = get_git_versioning(&package_info, client).await?;
     Ok(Some(PackageInfo {
         upgrade_cap_id,
         package_address,
@@ -887,103 +730,50 @@ async fn get_package_info(
     }))
 }
 
-fn get_upgrade_cap_id(package_info: &SuiObjectResponse) -> Result<ObjectID> {
-    let id_str = package_info
-        .data
-        .as_ref()
-        .and_then(|data| data.content.as_ref())
-        .and_then(|content| content.try_as_move())
-        .and_then(|move_data| move_data.fields.field_value("upgrade_cap_id"))
-        .map(|id| id.to_string())
-        .ok_or_else(|| anyhow!("Expected upgrade_cap_id field".red()))?;
-
-    ObjectID::from_hex_literal(&id_str).map_err(|e| {
-        anyhow!(
-            "{} {}",
-            "Failed to PackageInfo Upgrade Cap ID:".red(),
-            e.red()
-        )
-    })
-}
-
-fn get_package_address(package_info: &SuiObjectResponse) -> Result<ObjectID> {
-    let id_str = package_info
-        .data
-        .as_ref()
-        .and_then(|data| data.content.as_ref())
-        .and_then(|content| content.try_as_move())
-        .and_then(|move_data| move_data.fields.field_value("package_address"))
-        .map(|id| id.to_string())
-        .ok_or_else(|| anyhow!("Expected package_address field".red()))?;
-
-    ObjectID::from_hex_literal(&id_str).map_err(|e| {
-        anyhow!(
-            "{} {}",
-            "Failed to PackageInfo Package Address:".red(),
-            e.red()
-        )
-    })
-}
-
-async fn get_git_versioning(
-    package_info: &SuiObjectResponse,
-    client: &SuiClient,
+async fn git_versioning(
+    package_info_id: ObjectId,
+    client: &Client,
 ) -> Result<HashMap<u64, GitInfo>> {
-    let git_versioning_id = get_git_versioning_id(package_info)?;
+    let package_info = client
+        .move_object_contents(*package_info_id.as_address(), None)
+        .await?;
+    let git_versioning_id = git_versioning_id(package_info.as_ref())?;
     let mut result = HashMap::new();
-    let mut cursor = None;
 
+    let mut cursor = None;
     loop {
-        let dynamic_fields = client
-            .read_api()
-            .get_dynamic_fields(git_versioning_id, cursor, None)
+        let page = client
+            .dynamic_fields(
+                *git_versioning_id.as_address(),
+                PaginationFilter {
+                    cursor,
+                    ..Default::default()
+                },
+            )
             .await?;
 
-        for dynamic_field_info in dynamic_fields.data.iter() {
-            let index = extract_index(&dynamic_field_info.name)?;
-            let dynamic_field_data = client
-                .read_api()
-                .get_dynamic_field_object(git_versioning_id, dynamic_field_info.name.clone())
-                .await?;
-            let git_info = extract_git_info(&dynamic_field_data)?;
+        for dynamic_field_info in page.data().iter() {
+            let index = extract_index(dynamic_field_info)?;
+            let git_info = GitInfo::extract_git_info(dynamic_field_info)?;
             result.insert(index, git_info);
         }
-
-        if !dynamic_fields.has_next_page {
+        if !page.page_info().has_next_page {
             break;
         }
-
-        cursor = dynamic_fields.next_cursor;
+        cursor = page.page_info().end_cursor.clone();
     }
+
     Ok(result)
 }
 
-async fn get_package_info_by_id(
-    client: &SuiClient,
-    package_info_id: ObjectID,
-) -> Result<SuiObjectResponse> {
-    client
-        .read_api()
-        .get_object_with_options(package_info_id, SuiObjectDataOptions::full_content())
-        .await
-        .map_err(|e| anyhow!("{} {}", "No package info:".red(), e.red()))
-}
-
-fn get_git_versioning_id(package_info: &SuiObjectResponse) -> Result<ObjectID> {
-    let json_value = package_info
-        .data
-        .as_ref()
-        .and_then(|data| data.content.as_ref())
-        .and_then(|content| content.try_as_move())
-        .and_then(|move_object| move_object.fields.field_value("git_versioning"))
-        .map(|git_versioning| git_versioning.to_json_value())
-        .ok_or_else(|| anyhow!("No git_versioning field".red()))?;
-
-    let id_str = json_value["id"]["id"]
+fn git_versioning_id(package_info: Option<&JValue>) -> Result<ObjectId> {
+    let package_info = package_info.ok_or_else(|| anyhow!("No package info".red()))?;
+    let json_value = &package_info["git_versioning"];
+    let id_str = json_value["id"]
         .as_str()
         .ok_or_else(|| anyhow!("Expected git_versioning string".red()))?;
 
-    ObjectID::from_hex_literal(id_str)
+    ObjectId::from_str(id_str)
         .map_err(|e| anyhow!("{} {}", "Invalid git versioning ID:".red(), e.red()))
 }
 
@@ -991,90 +781,34 @@ async fn package_at_version(
     address: &str,
     version: u64,
     network: &PackageInfoNetwork,
-) -> Result<Option<ObjectID>> {
-    let endpoint = match network {
-        PackageInfoNetwork::Mainnet => MAINNET_GQL,
-        PackageInfoNetwork::Testnet => TESTNET_GQL,
+) -> Result<Option<ObjectId>> {
+    let client = match network {
+        PackageInfoNetwork::Mainnet => Client::new_mainnet(),
+        PackageInfoNetwork::Testnet => Client::new_testnet(),
     };
-    let client = reqwest::Client::new();
-    let query = format!(
-        r#"{{
-            package(address: "{}") {{
-                packageAtVersion(version: {}) {{
-                    address
-                }}
-            }}
-        }}"#,
-        address, version
-    );
 
-    let response = client
-        .post(endpoint)
-        .header("Content-Type", "application/json")
-        .header("Accept", "application/json")
-        .json(&serde_json::json!({
-            "query": query
-        }))
-        .send()
+    let address = client
+        .object(Address::from_str(address)?, Some(version))
         .await?;
-    let body: JValue = response.json().await?;
-    let result = body["data"]["package"]["packageAtVersion"]["address"]
-        .as_str()
-        .map(String::from);
-    let result = result
-        .map(|id_str| {
-            ObjectID::from_hex_literal(&id_str).map_err(|e| {
-                anyhow!(
-                    "{} {}",
-                    "Failed to parse package address for packageAtVersion GQL request:".red(),
-                    e.red()
-                )
-            })
-        })
-        .transpose()?;
-    Ok(result)
+
+    Ok(address.map(|obj| obj.object_id()))
 }
 
-fn extract_index(dynamic_field_name: &DynamicFieldName) -> Result<u64> {
-    match &dynamic_field_name.value {
-        JValue::String(s) => s
-            .parse::<u64>()
-            .map_err(|e| anyhow!("{} {}", "Failed to parse index:".red(), e.red())),
-        JValue::Number(n) => n
-            .as_u64()
-            .ok_or_else(|| anyhow!("Index is not a u64".red())),
-        _ => Err(anyhow!("Unexpected index type".red())),
-    }
-}
-
-fn extract_git_info(dynamic_field_data: &SuiObjectResponse) -> Result<GitInfo> {
-    let git_info = dynamic_field_data
-        .data
+fn extract_index(dynamic_field: &DynamicFieldOutput) -> Result<u64> {
+    let index = dynamic_field
+        .name
+        .json
         .as_ref()
-        .and_then(|data| data.content.as_ref())
-        .and_then(|content| content.try_as_move())
-        .and_then(|move_object| move_object.fields.field_value("value"))
-        .ok_or_else(|| anyhow!("Failed to extract git info".red()))?
-        .to_json_value();
-
-    let repository = git_info["repository"]
-        .as_str()
-        .ok_or_else(|| anyhow!("No repository field".red()))?
-        .to_string();
-    let tag = git_info["tag"]
-        .as_str()
-        .ok_or_else(|| anyhow!("No tag field".red()))?
-        .to_string();
-    let path = git_info["path"]
-        .as_str()
-        .ok_or_else(|| anyhow!("No path field".red()))?
-        .to_string();
-
-    Ok(GitInfo {
-        repository,
-        tag,
-        path,
-    })
+        .and_then(|json| match json {
+            JValue::String(s) => s.parse::<u64>().ok(),
+            JValue::Number(n) => n.as_u64(),
+            _ => None,
+        });
+    if let Some(index) = index {
+        Ok(index)
+    } else {
+        Err(anyhow!("Unexpected index type".red()))
+    }
 }
 
 /// Given a normalized Move Registry package name, split out the version number (if any).
@@ -1237,7 +971,7 @@ async fn update_mvr_packages(
     package_name: &str,
     network: &str,
 ) -> Result<String> {
-    let (mainnet_client, testnet_client) = setup_sui_clients().await?;
+    let (mainnet_client, testnet_client) = setup_sui_clients();
     let dependency = MoveRegistryDependency {
         network: network.to_string(),
         packages: vec![package_name.to_string()],
@@ -1259,7 +993,7 @@ async fn update_mvr_packages(
 
     let resolved_packages =
         resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
-    let toml_content = fs::read_to_string(&move_toml_path).with_context(|| {
+    let toml_content = fs::read_to_string(move_toml_path).with_context(|| {
         format!(
             "{} {}",
             "Failed to read file:".red(),
@@ -1289,12 +1023,11 @@ async fn update_mvr_packages(
     let (_, (dep_move_toml_path, _)) =
         fetch_package_files(package_name, package_info, &temp_dir).await?;
     let dep_move_toml_content = fs::read_to_string(dep_move_toml_path)?;
-    let placeholder_address =
-        ObjectID::from_hex_literal(&package_info.package_address.to_string())?;
+    let placeholder_address = ObjectId::from_str(&package_info.package_address.to_string())?;
     let MoveTomlPublishedID {
         internal_pkg_name: Some(name),
         ..
-    } = get_published_ids(&dep_move_toml_content, &placeholder_address).await
+    } = published_ids(&dep_move_toml_content, &placeholder_address).await
     else {
         bail!(
             "Unable to discover a local name to give this package in your Move.toml, \
@@ -1341,77 +1074,37 @@ async fn update_mvr_packages(
         ),
         &format!("use {}::<module>;\n", name).green()
     );
-    force_build();
+    force_build()?;
 
     Ok(output_msg)
 }
 
 /// List the App Registry
 pub async fn subcommand_list(filter: Option<String>) -> Result<CommandOutput> {
-    let (mainnet_client, testnet_client) = setup_sui_clients().await?;
-    let app_registry_id = ObjectID::from_hex_literal(APP_REGISTRY_TABLE_ID)?;
-    let mut cursor = None;
+    if let Some(ref filter) = filter {
+        return subcommand_resolve_name(filter).await;
+    }
+    let (mainnet_client, _) = setup_sui_clients();
+    let app_registry_id = ObjectId::from_str(APP_REGISTRY_TABLE_ID)?;
     let mut output = vec![];
+    let address = app_registry_id.as_address();
+    let mut cursor = None;
     loop {
-        let dynamic_fields = mainnet_client
-            .read_api()
-            .get_dynamic_fields(app_registry_id, cursor, None)
-            .await?;
-
-        for dynamic_field_info in dynamic_fields.data.into_iter() {
-            let name_object = get_dynamic_field_object(
-                &mainnet_client,
-                app_registry_id,
-                &dynamic_field_info.name,
+        let page = mainnet_client
+            .dynamic_fields(
+                *address,
+                PaginationFilter {
+                    cursor,
+                    ..Default::default()
+                },
             )
             .await?;
-            let name = get_normalized_app_name(&name_object)?;
-            let pkg_testnet =
-                get_package_info(&name_object, &testnet_client, &PackageInfoNetwork::Testnet)
-                    .await
-                    .unwrap_or(None);
-            let pkg_mainnet =
-                get_package_info(&name_object, &mainnet_client, &PackageInfoNetwork::Mainnet)
-                    .await
-                    .unwrap_or(None);
-            if let Some(ref filter) = filter {
-                if is_name(filter) {
-                    if &name == filter {
-                        return Ok(CommandOutput::List(vec![App {
-                            name: name.clone(),
-                            package_info: vec![
-                                (PackageInfoNetwork::Testnet, pkg_testnet),
-                                (PackageInfoNetwork::Mainnet, pkg_mainnet),
-                            ],
-                        }]));
-                    }
-                }
-                // it is an address
-                else {
-                    if let Some(ref pkg) = pkg_testnet {
-                        if &pkg.package_address.to_string() == filter {
-                            return Ok(CommandOutput::List(vec![App {
-                                name: name.clone(),
-                                package_info: vec![
-                                    (PackageInfoNetwork::Testnet, pkg_testnet),
-                                    (PackageInfoNetwork::Mainnet, pkg_mainnet),
-                                ],
-                            }]));
-                        }
-                    }
-                    if let Some(ref pkg) = pkg_mainnet {
-                        if &pkg.package_address.to_string() == filter {
-                            return Ok(CommandOutput::List(vec![App {
-                                name: name.clone(),
-                                package_info: vec![
-                                    (PackageInfoNetwork::Testnet, pkg_testnet),
-                                    (PackageInfoNetwork::Mainnet, pkg_mainnet),
-                                ],
-                            }]));
-                        }
-                    }
-                }
-            }
+        for dynamic_field_info in page.data().iter() {
+            let df_name: Name = dynamic_field_info.try_into()?;
+            let app_record: AppRecord = dynamic_field_info.try_into()?;
+            let (pkg_testnet, pkg_mainnet) = extract_pkg_info(&app_record).await;
+
+            let name = normalize_app_name(&df_name)?;
             let app = App {
                 name: name.clone(),
                 package_info: vec![
@@ -1421,17 +1114,46 @@ pub async fn subcommand_list(filter: Option<String>) -> Result<CommandOutput> {
             };
             output.push(app);
         }
-
-        if !dynamic_fields.has_next_page {
+        if !page.page_info().has_next_page {
             break;
         }
-        cursor = dynamic_fields.next_cursor;
+        cursor = page.page_info().end_cursor.clone();
     }
     if filter.is_some() {
         Ok(CommandOutput::List(vec![]))
     } else {
         Ok(CommandOutput::List(output))
     }
+}
+
+/// Given an app record, extract the package information by fetching the package info contents and
+/// the git info for the package, if any.
+async fn extract_pkg_info(app_record: &AppRecord) -> (Option<PackageInfo>, Option<PackageInfo>) {
+    let (mainnet_client, testnet_client) = setup_sui_clients();
+    let pkg_testnet = if let Some(networks) = app_record.networks.get(TESTNET_CHAIN_ID) {
+        package_info(networks, &testnet_client)
+            .await
+            .unwrap_or(None)
+    } else if let Some(ref app_info) = app_record.app_info {
+        package_info(app_info, &testnet_client)
+            .await
+            .unwrap_or(None)
+    } else {
+        None
+    };
+
+    let pkg_mainnet = if let Some(networks) = app_record.networks.get(MAINNET_CHAIN_ID) {
+        package_info(networks, &mainnet_client)
+            .await
+            .unwrap_or(None)
+    } else if let Some(app_info_mainnet) = &app_record.app_info {
+        package_info(app_info_mainnet, &mainnet_client)
+            .await
+            .unwrap_or(None)
+    } else {
+        None
+    };
+    (pkg_testnet, pkg_mainnet)
 }
 
 pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<CommandOutput> {
@@ -1455,11 +1177,51 @@ pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
 
 /// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
 pub async fn subcommand_resolve_name(name: &str) -> Result<CommandOutput> {
-    subcommand_list(Some(name.to_string())).await
+    let (mainnet_client, _) = setup_sui_clients();
+    let df_name: Name = name.try_into()?;
+    let name_typetag = TypeTag::from_str(
+        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::name::Name",
+    )?;
+    let df = mainnet_client
+        .dynamic_field(
+            Address::from_str(APP_REGISTRY_TABLE_ID)?,
+            name_typetag,
+            df_name,
+        )
+        .await?;
+
+    let app_rec_typetag = TypeTag::from_str(
+        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::app_record::AppRecord",
+    )?;
+
+    if let Some(df) = df {
+        let app_record: AppRecord = df.deserialize_value(&app_rec_typetag)?;
+        let (pkg_testnet, pkg_mainnet) = extract_pkg_info(&app_record).await;
+        let app = App {
+            name: name.to_string(),
+            package_info: vec![
+                (PackageInfoNetwork::Testnet, pkg_testnet),
+                (PackageInfoNetwork::Mainnet, pkg_mainnet),
+            ],
+        };
+        Ok(CommandOutput::List(vec![app]))
+    } else {
+        Ok(CommandOutput::List(vec![]))
+    }
 }
 
-/// Check if the provided name is a name or an address.
-// TODO this should use manos' checks from GraphQL
-fn is_name(name: &str) -> bool {
-    name.starts_with("@")
+pub fn sui_config_dir() -> Result<PathBuf, anyhow::Error> {
+    match std::env::var_os("SUI_CONFIG_DIR") {
+        Some(config_env) => Ok(config_env.into()),
+        None => match dirs::home_dir() {
+            Some(v) => Ok(v.join(SUI_DIR).join(SUI_CONFIG_DIR)),
+            None => anyhow::bail!("Cannot obtain home directory path"),
+        },
+    }
+    .and_then(|dir| {
+        if !dir.exists() {
+            fs::create_dir_all(dir.clone())?;
+        }
+        Ok(dir)
+    })
 }

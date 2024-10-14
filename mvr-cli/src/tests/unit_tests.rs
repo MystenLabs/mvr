@@ -1,12 +1,11 @@
 use anyhow::Result;
 use expect_test::expect;
-use mvr::{
-    build_lock_files, check_address_consistency, get_published_ids, parse_package_version, GitInfo,
-    PackageInfo, PackageInfoNetwork,
-};
+use mvr::types::package::{GitInfo, PackageInfo, PackageInfoNetwork};
+use mvr::{build_lock_files, check_address_consistency, parse_package_version, published_ids};
 use std::collections::HashMap;
 use std::fs;
-use sui_sdk::types::base_types::ObjectID;
+use std::str::FromStr;
+use sui_types::types::ObjectId;
 use tempfile::tempdir;
 
 fn create_resolved_packages() -> HashMap<String, PackageInfo> {
@@ -14,8 +13,11 @@ fn create_resolved_packages() -> HashMap<String, PackageInfo> {
     resolved_packages.insert(
         "@mvr-test/first-app/1".to_string(),
         PackageInfo {
-            upgrade_cap_id: ObjectID::random(),
-            package_address: ObjectID::from_hex_literal("0x1234567890abcdef").unwrap(),
+            upgrade_cap_id: ObjectId::from_str(
+                "0x14e7ac25259adcc373c96627893976d4fe562a3f3fedce493fc187c5ebd53eee",
+            )
+            .unwrap(),
+            package_address: ObjectId::from_str("0x1234567890abcdef").unwrap(),
             git_versioning: {
                 let mut map = HashMap::new();
                 map.insert(
@@ -373,8 +375,8 @@ published-at = "0xabcdef"
 [addresses]
 demo = "0x1234567890abcdef"
 "#;
-    let original_address_on_chain = ObjectID::from_hex_literal("0x1234567890abcdef")?;
-    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    let original_address_on_chain = ObjectId::from_str("0x1234567890abcdef")?;
+    let result = published_ids(move_toml_content, &original_address_on_chain).await;
     expect![[r#"
         MoveTomlPublishedID {
             addresses_id: Some(
@@ -396,7 +398,7 @@ demo = "0x1234567890abcdef"
 name = "demo"
 published-at = "0x1234567890abcdef"
 "#;
-    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    let result = published_ids(move_toml_content, &original_address_on_chain).await;
     expect![[r#"
         MoveTomlPublishedID {
             addresses_id: None,
@@ -416,7 +418,7 @@ name = "demo"
 [addresses]
 demo = "0x0"
 "#;
-    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    let result = published_ids(move_toml_content, &original_address_on_chain).await;
     expect![[r#"
         MoveTomlPublishedID {
             addresses_id: Some(
@@ -438,7 +440,7 @@ name = "demo"
 [addresses]
 demo = "0x1234567890abcdef"
 "#;
-    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    let result = published_ids(move_toml_content, &original_address_on_chain).await;
     expect![[r#"
         MoveTomlPublishedID {
             addresses_id: Some(
