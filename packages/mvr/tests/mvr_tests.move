@@ -2,7 +2,7 @@
 module mvr::mvr_tests;
 
 use mvr::app_info;
-use mvr::move_registry::{Self, MoveRegistry};
+use mvr::move_registry::{Self, MoveRegistry, VersionCap};
 use mvr::name;
 use package_info::package_info;
 use std::string::String;
@@ -233,6 +233,28 @@ fun try_to_remove_non_existing_app() {
 
     let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
     registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
+
+    abort 1337
+}
+
+#[test, expected_failure(abort_code = ::mvr::move_registry::EVersionMismatch)]
+fun try_to_call_invalid_version() {
+    let (mut scenario, mut registry, clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    let version_cap = scenario.take_from_sender<VersionCap>();
+
+    // change version to 0, which is an invalid version.
+    registry.set_version(&version_cap, 0);
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+    // register first app!
+    let _app_cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
 
     abort 1337
 }

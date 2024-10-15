@@ -26,6 +26,11 @@ use sui::package;
 use sui::table::{Self, Table};
 use suins::suins_registration::SuinsRegistration;
 
+/// The package's version.
+/// This is unlikely to change, and is only here for security
+/// purposes (in case anything is miss-configured)
+const VERSION: u8 = 1;
+
 #[error]
 const EAppAlreadyRegistered: vector<u8> =
     b"App has already been assigned and is immutable.";
@@ -39,12 +44,23 @@ const ENSNameExpired: vector<u8> =
 #[error]
 const ECannotRegisterWithSubname: vector<u8> =
     b"SuiNS subnames cannot be used yet.";
+#[error]
+const EVersionMismatch: vector<u8> =
+    b"Version mismatch. Please use the latest package version.";
 
 /// The shared object holding the registry of packages.
-/// There are no "admin" actions for this registry.
+/// There are no "admin" actions for this registry, apart from the
+/// version bump, which is only used in case of emergency.
 public struct MoveRegistry has key {
     id: UID,
     registry: Table<Name, AppRecord>,
+    version: u8,
+}
+
+/// This capability can only manage the package's version.
+/// It is only used in case of emergency.
+public struct VersionCap has key, store {
+    id: UID,
 }
 
 /// The OTW to claim Publisher.
@@ -54,9 +70,14 @@ public struct MOVE_REGISTRY has drop {}
 /// There's only one shared object, and no "admin" functionality here.
 fun init(otw: MOVE_REGISTRY, ctx: &mut TxContext) {
     package::claim_and_keep(otw, ctx);
+    transfer::public_transfer(
+        VersionCap { id: object::new(ctx) },
+        ctx.sender(),
+    );
     transfer::share_object(MoveRegistry {
         id: object::new(ctx),
         registry: table::new(ctx),
+        version: VERSION,
     })
 }
 
@@ -74,6 +95,7 @@ public fun register(
     clock: &Clock,
     ctx: &mut TxContext,
 ): AppCap {
+    registry.assert_is_valid_version();
     let app_name = name::new(name, nft.domain());
     assert!(!nft.has_expired(clock), ENSNameExpired);
     // We do not allow subnames in the current phase.
@@ -99,6 +121,7 @@ public fun remove(
     clock: &Clock,
     _ctx: &mut TxContext,
 ) {
+    registry.assert_is_valid_version();
     let app_name = name::new(name, nft.domain());
     assert!(!nft.has_expired(clock), ENSNameExpired);
     assert!(registry.registry.contains(app_name), EAppDoesNotExist);
@@ -117,6 +140,7 @@ public fun assign_package(
     cap: &mut AppCap,
     info: &PackageInfo,
 ) {
+    registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     assert!(!record.is_immutable(), EAppAlreadyRegistered);
     record.assign_package(cap, info);
@@ -129,6 +153,7 @@ public fun set_network(
     network: String,
     info: AppInfo,
 ) {
+    registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     record.set_network(network, info);
 }
@@ -140,6 +165,7 @@ public fun unset_network(
     cap: &AppCap,
     network: String,
 ) {
+    registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     record.unset_network(network);
 }
@@ -147,6 +173,7 @@ public fun unset_network(
 /// Burns a cap and the record associated with it, if the cap is still valid for
 /// that record.
 public fun burn_cap(registry: &mut MoveRegistry, cap: AppCap) {
+    registry.assert_is_valid_version();
     let record = registry.registry.borrow(cap.app());
 
     // If the cap is still valid for the record, we can remove the record too.
@@ -156,6 +183,16 @@ public fun burn_cap(registry: &mut MoveRegistry, cap: AppCap) {
     };
 
     cap.burn_cap();
+}
+
+/// Set the version of the registry.
+public fun set_version(
+    registry: &mut MoveRegistry,
+    _: &VersionCap,
+    version: u8,
+) {
+    registry.assert_is_valid_version();
+    registry.version = version;
 }
 
 /// Check if an app is part of the registry.
@@ -174,6 +211,11 @@ fun borrow_record_mut(
     let record = registry.registry.borrow_mut(cap.app());
     assert!(cap.is_valid_for(record), EUnauthorized);
     record
+}
+
+/// Validate the version of the registry.
+fun assert_is_valid_version(registry: &MoveRegistry) {
+    assert!(registry.version == VERSION, EVersionMismatch);
 }
 
 #[test_only]
