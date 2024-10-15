@@ -6,21 +6,22 @@ use std::string::String;
 
 /// Canvas setup
 const X_POS: u64 = 20;
-const INITIAL_Y: u64 = 30;
+const INITIAL_Y: u64 = 40;
 
 /// Org specific setup
-const ORG_TEXT_SIZE: u64 = 10;
-const ORG_TEXT_COLOR: vector<u8> = b"E0E1EC";
-const ORG_CHARACTERS_PER_LINE: u64 = 32;
-const ORG_LINE_HEIGHT: u64 = 12;
+const ORG_TEXT_SIZE: u64 = 15;
+const ORG_TEXT_COLOR: vector<u8> = b"91A3B1";
+const ORG_CHARACTERS_PER_LINE: u64 = 22;
+const ORG_LINE_HEIGHT: u64 = 18;
 
 /// App specific setup
-const APP_TEXT_COLOR: vector<u8> = b"BDBFEC";
-const APP_TEXT_SIZE: u64 = 23;
-const APP_CHARACTERS_PER_LINE: u64 = 16;
-const APP_LINE_HEIGHT: u64 = 23;
+const APP_TEXT_COLOR: vector<u8> = b"FFFFFF";
+const APP_TEXT_SIZE: u64 = 26;
+const APP_CHARACTERS_PER_LINE: u64 = 13;
+const APP_LINE_HEIGHT: u64 = 26;
 
 public struct AppCapDisplay has copy, store, drop {
+    title: String,
     link_opacity: u8, // 0 if not immutable / 1 if immutable.
     uri_encoded_text: String, // SVG URI encoded text
 }
@@ -33,6 +34,7 @@ public(package) fun new(name: Name, is_immutable: bool): AppCapDisplay {
     };
 
     let display = AppCapDisplay {
+        title: name.to_string(),
         link_opacity,
         uri_encoded_text: uri_encode_text(name),
     };
@@ -56,7 +58,22 @@ public(package) fun uri_encode_text(name: Name): String {
     let mut pre_encoded_name = b"".to_string();
     let mut y = INITIAL_Y;
 
-    let (partial, next_y) = render_batch(
+    let mut org = name.org_to_string();
+    org.append(b"/".to_string());
+
+    let (part, next_y) = render_batch(
+        org,
+        ORG_CHARACTERS_PER_LINE,
+        y,
+        ORG_TEXT_SIZE,
+        ORG_LINE_HEIGHT,
+        ORG_TEXT_COLOR.to_string(),
+    );
+
+    pre_encoded_name.append(part);
+    y = next_y + 10; // let's add some space
+
+    let (part, _) = render_batch(
         name.app_to_string(),
         APP_CHARACTERS_PER_LINE,
         y,
@@ -65,19 +82,7 @@ public(package) fun uri_encode_text(name: Name): String {
         APP_TEXT_COLOR.to_string(),
     );
 
-    pre_encoded_name.append(partial);
-    y = next_y;
-
-    let (partial, _) = render_batch(
-        name.org_to_string(),
-        ORG_CHARACTERS_PER_LINE,
-        y,
-        ORG_TEXT_SIZE,
-        ORG_LINE_HEIGHT,
-        ORG_TEXT_COLOR.to_string(),
-    );
-
-    pre_encoded_name.append(partial);
+    pre_encoded_name.append(part);
 
     urlencode::encode(*pre_encoded_name.as_bytes())
 }

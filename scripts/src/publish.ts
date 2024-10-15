@@ -15,7 +15,7 @@ const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 const DISPLAY = {
   name: "{display.title}",
   description:
-    "The capability to manage a Move Registry (mvr) record. If mainnet is connected, the connected record is immutable.",
+    "The capability that manages a Move Registry (mvr) name. If mainnet is connected, both the capability and the record are immutable.",
   image_url: "",
 };
 
@@ -94,6 +94,10 @@ export const publishDotMove = async (
     path.resolve(__dirname + `/../published.${network}.json`),
     JSON.stringify(results, null, 2)
   );
+
+  await delay(2000);
+
+  setupMVRDisplay(results, network);
 
   const dotMoveGraphqlToml = `[move-registry]
 package-address = "${packageId}"
