@@ -56,7 +56,7 @@ fun try_burn_immutable_cap() {
 #[test, expected_failure(abort_code = ::mvr::app_record::EMaxNetworksReached)]
 fun try_create_too_many_network_entries() {
     let mut ctx = tx_context::dummy();
-    let (mut record, cap) = app_record::new(
+    let (mut record, _cap) = app_record::new(
         name(b"app".to_string()),
         @0x1.to_id(),
         &mut ctx,
