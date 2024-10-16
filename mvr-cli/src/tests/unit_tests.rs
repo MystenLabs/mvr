@@ -1,7 +1,8 @@
 use anyhow::Result;
 use expect_test::expect;
 use mvr::{
-    build_lock_files, check_address_consistency, parse_package_version, GitInfo, PackageInfo, PackageInfoNetwork,
+    build_lock_files, check_address_consistency, get_published_ids, parse_package_version, GitInfo,
+    PackageInfo, PackageInfoNetwork,
 };
 use std::collections::HashMap;
 use std::fs;
@@ -358,5 +359,98 @@ demo = "0x1234567890abcdef"
         )
     "#]]
     .assert_debug_eq(&result);
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_get_published_ids() -> Result<()> {
+    // Case (1): Move.toml with published-at and addresses.
+    let move_toml_content = r#"
+[package]
+name = "demo"
+published-at = "0xabcdef"
+
+[addresses]
+demo = "0x1234567890abcdef"
+"#;
+    let original_address_on_chain = ObjectID::from_hex_literal("0x1234567890abcdef")?;
+    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    expect![[r#"
+        MoveTomlPublishedID {
+            addresses_id: Some(
+                "0x1234567890abcdef",
+            ),
+            published_at_id: Some(
+                "0xabcdef",
+            ),
+            internal_pkg_name: Some(
+                "demo",
+            ),
+        }
+    "#]]
+    .assert_debug_eq(&result);
+
+    // Case (2): Move.toml with only published-at.
+    let move_toml_content = r#"
+[package]
+name = "demo"
+published-at = "0x1234567890abcdef"
+"#;
+    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    expect![[r#"
+        MoveTomlPublishedID {
+            addresses_id: None,
+            published_at_id: Some(
+                "0x1234567890abcdef",
+            ),
+            internal_pkg_name: None,
+        }
+    "#]]
+    .assert_debug_eq(&result);
+
+    // Case (3): Move.toml with only addresses and 0x0 (e.g., automated address management in use).
+    let move_toml_content = r#"
+[package]
+name = "demo"
+
+[addresses]
+demo = "0x0"
+"#;
+    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    expect![[r#"
+        MoveTomlPublishedID {
+            addresses_id: Some(
+                "0x0",
+            ),
+            published_at_id: None,
+            internal_pkg_name: Some(
+                "demo",
+            ),
+        }
+    "#]]
+    .assert_debug_eq(&result);
+
+    // Case (4): Move.toml with only addresses and not 0x0.
+    let move_toml_content = r#"
+[package]
+name = "demo"
+
+[addresses]
+demo = "0x1234567890abcdef"
+"#;
+    let result = get_published_ids(move_toml_content, &original_address_on_chain).await;
+    expect![[r#"
+        MoveTomlPublishedID {
+            addresses_id: Some(
+                "0x1234567890abcdef",
+            ),
+            published_at_id: None,
+            internal_pkg_name: Some(
+                "demo",
+            ),
+        }
+    "#]]
+    .assert_debug_eq(&result);
+
     Ok(())
 }
