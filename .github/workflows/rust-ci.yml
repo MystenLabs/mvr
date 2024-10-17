@@ -1,0 +1,45 @@
+name: mvr-cli Rust CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    
+    - name: Build mvr-cli (debug)
+      run: |
+        cd mvr-cli
+        cargo build --verbose
+    
+    - name: Run mvr-cli tests
+      run: |
+        cd mvr-cli
+        cargo test --verbose
+    
+    - name: Build mvr-cli (release)
+      run: |
+        cd mvr-cli
+        cargo build --release --verbose
+    
+    - name: Run custom integration test
+      run: |
+        chmod +x ./ci/integration_test.sh
+        ./ci/integration_test.sh
