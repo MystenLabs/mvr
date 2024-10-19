@@ -27,17 +27,12 @@ jobs:
     - name: Build mvr-cli (debug)
       run: |
         cd mvr-cli
-        cargo build --verbose
+        cargo build
     
     - name: Run mvr-cli tests
       run: |
         cd mvr-cli
-        cargo test --verbose
-    
-    - name: Build mvr-cli (release)
-      run: |
-        cd mvr-cli
-        cargo build --release --verbose
+        cargo nextest run
     
     - name: Run custom integration test
       run: |

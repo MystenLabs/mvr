@@ -13,9 +13,9 @@ fi
 ##########################
 # Add mvr binary to PATH #
 ##########################
-MVR_PATH=$(find $(pwd)/mvr-cli/target/{debug,release} -type f -name "mvr" | head -n 1)
+MVR_PATH=$(find $(pwd)/mvr-cli/target/debug -type f -name "mvr" | head -n 1)
 if [ -z "$MVR_PATH" ]; then
-    echo "Error: mvr binary not found in mvr-cli/target/debug or mvr-cli/target/release. Please ensure it's built before running this script."
+    echo "Error: mvr binary not found in mvr-cli/target/debug. Please ensure it's built before running this script."
     exit 1
 fi
 export PATH=$PATH:$(dirname "$MVR_PATH")
@@ -56,7 +56,8 @@ EOF
 echo "Downloading the latest Sui release..."
 TEMP_DIR=$(mktemp -d)
 
-# Use awk to extract the URL
+# Extract URL
+# TODO: this is rate limited (60 req/hr) and using GITHUB_TOKEN would overcome limits.
 LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/MystenLabs/sui/releases/latest | 
     awk -F'"' '/browser_download_url.*ubuntu-x86_64.tgz/ {print $4; exit}')
 
