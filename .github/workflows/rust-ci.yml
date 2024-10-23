@@ -1,0 +1,67 @@
+name: mvr-cli Rust CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: rust version
+        run: |
+          rustc --version
+          cargo --version
+
+      - uses: taiki-e/install-action@cargo-nextest
+
+      - name: Build mvr-cli (debug)
+        run: |
+          cd mvr-cli
+          cargo build
+           yecho "$(pwd)/target/debug" >> $GITHUB_PATH
+
+      - name: Run mvr-cli tests
+        run: |
+          cd mvr-cli
+          cargo nextest run
+
+      - name: Get Sui releases JSON file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          curl \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -L -o releases.json \
+            https://api.github.com/repos/MystenLabs/sui/releases
+
+      - name: Get the latest Sui testnet binary and add it to PATH
+        shell: bash
+        run: |
+          os=${{runner.os}}
+          binary_os=""
+          if [ $os == "Linux" ]; then
+            binary_os="ubuntu"
+          fi
+          testnet_url=$(cat releases.json | jq --arg os $binary_os '.[] | .assets[] | select(.name | contains("testnet")) | select(.name | contains($os)) | select(.name | contains("x86"))'| jq  -csr '.[0] | .browser_download_url')
+          filename="sui-$binary_os.tar.gz"
+          echo "Downloading testnet binary from $testnet_url"
+          wget -q $testnet_url -O $filename
+          tar -zxvf $filename ./sui
+          echo "$(pwd)" >> $GITHUB_PATH
+
+      - name: Run custom integration test
+        run: |
+          chmod +x ./ci/integration_test.sh
+          ./ci/integration_test.sh
