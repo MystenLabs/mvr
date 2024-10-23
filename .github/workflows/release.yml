@@ -2,8 +2,9 @@ name: Attach MVR binaries to a release
 run-name: Attach MVR binaries to a ${{ inputs.mvr_tag }} release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 env:
@@ -30,7 +31,21 @@ env:
   RUST_BACKTRACE: short
 
 jobs:
-  release-build:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository
+      - name: Check out code
+        uses: actions/checkout@v4
+
+    # Create a release on GitHub
+      - name: Release
+        uses: softprops/action-gh-release@v2
+
+  build:
+    needs: release
     name: Build & Publish Binaries
     timeout-minutes: 120
     strategy:
