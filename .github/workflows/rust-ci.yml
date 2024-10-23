@@ -28,11 +28,38 @@ jobs:
       run: |
         cd mvr-cli
         cargo build
+        echo "$(pwd)/target/debug" >> $GITHUB_PATH
     
     - name: Run mvr-cli tests
       run: |
         cd mvr-cli
         cargo nextest run
+
+    - name: Get Sui releases JSON file
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+      run: |
+        curl \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -L -o releases.json \
+          https://api.github.com/repos/MystenLabs/sui/releases
+
+    - name: Get the latest Sui testnet binary and add it to PATH
+      shell: bash
+      run: |
+        os=${{runner.os}}
+        binary_os=""
+        if [ $os == "Linux" ]; then
+          binary_os="ubuntu"
+        fi
+        testnet_url=$(cat releases.json | jq --arg os $binary_os '.[] | .assets[] | select(.name | contains("testnet")) | select(.name | contains($os)) | select(.name | contains("x86"))'| jq  -csr '.[0] | .browser_download_url')
+        filename="sui-$binary_os.tar.gz"
+        echo "Downloading testnet binary from $testnet_url"
+        wget -q $testnet_url -O $filename
+        tar -zxvf $filename ./sui
+        echo "$(pwd)" >> $GITHUB_PATH
     
     - name: Run custom integration test
       run: |

@@ -10,16 +10,6 @@ if ! command_exists curl; then
     exit 1
 fi
 
-##########################
-# Add mvr binary to PATH #
-##########################
-MVR_PATH=$(find $(pwd)/mvr-cli/target/debug -type f -name "mvr" | head -n 1)
-if [ -z "$MVR_PATH" ]; then
-    echo "Error: mvr binary not found in mvr-cli/target/debug. Please ensure it's built before running this script."
-    exit 1
-fi
-export PATH=$PATH:$(dirname "$MVR_PATH")
-
 ##########################################################
 # Demo Package set up (depends on on-chain package data) #
 ##########################################################
@@ -49,38 +39,6 @@ nftmaker = "0x0"
 [r.mvr]
 network = "mainnet"
 EOF
-
-###############################################
-# Download and extract the latest sui release #
-###############################################
-echo "Downloading the latest Sui release..."
-TEMP_DIR=$(mktemp -d)
-
-# Extract URL
-# TODO: this is rate limited (60 req/hr) and using GITHUB_TOKEN would overcome limits.
-LATEST_RELEASE_URL=$(curl -s https://api.github.com/repos/MystenLabs/sui/releases/latest | 
-    awk -F'"' '/browser_download_url.*ubuntu-x86_64.tgz/ {print $4; exit}')
-
-if [ -z "$LATEST_RELEASE_URL" ]; then
-    echo "Error: Could not find the download URL for the latest Sui release."
-    exit 1
-fi
-
-echo "Downloading from: $LATEST_RELEASE_URL"
-curl -L -o "$TEMP_DIR/sui.tgz" "$LATEST_RELEASE_URL"
-
-echo "Extracting the sui binary"
-tar -xzvf "$TEMP_DIR/sui.tgz" -C "$TEMP_DIR"
-SUI_BINARY=$(find "$TEMP_DIR" -type f -name "sui")
-
-if [ -z "$SUI_BINARY" ]; then
-    echo "Error: Sui binary not found in the extracted files."
-    exit 1
-fi
-
-chmod +x "$SUI_BINARY"
-export PATH=$PATH:$(dirname "$SUI_BINARY")
-trap 'rm -rf "$TEMP_DIR"' EXIT
 
 ###########################################
 # Invokes `mvr` when building the package #
