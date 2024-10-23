@@ -28,7 +28,7 @@ jobs:
         run: |
           cd mvr-cli
           cargo build
-           yecho "$(pwd)/target/debug" >> $GITHUB_PATH
+          echo "$(pwd)/target/debug" >> $GITHUB_PATH
 
       - name: Run mvr-cli tests
         run: |
