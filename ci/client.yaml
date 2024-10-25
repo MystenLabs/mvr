@@ -11,5 +11,8 @@ envs:
   - alias: testnet
     rpc: "https://fullnode.testnet.sui.io:443"
     ws: ~
+  - alias: mainnet
+    rpc: "https://fullnode.mainnet.sui.io:443"
+    ws: ~
 active_env: testnet
 active_address: "0x14e7ac25259adcc373c96627893976d4fe562a3f3fedce493fc187c5ebd53eee"
