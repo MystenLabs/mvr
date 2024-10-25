@@ -61,6 +61,12 @@ jobs:
           tar -zxvf $filename ./sui
           echo "$(pwd)" >> $GITHUB_PATH
 
+      - name: Set up client.yaml for sui move build
+        shell: bash
+        run: |
+          mkdir -p $HOME/.sui/sui_config
+          cp ci/client.yaml $HOME/.sui/sui_config/client.yaml
+
       - name: Run custom integration test
         run: |
           chmod +x ./ci/integration_test.sh
