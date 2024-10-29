@@ -602,13 +602,11 @@ async fn check_single_package_consistency(
     Ok(())
 }
 
-/// Returns as information from the Move.toml that resovles the original
-/// published address of a package, and likely internal package name based
-/// on addresses in the [addresses] section. The internal package name may
-/// be assigned the "0x0" address (if automated address management is used).
-/// Otherwise, it may be assigned the value of the known original_address_on_chain,
-/// which is used to reverse-lookup a candidate package name in the
-/// addresses section of the Move.toml.
+/// Returns as information from the Move.toml that resovles the original published address of a
+/// package, and likely internal package name based on addresses in the [addresses] section. The
+/// internal package name may be assigned the "0x0" address (if automated address management is
+/// used). Otherwise, it may be assigned the value of the known original_address_on_chain, which is
+/// used to reverse-lookup a candidate package name in the addresses section of the Move.toml.
 pub async fn get_published_ids(
     move_toml_content: &str,
     original_address_on_chain: &ObjectID,
@@ -710,7 +708,7 @@ pub async fn get_published_ids(
 
 fn get_original_published_id(move_toml_content: &str, target_chain_id: &str) -> Option<String> {
     let doc = move_toml_content.parse::<DocumentMut>().ok()?;
-    let original_published_id = doc
+    let table = doc
         .get("env")?
         .as_table()?
         .iter()
@@ -720,13 +718,13 @@ fn get_original_published_id(move_toml_content: &str, target_chain_id: &str) -> 
                 .get("chain-id")
                 .and_then(|v| v.as_str())
                 .map_or(false, |id| id == target_chain_id)
-        })
-        .and_then(|table| {
-            table
-                .get("original-published-id")
-                .and_then(|v| v.as_str())
-                .map(String::from)
         });
+    let original_published_id = table.and_then(|table| {
+        table
+            .get("original-published-id")
+            .and_then(|v| v.as_str())
+            .map(String::from)
+    });
     original_published_id
 }
 
