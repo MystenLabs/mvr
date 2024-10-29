@@ -104,7 +104,7 @@ struct VersionedName {
     version: Option<u64>,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Default, Debug)]
 pub struct MoveTomlPublishedID {
     addresses_id: Option<String>,
     published_at_id: Option<String>,
@@ -615,24 +615,12 @@ pub async fn get_published_ids(
 ) -> MoveTomlPublishedID {
     let doc = match move_toml_content.parse::<DocumentMut>() {
         Ok(d) => d,
-        Err(_) => {
-            return MoveTomlPublishedID {
-                addresses_id: None,
-                published_at_id: None,
-                internal_pkg_name: None,
-            }
-        }
+        Err(_) => return MoveTomlPublishedID::default(),
     };
 
     let package_table = match doc.get("package").and_then(|p| p.as_table()) {
         Some(t) => t,
-        None => {
-            return MoveTomlPublishedID {
-                addresses_id: None,
-                published_at_id: None,
-                internal_pkg_name: None,
-            }
-        }
+        None => return MoveTomlPublishedID::default(),
     };
 
     // Get published-at
@@ -646,9 +634,8 @@ pub async fn get_published_ids(
         Some(a) => a,
         None => {
             return MoveTomlPublishedID {
-                addresses_id: None,
                 published_at_id,
-                internal_pkg_name: None,
+                ..Default::default()
             }
         }
     };
