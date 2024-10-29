@@ -37,6 +37,8 @@ const RESOLVER_PREFIX_KEY: &str = "r";
 const MVR_RESOLVER_KEY: &str = "mvr";
 const NETWORK_KEY: &str = "network";
 const DEPENDENCIES_KEY: &str = "dependencies";
+const PUBLISHED_AT_KEY: &str = "published-at";
+const ADDRESSES_KEY: &str = "addresses";
 
 const LOCK_MOVE_KEY: &str = "move";
 const LOCK_PACKAGE_KEY: &str = "package";
@@ -100,6 +102,13 @@ pub struct GitInfo {
 struct VersionedName {
     name: String,
     version: Option<u64>,
+}
+
+#[derive(Serialize, Default, Debug)]
+pub struct MoveTomlPublishedID {
+    addresses_id: Option<String>,
+    published_at_id: Option<String>,
+    internal_pkg_name: Option<String>,
 }
 
 impl fmt::Display for PackageInfoNetwork {
@@ -426,7 +435,7 @@ async fn check_single_package_consistency(
     package_info: &PackageInfo,
     network: &PackageInfoNetwork,
     fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
-) -> Result<Option<String>> {
+) -> Result<()> {
     let (name, version) = parse_package_version(name_with_version)?;
     // Use version or default to the highest (i.e., latest) version number otherwise.
     let version = match version {
@@ -481,13 +490,16 @@ async fn check_single_package_consistency(
 
     // The `published-at` address or package in the [addresses] section _may_ correspond to
     // the original ID in the Move.toml (we will check).
-    let (address, published_at, package_name) =
-        get_published_ids(&move_toml_content, &original_address_on_chain).await;
+    let MoveTomlPublishedID {
+        addresses_id,
+        published_at_id,
+        ..
+    } = get_published_ids(&move_toml_content, &original_address_on_chain).await;
     let target_chain_id = match network {
         PackageInfoNetwork::Mainnet => MAINNET_CHAIN_ID,
         PackageInfoNetwork::Testnet => TESTNET_CHAIN_ID,
     };
-    let address = address
+    let address = addresses_id
         .map(|id_str| {
             ObjectID::from_hex_literal(&id_str).map_err(|e| {
                 anyhow!(
@@ -498,7 +510,7 @@ async fn check_single_package_consistency(
             })
         })
         .transpose()?;
-    let published_at = published_at
+    let published_at = published_at_id
         .map(|id_str| {
             ObjectID::from_hex_literal(&id_str).map_err(|e| {
                 anyhow!(
@@ -551,6 +563,7 @@ async fn check_single_package_consistency(
                 "published-at address in the Move.toml".into(),
             )
         }
+
         (None, _, Some(address_id)) => {
             // A published-at ID may or may not exist. In either case, it differs from the
             // address ID. The address ID that may refer to the original package (e.g., if the
@@ -565,7 +578,7 @@ async fn check_single_package_consistency(
         _ => {
             bail!(
                 "Unable to find the original published address in package {name}'s \
-                 repository {} branch {} subdirectory {}. For predictable detection, see documentation\
+                 repository {} branch {} subdirectory {}. For predictable detection, see documentation \
                  on Automated Address Management for recording published addresses in the `Move.lock` file.",
                 git_info.repository,
                 git_info.tag,
@@ -586,33 +599,43 @@ async fn check_single_package_consistency(
         )
     }
 
-    Ok(package_name)
+    Ok(())
 }
 
-async fn get_published_ids(
+/// Returns as information from the Move.toml that resovles the original published address of a
+/// package, and likely internal package name based on addresses in the [addresses] section. The
+/// internal package name may be assigned the "0x0" address (if automated address management is
+/// used). Otherwise, it may be assigned the value of the known original_address_on_chain, which is
+/// used to reverse-lookup a candidate package name in the addresses section of the Move.toml.
+pub async fn get_published_ids(
     move_toml_content: &str,
-    _original_address_on_chain: &ObjectID,
-) -> (Option<String>, Option<String>, Option<String>) {
+    original_address_on_chain: &ObjectID,
+) -> MoveTomlPublishedID {
     let doc = match move_toml_content.parse::<DocumentMut>() {
         Ok(d) => d,
-        Err(_) => return (None, None, None),
+        Err(_) => return MoveTomlPublishedID::default(),
     };
 
     let package_table = match doc.get("package").and_then(|p| p.as_table()) {
         Some(t) => t,
-        None => return (None, None, None),
+        None => return MoveTomlPublishedID::default(),
     };
 
     // Get published-at
-    let published_at = package_table
-        .get("published-at")
+    let published_at_id = package_table
+        .get(PUBLISHED_AT_KEY)
         .and_then(|value| value.as_str())
         .map(String::from);
 
     // Get the addresses table
-    let addresses = match doc.get("addresses").and_then(|a| a.as_table()) {
+    let addresses = match doc.get(ADDRESSES_KEY).and_then(|a| a.as_table()) {
         Some(a) => a,
-        None => return (None, published_at, None),
+        None => {
+            return MoveTomlPublishedID {
+                published_at_id,
+                ..Default::default()
+            }
+        }
     };
 
     // Find a potential original published ID in the addresses section.
@@ -622,48 +645,70 @@ async fn get_published_ids(
     //
     // We can determine if such an original published ID exists with high
     // likelihood by:
-    // (1) Identifying a package set to `0x0`, which likely refers to the package itself; OR
-    // (2) Identifying an entry where they key corresponds to the lowercase string
+    // (1) Identifying a package set to the original_address_on_chain
+    //     (if not using automated address management); OR
+    // (2) Identifying a package set to `0x0`, which likely refers to the package itself
+    //     (when using automated address management); OR
+    // (3) Identifying an entry where the key corresponds to the lowercase string
     //     of the package name. This is a heuristic based on the convention generally
-    //     followed in Move.toml, but not guaranteed.
+    //     followed in Move.toml, but not guaranteed. In practice we expect either of
+    //     (1) or (2) to succeed for a published package.
     //
     // If the Move.toml contents thwart all these attempts at identifying the original
     // package ID, the package is better off adopting Automated Address Management for
     // predictable detection, and the caller can raise an error.
-    let (address, name) = {
-        // First, check if any address is set to "0x0"
-        let package_with_zero_address = addresses
-            .iter()
-            .find(|(_, v)| v.as_str() == Some("0x0"))
-            .map(|(k, _)| k.to_string());
 
-        match package_with_zero_address {
-            Some(_) => (Some("0x0".into()), package_with_zero_address),
-            None => {
-                let package_name = package_table
-                    .get("name")
-                    .and_then(|v| v.as_str())
-                    .map(|s| s.to_lowercase());
-
-                (
-                    package_name.clone().and_then(|name| {
-                        addresses
-                            .get(&name)
-                            .and_then(|v| v.as_str())
-                            .map(String::from)
-                    }),
-                    package_name, // TODO: use the addresses name based on original_address (?)
-                )
-            }
-        }
+    // (1) First, check if any address corresponds to the original_address_on_chain
+    let package_with_original_address = addresses
+        .iter()
+        .find(|(_, v)| v.as_str() == Some(&original_address_on_chain.to_string()))
+        .map(|(k, _)| k.to_string());
+    if let Some(name) = package_with_original_address {
+        // (1) A package name exists that corresponds to the original address
+        return MoveTomlPublishedID {
+            addresses_id: Some(original_address_on_chain.to_string()),
+            published_at_id,
+            internal_pkg_name: Some(name),
+        };
     };
 
-    (address, published_at, name)
+    // (2) & (3) Next, check if any address is set to "0x0"
+    let package_with_zero_address = addresses
+        .iter()
+        .find(|(_, v)| v.as_str() == Some("0x0"))
+        .map(|(k, _)| k.to_string());
+    match package_with_zero_address {
+        // (2) We found a package set to 0x0
+        Some(_) => MoveTomlPublishedID {
+            addresses_id: Some("0x0".into()),
+            published_at_id,
+            internal_pkg_name: package_with_zero_address,
+        },
+        // (3) We'll return a package ID that corresponds to the lowercase package name
+        // set in the Move.toml (if any).
+        None => {
+            let package_name = package_table
+                .get("name")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_lowercase());
+            let addresses_id = package_name.clone().and_then(|name| {
+                addresses
+                    .get(&name)
+                    .and_then(|v| v.as_str())
+                    .map(String::from)
+            });
+            MoveTomlPublishedID {
+                addresses_id,
+                published_at_id,
+                internal_pkg_name: package_name,
+            }
+        }
+    }
 }
 
 fn get_original_published_id(move_toml_content: &str, target_chain_id: &str) -> Option<String> {
     let doc = move_toml_content.parse::<DocumentMut>().ok()?;
-    let original_published_id = doc
+    let table = doc
         .get("env")?
         .as_table()?
         .iter()
@@ -673,13 +718,13 @@ fn get_original_published_id(move_toml_content: &str, target_chain_id: &str) -> 
                 .get("chain-id")
                 .and_then(|v| v.as_str())
                 .map_or(false, |id| id == target_chain_id)
-        })
-        .and_then(|table| {
-            table
-                .get("original-published-id")
-                .and_then(|v| v.as_str())
-                .map(String::from)
         });
+    let original_published_id = table.and_then(|table| {
+        table
+            .get("original-published-id")
+            .and_then(|v| v.as_str())
+            .map(String::from)
+    });
     original_published_id
 }
 
@@ -1244,10 +1289,12 @@ async fn update_mvr_packages(
     let (_, (dep_move_toml_path, _)) =
         fetch_package_files(package_name, package_info, &temp_dir).await?;
     let dep_move_toml_content = fs::read_to_string(dep_move_toml_path)?;
-    let placeholder_address = ObjectID::from_hex_literal("0x0")?; // XXX
-    let Some(name) = get_published_ids(&dep_move_toml_content, &placeholder_address)
-        .await
-        .2
+    let placeholder_address =
+        ObjectID::from_hex_literal(&package_info.package_address.to_string())?;
+    let MoveTomlPublishedID {
+        internal_pkg_name: Some(name),
+        ..
+    } = get_published_ids(&dep_move_toml_content, &placeholder_address).await
     else {
         bail!(
             "Unable to discover a local name to give this package in your Move.toml, \
