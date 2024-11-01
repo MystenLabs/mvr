@@ -56,7 +56,7 @@ pub(crate) struct Env {
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SuiConfig {
     active_env: String,
-    env: Vec<Env>,
+    envs: Vec<Env>,
 }
 
 impl TryFrom<&str> for Name {
@@ -92,7 +92,7 @@ impl SuiConfig {
     }
 
     pub(crate) fn active_env(&self) -> Result<&Env> {
-        self.env
+        self.envs
             .iter()
             .find(|e| e.alias == self.active_env)
             .ok_or_else(|| anyhow!("Cannot find active environment in config"))

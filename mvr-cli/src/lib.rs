@@ -153,11 +153,14 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
 
     let config_path = sui_config_dir()?.join(SUI_CLIENT_CONFIG);
     let config = SuiConfig::read_from_file(&config_path)?;
-    let active_env_rpc = config.active_env()?.rpc();
-    let client = Client::new(active_env_rpc)?;
-    let client_chain = client.chain_id().await?;
+    let client_chain = config.active_env()?.rpc();
+    // we need to harden this as the client_chain may not be the same as the network
+    let client_chain = match client_chain.contains("testnet") {
+        true => TESTNET_CHAIN_ID,
+        false => MAINNET_CHAIN_ID,
+    };
     let (mainnet_client, testnet_client) = setup_sui_clients();
-    let client = match (client_chain, network) {
+    match (client_chain, network) {
         (chain_id, PackageInfoNetwork::Testnet) if chain_id == TESTNET_CHAIN_ID => &testnet_client,
         (chain_id, PackageInfoNetwork::Mainnet) if chain_id == MAINNET_CHAIN_ID => &mainnet_client,
         (chain_id, _) => {
@@ -184,8 +187,7 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
         }
     };
 
-    let resolved_packages =
-        resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
+    let resolved_packages = resolve_on_chain_package_info(network, &dependency).await?;
     let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
     let mut fetched_files: HashMap<String, (PathBuf, PathBuf)> = HashMap::new();
 
@@ -249,12 +251,10 @@ async fn fetch_package_files(
 /// Registry info (IDs associated with name on `mainnet` or `testnet`) is always resolved
 /// from mainnet.
 async fn resolve_on_chain_package_info(
-    mainnet_client: &Client,
-    client: &Client,
     network: &PackageInfoNetwork,
     dependency: &MoveRegistryDependency,
 ) -> Result<HashMap<String, PackageInfo>> {
-    let app_registry_id = ObjectId::from_str(APP_REGISTRY_TABLE_ID)?;
+    // let app_registry_id = ObjectId::from_str(APP_REGISTRY_TABLE_ID)?;
     let package_name_map: Result<HashMap<String, String>> = dependency
         .packages
         .iter()
@@ -262,56 +262,30 @@ async fn resolve_on_chain_package_info(
         .collect();
     let package_name_map = package_name_map?;
     // Create set of package names with version stripped (we check version info later).
-    let package_set: HashSet<String> = package_name_map.keys().cloned().collect();
-    let mut cursor = None;
+    // let package_set: HashSet<String> = package_name_map.keys().cloned().collect();
     let mut resolved_packages: HashMap<String, PackageInfo> = HashMap::new();
 
-    loop {
-        let page = mainnet_client
-            .dynamic_fields(
-                Address::from_str(&app_registry_id.to_string())?,
-                PaginationFilter {
-                    cursor,
-                    ..Default::default()
-                },
-            )
-            .await?;
+    for (name, _) in package_name_map.iter() {
+        let pkg = resolve_package_by_name(&name).await?;
+        let package_info = match network {
+            PackageInfoNetwork::Mainnet => pkg.1,
+            PackageInfoNetwork::Testnet => pkg.0,
+        };
 
-        for dynamic_field_info in page.data().iter() {
-            let df_name: Name = dynamic_field_info.try_into()?;
-            let name = normalize_app_name(&df_name)?;
-            let Some(..) = dynamic_field_info.value.as_ref() else {
-                continue;
-            };
-            let app_record: AppRecord = dynamic_field_info.try_into()?;
-            let app_info = match network {
-                PackageInfoNetwork::Mainnet => app_record.networks.get(MAINNET_CHAIN_ID),
-                PackageInfoNetwork::Testnet => app_record.networks.get(TESTNET_CHAIN_ID),
-            };
-
-            if let Some(app_info) = app_info {
-                if package_set.contains(&name) {
-                    let package_info = package_info(app_info, client).await?;
-                    if let Some(package_info) = package_info {
-                        resolved_packages.insert(name.clone(), package_info);
-                    }
-                }
-            } else {
-                bail!(
-                    "{} {} {} {} {}",
-                    "No on-chain PackageInfo for package".red(),
-                    name.red().bold(),
-                    "on".red(),
-                    dependency.network.red().bold(),
-                    "(it may not be registered).".red()
-                );
-            }
+        if let Some(package_info) = package_info {
+            resolved_packages.insert(name.clone(), package_info);
+        } else {
+            bail!(
+                "{} {} {} {}{}",
+                "No on-chain PackageInfo for package".red(),
+                name.red().bold(),
+                "on".red(),
+                network.red().bold(),
+                "(it may not be registered).".red()
+            );
         }
-        if !page.page_info().has_next_page {
-            break;
-        }
-        cursor = page.page_info().end_cursor.clone();
     }
+
     let resolved_on_chain: HashSet<String> = resolved_packages.keys().cloned().collect();
     let expected_locally: HashSet<String> = package_name_map.values().cloned().collect();
     let unresolved = &expected_locally - &resolved_on_chain;
@@ -971,7 +945,6 @@ async fn update_mvr_packages(
     package_name: &str,
     network: &str,
 ) -> Result<String> {
-    let (mainnet_client, testnet_client) = setup_sui_clients();
     let dependency = MoveRegistryDependency {
         network: network.to_string(),
         packages: vec![package_name.to_string()],
@@ -986,13 +959,8 @@ async fn update_mvr_packages(
             "specified for this dependency: Must be one of mainnet or testnet".red()
         ),
     };
-    let client = match network {
-        PackageInfoNetwork::Testnet => &testnet_client,
-        PackageInfoNetwork::Mainnet => &mainnet_client,
-    };
 
-    let resolved_packages =
-        resolve_on_chain_package_info(&mainnet_client, client, network, &dependency).await?;
+    let resolved_packages = resolve_on_chain_package_info(network, &dependency).await?;
     let toml_content = fs::read_to_string(move_toml_path).with_context(|| {
         format!(
             "{} {}",
@@ -1175,8 +1143,9 @@ pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
     Ok(CommandOutput::Register)
 }
 
-/// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
-pub async fn subcommand_resolve_name(name: &str) -> Result<CommandOutput> {
+pub async fn resolve_package_by_name(
+    name: &str,
+) -> Result<(Option<PackageInfo>, Option<PackageInfo>)> {
     let (mainnet_client, _) = setup_sui_clients();
     let df_name: Name = name.try_into()?;
     let name_typetag = TypeTag::from_str(
@@ -1197,11 +1166,21 @@ pub async fn subcommand_resolve_name(name: &str) -> Result<CommandOutput> {
     if let Some(df) = df {
         let app_record: AppRecord = df.deserialize_value(&app_rec_typetag)?;
         let (pkg_testnet, pkg_mainnet) = extract_pkg_info(&app_record).await;
+        Ok((pkg_testnet, pkg_mainnet))
+    } else {
+        Ok((None, None))
+    }
+}
+
+/// resolve a .move name to an address. E.g., `nft@sample` => 0x... cf. subcommand_list implementation.
+pub async fn subcommand_resolve_name(name: &str) -> Result<CommandOutput> {
+    let result = resolve_package_by_name(name).await;
+    if let Ok(df) = result {
         let app = App {
             name: name.to_string(),
             package_info: vec![
-                (PackageInfoNetwork::Testnet, pkg_testnet),
-                (PackageInfoNetwork::Mainnet, pkg_mainnet),
+                (PackageInfoNetwork::Testnet, df.0),
+                (PackageInfoNetwork::Mainnet, df.1),
             ],
         };
         Ok(CommandOutput::List(vec![app]))
