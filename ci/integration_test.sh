@@ -31,6 +31,20 @@ edition = "2024.beta"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
+
+[addresses]
+nftmaker = "0x0"
+
+EOF
+
+### Expected Move.toml file after adding the dependency
+cat << EOF > demo-package/expected_move.toml
+[package]
+name = "nftmaker"
+edition = "2024.beta"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
 demo = { r.mvr = "@mvr-tst/first-app" }
 
 [addresses]
@@ -38,7 +52,17 @@ nftmaker = "0x0"
 
 [r.mvr]
 network = "mainnet"
+
 EOF
+
+### Add package dependency via mvr add command
+cd demo-package && mvr add @mvr-tst/first-app --network mainnet && cd ..
+
+### Check if the expected Move.toml file and the generated one are the same
+if ! diff -u demo-package/expected_move.toml demo-package/Move.toml > /dev/null; then
+  echo "ERROR: after adding package dependency via \"mvr add\" command, the Move.toml file is not as expected."
+  exit 1
+fi
 
 ###########################################
 # Invokes `mvr` when building the package #
