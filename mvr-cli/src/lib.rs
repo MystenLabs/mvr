@@ -275,7 +275,6 @@ async fn resolve_on_chain_package_info(
     network: &PackageInfoNetwork,
     dependency: &MoveRegistryDependency,
 ) -> Result<HashMap<String, PackageInfo>> {
-    // let app_registry_id = ObjectId::from_str(APP_REGISTRY_TABLE_ID)?;
     let package_name_map: Result<HashMap<String, String>> = dependency
         .packages
         .iter()
