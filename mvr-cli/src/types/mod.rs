@@ -11,8 +11,8 @@ use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
 use sui_client::DynamicFieldOutput;
-use sui_types::types::TypeTag;
 
+use crate::NAME_TYPETAG;
 use crate::VERSIONED_NAME_REG;
 
 #[derive(Serialize, Default, Debug)]
@@ -78,10 +78,7 @@ impl TryFrom<&DynamicFieldOutput> for Name {
     type Error = anyhow::Error;
 
     fn try_from(df: &DynamicFieldOutput) -> Result<Self> {
-        let name_typetag = TypeTag::from_str(
-            "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::name::Name",
-        )?;
-        df.deserialize_name(&name_typetag)
+        df.deserialize_name(&NAME_TYPETAG)
     }
 }
 

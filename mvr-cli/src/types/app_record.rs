@@ -1,14 +1,14 @@
 use sui_client::DynamicFieldOutput;
 use sui_types::types::Address;
 use sui_types::types::ObjectId;
-use sui_types::types::TypeTag;
 
 use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
 
 use std::collections::BTreeMap;
-use std::str::FromStr;
+
+use crate::APP_REC_TYPETAG;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct AppInfo {
@@ -31,9 +31,6 @@ impl TryFrom<&DynamicFieldOutput> for AppRecord {
     type Error = anyhow::Error;
 
     fn try_from(df: &DynamicFieldOutput) -> Result<Self> {
-        let app_record_typetag = TypeTag::from_str(
-        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::app_record::AppRecord",
-        )?;
-        df.deserialize_value(&app_record_typetag)
+        df.deserialize_value(&APP_REC_TYPETAG)
     }
 }

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::str::FromStr;
 
 use anyhow::anyhow;
 use anyhow::Result;
@@ -9,7 +8,8 @@ use serde::Serialize;
 
 use sui_client::DynamicFieldOutput;
 use sui_types::types::ObjectId;
-use sui_types::types::TypeTag;
+
+use crate::PACKAGE_INFO_TYPETAG;
 
 #[derive(Serialize, PartialEq, Debug)]
 pub enum PackageInfoNetwork {
@@ -35,10 +35,7 @@ impl TryFrom<DynamicFieldOutput> for PackageInfo {
     type Error = anyhow::Error;
 
     fn try_from(df: DynamicFieldOutput) -> Result<Self> {
-        let package_info_typetag = TypeTag::from_str(
-            "0x4433047b14865ef466c55c35ec0f8a55726628e729d21345f2c4673582ec15a8::package::PackageInfo",
-        )?;
-        df.deserialize_value(&package_info_typetag)
+        df.deserialize_value(&PACKAGE_INFO_TYPETAG)
     }
 }
 
@@ -51,17 +48,6 @@ impl GitInfo {
             .ok_or_else(|| anyhow!("No value found in DynamicFieldOutput"))?;
         let git_info: GitInfo = bcs::from_bytes(&bcs.1)?;
         Ok(git_info)
-    }
-}
-
-impl TryFrom<&DynamicFieldOutput> for GitInfo {
-    type Error = anyhow::Error;
-
-    fn try_from(df: &DynamicFieldOutput) -> Result<Self> {
-        let git_info_typetag = TypeTag::from_str(
-            "0x3f59564f9caa6769a2b16e30ab0756441bad340339858373c6c38bbc15f67eb9::git::GitInfo",
-        )?;
-        df.deserialize_value(&git_info_typetag)
     }
 }
 

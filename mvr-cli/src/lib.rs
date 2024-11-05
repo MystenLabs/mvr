@@ -71,6 +71,27 @@ const VERSIONED_NAME_REGEX: &str = concat!(
     "$"
 );
 
+static PACKAGE_INFO_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
+    TypeTag::from_str(
+        "0x4433047b14865ef466c55c35ec0f8a55726628e729d21345f2c4673582ec15a8::package::PackageInfo",
+    )
+    .expect("Failed to parse TypeTag for PackageInfo")
+});
+
+static NAME_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
+    TypeTag::from_str(
+        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::name::Name",
+    )
+    .expect("Failed to parse TypeTag for Name df")
+});
+
+static APP_REC_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
+    TypeTag::from_str(
+        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::app_record::AppRecord",
+    )
+    .expect("Failed to parse TypeTag for AppRecord")
+});
+
 static VERSIONED_NAME_REG: Lazy<Regex> = Lazy::new(|| Regex::new(VERSIONED_NAME_REGEX).unwrap());
 
 fn find_mvr_package(value: &toml::Value) -> Option<String> {
@@ -1148,23 +1169,16 @@ pub async fn resolve_package_by_name(
 ) -> Result<(Option<PackageInfo>, Option<PackageInfo>)> {
     let (mainnet_client, _) = setup_sui_clients();
     let df_name: Name = name.try_into()?;
-    let name_typetag = TypeTag::from_str(
-        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::name::Name",
-    )?;
     let df = mainnet_client
         .dynamic_field(
             Address::from_str(APP_REGISTRY_TABLE_ID)?,
-            name_typetag,
+            NAME_TYPETAG.clone(),
             df_name,
         )
         .await?;
 
-    let app_rec_typetag = TypeTag::from_str(
-        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::app_record::AppRecord",
-    )?;
-
     if let Some(df) = df {
-        let app_record: AppRecord = df.deserialize_value(&app_rec_typetag)?;
+        let app_record: AppRecord = df.deserialize_value(&APP_REC_TYPETAG)?;
         let (pkg_testnet, pkg_mainnet) = extract_pkg_info(&app_record).await;
         Ok((pkg_testnet, pkg_mainnet))
     } else {
