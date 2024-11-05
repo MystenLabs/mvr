@@ -1,8 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
+use mvr::binary_version_check::check_sui_version;
 use mvr::commands::Command;
-use mvr::helpers::constants::MINIMUM_BUILD_SUI_VERSION;
-use mvr::helpers::sui::check_sui_version;
+use mvr::constants::MINIMUM_BUILD_SUI_VERSION;
 use mvr::resolve_move_dependencies;
 
 #[derive(Parser)]

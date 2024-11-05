@@ -1,8 +1,28 @@
+pub mod binary_version_check;
 pub mod commands;
-pub mod helpers;
+pub mod constants;
 pub mod types;
+
+use crate::binary_version_check::force_build;
+use crate::commands::App;
+use crate::types::package::PackageInfoNetwork;
+use crate::types::SuiConfig;
+use crate::types::{MoveRegistryDependency, MoveTomlPublishedID};
+
 use commands::CommandOutput;
+use types::app_record::AppInfo;
+use types::app_record::AppRecord;
+use types::package::GitInfo;
+use types::package::PackageInfo;
+use types::Name;
 use types::VersionedName;
+
+use sui_client::Client;
+use sui_client::DynamicFieldOutput;
+use sui_client::PaginationFilter;
+use sui_types::types::Address;
+use sui_types::types::ObjectId;
+use sui_types::types::TypeTag;
 
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -12,24 +32,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
-
-use crate::commands::App;
-use crate::types::package::PackageInfoNetwork;
-use crate::types::SuiConfig;
-use crate::types::{MoveRegistryDependency, MoveTomlPublishedID};
-use helpers::sui::force_build;
-use types::app_record::AppInfo;
-use types::app_record::AppRecord;
-use types::package::GitInfo;
-use types::package::PackageInfo;
-use types::Name;
-
-use sui_client::Client;
-use sui_client::DynamicFieldOutput;
-use sui_client::PaginationFilter;
-use sui_types::types::Address;
-use sui_types::types::ObjectId;
-use sui_types::types::TypeTag;
 
 use anyhow::{anyhow, bail, Context, Result};
 use once_cell::sync::Lazy;
