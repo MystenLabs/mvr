@@ -849,8 +849,6 @@ fn shallow_clone_repo(
     let output = Command::new("git")
         .arg("clone")
         .arg("--depth=1")
-        .arg("--branch")
-        .arg(&git_info.tag)
         .arg(&git_info.repository)
         .arg(&repo_dir)
         .output()
@@ -861,6 +859,27 @@ fn shallow_clone_repo(
         return Err(anyhow!(
             "{} {} {} {} {} {}",
             "Failed to clone repository for package".red(),
+            package_name.red().bold(),
+            ": Git error:".red(),
+            stderr.red().bold(),
+            "Repository:".red(),
+            git_info.repository.red().bold(),
+        ));
+    }
+
+    let switch_to_sha = Command::new("git")
+        .arg("-C")
+        .arg(&repo_dir)
+        .arg("checkout")
+        .arg(&git_info.tag)
+        .output()
+        .context("Failed to execute git checkout command")?;
+
+    if !switch_to_sha.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(anyhow!(
+            "{} {} {} {} {} {}",
+            "Failed to checkout repository for package".red(),
             package_name.red().bold(),
             ": Git error:".red(),
             stderr.red().bold(),
