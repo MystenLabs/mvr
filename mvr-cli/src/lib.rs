@@ -848,7 +848,6 @@ fn shallow_clone_repo(
     let repo_dir = temp_dir.path().join("repo");
     let output = Command::new("git")
         .arg("clone")
-        .arg("--depth=1")
         .arg(&git_info.repository)
         .arg(&repo_dir)
         .output()
