@@ -36,10 +36,10 @@ export const DefaultClients: Clients = {
   },
   graphql: {
     mainnet: new SuiGraphQLClient({
-      url: "https://sui-mainnet.mystenlabs.com",
+      url: "https://mvr-rpc.sui-mainnet.mystenlabs.com",
     }),
     testnet: new SuiGraphQLClient({
-      url: "https://sui-testnet.mystenlabs.com",
+      url: "https://mvr-rpc.sui-testnet.mystenlabs.com",
     }),
   },
 };
