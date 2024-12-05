@@ -1,12 +1,12 @@
 use anyhow::Result;
 use clap::Parser;
-use mvr::binary_version_check::check_sui_version;
-use mvr::commands::Command;
-use mvr::constants::MINIMUM_BUILD_SUI_VERSION;
-use mvr::resolve_move_dependencies;
+use mvr::{
+    binary_version_check::check_sui_version, commands::Command,
+    constants::MINIMUM_BUILD_SUI_VERSION, resolve_move_dependencies,
+};
 
 #[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about)]
 struct Cli {
     #[arg(long)]
     resolve_move_dependencies: Option<String>,
@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     if let Some(ref value) = cli.resolve_move_dependencies {
         check_sui_version(MINIMUM_BUILD_SUI_VERSION)?;
         // Resolver function that `sui move build` expects to call.
-        resolve_move_dependencies(value).await?;
+        resolve_move_dependencies(&value).await?;
     } else if let Some(command) = cli.command {
         let output = command.execute().await?;
         if cli.json {
@@ -35,8 +35,15 @@ async fn main() -> Result<()> {
             println!("{}", output);
         }
     } else {
-        // No subcommand or resolve_move_dependencies flag provided
-        clap::Command::new("mvr").print_help()?;
+        let cli = Cli::parse_from(&["mvr", "--help"]);
+        match cli.command {
+            Some(x) => {
+                let c = x.execute().await?;
+                println!("{:?}", c.to_string());
+            }
+            None => {}
+        }
     }
+
     Ok(())
 }
