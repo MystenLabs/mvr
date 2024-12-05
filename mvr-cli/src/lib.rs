@@ -1178,11 +1178,6 @@ pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Res
     Ok(CommandOutput::Add(cmd_output))
 }
 
-pub async fn subcommand_register_name(_name: &str) -> Result<CommandOutput> {
-    println!("tbd!");
-    Ok(CommandOutput::Register)
-}
-
 pub async fn resolve_package_by_name(
     name: &str,
 ) -> Result<(Option<PackageInfo>, Option<PackageInfo>)> {

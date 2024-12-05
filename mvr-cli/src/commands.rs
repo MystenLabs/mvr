@@ -10,7 +10,6 @@ use serde::Serialize;
 
 use crate::subcommand_add_dependency;
 use crate::subcommand_list;
-use crate::subcommand_register_name;
 use crate::subcommand_resolve_name;
 use crate::PackageInfo;
 use crate::PackageInfoNetwork;
@@ -31,8 +30,6 @@ pub enum Command {
         #[arg(long)]
         filter: Option<String>,
     },
-    /// Register the app name to the move registry.
-    Register { name: String },
     /// Resolve the app name to a package info.
     Resolve { name: String },
 }
@@ -43,7 +40,6 @@ pub enum CommandOutput {
     Add(String),
     #[serde(rename = "apps")]
     List(Vec<App>),
-    Register,
     Resolve,
 }
 
@@ -58,7 +54,6 @@ impl Command {
         match self {
             Command::Add { name, network } => subcommand_add_dependency(&name, &network).await,
             Command::List { filter } => subcommand_list(filter).await,
-            Command::Register { name } => subcommand_register_name(&name).await,
             Command::Resolve { name } => subcommand_resolve_name(&name).await,
         }
     }
@@ -85,7 +80,6 @@ impl Display for CommandOutput {
                 }
                 Ok(())
             }
-            CommandOutput::Register => write!(f, "Registered"),
             CommandOutput::Resolve => write!(f, "Resolved"),
         }
     }
