@@ -64,6 +64,9 @@ const APP_REGISTRY_TABLE_ID: &str =
 const TESTNET_CHAIN_ID: &str = "4c78adac";
 const MAINNET_CHAIN_ID: &str = "35834a8a";
 
+const MAINNET_GQL_URL: &str = "https://mvr-rpc.sui-mainnet.mystenlabs.com/";
+const TESTNET_GQL_URL: &str = "https://mvr-rpc.sui-testnet.mystenlabs.com/";
+
 const VERSIONED_NAME_REGEX: &str = concat!(
     "^",
     r"([a-z0-9.\-@]*)",
@@ -779,9 +782,9 @@ async fn package_at_version(
     network: &PackageInfoNetwork,
 ) -> Result<Option<ObjectId>> {
     let client = match network {
-        PackageInfoNetwork::Mainnet => Client::new_mainnet(),
-        PackageInfoNetwork::Testnet => Client::new_testnet(),
-    };
+        PackageInfoNetwork::Mainnet => Client::new(MAINNET_GQL_URL),
+        PackageInfoNetwork::Testnet => Client::new(TESTNET_GQL_URL),
+    }?;
 
     let address = client
         .object(Address::from_str(address)?, Some(version))
