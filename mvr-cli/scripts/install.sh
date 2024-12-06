@@ -70,7 +70,7 @@ install() {
     local install_path=""
     case "$os" in
         macos|ubuntu)
-            install_path="/usr/local/bin"
+            install_path="/usr/bin"
             mkdir -p "$install_path"
             echo "Installing to: ${install_path}"
             

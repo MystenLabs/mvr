@@ -2,7 +2,7 @@
 
 We currently provide the `mvr-cli` binary for macOS (Intel and Apple CPUs), Ubuntu, and Windows:
 | OS      | CPU             | Architecture                                                                                              |
-| :---    | :----:          | :---:                                                                                                     |
+| :---    | :----:          | :---                                                                                                      |
 | MacOS   | Apple Silicon   | [mvr-macos-arm64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-arm64)             |
 | MacOS   | Intel 64bit     | [mvr-macos-x86_64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-x86_64)           |
 | Ubuntu  | ARM64           | [mvr-ubuntu-aarch64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-aarch64)       |
@@ -11,16 +11,12 @@ We currently provide the `mvr-cli` binary for macOS (Intel and Apple CPUs), Ubun
 
 ### From installation script
 
-Run the following commands in your terminal:
-- `curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/mystenlabs/mvr/tree/main/mvr-cli/scripts/install.sh | sh`
--  `mvr --version` to verify that the installation was successful.
-
 ### From release
  
-- Download the binary corresponding to your OS and architecture from GitHub: `https://github.com/mystenLabs/mvr/releases/latest`.
+- Download the binary corresponding to your OS and architecture from the list above.
 - Rename the binary to `mvr`
 - Make the binary executable: `chmod +x mvr`
-- Place it in a directory that is in your `PATH` environment variable.
+- Place it in a directory that is on your `PATH` environment variable.
 - `mvr --version` to verify that the installation was successful.
 
 ### From source
@@ -29,3 +25,5 @@ Run the following commands in your terminal:
 - `git clone https://github.com/mystenlabs/mvr.git`
 - `cd mvr/mvr-cli && cargo install --path .`
 - `mvr --version` to verify that the installation was successful.
+
+Note that if you install both from source and from release, you need to check which folder comes first on the `PATH` environment variable. The binary in that folder will be the one that is executed when you run `mvr`.
