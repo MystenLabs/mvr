@@ -56,9 +56,10 @@ install() {
     
     # Fetch download URL
     local download_url=$(curl -s "$api_url" | \
-        grep "browser_download_url" | \
-        grep "$filename" | \
-        cut -d '"' -f 4)
+      grep "browser_download_url" | grep "$filename" | cut -d '"' -f 4)
+    
+    echo "Downloading ${filename} for ${os}-${arch}"
+    echo "Download URL: $download_url"
     
     if [ -z "$download_url" ]; then
         echo "No matching binary found for ${os}-${arch}" >&2
@@ -69,27 +70,21 @@ install() {
     local install_path=""
     case "$os" in
         macos|ubuntu)
-            install_path="${HOME}/.local/bin"
+            install_path="/usr/local/bin"
             mkdir -p "$install_path"
+            echo "Installing to: ${install_path}"
             
             # Download and install
             echo "Downloading ${filename}"
             curl -L "$download_url" -o "${install_path}/${BINARY_NAME}"
             chmod +x "${install_path}/${BINARY_NAME}"
-            
-            # Update PATH if needed
-            if [[ ":$PATH:" != *":$install_path:"* ]]; then
-                echo "Adding ${install_path} to PATH"
-                echo "export PATH=\$PATH:${install_path}" >> ~/.bashrc
-                echo "export PATH=\$PATH:${install_path}" >> ~/.zshrc
-                echo "Added to PATH. Please restart your shell or run 'source ~/.bashrc' (or ~/.zshrc)"
-            fi
-            ;;
+            echo "Please restart your shell or run 'source ~/.bashrc' (or ~/.zshrc) (or source ~/.config/fish/config.fish)"
+        ;;
         windows)
-            echo "Windows installation requires manual steps." >&2
-            echo "Please download the binary from: $download_url" >&2
-            exit 1
-            ;;
+    #         echo "Windows installation requires manual steps." >&2
+    #         echo "Please download the binary from: $download_url" >&2
+    #         exit 1
+    #         ;;
     esac
 
     echo "Successfully installed ${BINARY_NAME}"
