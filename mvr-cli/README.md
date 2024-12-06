@@ -17,5 +17,6 @@ Run the following commands in your terminal:
 ### From source
 
 Run the following commands in your terminal:
-- `cargo install --locked --git https://github.com/mystenlabs.com/mvr.git mvr-cli`
+- `git clone https://github.com/mystenlabs/mvr.git`
+- `cd mvr/mvr-cli && cargo install --path .`
 - `mvr --version` to verify that the installation was successful.
