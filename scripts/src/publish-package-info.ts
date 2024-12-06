@@ -15,7 +15,7 @@ import { Transaction } from "@mysten/sui/transactions";
 const DISPLAY = {
   name: "Package Metadata",
   description:
-    "This object is used to store all the metadata for a package, including where to find the source code across different versions.",
+    "On-chain record of the metadata and source code for the linked package.",
   image_url: "",
 };
 
