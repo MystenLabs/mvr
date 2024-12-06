@@ -1,13 +1,13 @@
 ## Installation
 
 We currently provide the `mvr-cli` binary for macOS (Intel and Apple CPUs), Ubuntu, and Windows:
-| OS      | CPU             | Architecture                                                                      |
-| :---    |    :----:       |          ---:                                                                     |
-| MacOS   | Apple Silicon   | https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-arm64        |
-| MacOS   | Intel 64bit     | https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-x86_64       |
-| Ubuntu  | ARM64           | https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-aarch64     |
-| Ubuntu  | Intel 64bit     | https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-x86_64      |
-| Windows | Intel 64bit     | https://github.com/MystenLabs/mvr/releases/latest/download/mvr-windows-x86_64.exe |
+| OS      | CPU             | Architecture                                                                                              |
+| :---    |    :----:       |          ---:                                                                                             |
+| MacOS   | Apple Silicon   | [mvr-macos-arm64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-arm64)             |
+| MacOS   | Intel 64bit     | [mvr-macos-x86_64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-x86_64)           |
+| Ubuntu  | ARM64           | [mvr-ubuntu-aarch64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-aarch64)       |
+| Ubuntu  | Intel 64bit     | [mvr-ubuntu-x86_64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-x86_64)         |
+| Windows | Intel 64bit     | [mvr-windows-x86_64](https://github.com/MystenLabs/mvr/releases/latest/download/mvr-windows-x86_64.exe)   |
 
 ### From installation script
 
