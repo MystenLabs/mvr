@@ -1,7 +1,7 @@
 {
-  "packageId": "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0",
-  "upgradeCap": "0x94d5e0539015da03e214c3661542db20093c0e558e29cdb798f452e8be9ce1b6",
-  "publisher": "0xfea5ad4e9b9054a1522dbe6fe07e295a1115ae939c772b28db7e4e6b1dc87bb3",
-  "appRegistry": "0x3905ce0cc74b1a4426e1be8eed0fff6c5a738d8075f22a95cd31e151968a876f",
-  "appRegistryTable": "0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163"
+  "packageId": "0x62c1f5b1cb9e3bfc3dd1f73c95066487b662048a6358eabdbf67f6cdeca6db4b",
+  "upgradeCap": "0xfb024867d7e2d1e9246e326f4debb3f33404354137c3685a50ab1f188cd09a0e",
+  "publisher": "0x03fb80df12106872d772e016a0624cd110ecef9e824e33e76cb0af41795e9be0",
+  "appRegistry": "0x0e5d473a055b6b7d014af557a13ad9075157fdc19b6d51562a18511afd397727",
+  "appRegistryTable": "0xe8417c530cde59eddf6dfb760e8a0e3e2c6f17c69ddaab5a73dd6a6e65fc463b"
 }
