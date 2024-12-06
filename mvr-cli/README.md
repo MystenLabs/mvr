@@ -1,6 +1,6 @@
 ## Installation
 
-We currently provide the `mvr-cli` binary for macOS (Intel and Apple CPUs), Ubuntu, and Windows:
+We currently provide the `mvr` cli binary for macOS (Intel and Apple CPUs), Ubuntu (Intel and ARM), and Windows:
 | OS      | CPU             | Architecture                                                                                              |
 | :---    | :----:          | :---                                                                                                      |
 | MacOS   | Apple Silicon   | [mvr-macos-arm64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-arm64)             |
@@ -9,8 +9,6 @@ We currently provide the `mvr-cli` binary for macOS (Intel and Apple CPUs), Ubun
 | Ubuntu  | Intel 64bit     | [mvr-ubuntu-x86_64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-x86_64)         |
 | Windows | Intel 64bit     | [mvr-windows-x86_64](https://github.com/MystenLabs/mvr/releases/latest/download/mvr-windows-x86_64.exe)   |
 
-### From installation script
-
 ### From release
  
 - Download the binary corresponding to your OS and architecture from the list above.
@@ -18,6 +16,8 @@ We currently provide the `mvr-cli` binary for macOS (Intel and Apple CPUs), Ubun
 - Make the binary executable: `chmod +x mvr`
 - Place it in a directory that is on your `PATH` environment variable.
 - `mvr --version` to verify that the installation was successful.
+
+[!Note] If you are using Windows, you can rename the binary to `mvr.exe` instead of `mvr`, and adapt the commands accordingly to ensure the binary is on your `PATH`.
 
 ### From source
 
