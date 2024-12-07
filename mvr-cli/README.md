@@ -17,7 +17,7 @@ We currently provide the `mvr` cli binary for macOS (Intel and Apple CPUs), Ubun
 - Place it in a directory that is on your `PATH` environment variable.
 - `mvr --version` to verify that the installation was successful.
 
-[!Note] If you are using Windows, you can rename the binary to `mvr.exe` instead of `mvr`, and adapt the commands accordingly to ensure the binary is on your `PATH`.
+[!NOTE] If you are using Windows, you can rename the binary to `mvr.exe` instead of `mvr`, and adapt the commands accordingly to ensure the binary is on your `PATH`.
 
 ### From source
 
