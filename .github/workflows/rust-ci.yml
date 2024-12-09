@@ -64,7 +64,17 @@ jobs:
         shell: bash
         run: |
           mkdir -p $HOME/.sui/sui_config
-          cp ci/client.yaml $HOME/.sui/sui_config/client.yaml
+          tee $HOME/.sui/sui_config/client.yaml <<EOF
+          ---
+          keystore:
+            File: home/.sui/sui_config/sui.keystore
+          envs:
+            - alias: localnet
+              rpc: "http://127.0.0.1:9000"
+              ws: ~
+          active_env: localnet
+          active_address: "0x14e7ac25259adcc373c96627893976d4fe562a3f3fedce493fc187c5ebd53eee"
+          EOF
 
       - name: Run custom integration test
         run: |
