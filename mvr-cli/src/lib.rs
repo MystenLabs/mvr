@@ -56,6 +56,8 @@ const ADDRESSES_KEY: &str = "addresses";
 const LOCK_MOVE_KEY: &str = "move";
 const LOCK_PACKAGE_KEY: &str = "package";
 const LOCK_PACKAGE_NAME_KEY: &str = "name";
+const LOCK_PACKAGE_ID_KEY: &str = "id";
+const LOCK_PACKAGE_VERSION_KEY: &str = "version";
 
 const APP_REGISTRY_TABLE_ID: &str =
     "0xe8417c530cde59eddf6dfb760e8a0e3e2c6f17c69ddaab5a73dd6a6e65fc463b";
@@ -598,7 +600,7 @@ pub async fn published_ids(
         // set in the Move.toml (if any).
         None => {
             let package_name = package_table
-                .get("name")
+                .get(LOCK_PACKAGE_NAME_KEY)
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_lowercase());
             let addresses_id = package_name.clone().and_then(|name| {
@@ -908,29 +910,42 @@ fn insert_root_dependency(
         )
     })?;
 
+    let package_version = move_section
+        .get(LOCK_PACKAGE_VERSION_KEY)
+        .ok_or_else(|| anyhow!("{}", "Failed to get version in lock file".red()))?
+        .as_integer()
+        .ok_or_else(|| anyhow!("{}", "Failed to get version in lock file".red()))?;
+
     // Save the top-level `dependencies`, which will become the dependencies of the new root package.
     let original_deps = move_section.get("dependencies").cloned();
 
     // Make the top-level `dependencies` point to the new root package.
     let new_dep = {
         let mut table = InlineTable::new();
-        table.insert("name", Value::String(Formatted::new(root_name.to_string())));
-        table.insert("id", Value::String(Formatted::new(root_name.to_string())));
+        table.insert(
+            LOCK_PACKAGE_NAME_KEY,
+            Value::String(Formatted::new(root_name.to_string())),
+        );
+        table.insert(
+            LOCK_PACKAGE_ID_KEY,
+            Value::String(Formatted::new(root_name.to_string())),
+        );
         Value::InlineTable(table)
     };
+
     let mut new_deps = Array::new();
     new_deps.push(new_dep);
     move_section["dependencies"] = value(new_deps);
 
     // Create a new root package entry, set its dependencies to the original top-level dependencies, and persist.
     let mut new_package = Table::new();
-    new_package.insert("id", value(root_name));
+    new_package.insert(LOCK_PACKAGE_ID_KEY, value(root_name));
 
     let mut source = Table::new();
     source.insert("git", value(&git_info.repository));
     source.insert("rev", value(&git_info.tag));
     source.insert("subdir", value(&git_info.path));
-    new_package.insert("source", Item::Table(source));
+    new_package.insert("source", value(source.into_inline_table()));
 
     if let Some(deps) = original_deps {
         new_package.insert("dependencies", deps);
@@ -941,7 +956,16 @@ fn insert_root_dependency(
         .or_insert(Item::ArrayOfTables(ArrayOfTables::new()))
         .as_array_of_tables_mut()
         .ok_or_else(|| anyhow!("Failed to get or create package array in lock file".red()))?;
+
     packages.push(new_package);
+
+    // If the lockfile is version 2, migrate to version 3.
+    // Migration to version 3 requires an `id` field in the lockfile.
+    if package_version == 2 {
+        migrate_to_version_three(packages);
+        move_section.insert(LOCK_PACKAGE_VERSION_KEY, value(3));
+    }
+
     Ok(doc.to_string())
 }
 
@@ -1225,4 +1249,46 @@ pub fn sui_config_dir() -> Result<PathBuf, anyhow::Error> {
         }
         Ok(dir)
     })
+}
+
+/// Migrates the lockfile to version 3 from version 2, if necessary.
+fn migrate_to_version_three(packages: &mut ArrayOfTables) {
+    for package in packages.iter_mut() {
+        // if ID is missing from the lockfile, add it.
+        if !package.contains_key(LOCK_PACKAGE_ID_KEY) {
+            package.insert(
+                LOCK_PACKAGE_ID_KEY,
+                package.get(LOCK_PACKAGE_NAME_KEY).unwrap().clone(),
+            );
+        }
+
+        if !package.contains_key(DEPENDENCIES_KEY) {
+            continue;
+        }
+
+        // SAFETY: We've already checked that `dependencies` is part of the package table.
+        let dependencies = package.get_mut(DEPENDENCIES_KEY).unwrap();
+
+        if !dependencies.is_array() {
+            continue;
+        }
+
+        // SAFETY: We've already checked that `dependencies` is an array.
+        for dep in dependencies.as_array_mut().unwrap().iter_mut() {
+            let val = dep.as_inline_table_mut().unwrap();
+            if !val.contains_key(LOCK_PACKAGE_ID_KEY) {
+                val.insert(
+                    LOCK_PACKAGE_ID_KEY,
+                    val.get(LOCK_PACKAGE_NAME_KEY).unwrap().clone(),
+                );
+            }
+
+            if !val.contains_key(LOCK_PACKAGE_NAME_KEY) {
+                val.insert(
+                    LOCK_PACKAGE_NAME_KEY,
+                    val.get(LOCK_PACKAGE_ID_KEY).unwrap().clone(),
+                );
+            }
+        }
+    }
 }
