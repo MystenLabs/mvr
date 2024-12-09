@@ -962,7 +962,7 @@ fn insert_root_dependency(
     // If the lockfile is version 2, migrate to version 3.
     // Migration to version 3 requires an `id` field in the lockfile.
     if package_version < 3 {
-        migrate_to_version_three(packages);
+        migrate_to_version_three(packages)?;
         move_section.insert(LOCK_PACKAGE_VERSION_KEY, value(3));
     }
 
@@ -1251,37 +1251,38 @@ pub fn sui_config_dir() -> Result<PathBuf, anyhow::Error> {
     })
 }
 
-/// Migrates the lockfile to version 3 from version 2, if necessary.
-fn migrate_to_version_three(packages: &mut ArrayOfTables) {
+/// Migrates the lockfile to version 3 from older versions, if necessary.
+fn migrate_to_version_three(packages: &mut ArrayOfTables) -> Result<()> {
     for package in packages.iter_mut() {
-        // if ID is missing from the lockfile, add it.
+        // if ID is missing from the core dependency, add it.
         if !package.contains_key(LOCK_PACKAGE_ID_KEY) {
-            package.insert(
-                LOCK_PACKAGE_ID_KEY,
-                package.get(LOCK_PACKAGE_NAME_KEY).unwrap().clone(),
-            );
+            let name = package
+                .get(LOCK_PACKAGE_NAME_KEY)
+                .ok_or_else(|| anyhow!("Failed to get name for dependency"))?;
+            package.insert(LOCK_PACKAGE_ID_KEY, name.clone());
         }
 
-        if !package.contains_key(DEPENDENCIES_KEY) {
-            continue;
-        }
+        // Skip if there are no dependencies or if dependencies are not an array.
+        let dependencies = match package
+            .get_mut(DEPENDENCIES_KEY)
+            .and_then(|v| v.as_array_mut())
+        {
+            Some(deps) => deps,
+            None => continue,
+        };
 
-        // SAFETY: We've already checked that `dependencies` is part of the package table.
-        let dependencies = package.get_mut(DEPENDENCIES_KEY).unwrap();
+        for dep in dependencies.iter_mut() {
+            if let Some(val) = dep.as_inline_table_mut() {
+                // Get name, skipping if not found
+                let name = val
+                    .get(LOCK_PACKAGE_NAME_KEY)
+                    .ok_or_else(|| anyhow!("Failed to get name"))?;
 
-        if !dependencies.is_array() {
-            continue;
-        }
-
-        // SAFETY: We've already checked that `dependencies` is an array.
-        for dep in dependencies.as_array_mut().unwrap().iter_mut() {
-            let val = dep.as_inline_table_mut().unwrap();
-            if !val.contains_key(LOCK_PACKAGE_ID_KEY) {
-                val.insert(
-                    LOCK_PACKAGE_ID_KEY,
-                    val.get(LOCK_PACKAGE_NAME_KEY).unwrap().clone(),
-                );
+                if !val.contains_key(LOCK_PACKAGE_ID_KEY) {
+                    val.insert(LOCK_PACKAGE_ID_KEY, name.clone());
+                }
             }
         }
     }
+    Ok(())
 }
