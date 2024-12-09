@@ -1,7 +1,10 @@
 [package]
 name = "mvr"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2021"
+description = "MVR is a command line tool to interact with the Move Registry for the Sui network."
+license = "Apache-2.0"
+authors = ["Mysten Labs <build@mystenlabs.com>"]
 
 [[bin]]
 name = "mvr"
