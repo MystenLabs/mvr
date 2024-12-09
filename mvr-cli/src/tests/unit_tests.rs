@@ -110,14 +110,10 @@ dependencies = [
 
         [[move.package]]
         id = "demo"
+        source = { git = "https://github.com/example/demo.git", rev = "v1.0.0", subdir = "packages/demo" }
         dependencies = [
           { id = "Sui", name = "Sui" },
         ]
-
-        [move.package.source]
-        git = "https://github.com/example/demo.git"
-        rev = "v1.0.0"
-        subdir = "packages/demo"
     "##]]
     .assert_eq(&result[0]);
     Ok(())
