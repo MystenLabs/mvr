@@ -110,3 +110,18 @@ jobs:
             target/release/mvr-${{ env.os_type }}${{ env.extension }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release_rebase:
+    needs: build
+    name: Rebase release branch after release was successfully created.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Rebase release branch
+        run: |
+          git fetch --all
+          git switch release
+          git rebase main
+          git push
