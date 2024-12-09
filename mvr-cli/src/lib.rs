@@ -1282,13 +1282,6 @@ fn migrate_to_version_three(packages: &mut ArrayOfTables) {
                     val.get(LOCK_PACKAGE_NAME_KEY).unwrap().clone(),
                 );
             }
-
-            if !val.contains_key(LOCK_PACKAGE_NAME_KEY) {
-                val.insert(
-                    LOCK_PACKAGE_NAME_KEY,
-                    val.get(LOCK_PACKAGE_ID_KEY).unwrap().clone(),
-                );
-            }
         }
     }
 }
