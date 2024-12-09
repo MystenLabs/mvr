@@ -45,7 +45,7 @@ edition = "2024.beta"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
-demo = { r.mvr = "@mvr-tst/first-app" }
+demo = { r.mvr = "@mvr-tst/demo" }
 
 [addresses]
 nftmaker = "0x0"
