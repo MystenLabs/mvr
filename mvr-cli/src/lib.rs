@@ -109,7 +109,7 @@ fn find_mvr_package(value: &toml::Value) -> Option<String> {
 /// Parse out packages with the following structure:
 ///
 /// [dependencies]
-/// MyDep = { r.mvr = "@mvr-tst/demo" }
+/// MyDep = { r.mvr = "@mvr/demo" }
 ///
 /// ...
 ///
@@ -144,7 +144,7 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
 /// a key associated with the external resolution in a Move.toml file. For example, this
 /// TOML would trigger sui move build to call this binary and hit this function with value `mvr`:
 ///
-/// MyDep = { r.mvr = "@mvr-tst/demo" }
+/// MyDep = { r.mvr = "@mvr/demo" }
 ///
 /// The high-level logic of this function is as follows:
 /// 1) Fetch on-chain data for `packages`: the GitHub repository, branch, and subpath
