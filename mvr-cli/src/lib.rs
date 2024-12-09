@@ -3,7 +3,6 @@ pub mod commands;
 pub mod constants;
 pub mod types;
 
-use crate::binary_version_check::force_build;
 use crate::commands::App;
 use crate::types::package::PackageInfoNetwork;
 use crate::types::SuiConfig;
@@ -824,7 +823,7 @@ async fn fetch_move_files(
     let mut file_paths = Vec::new();
     for file_name in &files_to_fetch {
         let source_path = repo_dir.join(&git_info.path).join(file_name);
-        let dest_path = temp_dir.path().join(file_name);
+        let dest_path = repo_dir.join(file_name);
 
         fs::copy(&source_path, &dest_path)
             .with_context(|| format!("Failed to copy {} for package {}", file_name, name))?;
@@ -845,7 +844,7 @@ fn shallow_clone_repo(
             "Git is not available in the system PATH. Please install git and try again.".red()
         ));
     }
-    let repo_dir = temp_dir.path().join("repo");
+    let repo_dir = temp_dir.path().join(package_name);
     let output = Command::new("git")
         .arg("clone")
         .arg(&git_info.repository)
@@ -1082,7 +1081,6 @@ async fn update_mvr_packages(
         ),
         &format!("use {}::<module>;\n", name).green()
     );
-    force_build()?;
 
     Ok(output_msg)
 }
