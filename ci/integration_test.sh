@@ -16,11 +16,11 @@ fi
 mkdir -p demo-package/sources
 
 cat << EOF > demo-package/sources/demo.move
-module nftmaker::nftmaker {
-    use demo::demo;
-    public fun new(): u64 {
-      return demo::num()
-    }
+module nftmaker::nftmaker;
+use demo::demo;
+
+public fun new(): u64 {
+    return demo::num()
 }
 EOF
 
