@@ -4,7 +4,7 @@ run-name: Attach MVR binaries to a ${{ inputs.mvr_tag }} release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 env:
@@ -40,9 +40,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-    # Create a release on GitHub
+      # Create a release on GitHub
       - name: Release
         uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ env.TAG_NAME }}
+          generate_release_notes: true
 
   build:
     needs: release
@@ -50,13 +53,12 @@ jobs:
     timeout-minutes: 120
     strategy:
       matrix:
-        os:
-          [
+        os: [
             ubuntu-ghcloud, # ubuntu-x86_64
             ubuntu-arm64, # ubuntu-arm64
             windows-ghcloud, # windows-x86_64
             macos-latest-xl, # macos-x86_64
-            macos-latest-xlarge # macos-arm64
+            macos-latest-xlarge, # macos-arm64
           ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -74,7 +76,7 @@ jobs:
       - name: Check out ${{ env.mvr_tag }}
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # pin@v3
         with:
-          ref: ${{ env.mvr_tag }}          
+          ref: ${{ env.mvr_tag }}
 
       - name: Set os/arch variables (Windows)
         if: ${{ matrix.os == 'windows-ghcloud' }}
@@ -92,7 +94,7 @@ jobs:
           export arch=$(uname -m)
           export system_os=$(echo ${{ matrix.os }} | cut -d- -f1)
           export os_type="${system_os}-${arch}"
-          echo "os_type=${system_os}-${arch}" >> $GITHUB_ENV     
+          echo "os_type=${system_os}-${arch}" >> $GITHUB_ENV
 
       - name: Cargo build for ${{ matrix.os }} platform
         shell: bash
