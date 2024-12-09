@@ -1,6 +1,11 @@
 ## Installation
 
-We currently provide the `mvr` cli binary for macOS (Intel and Apple CPUs), Ubuntu (Intel and ARM), and Windows:
+There are three ways to install the `mvr` CLI tool.
+[Cargo install](#cargo-install)
+[From release](#from-release)
+[From source](#from-source)
+
+Below are the `mvr` binaries for macOS (Intel and Apple CPUs), Ubuntu (Intel and ARM), and Windows:
 | OS      | CPU             | Architecture                                                                                              |
 | :---    | :----:          | :---                                                                                                      |
 | MacOS   | Apple Silicon   | [mvr-macos-arm64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-macos-arm64)             |
@@ -8,6 +13,10 @@ We currently provide the `mvr` cli binary for macOS (Intel and Apple CPUs), Ubun
 | Ubuntu  | ARM64           | [mvr-ubuntu-aarch64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-aarch64)       |
 | Ubuntu  | Intel 64bit     | [mvr-ubuntu-x86_64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-ubuntu-x86_64)         |
 | Windows | Intel 64bit     | [mvr-windows-x86_64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-windows-x86_64.exe)   |
+
+### Cargo install
+
+- `cargo install --locked --git https://github.com/mystenlabs/mvr --branch release mvr`
 
 ### From release
  
