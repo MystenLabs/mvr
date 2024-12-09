@@ -1,6 +1,5 @@
 
-module demo::demo {
-
+module ts_tests::demo {
     public struct DemoNFT has key, store {
         id: UID
     }
