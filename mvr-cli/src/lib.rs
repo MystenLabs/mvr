@@ -912,9 +912,9 @@ fn insert_root_dependency(
 
     let package_version = move_section
         .get(LOCK_PACKAGE_VERSION_KEY)
-        .ok_or_else(|| anyhow!("{}", "Failed to get version in lock file".red()))?
+        .unwrap_or(&value(1))
         .as_integer()
-        .ok_or_else(|| anyhow!("{}", "Failed to get version in lock file".red()))?;
+        .ok_or_else(|| anyhow!("Invalid version in lock file".red()))?;
 
     // Save the top-level `dependencies`, which will become the dependencies of the new root package.
     let original_deps = move_section.get("dependencies").cloned();
