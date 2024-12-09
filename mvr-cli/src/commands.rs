@@ -143,7 +143,7 @@ mod tests {
     fn test_display_app() {
         let app =
             App {
-                name: "@mvr-tst/first-app".to_string(),
+                name: "@mvr/demo".to_string(),
                 package_info: vec![(PackageInfoNetwork::Testnet, None),(
                 PackageInfoNetwork::Mainnet,
                 Some(PackageInfo {
@@ -167,7 +167,7 @@ mod tests {
                 }),
             )],
             };
-        let expected = r#" Package:  @mvr-tst/first-app 
+        let expected = r#" Package:  @mvr/demo 
 
   [testnet]
      Registered address not found    

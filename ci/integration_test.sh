@@ -16,11 +16,11 @@ fi
 mkdir -p demo-package/sources
 
 cat << EOF > demo-package/sources/demo.move
-module nftmaker::nftmaker {
-    use demo::demo;
-    public fun new(): u64 {
-      return demo::num()
-    }
+module nftmaker::nftmaker;
+use demo::demo;
+
+public fun new(): u64 {
+    return demo::num()
 }
 EOF
 
@@ -45,7 +45,7 @@ edition = "2024.beta"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
-demo = { r.mvr = "@mvr-tst/first-app" }
+demo = { r.mvr = "@mvr/demo" }
 
 [addresses]
 nftmaker = "0x0"
@@ -56,7 +56,7 @@ network = "mainnet"
 EOF
 
 ### Add package dependency via mvr add command
-cd demo-package && mvr add @mvr-tst/first-app --network mainnet && cd ..
+cd demo-package && mvr add @mvr/demo --network mainnet && cd ..
 
 ### Check if the expected Move.toml file and the generated one are the same
 if ! diff -u demo-package/expected_move.toml demo-package/Move.toml > /dev/null; then

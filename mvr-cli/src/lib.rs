@@ -59,7 +59,10 @@ const LOCK_PACKAGE_KEY: &str = "package";
 const LOCK_PACKAGE_NAME_KEY: &str = "name";
 
 const APP_REGISTRY_TABLE_ID: &str =
-    "0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163";
+    "0xe8417c530cde59eddf6dfb760e8a0e3e2c6f17c69ddaab5a73dd6a6e65fc463b";
+const MVR_PACKAGE_ID: &str = "0x62c1f5b1cb9e3bfc3dd1f73c95066487b662048a6358eabdbf67f6cdeca6db4b";
+const PACKAGE_INFO_PACKAGE_ID: &str =
+    "0x0f6b71233780a3f362137b44ac219290f4fd34eb81e0cb62ddf4bb38d1f9a3a1";
 
 const TESTNET_CHAIN_ID: &str = "4c78adac";
 const MAINNET_CHAIN_ID: &str = "35834a8a";
@@ -77,24 +80,18 @@ const VERSIONED_NAME_REGEX: &str = concat!(
 );
 
 static PACKAGE_INFO_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
-    TypeTag::from_str(
-        "0x4433047b14865ef466c55c35ec0f8a55726628e729d21345f2c4673582ec15a8::package::PackageInfo",
-    )
-    .expect("Failed to parse TypeTag for PackageInfo")
+    TypeTag::from_str(&format!("{PACKAGE_INFO_PACKAGE_ID}::package::PackageInfo"))
+        .expect("Failed to parse TypeTag for PackageInfo")
 });
 
 static NAME_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
-    TypeTag::from_str(
-        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::name::Name",
-    )
-    .expect("Failed to parse TypeTag for Name df")
+    TypeTag::from_str(&format!("{MVR_PACKAGE_ID}::name::Name"))
+        .expect("Failed to parse TypeTag for Name df")
 });
 
 static APP_REC_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
-    TypeTag::from_str(
-        "0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0::app_record::AppRecord",
-    )
-    .expect("Failed to parse TypeTag for AppRecord")
+    TypeTag::from_str(&format!("{MVR_PACKAGE_ID}::app_record::AppRecord"))
+        .expect("Failed to parse TypeTag for AppRecord")
 });
 
 static VERSIONED_NAME_REG: Lazy<Regex> = Lazy::new(|| Regex::new(VERSIONED_NAME_REGEX).unwrap());
@@ -112,7 +109,7 @@ fn find_mvr_package(value: &toml::Value) -> Option<String> {
 /// Parse out packages with the following structure:
 ///
 /// [dependencies]
-/// MyDep = { r.mvr = "@mvr-tst/first-app" }
+/// MyDep = { r.mvr = "@mvr/demo" }
 ///
 /// ...
 ///
@@ -147,7 +144,7 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
 /// a key associated with the external resolution in a Move.toml file. For example, this
 /// TOML would trigger sui move build to call this binary and hit this function with value `mvr`:
 ///
-/// MyDep = { r.mvr = "@mvr-tst/first-app" }
+/// MyDep = { r.mvr = "@mvr/demo" }
 ///
 /// The high-level logic of this function is as follows:
 /// 1) Fetch on-chain data for `packages`: the GitHub repository, branch, and subpath

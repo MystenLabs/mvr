@@ -1,13 +1,13 @@
 /** App-wide global constants */
 export const Constants = {
-    appsPackageId: '0xdc7979da429684890fdff92ff48ec566f4b192c8fb7bcf12ab68e9ed7d4eb5e0',
-    appsRegistryTableId: '0xa39ea313f15d2b4117812fcf621991c76e0264e09c41b2fed504dd67053df163',
-    appsRegistryId: '0x3905ce0cc74b1a4426e1be8eed0fff6c5a738d8075f22a95cd31e151968a876f',
+    appsPackageId: '0x62c1f5b1cb9e3bfc3dd1f73c95066487b662048a6358eabdbf67f6cdeca6db4b',
+    appsRegistryTableId: '0xe8417c530cde59eddf6dfb760e8a0e3e2c6f17c69ddaab5a73dd6a6e65fc463b',
+    appsRegistryId: '0x0e5d473a055b6b7d014af557a13ad9075157fdc19b6d51562a18511afd397727',
 
     // TODO: Replace this logic with MVR logic once GQL is out.
     packageInfoIds: {
-        mainnet: "0x3f59564f9caa6769a2b16e30ab0756441bad340339858373c6c38bbc15f67eb9",
-        testnet: "0x4433047b14865ef466c55c35ec0f8a55726628e729d21345f2c4673582ec15a8",
+        mainnet: "0x0f6b71233780a3f362137b44ac219290f4fd34eb81e0cb62ddf4bb38d1f9a3a1",
+        testnet: "0xb96f44d08ae214887cae08d8ae061bbf6f0908b1bfccb710eea277f45150b9f4",
         devnet: "",
         localnet: '',
     }
