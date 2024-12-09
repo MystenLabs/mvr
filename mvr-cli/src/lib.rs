@@ -114,7 +114,7 @@ fn find_mvr_package(value: &toml::Value) -> Option<String> {
 ///
 /// [r.mvr]
 /// network = "mainnet"
-fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
+fn parse_move_toml(content: &str, package_name: &str) -> Result<MoveRegistryDependency> {
     use toml::Value;
     let toml_value: Value = toml::from_str(content)?;
 
@@ -129,7 +129,12 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
 
     let mut packages = Vec::new();
     if let Some(dependencies) = toml_value.get("dependencies").and_then(|d| d.as_table()) {
-        for (_, dep_value) in dependencies {
+        for (key, dep_value) in dependencies {
+            // TODO: Remove once the external resolver invokes this function
+            // only once per build.
+            if key != package_name {
+                continue;
+            }
             if let Some(package) = find_mvr_package(dep_value) {
                 packages.push(package);
             }
@@ -152,7 +157,7 @@ fn parse_move_toml(content: &str) -> Result<MoveRegistryDependency> {
 ///    for each package, allow the `sui move build` command to resolve packages from GitHub.
 pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
     let content = fs::read_to_string("Move.toml")?;
-    let dependency: MoveRegistryDependency = parse_move_toml(&content)?;
+    let dependency: MoveRegistryDependency = parse_move_toml(&content, key)?;
     eprintln!(
         "{} {}: {:?} {} {}",
         "RESOLVING".blue(),
@@ -820,16 +825,7 @@ async fn fetch_move_files(
     let files_to_fetch = ["Move.toml", "Move.lock"];
     let repo_dir = shallow_clone_repo(name, git_info, temp_dir)?;
 
-    let mut file_paths = Vec::new();
-    for file_name in &files_to_fetch {
-        let source_path = repo_dir.join(&git_info.path).join(file_name);
-        let dest_path = repo_dir.join(file_name);
-
-        fs::copy(&source_path, &dest_path)
-            .with_context(|| format!("Failed to copy {} for package {}", file_name, name))?;
-
-        file_paths.push(dest_path);
-    }
+    let file_paths = files_to_fetch.map(|file_name| repo_dir.join(&git_info.path).join(file_name));
 
     Ok((file_paths[0].clone(), file_paths[1].clone()))
 }
