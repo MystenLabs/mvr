@@ -44,7 +44,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ env.TAG_NAME }}
+          name: Release ${{ github.ref_name }}
           generate_release_notes: true
 
   build:
@@ -100,7 +100,6 @@ jobs:
         shell: bash
         run: |
           [ -f ~/.cargo/env ] && source ~/.cargo/env 
-          cd mvr-cli
           cargo build --release
           cp target/release/mvr${{ env.extension }} target/release/mvr-${{ env.os_type }}${{ env.extension }}
 
@@ -108,6 +107,6 @@ jobs:
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # pin@v1
         with:
           files: |
-            mvr-cli/target/release/mvr-${{ env.os_type }}${{ env.extension }}
+            target/release/mvr-${{ env.os_type }}${{ env.extension }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
