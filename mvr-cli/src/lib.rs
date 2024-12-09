@@ -961,7 +961,7 @@ fn insert_root_dependency(
 
     // If the lockfile is version 2, migrate to version 3.
     // Migration to version 3 requires an `id` field in the lockfile.
-    if package_version == 2 {
+    if package_version < 3 {
         migrate_to_version_three(packages);
         move_section.insert(LOCK_PACKAGE_VERSION_KEY, value(3));
     }
