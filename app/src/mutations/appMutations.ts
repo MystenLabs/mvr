@@ -9,6 +9,7 @@ import { useChainIdentifier } from "@/hooks/useChainIdentifier";
 import { AppRecord } from "@/hooks/useGetApp";
 import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
+import { sender } from "@/lib/utils";
 import { type PackageInfoData } from "@/utils/types";
 import { KioskTransaction } from "@mysten/kiosk";
 import {
@@ -17,8 +18,8 @@ import {
 import { useMutation } from "@tanstack/react-query";
 
 export function useCreateAppMutation() {
-  const { mainnet: client, kiosk: {mainnet: kioskClient } } = useSuiClientsContext();
-  const { executeTransaction } = useTransactionExecution(client);
+  const { kiosk: {mainnet: kioskClient } } = useSuiClientsContext();
+  const { executeTransaction } = useTransactionExecution('mainnet');
   const { data: testnetChainIdentifier } = useChainIdentifier("testnet");
 
   return useMutation({
@@ -83,8 +84,10 @@ export function useCreateAppMutation() {
 
       tx.transferObjects(
         [appCap],
-        tx.moveCall({ target: `0x2::tx_context::sender` }),
+        sender(tx),
       );
+
+      // console.log(tx.getData());
 
       const res = await executeTransaction(tx);
       return res;
@@ -94,7 +97,7 @@ export function useCreateAppMutation() {
 
 export function useUpdateAppMutation() {
   const { mainnet: client } = useSuiClientsContext();
-  const { executeTransaction } = useTransactionExecution(client);
+  const { executeTransaction } = useTransactionExecution('mainnet');
   const { data: testnetChainIdentifier } = useChainIdentifier("testnet");
 
   return useMutation({

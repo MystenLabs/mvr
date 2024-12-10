@@ -7,9 +7,16 @@ import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { isValidSuiAddress, toB64 } from '@mysten/sui/utils';
 import { useMVRContext } from '@/components/providers/mvr-provider';
+import { useSuiClientsContext } from '@/components/providers/client-provider';
 
-export function useTransactionExecution(client: SuiClient) {
+export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 	const { isCustom, customAddress } = useMVRContext();
+	const clients = useSuiClientsContext();
+	const client = clients[network];
+
+	// register the plugin based on the selected network.
+	Transaction.registerGlobalSerializationPlugin('namedPackagesPlugin', clients.mvrPlugin[network]);
+
 
 	const { mutateAsync: signTransaction } = useSignTransaction();
 	const [txData, setTxData] = useState<string | undefined>(undefined);
