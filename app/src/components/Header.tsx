@@ -112,7 +112,7 @@ const CustomAddressSetup = ({
         />
       )}
 
-      <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall max-lg:mt-Regular max-lg:justify-between">
+      {/* <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall max-lg:mt-Regular max-lg:justify-between">
         <Text variant="small/regular" color="secondary">
           Custom
         </Text>
@@ -121,7 +121,7 @@ const CustomAddressSetup = ({
           checked={mvrContext.isCustom}
           onCheckedChange={(checked) => updateUserCustomAddress(checked)}
         />
-      </div>
+      </div> */}
     </div>
   );
 };

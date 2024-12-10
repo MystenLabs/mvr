@@ -15,6 +15,7 @@ import { PackageInfoStep2 } from "./Step2";
 import { useCreatePackageInfoMutation } from "@/mutations/packageInfoMutations";
 import { ModalFooter } from "../ModalFooter";
 import { PackageDisplayType } from "@/utils/types";
+import ExplorerLink from "@/components/ui/explorer-link";
 
 export default function CreatePackageInfo({
   closeDialog,
@@ -44,6 +45,10 @@ export default function CreatePackageInfo({
     await refetchPackageInfos();
     await refetchUpgradeCaps();
   };
+
+  const selectedUpgradeCap = useMemo(() => {
+    return upgradeCaps?.find((x) => x.package === selectedPackage);
+  }, [upgradeCaps, selectedPackage]);
 
   const availableUpgradeCaps = useMemo(() => {
     if (!upgradeCaps || !packageInfos) return [];
@@ -79,7 +84,14 @@ export default function CreatePackageInfo({
         )}
 
         <Text variant="small/regular" family="inter" color="tertiary">
-          Selected Upgrade Cap: {formatAddress(selectedPackage ?? "")}
+          Selected Upgrade Cap:{" "}
+          <ExplorerLink
+            network={selectedNetwork}
+            type="object"
+            idOrHash={selectedUpgradeCap?.objectId ?? ""}
+          >
+            {formatAddress(selectedUpgradeCap?.objectId ?? "")}
+          </ExplorerLink>
         </Text>
 
         <ModalFooter
