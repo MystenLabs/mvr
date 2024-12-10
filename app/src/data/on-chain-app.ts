@@ -19,7 +19,7 @@ export const registerApp = ({
   mainnetPackageInfo?: TransactionObjectArgument | string;
 }) => {
   const appCap = tx.moveCall({
-    target: `${Constants.appsPackageId}::move_registry::register`,
+    target: `@mvr/core::move_registry::register`,
     arguments: [
       tx.object(Constants.appsRegistryId),
       tx.object(suinsObjectId),
@@ -52,7 +52,7 @@ export const assignMainnetPackage = ({
   const pkgInfoArg = (typeof packageInfo === 'object' && 'objectId' in packageInfo) ? tx.object(packageInfo.objectId) : tx.object(packageInfo);
 
   tx.moveCall({
-    target: `${Constants.appsPackageId}::move_registry::assign_package`,
+    target: `@mvr/core::move_registry::assign_package`,
     arguments: [
       tx.object(Constants.appsRegistryId),
       tx.object(appCap),
@@ -76,7 +76,7 @@ export const setExternalNetwork = async ({
   packageInfo: PackageInfoData;
 }) => {
   const appInfo = tx.moveCall({
-    target: `${Constants.appsPackageId}::app_info::new`,
+    target: `@mvr/core::app_info::new`,
     arguments: [
       tx.pure.option("address", packageInfo.objectId),
       tx.pure.option("address", packageInfo.packageAddress),
@@ -85,7 +85,7 @@ export const setExternalNetwork = async ({
   });
 
   tx.moveCall({
-    target: `${Constants.appsPackageId}::move_registry::set_network`,
+    target: `@mvr/core::move_registry::set_network`,
     arguments: [
       tx.object(Constants.appsRegistryId),
       tx.object(appCap),
@@ -109,7 +109,7 @@ export const unsetExternalNetwork = async ({
   chainId: string;
 }) => {
   tx.moveCall({
-    target: `${Constants.appsPackageId}::move_registry::unset_network`,
+    target: `@mvr/core::move_registry::unset_network`,
     arguments: [
       tx.object(Constants.appsRegistryId),
       tx.object(appCap),

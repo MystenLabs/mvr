@@ -12,17 +12,17 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.53.0(react@18.3.1))
       '@mysten/dapp-kit':
-        specifier: ^0.14.24
-        version: 0.14.24(@tanstack/react-query@5.55.4(react@18.3.1))(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.2)
+        specifier: ^0.14.41
+        version: 0.14.41(@tanstack/react-query@5.55.4(react@18.3.1))(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.2)
       '@mysten/kiosk':
-        specifier: ^0.9.20
-        version: 0.9.20(typescript@5.6.2)
+        specifier: ^0.9.32
+        version: 0.9.32(typescript@5.6.2)
       '@mysten/sui':
-        specifier: ^1.11.0
-        version: 1.11.0(typescript@5.6.2)
+        specifier: ^1.16.2
+        version: 1.16.2(typescript@5.6.2)
       '@mysten/suins':
-        specifier: ^0.4.0
-        version: 0.4.0(typescript@5.6.2)
+        specifier: ^0.4.1
+        version: 0.4.1(typescript@5.6.2)
       '@radix-ui/react-accordion':
         specifier: ^1.2.0
         version: 1.2.0(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -286,32 +286,36 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@mysten/bcs@1.1.0':
-    resolution: {integrity: sha512-yy9/1Y4d0FlRywS1+9ze/T7refCbrvwFwJIOKs9M3QBK1njbcHZp+LkVeLqBvIJA5eZ3ZCzmhQ1Xq4Sed5mEBA==}
+  '@mysten/bcs@1.2.0':
+    resolution: {integrity: sha512-LuKonrGdGW7dq/EM6U2L9/as7dFwnhZnsnINzB/vu08Xfrj0qzWwpLOiXagAa5yZOPLK7anRZydMonczFkUPzA==}
 
-  '@mysten/dapp-kit@0.14.24':
-    resolution: {integrity: sha512-Ob6MQy6kACjn19T/LS9zujd0glajV1gFPjkc7raNEru1ue4pmeYfg0VYPBFDLH/ULsbxbAnQV1jp/xp4c3T6ew==}
+  '@mysten/dapp-kit@0.14.41':
+    resolution: {integrity: sha512-eywIo1wEqQrazlJIJRu1d9d5ZH4JKvJEkw1+W6MK8Cz0vW4rMiq4AEWYv8Cs/8wI1WzjiIqzDZX4w42l99mmGQ==}
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
       react: '*'
 
-  '@mysten/kiosk@0.9.20':
-    resolution: {integrity: sha512-HI58E7CQv7czw7ZxJLVrNJrMkpuXO8gDCK/AxEr+uNdvXqmamQiO8yv7a5sRr79sg7SmEbJTD9AWK+fJKimjQw==}
+  '@mysten/kiosk@0.9.32':
+    resolution: {integrity: sha512-YRpZXubnnEaJTyRyYX1b3e2E2Tgv22H97i+gNo85OiebH7zAJ7V+vHpgHjJ8ZFcM9OiTY32fIRvrIBmDvx71Fg==}
     engines: {node: '>=18'}
 
-  '@mysten/sui@1.11.0':
-    resolution: {integrity: sha512-+5kSXmoPFrecxUb+fweqqy4eXRpgvv6H51IwRzJbxlolE0AmnM+5IJbLpTlM5RNZEmmocE7p5bUn1OijbuDVkw==}
+  '@mysten/sui@1.16.1':
+    resolution: {integrity: sha512-UopFv/D73EIiRpP42BbD3YFAyWCeAnCh1ZS+uuk2aSIS/4+89TWKvWgES23kBdzLSL9/6O9jAP9JRmsZTtvqLw==}
     engines: {node: '>=18'}
 
-  '@mysten/suins@0.4.0':
-    resolution: {integrity: sha512-cDXrlhtDFw/WgtOvMvtXT3sTD8l7qaQhLKGM+oL2u7ccOxwxgpfcU8AX+57EcTVpblbGq4Bw49mMhImSMOIMOg==}
+  '@mysten/sui@1.16.2':
+    resolution: {integrity: sha512-1Nfm7iTs3IVsiCXFPrnci9Y7fP9ldtwNOTe7JRkaHTg58VRhSe/nhHOvt6UsYiswVPUBqlsSF73KER5MpirCvw==}
+    engines: {node: '>=18'}
+
+  '@mysten/suins@0.4.1':
+    resolution: {integrity: sha512-5kkYe4VO5Z4enxioUoOTpjgviktL8HZldngDFrojlHJSinYeAs5NWmOy+bsOZOSqtOG0WkCrE8TVOd4duLK+9g==}
     engines: {node: '>=16'}
 
-  '@mysten/wallet-standard@0.13.6':
-    resolution: {integrity: sha512-WJmz/T2RduSRMOBTrgAEfYJZS2r9YmsUNwHbvmI0w4QHJudmLLdkjvtYOzKR2Cbylpw+lDohdxCZFQPuvPQlpQ==}
+  '@mysten/wallet-standard@0.13.17':
+    resolution: {integrity: sha512-f3masRTwD5qcQi9IWTqzxVayZd5daF1JIVolFU0vVxxQACOR7uBE6FyFlvTGSfpBnF1A8FQHrecANN+/0rdTTA==}
 
-  '@mysten/zksend@0.11.5':
-    resolution: {integrity: sha512-/zDXOM6NGfy2bUR5VYs3Y3IGJOuukInyswreOvZUN5EFXWq+PZ8Pz/4ERQ8BI9aarKJN22SpzjYbGzMVm72fEA==}
+  '@mysten/zksend@0.12.7':
+    resolution: {integrity: sha512-Kz9Jy9Ssp1twUQt2wZYfmMxoxKfmaVLVFBrR3sjHgKER+Jvk+L+7gjLczoQ2T4K9zPMEAfcQyUbc/sjn2G/Qrw==}
 
   '@next/env@14.2.9':
     resolution: {integrity: sha512-hnDAoDPMii31V0ivibI8p6b023jOF1XblWTVjsDUoZKwnZlaBtJFZKDwFqi22R8r9i6W08dThUWU7Bsh2Rg8Ww==}
@@ -1993,6 +1997,9 @@ packages:
     resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
 
+  jose@5.9.6:
+    resolution: {integrity: sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -2234,6 +2241,9 @@ packages:
   pirates@4.0.6:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
+
+  poseidon-lite@0.2.1:
+    resolution: {integrity: sha512-xIr+G6HeYfOhCuswdqcFpSX47SPhm0EpisWJ6h7fHlWwaVIvH3dLnejpatrtw6Xc6HaLrpq05y7VRfvDmDGIog==}
 
   possible-typed-array-names@1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}
@@ -2917,15 +2927,15 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@mysten/bcs@1.1.0':
+  '@mysten/bcs@1.2.0':
     dependencies:
       bs58: 6.0.0
 
-  '@mysten/dapp-kit@0.14.24(@tanstack/react-query@5.55.4(react@18.3.1))(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.2)':
+  '@mysten/dapp-kit@0.14.41(@tanstack/react-query@5.55.4(react@18.3.1))(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.2)':
     dependencies:
-      '@mysten/sui': 1.11.0(typescript@5.6.2)
-      '@mysten/wallet-standard': 0.13.6(typescript@5.6.2)
-      '@mysten/zksend': 0.11.5(typescript@5.6.2)
+      '@mysten/sui': 1.16.1(typescript@5.6.2)
+      '@mysten/wallet-standard': 0.13.17(typescript@5.6.2)
+      '@mysten/zksend': 0.12.7(typescript@5.6.2)
       '@radix-ui/react-dialog': 1.1.1(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-dropdown-menu': 2.1.1(@types/react-dom@18.3.0)(@types/react@18.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot': 1.1.0(@types/react@18.3.5)(react@18.3.1)
@@ -2946,18 +2956,18 @@ snapshots:
       - react-dom
       - typescript
 
-  '@mysten/kiosk@0.9.20(typescript@5.6.2)':
+  '@mysten/kiosk@0.9.32(typescript@5.6.2)':
     dependencies:
-      '@mysten/sui': 1.11.0(typescript@5.6.2)
+      '@mysten/sui': 1.16.2(typescript@5.6.2)
     transitivePeerDependencies:
       - '@gql.tada/svelte-support'
       - '@gql.tada/vue-support'
       - typescript
 
-  '@mysten/sui@1.11.0(typescript@5.6.2)':
+  '@mysten/sui@1.16.1(typescript@5.6.2)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
-      '@mysten/bcs': 1.1.0
+      '@mysten/bcs': 1.2.0
       '@noble/curves': 1.6.0
       '@noble/hashes': 1.5.0
       '@scure/bip32': 1.5.0
@@ -2966,6 +2976,8 @@ snapshots:
       bech32: 2.0.0
       gql.tada: 1.8.7(graphql@16.9.0)(typescript@5.6.2)
       graphql: 16.9.0
+      jose: 5.9.6
+      poseidon-lite: 0.2.1
       tweetnacl: 1.0.3
       valibot: 0.36.0
     transitivePeerDependencies:
@@ -2973,27 +2985,48 @@ snapshots:
       - '@gql.tada/vue-support'
       - typescript
 
-  '@mysten/suins@0.4.0(typescript@5.6.2)':
+  '@mysten/sui@1.16.2(typescript@5.6.2)':
     dependencies:
-      '@mysten/sui': 1.11.0(typescript@5.6.2)
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
+      '@mysten/bcs': 1.2.0
+      '@noble/curves': 1.6.0
+      '@noble/hashes': 1.5.0
+      '@scure/bip32': 1.5.0
+      '@scure/bip39': 1.4.0
+      '@suchipi/femver': 1.0.0
+      bech32: 2.0.0
+      gql.tada: 1.8.7(graphql@16.9.0)(typescript@5.6.2)
+      graphql: 16.9.0
+      jose: 5.9.6
+      poseidon-lite: 0.2.1
+      tweetnacl: 1.0.3
+      valibot: 0.36.0
     transitivePeerDependencies:
       - '@gql.tada/svelte-support'
       - '@gql.tada/vue-support'
       - typescript
 
-  '@mysten/wallet-standard@0.13.6(typescript@5.6.2)':
+  '@mysten/suins@0.4.1(typescript@5.6.2)':
     dependencies:
-      '@mysten/sui': 1.11.0(typescript@5.6.2)
+      '@mysten/sui': 1.16.2(typescript@5.6.2)
+    transitivePeerDependencies:
+      - '@gql.tada/svelte-support'
+      - '@gql.tada/vue-support'
+      - typescript
+
+  '@mysten/wallet-standard@0.13.17(typescript@5.6.2)':
+    dependencies:
+      '@mysten/sui': 1.16.1(typescript@5.6.2)
       '@wallet-standard/core': 1.0.3
     transitivePeerDependencies:
       - '@gql.tada/svelte-support'
       - '@gql.tada/vue-support'
       - typescript
 
-  '@mysten/zksend@0.11.5(typescript@5.6.2)':
+  '@mysten/zksend@0.12.7(typescript@5.6.2)':
     dependencies:
-      '@mysten/sui': 1.11.0(typescript@5.6.2)
-      '@mysten/wallet-standard': 0.13.6(typescript@5.6.2)
+      '@mysten/sui': 1.16.1(typescript@5.6.2)
+      '@mysten/wallet-standard': 0.13.17(typescript@5.6.2)
       mitt: 3.0.1
       nanostores: 0.10.3
       valibot: 0.36.0
@@ -4388,7 +4421,7 @@ snapshots:
       debug: 4.3.7
       enhanced-resolve: 5.17.1
       eslint: 9.10.0(jiti@1.21.6)
-      eslint-module-utils: 2.11.0(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.30.0)(eslint@9.10.0(jiti@1.21.6)))(eslint@9.10.0(jiti@1.21.6))
+      eslint-module-utils: 2.11.0(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.10.0(jiti@1.21.6))
       fast-glob: 3.3.2
       get-tsconfig: 4.8.0
       is-bun-module: 1.2.1
@@ -4401,7 +4434,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.11.0(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.30.0)(eslint@9.10.0(jiti@1.21.6)))(eslint@9.10.0(jiti@1.21.6)):
+  eslint-module-utils@2.11.0(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.10.0(jiti@1.21.6)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -4423,7 +4456,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.10.0(jiti@1.21.6)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.11.0(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.30.0)(eslint@9.10.0(jiti@1.21.6)))(eslint@9.10.0(jiti@1.21.6))
+      eslint-module-utils: 2.11.0(@typescript-eslint/parser@7.2.0(eslint@9.10.0(jiti@1.21.6))(typescript@5.6.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.10.0(jiti@1.21.6))
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -4881,6 +4914,8 @@ snapshots:
 
   jiti@1.21.6: {}
 
+  jose@5.9.6: {}
+
   js-tokens@4.0.0: {}
 
   js-yaml@4.1.0:
@@ -5106,6 +5141,8 @@ snapshots:
   pify@2.3.0: {}
 
   pirates@4.0.6: {}
+
+  poseidon-lite@0.2.1: {}
 
   possible-typed-array-names@1.0.0: {}
 

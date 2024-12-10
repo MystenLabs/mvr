@@ -6,6 +6,7 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { KioskClient, Network } from "@mysten/kiosk";
 import { createContext, useContext } from "react";
 import { SuiGraphQLClient } from "@mysten/sui/graphql";
+import { namedPackagesPlugin, TransactionPlugin } from "@mysten/sui/transactions";
 
 export type Clients = {
   mainnet: SuiClient;
@@ -19,9 +20,25 @@ export type Clients = {
     mainnet: SuiGraphQLClient;
     testnet: SuiGraphQLClient;
   };
+  mvrPlugin: {
+    mainnet: TransactionPlugin;
+    testnet: TransactionPlugin;
+  };
 };
 
 const mainnet = new SuiClient({ url: "https://suins-rpc.mainnet.sui.io:443" });
+
+const testnetNamedPackagesPlugin = namedPackagesPlugin({
+  suiGraphQLClient: new SuiGraphQLClient({
+    url: 'https://mvr-rpc.sui-testnet.mystenlabs.com/graphql'
+  })
+});
+
+const mainnetNamedPackagesPlugin = namedPackagesPlugin({
+  suiGraphQLClient: new SuiGraphQLClient({
+    url: 'https://mvr-rpc.sui-mainnet.mystenlabs.com/graphql'
+  })
+});
 
 export const DefaultClients: Clients = {
   mainnet,
@@ -41,6 +58,10 @@ export const DefaultClients: Clients = {
     testnet: new SuiGraphQLClient({
       url: "https://mvr-rpc.sui-testnet.mystenlabs.com",
     }),
+  },
+  mvrPlugin: {
+    mainnet: mainnetNamedPackagesPlugin,
+    testnet: testnetNamedPackagesPlugin,
   },
 };
 

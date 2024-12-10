@@ -19,16 +19,13 @@ export type GithubPackageInfo = {
 
 export class PackageInfo {
   transaction: Transaction;
-  packageId: string;
   info: TransactionObjectArgument | string | undefined;
 
   constructor(
     transaction: Transaction,
-    packageId: string,
     packageInfo?: TransactionObjectArgument | string,
   ) {
     this.transaction = transaction;
-    this.packageId = packageId;
     if (packageInfo) this.info = this.transaction.object(packageInfo);
 
     return this;
@@ -38,7 +35,7 @@ export class PackageInfo {
     if (this.info) throw new Error("PackageInfo already initialized");
 
     this.info = this.transaction.moveCall({
-      target: `${this.packageId}::package_info::new`,
+      target: `@mvr/metadata::package_info::new`,
       arguments: [this.transaction.object(upgradeCap)],
     });
 
@@ -54,7 +51,7 @@ export class PackageInfo {
     this.#checkInitialized();
 
     const display = this.transaction.moveCall({
-      target: `${this.packageId}::display::new`,
+      target: `@mvr/metadata::display::new`,
       arguments: [
         this.transaction.pure.string(label),
         this.transaction.pure.string(gradientFrom),
@@ -64,7 +61,7 @@ export class PackageInfo {
     });
 
     this.transaction.moveCall({
-      target: `${this.packageId}::package_info::set_display`,
+      target: `@mvr/metadata::package_info::set_display`,
       arguments: [this.transaction.object(this.info!), display],
     });
 
@@ -75,7 +72,7 @@ export class PackageInfo {
     this.#checkInitialized();
 
     const git = this.transaction.moveCall({
-      target: `${this.packageId}::git::new`,
+      target: `@mvr/metadata::git::new`,
       arguments: [
         this.transaction.pure.string(gitInfo.gitRepository),
         this.transaction.pure.string(gitInfo.gitSubdirectory),
@@ -84,7 +81,7 @@ export class PackageInfo {
     });
 
     this.transaction.moveCall({
-      target: `${this.packageId}::package_info::set_git_versioning`,
+      target: `@mvr/metadata::package_info::set_git_versioning`,
       arguments: [
         this.transaction.object(this.info!),
         this.transaction.pure.u64(version),
@@ -104,7 +101,7 @@ export class PackageInfo {
   }) {
     this.#checkInitialized();
     this.transaction.moveCall({
-      target: `${this.packageId}::package_info::transfer`,
+      target: `@mvr/metadata::package_info::transfer`,
       arguments: [
         this.transaction.object(this.info!),
         selfTransfer ? sender(this.transaction) : to!,

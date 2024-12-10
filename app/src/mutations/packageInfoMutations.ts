@@ -1,16 +1,12 @@
-import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { PackageInfo } from "@/data/package-info";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { GitVersion } from "@/hooks/useVersionsTable";
-import { Constants } from "@/lib/constants";
 import { Network, PackageDisplayType } from "@/utils/types";
 import { Transaction } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 
 export function useCreatePackageInfoMutation(network: Network) {
-  const { [network]: client } = useSuiClientsContext();
-
-  const { executeTransaction } = useTransactionExecution(client);
+  const { executeTransaction } = useTransactionExecution(network as 'mainnet' | 'testnet');
 
   return useMutation({
     mutationKey: ["create-package-info"],
@@ -28,7 +24,7 @@ export function useCreatePackageInfoMutation(network: Network) {
       if (!upgradeCapId) throw new Error("upgradeCapId is required");
 
       // Call the API to create a new package info object
-      const packageInfo = new PackageInfo(tx, Constants.packageInfoIds[network]);
+      const packageInfo = new PackageInfo(tx);
 
       packageInfo.new(upgradeCapId);
       packageInfo.setDisplay(
@@ -49,8 +45,7 @@ export function useCreatePackageInfoMutation(network: Network) {
 }
 
 export function useUpdatePackageInfoMutation(network: Network) {
-  const { [network]: client } = useSuiClientsContext();
-  const { executeTransaction } = useTransactionExecution(client);
+  const { executeTransaction } = useTransactionExecution(network as 'mainnet' | 'testnet');
 
   return useMutation({
     mutationKey: ["update-package-info"],
@@ -70,7 +65,6 @@ export function useUpdatePackageInfoMutation(network: Network) {
       // Call the API to create a new package info object
       const packageInfo = new PackageInfo(
         tx,
-        Constants.packageInfoIds[network],
         packageInfoId,
       );
 

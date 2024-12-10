@@ -33,7 +33,7 @@ import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
 const formSchema = z
   .object({
     nsName: z.string().readonly(),
-    name: z.string().min(3),
+    name: z.string().min(1),
     mainnet: z.string().nullable().optional(),
     testnet: z.string().nullable().optional(),
     acceptMainnetWarning: z.boolean().optional(),
