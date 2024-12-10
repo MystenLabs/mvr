@@ -4,7 +4,7 @@ import { useSignTransaction } from '@mysten/dapp-kit';
 import { useState } from 'react';
 import {toast} from 'sonner';
 import { Transaction } from '@mysten/sui/transactions';
-import { SuiClient, SuiTransactionBlockResponse } from '@mysten/sui/client';
+import { SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { isValidSuiAddress, toB64 } from '@mysten/sui/utils';
 import { useMVRContext } from '@/components/providers/mvr-provider';
 import { useSuiClientsContext } from '@/components/providers/client-provider';
@@ -49,7 +49,8 @@ export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 
 		try {
 			const signature = await signTransaction({
-				transaction: tx,
+				// @ts-ignore temporary due to dapp-kit not deploying.
+				transaction: tx!,
 			});
 
 			const res = await client.executeTransactionBlock({
