@@ -11,13 +11,14 @@ export const AnimatedCheckmark = () => {
           cx="26"
           cy="26"
           r="25"
-          className="stroke-current stroke-content-primary"
+          stroke="currentColor"
           strokeWidth="2"
           fill="none"
         />
         <path
           d="M16 26l8 8 12-16"
-          className="checkmark stroke-current stroke-content-primary"
+          className="checkmark"
+          stroke="currentColor"
           strokeWidth="2"
           fill="none"
         />
