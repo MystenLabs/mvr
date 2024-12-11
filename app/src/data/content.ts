@@ -120,7 +120,7 @@ export const FAQContent = {
     },
     {
       title: "What aspects of MVR records are immutable?",
-      content: `Once an MVR record has been set to point at a particular package, it can only ever point to that package or upgraded versions of that package. This is to prevent bait-and-switch attacks. However, the source code location of the package can be changed at any time.`,
+      content: `After an MVR record has been set to point at a particular package, it can only ever point to that package or upgraded versions of that package. This is to prevent bait-and-switch attacks. However, the source code location of the package can be changed at any time.`,
     },
     {
       title: "What are the performance characteristics of using MVR?",
