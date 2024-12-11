@@ -95,7 +95,8 @@ export const FAQContent = {
   items: [
     {
       title: "What is MVR? ",
-      content: `MVR is a name registration system for Move packages. You can use an MVR app any time you would previously use a 64-character hex address. MVR integrates into Sui developer tooling, enabling developers to manage dependencies in a similar manner to NPM or Cargo, but targeted to the needs of Sui builders. By using an MVR app in your PTBs, your PTB will always use the latest version of the package, rather than having to update the address of the package you are calling on-chain. With MVR, builders can feel secure about which packages they’re actually calling, because their code has human-readable names and not inscrutable series of letters and numbers. MVR is open-source and uses immutable records on Sui as the source of truth. Further, MVR encourages Sui builders to make their packages open-source and easy to integrate into other projects. In the future, MVR will add features to surface other trust signals to make package selection easier, including auditor reports. Our hope is that MVR becomes the repository of Move packages in the same sense as NPM or Cargo, but built for the decentralized world.`,
+      content: `MVR is a name registration system for Move packages. You can use an MVR app any time you would previously use a 64-character hex address. 
+      <br/>MVR integrates into Sui developer tooling, enabling developers to manage dependencies in a similar manner to NPM or Cargo, but targeted to the needs of Sui builders. <br/>By using an MVR app in your PTBs, your PTB will always use the latest version of the package, rather than having to update the address of the package you are calling on-chain. <br/>With MVR, builders can feel secure about which packages they’re actually calling, because their code has human-readable names and not inscrutable series of letters and numbers. MVR is open-source and uses immutable records on Sui as the source of truth. <br/>Further, MVR encourages Sui builders to make their packages open-source and easy to integrate into other projects. In the future, MVR will add features to surface other trust signals to make package selection easier, including auditor reports. Our hope is that MVR becomes the repository of Move packages in the same sense as NPM or Cargo, but built for the decentralized world.`,
     },
     {
       title: "Why would I want to use MVR?",
@@ -135,7 +136,7 @@ export const FAQContent = {
   },
   {
     title: "What happens if the SuiNS name I registered my MVR package with expires?",
-    content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
+    content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package on mainnet. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
   }
   ],
 };
