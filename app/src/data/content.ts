@@ -128,7 +128,7 @@ export const FAQContent = {
     },
     {
       title: "How much does a MVR name cost?",
-      content: `MVR records are free once you have a SuiNS name for them to live under.`,
+      content: `MVR records are free. You just need a SuiNS name for them to live under.`,
     },
   {
     title: "How can I get support for MVR?",
