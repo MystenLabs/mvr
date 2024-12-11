@@ -116,7 +116,7 @@ export const FAQContent = {
     },
     {
       title: "What metadata is saved under an application?",
-      content: `An MVR record contains two things. The package address on chain, and the source code for Move packages depending on the MVR record's package. This is an off-chain URL (for now) which must, at the time of registration, contain an address field in the Move.toml or Move.lock file`,
+      content: `An MVR record contains two pieces of important data: The package address on chain, and the source code for Move packages depending on the MVR record's package. This is an off-chain URL (for now) that must, at the time of registration, contain an address field in the Move.toml or Move.lock file`,
     },
     {
       title: "What aspects of MVR records are immutable?",
