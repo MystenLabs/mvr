@@ -10,9 +10,15 @@ With MVR, builders can feel secure about which packages they’re actually calli
 
 In the future, MVR will add features to surface other trust signals to make package selection easier, including auditor reports. Our hope is that MVR becomes the repository of Move packages in the same sense as NPM or Cargo, but built for the decentralized world.
 
+# Documentation
+Detailed documentation is available here: [https://docs.suins.io/move-registry](https://docs.suins.io/move-registry)
+
+# MVR Web App
+Use the Web App to register your package: [https://www.moveregistry.com/apps](https://www.moveregistry.com/apps)
+
 # Using MVR
 
 Currently, there are two main surfaces to use MVR.
 
-* You can use MVR while *building* Move code, to manage your dependencies. For more on this, see mvr-cli/README.md.
-* You can use MVR while *calling* Move code in [Programmable Transaction Blocks](https://docs.sui.io/concepts/transactions/prog-txn-blocks). For more on this, see the [Typescript SDK Move Registry plugin](https://github.com/MystenLabs/sui/blob/main/sdk/typescript/src/transactions/plugins/NamedPackagesPlugin.ts).
+* You can use MVR while *building* Move code, to manage your dependencies. For more on this, see [README.md](mvr-cli/README.md).
+* You can use MVR while *calling* Move code in [Programmable Transaction Blocks](https://docs.sui.io/concepts/transactions/prog-txn-blocks). See the docs for such an example using the TypeScript SDK: [https://docs.suins.io/move-registry/tooling/typescript-sdk](https://docs.suins.io/move-registry/tooling/typescript-sdk)
