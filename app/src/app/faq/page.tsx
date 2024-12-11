@@ -21,7 +21,9 @@ export default function Faq() {
             {FAQContent.items.map((item, index) => (
               <AccordionItem key={index} value={item.title + index}>
                 <AccordionTrigger>{item.title}</AccordionTrigger>
-                <AccordionContent>{item.content}</AccordionContent>
+                <AccordionContent >
+                  <div dangerouslySetInnerHTML={{ __html: item.content }} />
+                </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>

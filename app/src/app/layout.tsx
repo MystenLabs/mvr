@@ -9,7 +9,7 @@ import { BaseLayout } from "@/components/layouts/BaseLayout";
 export const metadata: Metadata = {
   title: "Move Registry",
   description: "Move Registry (mvr) is the on-chain package registry on Sui!",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/favicon.png" }],
 };
 
 export default function RootLayout({
