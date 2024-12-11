@@ -14,6 +14,10 @@ const Menu = [
     name: "Terms of Use",
     href: "/terms",
   },
+  {
+    name: "Documentation",
+    href: "https://docs.suins.io/move-registry",
+  },
 ];
 const Social = [
   {
@@ -39,7 +43,11 @@ export default function Footer() {
       <div className="container items-center gap-Small py-Regular md:flex md:justify-between">
         <div className="items-center gap-Large md:flex">
           {Menu.map(({ name, href }) => (
-            <Link key={name} href={href}>
+            <Link
+              key={name}
+              href={href}
+              target={href.startsWith("http") ? "_blank" : undefined}
+            >
               {
                 <Text
                   variant="small/regular"
@@ -53,7 +61,7 @@ export default function Footer() {
             </Link>
           ))}
         </div>
-        <div className="flex flex-wrap justify-end gap-Small items-center max-md:pt-Large">
+        <div className="flex flex-wrap items-center justify-end gap-Small max-md:pt-Large">
           <Text
             variant="xsmall/regular"
             mono
