@@ -104,7 +104,7 @@ export const FAQContent = {
     },
     {
       title: "What does MVR stand for?",
-      content: `MoVe Registry.`,
+      content: `Move Registry.`,
     },
     {
       title: "How do I register an MVR name?",

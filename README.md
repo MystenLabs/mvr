@@ -12,11 +12,7 @@ In the future, MVR will add features to surface other trust signals to make pack
 
 # Using MVR
 
-Right now there are two main surfaces to use MVR.
+Currently, there are two main surfaces to use MVR.
 
 * You can use MVR while *building* Move code, to manage your dependencies. For more on this, see mvr-cli/README.md.
 * You can use MVR while *calling* Move code in [Programmable Transaction Blocks](https://docs.sui.io/concepts/transactions/prog-txn-blocks). For more on this, see the [Typescript SDK Move Registry plugin](https://github.com/MystenLabs/sui/blob/main/sdk/typescript/src/transactions/plugins/NamedPackagesPlugin.ts).
-
-# MVR Indexer
-
-Move Registry depends on the MVR indexer. A public good instance of this indexer is running at http://address.domain:port. For instructions on running your own instance of this indexer, see [link to indexer](http://link/to/indexer).
