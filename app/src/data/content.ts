@@ -13,9 +13,9 @@ export const Content = {
     },
     wallet: {
       icon: "👋🏽",
-      title: "Connect your wallet or enter a custom address",
+      title: "Connect your wallet",
       description:
-        "To get started, connect your wallet or use a custom address.",
+        "To get started, connect your wallet.",
       button: "Read our FAQ",
     },
     suinsNames: {

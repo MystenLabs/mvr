@@ -14,6 +14,10 @@ const Menu = [
     name: "Terms of Use",
     href: "/terms",
   },
+  {
+    name: "Documentation",
+    href: "https://docs.suins.io/move-registry",
+  },
 ];
 const Social = [
   {
