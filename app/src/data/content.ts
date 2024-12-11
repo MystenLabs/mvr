@@ -136,7 +136,7 @@ export const FAQContent = {
   },
   {
     title: "What happens if the SuiNS name I registered my MVR package with expires?",
-    content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package on mainnet. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
+    content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package on Mainnet. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
   }
   ],
 };
