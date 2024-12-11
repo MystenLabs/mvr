@@ -112,7 +112,7 @@ export const FAQContent = {
     },
     {
       title: "What's the difference between apps and packages?",
-      content: `An MVR app name can point to the latest or any particular version (numbered consecutively from 1) of a package. More than one MVR app can be configured to point to the same package. `,
+      content: `An MVR app name can point to the latest or any particular version (numbered consecutively from 1) of a package. More than one MVR app can be configured to point to the same package.`,
     },
     {
       title: "What metadata is saved under an application?",
