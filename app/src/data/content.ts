@@ -131,7 +131,7 @@ export const FAQContent = {
     },
   {
     title: "How can I get support for MVR?",
-    content: `See https://sui.io/developers#support. Quick questions should be asked in Discord or Telegram. To get unblocked on larger issues, consider signing up for Sui Engineering Office Hours.`,
+    content: `See <a href="https://sui.io/developers#support" target="_blank">https://sui.io/developers#support</a>. Quick questions should be asked in Discord or Telegram. To get unblocked on larger issues, consider signing up for Sui Engineering Office Hours.`,
   },
   {
     title: "What happens if the SuiNS name I registered my MVR package with expires?",

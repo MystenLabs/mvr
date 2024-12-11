@@ -39,3 +39,24 @@
 html {
   @apply bg-background-dark text-content-primary;
 }
+
+#terms {
+  @apply py-Regular;
+}
+
+#terms ol {
+  @apply list-decimal;
+}
+#terms ol ol {
+  @apply list-disc
+}
+
+#terms li {
+  @apply mb-Small ml-Regular;
+}
+#terms li > strong {
+  @apply mb-Small;
+}
+#terms p {
+  @apply mb-Small;
+}
