@@ -108,7 +108,7 @@ export const FAQContent = {
     },
     {
       title: "How do I register an MVR name?",
-      content: `First, register a SuiNS name. MVR names are scoped within a SuiNS name. If your SuiNS name is @name (previously name.sui), and you want to create an MVR name called app, the MVR name will be @name/app. Next, upload your Move package on testnet or mainnet. Finally, navigate to the MVR frontend and complete the registration flow`,
+      content: `First, register a SuiNS name. MVR names are scoped within a SuiNS name. If your SuiNS name is @name (previously name.sui), and you want to create an MVR name called app, the MVR name will be @name/app. Next, upload your Move package on Testnet or Mainnet. Finally, navigate to the MVR frontend and complete the registration flow.`,
     },
     {
       title: "What's the difference between apps and packages?",
