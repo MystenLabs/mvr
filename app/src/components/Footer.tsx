@@ -14,10 +14,6 @@ const Menu = [
     name: "Terms of Use",
     href: "/terms",
   },
-  {
-    name: "Privacy Policy",
-    href: "/privacy-policy",
-  },
 ];
 const Social = [
   {
