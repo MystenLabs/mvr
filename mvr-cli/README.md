@@ -4,7 +4,7 @@ After [installing](#installation) the MVR CLI, use `mvr --help` to explore which
 ### Examples
 
 #### Adding a dependency
-In the root of a Move project, use `mvr add @package_name/app` to add that dependency to the `Move.toml` file.
+In the root of a Move project, use `mvr add @package_name/app --network [testnet | mainnet]` to add that dependency to the `Move.toml` file.
 
 #### Finding the metadata of a package
 In a terminal, run `mvr resolve @package_name/app` to find the metadata for a specific package and app.
