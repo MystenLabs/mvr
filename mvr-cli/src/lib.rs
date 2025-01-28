@@ -19,9 +19,9 @@ use types::VersionedName;
 use sui_client::Client;
 use sui_client::DynamicFieldOutput;
 use sui_client::PaginationFilter;
-use sui_types::types::Address;
-use sui_types::types::ObjectId;
-use sui_types::types::TypeTag;
+use sui_types::Address;
+use sui_types::ObjectId;
+use sui_types::TypeTag;
 
 use std::collections::{HashMap, HashSet};
 use std::env;

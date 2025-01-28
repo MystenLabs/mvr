@@ -79,6 +79,7 @@ impl TryFrom<&DynamicFieldOutput> for Name {
 
     fn try_from(df: &DynamicFieldOutput) -> Result<Self> {
         df.deserialize_name(&NAME_TYPETAG)
+            .map_err(|e| anyhow::anyhow!(e))
     }
 }
 

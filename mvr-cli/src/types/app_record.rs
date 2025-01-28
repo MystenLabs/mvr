@@ -1,6 +1,6 @@
 use sui_client::DynamicFieldOutput;
-use sui_types::types::Address;
-use sui_types::types::ObjectId;
+use sui_types::Address;
+use sui_types::ObjectId;
 
 use anyhow::Result;
 use serde::Deserialize;
@@ -32,5 +32,6 @@ impl TryFrom<&DynamicFieldOutput> for AppRecord {
 
     fn try_from(df: &DynamicFieldOutput) -> Result<Self> {
         df.deserialize_value(&APP_REC_TYPETAG)
+            .map_err(|e| anyhow::anyhow!(e))
     }
 }
