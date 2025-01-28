@@ -789,11 +789,11 @@ async fn package_at_version(
         PackageInfoNetwork::Testnet => Client::new(TESTNET_GQL_URL),
     }?;
 
-    let address = client
-        .object(Address::from_str(address)?, Some(version))
+    let addr = client
+        .package(Address::from_str(address)?, Some(version))
         .await?;
 
-    Ok(address.map(|obj| obj.object_id()))
+    Ok(addr.map(|pkg| pkg.id))
 }
 
 fn extract_index(dynamic_field: &DynamicFieldOutput) -> Result<u64> {
