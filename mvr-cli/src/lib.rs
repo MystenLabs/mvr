@@ -19,9 +19,9 @@ use types::VersionedName;
 use sui_client::Client;
 use sui_client::DynamicFieldOutput;
 use sui_client::PaginationFilter;
-use sui_types::types::Address;
-use sui_types::types::ObjectId;
-use sui_types::types::TypeTag;
+use sui_types::Address;
+use sui_types::ObjectId;
+use sui_types::TypeTag;
 
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -789,11 +789,11 @@ async fn package_at_version(
         PackageInfoNetwork::Testnet => Client::new(TESTNET_GQL_URL),
     }?;
 
-    let address = client
-        .object(Address::from_str(address)?, Some(version))
+    let addr = client
+        .package(Address::from_str(address)?, Some(version))
         .await?;
 
-    Ok(address.map(|obj| obj.object_id()))
+    Ok(addr.map(|pkg| pkg.id))
 }
 
 fn extract_index(dynamic_field: &DynamicFieldOutput) -> Result<u64> {

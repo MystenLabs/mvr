@@ -64,6 +64,9 @@ if ! diff -u demo-package/expected_move.toml demo-package/Move.toml > /dev/null;
   exit 1
 fi
 
+# Add a dependency which has more than 1 versions (and rely on the latest).
+cd demo-package && mvr add @testingafreeclaim/upgraded --network mainnet && cd ..
+
 ###########################################
 # Invokes `mvr` when building the package #
 ###########################################

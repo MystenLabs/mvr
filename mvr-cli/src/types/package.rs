@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use sui_client::DynamicFieldOutput;
-use sui_types::types::ObjectId;
+use sui_types::ObjectId;
 
 use crate::PACKAGE_INFO_TYPETAG;
 
@@ -36,6 +36,7 @@ impl TryFrom<DynamicFieldOutput> for PackageInfo {
 
     fn try_from(df: DynamicFieldOutput) -> Result<Self> {
         df.deserialize_value(&PACKAGE_INFO_TYPETAG)
+            .map_err(|e| anyhow::anyhow!(e))
     }
 }
 
