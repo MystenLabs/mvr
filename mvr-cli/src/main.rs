@@ -5,8 +5,10 @@ use mvr::{
     constants::MINIMUM_BUILD_SUI_VERSION, resolve_move_dependencies,
 };
 
+bin_version::bin_version!();
+
 #[derive(Parser)]
-#[command(author, version, about)]
+#[command(author, version = VERSION, propagate_version = true, about)]
 struct Cli {
     #[arg(long)]
     resolve_move_dependencies: Option<String>,
