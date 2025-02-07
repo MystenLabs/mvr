@@ -1,0 +1,11 @@
+[package]
+name = "pg_registry"
+edition = "2024.beta"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet", override = true }
+mvr_subdomain_proxy = { local = "../proxy" }
+
+[addresses]
+pg_registry = "0x0"
+
