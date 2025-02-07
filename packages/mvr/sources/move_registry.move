@@ -191,7 +191,7 @@ public fun set_version(
 }
 
 /// Check if an app is part of the registry.
-public(package) fun app_exists(registry: &MoveRegistry, name: Name): bool {
+public fun app_exists(registry: &MoveRegistry, name: Name): bool {
     registry.registry.contains(name)
 }
 
