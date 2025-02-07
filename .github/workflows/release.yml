@@ -122,7 +122,7 @@ jobs:
       - name: Rebase release branch
         run: |
           git fetch --all
-          git pull
           git switch release
+          git pull
           git rebase origin main
           git push
