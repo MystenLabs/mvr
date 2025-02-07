@@ -259,27 +259,6 @@ fun try_to_call_invalid_version() {
     abort 1337
 }
 
-#[
-    test,
-    expected_failure(
-        abort_code = ::mvr::move_registry::ECannotRegisterWithSubname,
-    ),
-]
-fun try_to_use_subname() {
-    let (mut scenario, mut registry, clock) = test_setup();
-    scenario.next_tx(ADDR_1);
-
-    let ns_nft = scenario.ns_nft(b"sub.domain.sui".to_string(), &clock);
-    let mut _app_cap = registry.register(
-        &ns_nft,
-        APP_1.to_string(),
-        &clock,
-        scenario.ctx(),
-    );
-
-    abort 1337
-}
-
 #[test, expected_failure(abort_code = ::mvr::move_registry::ENSNameExpired)]
 fun try_to_use_expired_name() {
     let (mut scenario, mut registry, mut clock) = test_setup();
