@@ -87,8 +87,6 @@ export function useCreateAppMutation() {
         sender(tx),
       );
 
-      // console.log(tx.getData());
-
       const res = await executeTransaction(tx);
       return res;
     },

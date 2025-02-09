@@ -24,7 +24,7 @@ import { GitVersion } from "@/hooks/useVersionsTable";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LucideFileWarning, Terminal } from "lucide-react";
+import { LucideFileWarning, Terminal, VerifiedIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppQueryKeys } from "@/utils/types";
 import {
@@ -50,16 +50,23 @@ const formSchema = z.object({
   tag: z.string(),
 });
 
-export default function CreateVersion({
-  type = "add",
+const DefaultValues = {
+  version: undefined,
+  repository: "",
+  path: "",
+  tag: "",
+};
+
+export default function CreateOrUpdateVersion({
   closeDialog,
   addUpdate,
   maxVersion,
   packageAddress,
   taken = [],
+  updateState,
 }: {
   taken?: (number | string)[];
-  type?: "add" | "update" | "delete";
+  updateState?: GitVersion | null;
   maxVersion?: number;
   packageAddress: string;
   addUpdate: (update: GitVersion) => void;
@@ -73,7 +80,19 @@ export default function CreateVersion({
 
   const client = useQueryClient();
 
+  useEffect(() => {
+    if (updateState) {
+      form.setValue("version", updateState.version);
+      form.setValue("repository", updateState.repository);
+      form.setValue("path", updateState.path);
+      form.setValue("tag", updateState.tag);
+    } else {
+      form.reset(DefaultValues);
+    }
+  }, [updateState]);
+
   const isVersionValid = () => {
+    if (updateState) return true;
     const current = +form.getValues().version;
     if (!maxVersion) return false;
     if (current > maxVersion) return false;
@@ -85,16 +104,17 @@ export default function CreateVersion({
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "onBlur",
     resolver: zodResolver(formSchema),
+    defaultValues: DefaultValues,
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     addUpdate({
-      action: type,
+      action: updateState ? "update" : "add",
       ...values,
       path: values.path ?? "",
     });
 
-    form.reset();
+    form.reset(DefaultValues);
     closeDialog();
   }
 
@@ -108,8 +128,6 @@ export default function CreateVersion({
   const isComplete = () => {
     const values = form.getValues();
 
-    console.log(values);
-    console.log(isVersionValid());
     return (
       values.version && values.repository && values.tag && isVersionValid()
     );
@@ -121,8 +139,14 @@ export default function CreateVersion({
       if (!taken.includes(+i)) options.push({ value: i, label: i.toString() });
     }
 
+    if (updateState) {
+      options.push({
+        value: updateState.version,
+        label: updateState.version.toString(),
+      });
+    }
     return options;
-  }, [maxVersion, taken]);
+  }, [maxVersion, taken, updateState]);
 
   const validateConfig = async () => {
     if (!isComplete()) return;
@@ -224,6 +248,7 @@ export default function CreateVersion({
                   <Select
                     onValueChange={(val) => field.onChange(+val)}
                     defaultValue={field.value?.toString()}
+                    disabled={!!updateState}
                   >
                     <FormControl>
                       <SelectTrigger disabled={versionOptions.length === 0}>
@@ -307,11 +332,13 @@ export default function CreateVersion({
               <>
                 <Button
                   type="button"
+                  variant="outline"
                   className="w-fit"
                   isLoading={isValidatingConfig}
                   onClick={() => validateConfig()}
                 >
-                  Validate configuration
+                  <VerifiedIcon className="mr-3 h-4 w-4" />
+                  Validate configuration (optional)
                 </Button>
 
                 <Alert>
@@ -330,7 +357,8 @@ export default function CreateVersion({
                       matches the version you're trying to create, as well as
                       the package ids (original / published-at). <br />
                       <br />* This does not verify the source, it only verifies
-                      the configuration, and might report false positives.
+                      the configuration, and can end up with many false
+                      positives.
                     </Text>
                   </AlertDescription>
                 </Alert>
@@ -359,7 +387,7 @@ export default function CreateVersion({
               rightBtnDisabled={
                 !form.formState.isValid || (!isVersionValid() && !configError)
               }
-              rightBtnText="Create Version"
+              rightBtnText={updateState ? "Update Version" : "Create Version"}
               leftBtnHandler={closeDialog}
             />
           </div>
