@@ -76,7 +76,7 @@ const AppViewerWrapper = ({
         {name}
       </Text>
       <DialogTrigger>
-        <Button variant="tertiary">Edit Application</Button>
+        <Button variant="tertiary">Edit Package</Button>
       </DialogTrigger>
       <div className="py-Regular">{children}</div>
     </Dialog>

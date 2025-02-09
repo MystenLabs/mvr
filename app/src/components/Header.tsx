@@ -26,11 +26,11 @@ import { MenuIcon } from "lucide-react";
 
 const Links = [
   {
-    name: "Apps",
+    name: "Packages",
     href: "/apps",
   },
   {
-    name: "Packages",
+    name: "Metadata",
     href: "/packages",
   },
 ];
