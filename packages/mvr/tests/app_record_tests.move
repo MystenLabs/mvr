@@ -88,6 +88,7 @@ fun name(app: String): Name {
     name::new(app, domain)
 }
 
+#[allow(lint(self_transfer))]
 fun pkg_info(ctx: &mut TxContext): PackageInfo {
     let mut upgrade_cap = package::test_publish(@0xdee.to_id(), ctx);
     let pkg_info = package_info::new(&mut upgrade_cap, ctx);

@@ -42,9 +42,6 @@ const EAppDoesNotExist: vector<u8> = b"App does not exist.";
 const ENSNameExpired: vector<u8> =
     b"SuiNS name has expired and cannot be used.";
 #[error]
-const ECannotRegisterWithSubname: vector<u8> =
-    b"SuiNS subnames cannot be used yet.";
-#[error]
 const EVersionMismatch: vector<u8> =
     b"Version mismatch. Please use the latest package version.";
 
@@ -98,8 +95,6 @@ public fun register(
     registry.assert_is_valid_version();
     let app_name = name::new(name, nft.domain());
     assert!(!nft.has_expired(clock), ENSNameExpired);
-    // We do not allow subnames in the current phase.
-    assert!(!nft.domain().is_subdomain(), ECannotRegisterWithSubname);
 
     let (new_record, cap) = app_record::new(app_name, object::id(nft), ctx);
     registry.registry.add(app_name, new_record);
@@ -196,7 +191,7 @@ public fun set_version(
 }
 
 /// Check if an app is part of the registry.
-public(package) fun app_exists(registry: &MoveRegistry, name: Name): bool {
+public fun app_exists(registry: &MoveRegistry, name: Name): bool {
     registry.registry.contains(name)
 }
 
