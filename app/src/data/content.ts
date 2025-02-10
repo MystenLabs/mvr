@@ -23,7 +23,7 @@ export const Content = {
       title: "Let's get started!",
       description:
         "You need a SuiNS name to register your first app. Create a SuiNS name by clicking the button below.",
-      button: "Visit suins.io to get a name",
+      button: "Visit suins.io to get a name for your org / project",
     },
     versions: {
       title: "No versions found",
@@ -35,23 +35,23 @@ export const Content = {
       icon: "🧑‍💻",
       title: "Onwards.",
       description:
-        "Create your first application by clicking the button below.",
-      button: "Add an Application",
+        "Create your first package by clicking the button below.",
+      button: "Add a package by clicking the button below",
     },
   },
   suinsNames: {
     icon: "🚀",
     title: "Let's get started!",
     description:
-      "Select a name from your owned names to start managing your applications.",
-    button: "Visit suins.io to get a name",
+      "Select an org / project to start managing your packages.",
+    button: "Visit suins.io to get a name for your org / project",
   },
   package: {
     icon: "📦",
     title: "Let's get started!",
     description:
       "It seems like you have some packages. Create a new package metadata object by clicking the button below.",
-    button: "Create new Package Metadata",
+    button: "Create new Metadata",
   },
   invalidCap: {
     icon: "❌",
@@ -66,18 +66,18 @@ export const Content = {
   },
   noPackageConnected: {
     icon: "📦",
-    title: "No package connection.",
+    title: "No active connection.",
     description:
-      "This application does not have a package connected on this network. Connect your package so MVR resolution gets enabled.",
-    button: "Edit Application",
+      "No package ID connected. This package does not have a mainnet ID connected. Add an ID so MVR resoution gets enabled.",
+    button: "Select a metadata object",
   },
 
   app: {
-    button: "Create another Application",
+    button: "Create another Package",
     connected: {
       title: 'There is an active connection',
-      description: 'This application is connected to a package on',
-      button: 'View Package Details',
+      description: 'This package is connected on',
+      button: 'View Details',
   
     }
   },

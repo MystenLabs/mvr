@@ -127,7 +127,7 @@ export function PackageVersions({
           <Version
             key={x.version}
             version={x}
-            onUpdate={() => {
+            onUpdate={disableEdits ? undefined :() => {
               setForUpdate({ ...x });
               setShowCreationDialog(true);
             }}

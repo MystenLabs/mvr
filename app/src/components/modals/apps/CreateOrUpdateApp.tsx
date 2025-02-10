@@ -155,7 +155,7 @@ export default function CreateOrUpdateApp({
               name="nsName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Application Organization</FormLabel>
+                  <FormLabel>Organization / Project</FormLabel>
                   <FormControl>
                     <Input {...field} disabled={true} />
                   </FormControl>
@@ -169,7 +169,7 @@ export default function CreateOrUpdateApp({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Application name</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Type your application name"
@@ -188,7 +188,7 @@ export default function CreateOrUpdateApp({
                 name="mainnet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mainnet package (optional)</FormLabel>
+                    <FormLabel>Mainnet metadata (optional)</FormLabel>
                     <FormControl>
                       <PackageInfoSelector
                         disabled={isUpdate && !!appRecord.mainnet}
@@ -199,7 +199,7 @@ export default function CreateOrUpdateApp({
                     {isUpdate && appRecord.mainnet && (
                       <FormDescription className="flex items-center gap-Small">
                         <AlertCircleIcon size={15} />
-                        Mainnet package has already been assigned and cannot
+                        Mainnet metadata has already been assigned and cannot
                         change.
                       </FormDescription>
                     )}
@@ -213,7 +213,7 @@ export default function CreateOrUpdateApp({
                 name="testnet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Testnet package (optional)</FormLabel>
+                    <FormLabel>Testnet metadata (optional)</FormLabel>
                     <FormControl>
                       <PackageInfoSelector
                         options={testnetPackageInfos ?? []}

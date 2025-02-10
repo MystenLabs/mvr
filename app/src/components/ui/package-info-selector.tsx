@@ -64,7 +64,7 @@ export function PackageInfoSelector({
               variant="small/semibold"
               className="col-span-2 mb-XSmall border-b border-border-classic pb-Small md:col-span-3"
             >
-              Select a package
+              Select a metadata object
             </Text>
             {options.map((option) => (
               <div
