@@ -16,8 +16,8 @@ const mainPackageUpgrade = async () => {
     throw new Error("No gas object supplied for a mainnet transaction");
 
   const currentDir = process.cwd();
-  const suinsDir = `${currentDir}/../packages/suins`;
-  const txFilePath = `${currentDir}/tx/tx-data.txt`;
+  const suinsDir = `${currentDir}/../packages/mvr`;
+  const txFilePath = `${currentDir}/multisig/tx-data.txt`;
   const upgradeCall = `sui client upgrade --upgrade-capability ${mainPackage.upgradeCap} --gas-budget 2000000000 --gas ${gasObjectId} --skip-dependency-verification --serialize-unsigned-transaction`;
 
   try {

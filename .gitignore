@@ -7,3 +7,4 @@ target
 published.localnet.json
 .trace
 *.mvcov
+scripts/multisig/tx-data.txt
