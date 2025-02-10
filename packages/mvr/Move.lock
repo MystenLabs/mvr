@@ -2,7 +2,7 @@
 
 [move]
 version = 3
-manifest_digest = "533F058E0BD9DEB3620617015C9289C5AE287D8C4456B53024144B587A7E4271"
+manifest_digest = "895CA7C9257D7FA802CCBC7651B15377D0DAC07BA6F3EED4B288DDED428B06C4"
 deps_digest = "F9B494B64F0615AED0E98FC12A85B85ECD2BC5185C22D30E7F67786BB52E507C"
 dependencies = [
   { id = "Codec", name = "Codec" },
@@ -49,7 +49,7 @@ dependencies = [
 ]
 
 [move.toolchain-version]
-compiler-version = "1.36.2"
+compiler-version = "1.42.0"
 edition = "2024.alpha"
 flavor = "sui"
 

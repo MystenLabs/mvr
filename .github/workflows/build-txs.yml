@@ -21,7 +21,7 @@ on:
         description: 'object id to get gas from for multisig transaction'
         required: true
         type: string
-        default: '0xe9ec5ccdecddddcb82f813651d268398c713b11e681e4e9f9674d04fb4f64709'
+        default: '0xd9437b7edf7cf60f3ed3ba8af8d364558d830f8c44f620c192fdb62fdcc9e606'
 
 jobs:
   mvr:
@@ -71,7 +71,7 @@ jobs:
           NETWORK: mainnet
           ORIGIN: gh_action
         run: |
-          cd scripts && pnpm ts-node scripts/multisig/upgrade-mvr.ts
+          cd scripts && pnpm ts-node multisig/upgrade-mvr.ts
 
       - name: Show Transaction Data (To sign)
         run: |
