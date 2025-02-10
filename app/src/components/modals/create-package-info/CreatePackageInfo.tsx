@@ -65,7 +65,7 @@ export default function CreatePackageInfo({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Create Package Info - Step {step}</DialogTitle>
+        <DialogTitle>Create Metadata - Step {step}</DialogTitle>
       </DialogHeader>
       <div className="grid grid-cols-1 gap-Large py-Regular">
         {step === 1 && (

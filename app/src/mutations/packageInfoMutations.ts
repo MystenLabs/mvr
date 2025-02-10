@@ -6,7 +6,9 @@ import { Transaction } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 
 export function useCreatePackageInfoMutation(network: Network) {
-  const { executeTransaction } = useTransactionExecution(network as 'mainnet' | 'testnet');
+  const { executeTransaction } = useTransactionExecution(
+    network as "mainnet" | "testnet",
+  );
 
   return useMutation({
     mutationKey: ["create-package-info"],
@@ -45,7 +47,9 @@ export function useCreatePackageInfoMutation(network: Network) {
 }
 
 export function useUpdatePackageInfoMutation(network: Network) {
-  const { executeTransaction } = useTransactionExecution(network as 'mainnet' | 'testnet');
+  const { executeTransaction } = useTransactionExecution(
+    network as "mainnet" | "testnet",
+  );
 
   return useMutation({
     mutationKey: ["update-package-info"],
@@ -63,10 +67,7 @@ export function useUpdatePackageInfoMutation(network: Network) {
       const tx = new Transaction();
 
       // Call the API to create a new package info object
-      const packageInfo = new PackageInfo(
-        tx,
-        packageInfoId,
-      );
+      const packageInfo = new PackageInfo(tx, packageInfoId);
 
       for (const update of updates) {
         if (update.action === "add") {
@@ -75,6 +76,16 @@ export function useUpdatePackageInfoMutation(network: Network) {
             gitSubdirectory: update.path,
             gitTag: update.tag,
           });
+        }
+
+        if (update.action === "update") {
+          packageInfo
+            .unsetGitVersioning(update.version)
+            .setGitVersioning(update.version, {
+              gitRepository: update.repository,
+              gitSubdirectory: update.path,
+              gitTag: update.tag,
+            });
         }
       }
 

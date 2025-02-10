@@ -44,7 +44,7 @@ export class PackageInfo {
 
   setDisplay(
     label: string,
-    gradientFrom: string, 
+    gradientFrom: string,
     gradientTo: string,
     textColor: string,
   ) {
@@ -63,6 +63,20 @@ export class PackageInfo {
     this.transaction.moveCall({
       target: `@mvr/metadata::package_info::set_display`,
       arguments: [this.transaction.object(this.info!), display],
+    });
+
+    return this;
+  }
+
+  unsetGitVersioning(version: number) {
+    this.#checkInitialized();
+
+    this.transaction.moveCall({
+      target: `@mvr/metadata::package_info::unset_git_versioning`,
+      arguments: [
+        this.transaction.object(this.info!),
+        this.transaction.pure.u64(version),
+      ],
     });
 
     return this;

@@ -4,8 +4,8 @@ import { EmptyState } from "../EmptyState";
 import { Content } from "@/data/content";
 import { Dialog, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
-import CreateVersion from "../modals/versions/CreateVersion";
-import { useMemo, useState } from "react";
+import CreateOrUpdateVersion from "../modals/versions/CreateOrUpdateVersion";
+import { useEffect, useMemo, useState } from "react";
 import { useUpdatePackageInfoMutation } from "@/mutations/packageInfoMutations";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import { Text } from "../ui/Text";
@@ -20,6 +20,10 @@ export function PackageVersions({
   packageInfo: PackageInfoData;
   disableEdits?: boolean;
 }) {
+  const [showCreationDialog, setShowCreationDialog] = useState(false);
+  const [updates, setUpdates] = useState<GitVersion[]>([]);
+  const [forUpdate, setForUpdate] = useState<GitVersion | null>(null);
+
   const network = usePackagesNetwork();
   const {
     data: versions,
@@ -34,12 +38,8 @@ export function PackageVersions({
     return versions?.sort((a, b) => b.version - a.version);
   }, [versions]);
 
-  const [showCreationDialog, setShowCreationDialog] = useState(false);
-
   const { mutateAsync: execute, isPending } =
     useUpdatePackageInfoMutation(network);
-
-  const [updates, setUpdates] = useState<GitVersion[]>([]);
 
   const takenVersions = useMemo(() => {
     const updateTakenVersions = updates
@@ -52,7 +52,22 @@ export function PackageVersions({
   }, [orderedVersions, updates]);
 
   const addUpdate = (update: GitVersion) => {
-    setUpdates([...updates, update]);
+    let newUpdates = [...updates];
+
+    // avoid duplicate edits for the same version.
+    if (updates.some((x) => x.version === update.version)) {
+      newUpdates = newUpdates.filter((x) => x.version !== update.version);
+    }
+
+    setUpdates([...newUpdates, update]);
+  };
+
+  // When the package changes, reset the form inputs.
+  useEffect(() => reset(), [packageInfo]);
+
+  const reset = () => {
+    setForUpdate(null);
+    setUpdates([]);
   };
 
   const saveChanges = async () => {
@@ -63,8 +78,8 @@ export function PackageVersions({
     });
 
     if (res) {
+      reset();
       refetch();
-      setUpdates([]);
     }
   };
 
@@ -76,7 +91,7 @@ export function PackageVersions({
   )
     return (
       <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
-        <CreateVersion
+        <CreateOrUpdateVersion
           packageAddress={packageInfo.packageAddress}
           maxVersion={latestVersion}
           closeDialog={() => setShowCreationDialog(false)}
@@ -90,6 +105,7 @@ export function PackageVersions({
                 takenVersions.length >= latestVersion ||
                 disableEdits
               }
+              reset={() => setForUpdate(null)}
             />
           </EmptyState>
         </div>
@@ -98,15 +114,25 @@ export function PackageVersions({
 
   return (
     <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
-      <CreateVersion
+      <CreateOrUpdateVersion
         packageAddress={packageInfo.packageAddress}
         maxVersion={latestVersion}
         taken={takenVersions}
+        updateState={forUpdate}
         closeDialog={() => setShowCreationDialog(false)}
         addUpdate={addUpdate}
       />
       <div className="mb-Regular grid grid-cols-1 gap-Regular px-Small">
-        {orderedVersions?.map((x) => <Version key={x.version} version={x} />)}
+        {orderedVersions?.map((x) => (
+          <Version
+            key={x.version}
+            version={x}
+            onUpdate={disableEdits ? undefined :() => {
+              setForUpdate({ ...x });
+              setShowCreationDialog(true);
+            }}
+          />
+        ))}
 
         {updates.length > 0 && (
           <>
@@ -127,23 +153,41 @@ export function PackageVersions({
             disableEdits ||
             takenVersions.length >= latestVersion
           }
+          reset={() => setForUpdate(null)}
         />
 
         {updates.length > 0 && (
-          <Button isLoading={isPending} onClick={saveChanges}>
-            Save Changes
-          </Button>
+          <>
+            <Button isLoading={isPending} onClick={saveChanges}>
+              Save Changes
+            </Button>
+
+            <Button
+              variant="link"
+              onClick={() => {
+                reset();
+              }}
+            >
+              Cancel
+            </Button>
+          </>
         )}
       </div>
     </Dialog>
   );
 }
 
-const CreateVersionTrigger = ({ disableEdits }: { disableEdits?: boolean }) => {
+const CreateVersionTrigger = ({
+  disableEdits,
+  reset,
+}: {
+  disableEdits?: boolean;
+  reset: () => void;
+}) => {
   if (disableEdits) return null;
 
   return (
-    <DialogTrigger asChild>
+    <DialogTrigger asChild onClick={reset}>
       <Button variant="default">Create version</Button>
     </DialogTrigger>
   );

@@ -59,7 +59,7 @@ export default function App() {
       >
         {suinsNames.length > 0 && (
           <ComboBox
-            placeholder="Select a name..."
+            placeholder="Select one..."
             value={appValue.selectedSuinsName?.nftId}
             options={formatNamesForComboBox(suinsNames ?? [])}
             setValue={selectSuinsName}
@@ -127,7 +127,7 @@ export default function App() {
             ))
           ) : (
             <ComboBox
-              title="Select an application"
+              title="Select one"
               value={selectedAppCap?.objectId}
               options={nsMatchingApps.map((app) => ({
                 value: app.objectId,
