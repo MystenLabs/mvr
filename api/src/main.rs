@@ -32,16 +32,17 @@ async fn main() {
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let port = env::var("API_PORT").unwrap_or("8000".to_string());
 
     let app_state = AppState {
         db: get_connection_pool(db_url).await,
     };
 
-    // seed_database(&mut app_state).await.expect("Failed to seed database");
+    // seed_database(&app_state).await.expect("Failed to seed database");
 
     let app = route::create_router(Arc::new(app_state)).layer(cors);
 
     println!("🚀 Server started successfully");
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port)).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }

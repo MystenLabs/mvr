@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 use axum::{
     extract::{Path, State},
@@ -46,7 +46,8 @@ impl ReverseNameResolution {
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkReverseResolutionData>,
     ) -> Result<Json<Vec<ReverseResolutionData>>, StatusCode> {
-        let results = resolve_name_bulk_impl(payload.package_ids, &app_state).await?;
+        let unique_pkg_ids: Vec<_> = payload.package_ids.into_iter().collect::<HashSet<_>>().into_iter().collect();
+        let results = resolve_name_bulk_impl(unique_pkg_ids, &app_state).await?;
         Ok(Json(results))
     }
 }
@@ -56,6 +57,10 @@ async fn resolve_name_bulk_impl(
     package_ids: Vec<String>,
     app_state: &AppState,
 ) -> Result<Vec<ReverseResolutionData>, StatusCode> {
+    if package_ids.is_empty() {
+        return Ok(vec![]);
+    }
+
     let mut conn = app_state
         .db
         .get()

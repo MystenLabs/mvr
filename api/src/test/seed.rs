@@ -3,7 +3,7 @@ use crate::models::{NameRecord, Package, PackageInfo};
 use crate::schema::{name_records, package_infos, packages};
 use crate::AppState;
 
-pub async fn seed_database(state: &mut AppState) -> Result<(), anyhow::Error> {
+pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
     let mut connection = state.db.get().await?;
 
     let package_seeds = vec![

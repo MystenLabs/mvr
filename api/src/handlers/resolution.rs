@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 use axum::{
     extract::{Path, State},
@@ -46,7 +46,8 @@ impl NameResolution {
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkResolutionData>,
     ) -> Result<Json<Vec<ResolutionData>>, StatusCode> {
-        let results = bulk_resolve_names_impl(payload.names, &app_state).await?;
+        let unique_names: Vec<_> = payload.names.into_iter().collect::<HashSet<_>>().into_iter().collect();
+        let results = bulk_resolve_names_impl(unique_names, &app_state).await?;
         Ok(Json(results))
     }
 }
@@ -55,6 +56,10 @@ async fn bulk_resolve_names_impl(
     names: Vec<String>,
     app_state: &AppState,
 ) -> Result<Vec<ResolutionData>, StatusCode> {
+    if names.is_empty() {
+        return Ok(vec![]);
+    }
+
     let mut conn = app_state
         .db
         .get()
