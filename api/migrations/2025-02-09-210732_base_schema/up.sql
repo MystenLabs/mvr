@@ -15,6 +15,9 @@ CREATE TABLE name_records (
     metadata JSONB NOT NULL
 );
 
+CREATE INDEX idx_name_records_mainnet_id ON name_records (mainnet_id);
+CREATE INDEX idx_name_records_testnet_id ON name_records (testnet_id);
+
 CREATE TABLE package_infos (
     id VARCHAR NOT NULL PRIMARY KEY,
     package_id VARCHAR NOT NULL,
@@ -22,6 +25,8 @@ CREATE TABLE package_infos (
     default_name VARCHAR,
     metadata JSONB NOT NULL
 );
+
+CREATE INDEX idx_package_infos_package_id ON package_infos (package_id);
 
 CREATE TABLE git_infos (
     table_id VARCHAR NOT NULL,
@@ -32,6 +37,4 @@ CREATE TABLE git_infos (
     PRIMARY KEY (table_id, version)
 );
 
-
-CREATE INDEX idx_name_records_mainnet_id ON name_records (mainnet_id);
-CREATE INDEX idx_name_records_testnet_id ON name_records (testnet_id);
+CREATE INDEX idx_git_infos_table_id ON git_infos (table_id);

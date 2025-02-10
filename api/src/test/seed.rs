@@ -1,19 +1,28 @@
-use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
 use crate::models::{NameRecord, Package, PackageInfo};
 use crate::schema::{name_records, package_infos, packages};
+use crate::AppState;
 
-pub fn seed_database(conn: &mut PgConnection) -> QueryResult<()> {
+pub async fn seed_database(state: &mut AppState) -> Result<(), anyhow::Error> {
+    let mut connection = state.db.get().await?;
+
     let package_seeds = vec![
         Package {
-            package_id: "0x2".to_string(),
+            package_id: "0x222".to_string(),
             original_id: "0x2".to_string(),
-            package_version: 1,
+            package_version: 3,
             move_package: vec![],
         },
         Package {
             package_id: "0x22".to_string(),
             original_id: "0x2".to_string(),
             package_version: 2,
+            move_package: vec![],
+        },
+        Package {
+            package_id: "0x2".to_string(),
+            original_id: "0x2".to_string(),
+            package_version: 1,
             move_package: vec![],
         },
         Package {
@@ -45,11 +54,11 @@ pub fn seed_database(conn: &mut PgConnection) -> QueryResult<()> {
 
     diesel::insert_into(package_infos::table)
         .values(&package_info_seeds)
-        .execute(conn)?;
+        .execute(&mut connection).await?;
 
     diesel::insert_into(packages::table)
         .values(&package_seeds)
-        .execute(conn)?;
+        .execute(&mut connection).await?;
 
     let name_record_seeds = vec![
         NameRecord {
@@ -65,9 +74,10 @@ pub fn seed_database(conn: &mut PgConnection) -> QueryResult<()> {
             metadata: serde_json::json!({}),
         },
     ];
+
     diesel::insert_into(name_records::table)
-        .values(name_record_seeds)
-        .execute(conn)?;
+        .values(&name_record_seeds)
+        .execute(&mut connection).await?;
 
     Ok(())
 }
