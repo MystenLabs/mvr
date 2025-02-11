@@ -14,6 +14,8 @@ import { fromB64, toB64 } from '@mysten/sui/utils';
 
 export type Network = 'mainnet' | 'testnet' | 'devnet' | 'localnet';
 
+export const MULTISIG_ADMIN_ADDRESS = '0x9a8859bbe68679bcc6dfd06ede1cce7309d59ef21bb0caf2e4c901320489a466';
+
 const SUI = process.env.SUI_BINARY ?? `sui`;
 
 export const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -111,8 +113,7 @@ export const sender = (txb: Transaction) => {
 
 /// Builds a transaction (unsigned) and saves it on `setup/tx/tx-data.txt` (on production)
 /// or `setup/src/tx-data.local.txt` on mainnet.
-export const prepareMultisigTx = async (tx: Transaction, network: Network) => {
-	const adminAddress = getActiveAddress();
+export const prepareMultisigTx = async (tx: Transaction, network: Network, adminAddress: string = MULTISIG_ADMIN_ADDRESS) => {
 	const client = getClient(network);
 	const gasObjectId = process.env.GAS_OBJECT;
 
@@ -139,7 +140,7 @@ export const prepareMultisigTx = async (tx: Transaction, network: Network) => {
 		let serializedBase64 = toB64(bytes);
 
 		const output_location =
-			process.env.NODE_ENV === 'development' ? './tx/tx-data-local.txt' : './tx/tx-data.txt';
+			process.env.NODE_ENV === 'development' ? './multisig/tx-data-local.txt' : './multisig/tx-data.txt';
 
 		fs.writeFileSync(output_location, serializedBase64);
 	});

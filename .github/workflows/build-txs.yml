@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - Upgrade MVR package
+          - Register Proxy
       sui_tools_image:
         description: 'image reference of sui_tools'
         default: 'mysten/sui-tools:mainnet'
@@ -72,6 +73,16 @@ jobs:
           ORIGIN: gh_action
         run: |
           cd scripts && pnpm ts-node multisig/upgrade-mvr.ts
+
+      - name: Register Proxy
+        if: ${{ inputs.transaction_type == 'Register Proxy' }}
+        env:
+          NODE_ENV: production
+          GAS_OBJECT: ${{ inputs.gas_object_id }}
+          NETWORK: mainnet
+          ORIGIN: gh_action
+        run: |
+          cd scripts && pnpm ts-node multisig/mvr-registrations.ts
 
       - name: Show Transaction Data (To sign)
         run: |
