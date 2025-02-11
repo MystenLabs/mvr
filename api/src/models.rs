@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
-use diesel::{Queryable, Insertable};
-use crate::schema::{name_records, packages, package_infos, git_infos};
+use crate::schema::{git_infos, name_records, package_infos, packages};
+use diesel::{Insertable, Queryable};
+use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = packages)]

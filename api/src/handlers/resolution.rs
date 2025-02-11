@@ -14,6 +14,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::AppState;
 
+use super::network_field;
+
 #[derive(QueryableByName, Debug)]
 pub struct NameResolution {
     #[diesel(sql_type = diesel::sql_types::Text)]
@@ -35,19 +37,25 @@ pub struct BulkResolutionData {
 
 impl NameResolution {
     pub async fn resolve(
-        Path(name): Path<String>,
+        Path((network, name)): Path<(String, String)>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<ResolutionData>, StatusCode> {
-        let names = bulk_resolve_names_impl(vec![name], &app_state).await?;
+        let names = bulk_resolve_names_impl(vec![name], &app_state, network).await?;
         Ok(Json(names[0].clone()))
     }
-    
+
     pub async fn bulk_resolve(
+        Path(network): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkResolutionData>,
     ) -> Result<Json<Vec<ResolutionData>>, StatusCode> {
-        let unique_names: Vec<_> = payload.names.into_iter().collect::<HashSet<_>>().into_iter().collect();
-        let results = bulk_resolve_names_impl(unique_names, &app_state).await?;
+        let unique_names: Vec<_> = payload
+            .names
+            .into_iter()
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect();
+        let results = bulk_resolve_names_impl(unique_names, &app_state, network).await?;
         Ok(Json(results))
     }
 }
@@ -55,6 +63,7 @@ impl NameResolution {
 async fn bulk_resolve_names_impl(
     names: Vec<String>,
     app_state: &AppState,
+    network: String,
 ) -> Result<Vec<ResolutionData>, StatusCode> {
     if names.is_empty() {
         return Ok(vec![]);
@@ -66,19 +75,20 @@ async fn bulk_resolve_names_impl(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let result = diesel::sql_query(
+    let result = diesel::sql_query(format!(
         "WITH pkg AS (
             SELECT p.original_id, p.package_id, nr.name
             FROM packages p
             INNER JOIN package_infos pi ON p.package_id = pi.package_id
-            INNER JOIN name_records nr ON pi.id = nr.mainnet_id
+            INNER JOIN name_records nr ON pi.id = nr.{}
             WHERE nr.name = ANY($1)
         )
         SELECT DISTINCT ON (pkg.name) pkg.name, p.package_id
         FROM pkg
         INNER JOIN packages p ON p.original_id = pkg.original_id
         ORDER BY pkg.name, p.package_version DESC",
-    )
+        network_field(&network)?
+    ))
     .bind::<Array<Text>, _>(names.clone())
     .get_results::<NameResolution>(&mut conn)
     .await

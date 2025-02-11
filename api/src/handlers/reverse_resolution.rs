@@ -14,6 +14,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::AppState;
 
+use super::network_field;
+
 #[derive(QueryableByName, Debug)]
 pub struct ReverseNameResolution {
     #[diesel(sql_type = diesel::sql_types::Text)]
@@ -35,27 +37,33 @@ pub struct BulkReverseResolutionData {
 
 impl ReverseNameResolution {
     pub async fn resolve(
-        Path(package_id): Path<String>,
+        Path((network, package_id)): Path<(String, String)>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<ReverseResolutionData>, StatusCode> {
-        let results = resolve_name_bulk_impl(vec![package_id], &app_state).await?;
+        let results = resolve_name_bulk_impl(vec![package_id], &app_state, network).await?;
         Ok(Json(results[0].clone()))
     }
-    
+
     pub async fn bulk_resolve(
+        Path((network)): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkReverseResolutionData>,
     ) -> Result<Json<Vec<ReverseResolutionData>>, StatusCode> {
-        let unique_pkg_ids: Vec<_> = payload.package_ids.into_iter().collect::<HashSet<_>>().into_iter().collect();
-        let results = resolve_name_bulk_impl(unique_pkg_ids, &app_state).await?;
+        let unique_pkg_ids: Vec<_> = payload
+            .package_ids
+            .into_iter()
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect();
+        let results = resolve_name_bulk_impl(unique_pkg_ids, &app_state, network).await?;
         Ok(Json(results))
     }
 }
 
-
 async fn resolve_name_bulk_impl(
     package_ids: Vec<String>,
     app_state: &AppState,
+    network: String,
 ) -> Result<Vec<ReverseResolutionData>, StatusCode> {
     if package_ids.is_empty() {
         return Ok(vec![]);
@@ -67,7 +75,7 @@ async fn resolve_name_bulk_impl(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let results = diesel::sql_query(
+    let results = diesel::sql_query(format!(
         "WITH pkg AS (
             SELECT package_id, original_id
             FROM packages
@@ -76,13 +84,14 @@ async fn resolve_name_bulk_impl(
         SELECT name_records.name, pkg.package_id AS package_id
         FROM package_infos
         INNER JOIN name_records 
-            ON package_infos.id = name_records.mainnet_id
+            ON package_infos.id = name_records.{}
         INNER JOIN packages
             ON package_infos.package_id = packages.package_id
         INNER JOIN pkg 
             ON (packages.original_id = pkg.original_id OR packages.package_id = pkg.package_id)
         WHERE package_infos.default_name = name_records.name;",
-    )
+        network_field(&network)?
+    ))
     .bind::<Array<Text>, _>(package_ids.clone())
     .get_results::<ReverseNameResolution>(&mut conn)
     .await

@@ -1,7 +1,7 @@
-use diesel_async::RunQueryDsl;
 use crate::models::{NameRecord, Package, PackageInfo};
 use crate::schema::{name_records, package_infos, packages};
 use crate::AppState;
+use diesel_async::RunQueryDsl;
 
 pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
     let mut connection = state.db.get().await?;
@@ -54,11 +54,13 @@ pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
 
     diesel::insert_into(package_infos::table)
         .values(&package_info_seeds)
-        .execute(&mut connection).await?;
+        .execute(&mut connection)
+        .await?;
 
     diesel::insert_into(packages::table)
         .values(&package_seeds)
-        .execute(&mut connection).await?;
+        .execute(&mut connection)
+        .await?;
 
     let name_record_seeds = vec![
         NameRecord {
@@ -77,7 +79,8 @@ pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
 
     diesel::insert_into(name_records::table)
         .values(&name_record_seeds)
-        .execute(&mut connection).await?;
+        .execute(&mut connection)
+        .await?;
 
     Ok(())
 }

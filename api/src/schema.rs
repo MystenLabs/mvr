@@ -38,9 +38,4 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(
-    git_infos,
-    name_records,
-    package_infos,
-    packages,
-);
+diesel::allow_tables_to_appear_in_same_query!(git_infos, name_records, package_infos, packages,);
