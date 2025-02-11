@@ -111,8 +111,12 @@ dependencies = [
  "diesel",
  "diesel-async",
  "dotenvy",
+ "once_cell",
+ "regex",
  "serde",
  "serde_json",
+ "sui-sdk-types 0.0.2 (git+https://github.com/mystenlabs/sui-rust-sdk?rev=d1a9298f220fee6b89b534fa0d37a238f689471f)",
+ "thiserror 2.0.11",
  "tokio",
  "tower-http",
 ]
@@ -1494,7 +1498,7 @@ dependencies = [
  "serde_yml",
  "sui-graphql-client",
  "sui-graphql-client-build",
- "sui-sdk-types",
+ "sui-sdk-types 0.0.2 (git+https://github.com/mystenlabs/sui-rust-sdk?rev=86a9e06)",
  "tempfile",
  "tokio",
  "toml",
@@ -1546,9 +1550,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.20.2"
+version = "1.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
+checksum = "945462a4b81e43c4e3ba96bd7b49d834c6f61198356aa858733bc4acf3cbe62e"
 
 [[package]]
 name = "openssl"
@@ -2397,7 +2401,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sui-graphql-client-build",
- "sui-sdk-types",
+ "sui-sdk-types 0.0.2 (git+https://github.com/mystenlabs/sui-rust-sdk?rev=86a9e06)",
  "tokio",
  "tracing",
  "url",
@@ -2426,7 +2430,20 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "serde_with",
- "winnow",
+ "winnow 0.6.20",
+]
+
+[[package]]
+name = "sui-sdk-types"
+version = "0.0.2"
+source = "git+https://github.com/mystenlabs/sui-rust-sdk?rev=d1a9298f220fee6b89b534fa0d37a238f689471f#d1a9298f220fee6b89b534fa0d37a238f689471f"
+dependencies = [
+ "base64ct",
+ "bnum",
+ "bs58",
+ "hex",
+ "roaring",
+ "winnow 0.7.2",
 ]
 
 [[package]]
@@ -2697,7 +2714,7 @@ dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "winnow",
+ "winnow 0.6.20",
 ]
 
 [[package]]
@@ -3217,6 +3234,15 @@ name = "winnow"
 version = "0.6.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36c1fec1a2bb5866f07c25f68c26e565c4c200aebb96d7e55710c19d3e8ac49b"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "winnow"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59690dea168f2198d1a3b0cac23b8063efcd11012f10ae4698f284808c8ef603"
 dependencies = [
  "memchr",
 ]

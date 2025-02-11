@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+sui-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types" , rev="d1a9298f220fee6b89b534fa0d37a238f689471f"}
 axum = "0.8.1"
 tokio = { version = "1.43.0", features = ["full"] }
 serde = { version = "1.0.217", features = ["derive"] }
@@ -13,3 +14,6 @@ diesel = { version = "2.2.7", features = ["serde_json"] }
 dotenvy = "0.15.7"
 diesel-async = { version = "0.5.2", features = ["bb8", "postgres"] }
 anyhow = "1.0.95"
+regex = "1.11.1"
+once_cell = "1.20.3"
+thiserror = "2.0.11"

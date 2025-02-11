@@ -45,7 +45,7 @@ impl ReverseNameResolution {
     }
 
     pub async fn bulk_resolve(
-        Path((network)): Path<String>,
+        Path(network): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkReverseResolutionData>,
     ) -> Result<Json<Vec<ReverseResolutionData>>, StatusCode> {

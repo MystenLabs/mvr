@@ -1,4 +1,4 @@
-use std::{collections::HashSet, sync::Arc};
+use std::{collections::HashSet, str::FromStr, sync::Arc};
 
 use axum::{
     extract::{Path, State},
@@ -12,7 +12,7 @@ use diesel::{
 use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
 
-use crate::AppState;
+use crate::{types::name::VersionedName, AppState};
 
 use super::network_field;
 
@@ -40,34 +40,45 @@ impl NameResolution {
         Path((network, name)): Path<(String, String)>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<ResolutionData>, StatusCode> {
-        let names = bulk_resolve_names_impl(vec![name], &app_state, network).await?;
+        // validate the name
+        let versioned = VersionedName::from_str(&name).map_err(|_| StatusCode::BAD_REQUEST)?;
+        let names = bulk_resolve_names_impl(vec![versioned], &app_state, network).await?;
         Ok(Json(names[0].clone()))
     }
 
+    /// Resolve a list of names at once.
+    /// The return order will NOT match the input order
     pub async fn bulk_resolve(
         Path(network): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkResolutionData>,
     ) -> Result<Json<Vec<ResolutionData>>, StatusCode> {
-        let unique_names: Vec<_> = payload
-            .names
-            .into_iter()
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect();
-        let results = bulk_resolve_names_impl(unique_names, &app_state, network).await?;
+        let mut unique_names = HashSet::new();
+        for name in payload.names {
+            let versioned = VersionedName::from_str(&name).map_err(|_| StatusCode::BAD_REQUEST)?;
+            unique_names.insert(versioned);
+        }
+
+        let results =
+            bulk_resolve_names_impl(unique_names.into_iter().collect(), &app_state, network)
+                .await?;
         Ok(Json(results))
     }
 }
 
 async fn bulk_resolve_names_impl(
-    names: Vec<String>,
+    versioned_names: Vec<VersionedName>,
     app_state: &AppState,
     network: String,
 ) -> Result<Vec<ResolutionData>, StatusCode> {
-    if names.is_empty() {
+    if versioned_names.is_empty() {
         return Ok(vec![]);
     }
+
+    let names = versioned_names
+        .iter()
+        .map(|name| name.name.to_string())
+        .collect::<Vec<_>>();
 
     let mut conn = app_state
         .db

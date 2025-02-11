@@ -4,6 +4,7 @@ mod models;
 mod route;
 mod schema;
 mod test;
+mod types;
 
 use std::{env, sync::Arc};
 
