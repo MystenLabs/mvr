@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 
+use crate::types::errors::NameServiceError;
+
 const DEFAULT_TLD: &str = "sui";
 const ACCEPTED_SEPARATORS: [char; 2] = ['.', '*'];
 const SUI_NEW_FORMAT_SEPARATOR: char = '@';
@@ -168,20 +170,4 @@ impl fmt::Display for Domain {
 
         Ok(())
     }
-}
-
-#[derive(thiserror::Error, Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
-pub enum NameServiceError {
-    #[error("Name Service: String length: {0} exceeds maximum allowed length: {1}")]
-    ExceedsMaxLength(usize, usize),
-    #[error("Name Service: String length: {0} outside of valid range: [{1}, {2}]")]
-    InvalidLength(usize, usize, usize),
-    #[error("Name Service: Hyphens are not allowed as the first or last character")]
-    InvalidHyphens,
-    #[error("Name Service: Only lowercase letters, numbers, and hyphens are allowed")]
-    InvalidUnderscore,
-    #[error("Name Service: Domain must contain at least one label")]
-    LabelsEmpty,
-    #[error("Name Service: Domain must include only one separator")]
-    InvalidSeparator,
 }
