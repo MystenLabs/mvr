@@ -214,6 +214,6 @@ fun assert_is_valid_version(registry: &MoveRegistry) {
 }
 
 #[test_only]
-public(package) fun init_for_testing(ctx: &mut TxContext) {
+public fun init_for_testing(ctx: &mut TxContext) {
     init(MOVE_REGISTRY {}, ctx)
 }
