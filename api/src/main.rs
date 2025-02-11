@@ -14,7 +14,7 @@ use axum::http::{
 };
 use db::{get_connection_pool, PgPool};
 use dotenvy::dotenv;
-use test::seed::seed_database;
+use test::seed::{load_seed_data, seed_database};
 use tower_http::cors::CorsLayer;
 
 #[derive(Clone)]
@@ -40,6 +40,8 @@ async fn main() {
     };
 
     // seed_database(&app_state).await.expect("Failed to seed database");
+
+    // load_seed_data(&app_state).await.expect("Failed to load seed data");
 
     let app = route::create_router(Arc::new(app_state)).layer(cors);
 

@@ -30,7 +30,6 @@ pub enum MoveRegistryError {
     InvalidVersion,
 }
 
-
 #[derive(thiserror::Error, Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub enum NameServiceError {
     #[error("Name Service: String length: {0} exceeds maximum allowed length: {1}")]
