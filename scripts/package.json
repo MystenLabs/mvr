@@ -15,7 +15,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@mysten/graphql-transport": "^0.2.16",
-    "@mysten/sui": "^1.9.0"
+    "@mysten/graphql-transport": "^0.2.42",
+    "@mysten/sui": "^1.21.2"
   }
 }
