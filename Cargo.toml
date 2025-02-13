@@ -3,4 +3,5 @@ resolver = "2"
 
 members = [
     "mvr-cli",
+    "mvr-indexer"
 ]
