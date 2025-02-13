@@ -1,12 +1,24 @@
 CREATE TABLE packages
 (
-    package_id      VARCHAR NOT NULL,
-    original_id     VARCHAR NOT NULL,
-    package_version bigint  NOT NULL,
-    move_package    bytea   NOT NULL,
+    package_id      VARCHAR   NOT NULL,
+    original_id     VARCHAR   NOT NULL,
+    package_version bigint    NOT NULL,
+    move_package    bytea     NOT NULL,
+    chain_id        VARCHAR   NOT NULL,
+    tx_hash         VARCHAR   NOT NULL,
+    sender          VARCHAR   NOT NULL,
+    timestamp       TIMESTAMP NOT NULL,
     CONSTRAINT packages_pkey PRIMARY KEY (package_id, original_id, package_version),
     CONSTRAINT packages_unique_package_id UNIQUE (package_id)
 );
+
+CREATE TABLE package_dependencies
+(
+    package_id            VARCHAR NOT NULL REFERENCES packages (package_id),
+    dependency_package_id VARCHAR NOT NULL REFERENCES packages (package_id),
+    CONSTRAINT package_dependencies_pkey PRIMARY KEY (package_id, dependency_package_id)
+);
+
 
 CREATE TABLE name_records
 (

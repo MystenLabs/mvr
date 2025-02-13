@@ -1,5 +1,6 @@
-use crate::schema::{git_infos, name_records, package_infos, packages};
+use crate::schema::{git_infos, name_records, package_dependencies, package_infos, packages};
 use anyhow::anyhow;
+use chrono::NaiveDateTime;
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
@@ -13,6 +14,20 @@ pub struct Package {
     pub original_id: String,
     pub package_version: i64,
     pub move_package: Vec<u8>,
+    pub chain_id: String,
+    pub tx_hash: String,
+    pub sender: String,
+    pub timestamp: NaiveDateTime,
+
+    #[diesel(skip_insertion)]
+    pub deps: Vec<String>,
+}
+
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]
+#[diesel(table_name = package_dependencies, primary_key(package_id, dependency_package_id))]
+pub struct PackageDependency {
+    pub package_id: String,
+    pub dependency_package_id: String,
 }
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug)]

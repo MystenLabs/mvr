@@ -20,6 +20,13 @@ diesel::table! {
 }
 
 diesel::table! {
+    package_dependencies (package_id, dependency_package_id) {
+        package_id -> Varchar,
+        dependency_package_id -> Varchar,
+    }
+}
+
+diesel::table! {
     package_infos (id) {
         id -> Varchar,
         package_id -> Varchar,
@@ -35,7 +42,17 @@ diesel::table! {
         original_id -> Varchar,
         package_version -> Int8,
         move_package -> Bytea,
+        chain_id -> Varchar,
+        tx_hash -> Varchar,
+        sender -> Varchar,
+        timestamp -> Timestamp,
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(git_infos, name_records, package_infos, packages,);
+diesel::allow_tables_to_appear_in_same_query!(
+    git_infos,
+    name_records,
+    package_dependencies,
+    package_infos,
+    packages,
+);

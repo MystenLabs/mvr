@@ -7,7 +7,6 @@ use sui_indexer_alt_framework::ingestion::{ClientArgs, IngestionConfig};
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
 use sui_indexer_alt_framework::{Indexer, IndexerArgs};
 use sui_pg_db::DbArgs;
-use sui_sdk::types::base_types::SuiAddress;
 use tokio_util::sync::CancellationToken;
 
 pub(crate) mod handlers;
