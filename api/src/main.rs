@@ -1,3 +1,4 @@
+mod data;
 mod db;
 mod handlers;
 mod models;
@@ -12,14 +13,17 @@ use axum::http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     HeaderValue, Method,
 };
+use data::package_resolver::{ApiPackageStore, PackageResolver};
 use db::{get_connection_pool, PgPool};
 use dotenvy::dotenv;
+use sui_package_resolver::{PackageStoreWithLruCache, Resolver};
 use test::seed::{load_seed_data, seed_database};
 use tower_http::cors::CorsLayer;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: PgPool,
+    pub package_resolver: PackageResolver,
 }
 
 #[tokio::main]
@@ -35,8 +39,15 @@ async fn main() {
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let port = env::var("API_PORT").unwrap_or("8000".to_string());
 
+    let db = get_connection_pool(db_url).await;
+
+    let api_pkg_resolver = ApiPackageStore::new(db.clone());
+    let package_cache = PackageStoreWithLruCache::new(api_pkg_resolver);
+    let package_resolver = Arc::new(Resolver::new(package_cache));
+
     let app_state = AppState {
-        db: get_connection_pool(db_url).await,
+        db,
+        package_resolver,
     };
 
     // seed_database(&app_state).await.expect("Failed to seed database");
