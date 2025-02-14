@@ -65,7 +65,7 @@ impl ReverseResolution {
     }
 }
 
-async fn resolve_name_bulk_impl(
+pub(crate) async fn resolve_name_bulk_impl(
     package_ids: Vec<ObjectID>,
     app_state: &AppState,
     network: String,

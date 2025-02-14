@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     handlers::{
-        health_check, resolution::NameResolution, reverse_resolution::ReverseResolution,
+        health_check, resolution::Resolution, reverse_resolution::ReverseResolution,
         type_resolution::TypeResolution,
     },
     AppState,
@@ -30,8 +30,8 @@ fn network_routes() -> Router<Arc<AppState>> {
             "/resolution/reverse/{package_id}",
             get(ReverseResolution::resolve),
         )
-        .route("/resolution/bulk", post(NameResolution::bulk_resolve))
-        .route("/resolution/{*name}", get(NameResolution::resolve))
+        .route("/resolution/bulk", post(Resolution::bulk_resolve))
+        .route("/resolution/{*name}", get(Resolution::resolve))
         .route("/type-resolution/bulk", post(TypeResolution::bulk_resolve))
         .route(
             "/type-resolution/{*type_name}",

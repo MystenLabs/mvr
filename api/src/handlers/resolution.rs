@@ -41,7 +41,9 @@ pub struct BulkResolutionData {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ResolvedName(pub(crate) Option<ObjectID>);
 
-impl NameResolution {
+pub struct Resolution;
+
+impl Resolution {
     pub async fn resolve(
         Path((network, name)): Path<(String, String)>,
         State(app_state): State<Arc<AppState>>,

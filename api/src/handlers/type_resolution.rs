@@ -25,7 +25,7 @@ impl TypeResolution {
         Path((network, type_name)): Path<(String, String)>,
         State(state): State<Arc<AppState>>,
     ) -> Result<Json<String>, ApiError> {
-        let tags = bulk_resolve_types(state, vec![type_name.clone()], network).await?;
+        let tags = bulk_resolve_types_impl(state, vec![type_name.clone()], network).await?;
 
         let tag = tags
             .get(&type_name)
@@ -39,7 +39,7 @@ impl TypeResolution {
         State(state): State<Arc<AppState>>,
         Json(payload): Json<Vec<String>>,
     ) -> Result<Json<HashMap<String, String>>, ApiError> {
-        let tags = bulk_resolve_types(state, payload, network).await?;
+        let tags = bulk_resolve_types_impl(state, payload, network).await?;
 
         Ok(Json(
             tags.into_iter().map(|(k, v)| (k, v.to_string())).collect(),
@@ -47,7 +47,7 @@ impl TypeResolution {
     }
 }
 
-async fn bulk_resolve_types(
+async fn bulk_resolve_types_impl(
     state: Arc<AppState>,
     types: Vec<String>,
     network: String,
