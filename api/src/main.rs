@@ -4,7 +4,7 @@ mod handlers;
 mod models;
 mod route;
 mod schema;
-mod test;
+mod seed;
 mod types;
 
 use std::{env, sync::Arc};
@@ -17,7 +17,7 @@ use data::package_resolver::{ApiPackageStore, PackageResolver};
 use db::{get_connection_pool, PgPool};
 use dotenvy::dotenv;
 use sui_package_resolver::{PackageStoreWithLruCache, Resolver};
-use test::seed::{load_seed_data, seed_database};
+use seed::seed::{load_seed_data, seed_database};
 use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Clone)]

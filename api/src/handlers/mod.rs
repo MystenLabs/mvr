@@ -1,7 +1,6 @@
 use crate::types::errors::ApiError;
 
 pub mod handler;
-pub mod package;
 pub mod resolution;
 pub mod reverse_resolution;
 pub mod type_resolution;
