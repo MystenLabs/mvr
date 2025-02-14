@@ -1,11 +1,11 @@
 mod data;
 mod db;
+mod errors;
 mod handlers;
 mod models;
 mod route;
 mod schema;
 mod seed;
-mod types;
 
 use std::{env, sync::Arc};
 

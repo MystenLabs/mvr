@@ -4,14 +4,14 @@ use anyhow::anyhow;
 use regex::{Captures, Regex};
 use sui_types::{base_types::ObjectID, TypeTag};
 
-use crate::types::name::{VersionedName, VERSIONED_NAME_UNBOUND_REG};
+use crate::name::{VersionedName, VERSIONED_NAME_UNBOUND_REG};
 
 use super::errors::MoveRegistryError;
 
 pub struct NamedType;
 
 impl NamedType {
-    pub(crate) fn replace_names(
+    pub fn replace_names(
         type_name: &str,
         names: &HashMap<String, ObjectID>,
     ) -> Result<String, anyhow::Error> {
@@ -35,7 +35,7 @@ impl NamedType {
         Ok(struct_tag_str.to_string())
     }
 
-    pub(crate) fn parse_names(name: &str) -> Result<Vec<String>, MoveRegistryError> {
+    pub fn parse_names(name: &str) -> Result<Vec<String>, MoveRegistryError> {
         let mut names = vec![];
         let struct_tag = VERSIONED_NAME_UNBOUND_REG.replace_all(name, |m: &regex::Captures| {
             // SAFETY: we know that the regex will always have a match on position 0.

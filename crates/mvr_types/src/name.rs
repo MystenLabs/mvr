@@ -46,23 +46,23 @@ pub(crate) static VERSIONED_NAME_REG: Lazy<Regex> =
     Lazy::new(|| Regex::new(VERSIONED_NAME_REGEX).unwrap());
 
 #[derive(Debug, Serialize, Deserialize, Hash, Clone, Eq, PartialEq)]
-pub(crate) struct VersionedName {
+pub struct VersionedName {
     /// A version name defaults at None, which means we need the latest version.
-    pub(crate) version: Option<u64>,
+    pub version: Option<u64>,
     /// The on-chain `Name` object that represents the move registry name.
-    pub(crate) name: Name,
+    pub name: Name,
 }
 
 /// Attention: The format of this struct should not change unless the on-chain format changes,
 /// as we define it to deserialize on-chain data.
 #[derive(Debug, Serialize, Deserialize, Hash, Clone, Eq, PartialEq)]
-pub(crate) struct Name {
-    pub(crate) org: Domain,
-    pub(crate) app: Vec<String>,
+pub struct Name {
+    pub org: Domain,
+    pub app: Vec<String>,
 }
 
 impl Name {
-    pub(crate) fn new(org: Domain, app: &str) -> Self {
+    pub fn new(org: Domain, app: &str) -> Self {
         Self {
             org,
             app: vec![app.to_string()],
@@ -141,7 +141,7 @@ impl FromStr for VersionedName {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{name::Name, name_service::Domain};
+    use crate::{name::Name, name_service::Domain};
 
     use super::VersionedName;
     use std::str::FromStr;

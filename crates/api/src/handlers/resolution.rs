@@ -13,13 +13,11 @@ use diesel::{
     sql_types::{Array, BigInt, Text},
 };
 use diesel_async::RunQueryDsl;
+use mvr_types::name::VersionedName;
 use serde::{Deserialize, Serialize};
 use sui_types::base_types::ObjectID;
 
-use crate::{
-    types::{errors::ApiError, name::VersionedName},
-    AppState,
-};
+use crate::{errors::ApiError, AppState};
 
 use super::network_field;
 

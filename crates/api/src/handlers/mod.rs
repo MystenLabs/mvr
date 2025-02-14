@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode};
 
-use crate::{types::errors::ApiError, AppState};
+use crate::{errors::ApiError, AppState};
 
 pub mod resolution;
 pub mod reverse_resolution;

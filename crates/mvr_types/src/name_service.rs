@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 
-use crate::types::errors::NameServiceError;
+use crate::errors::NameServiceError;
 
 const DEFAULT_TLD: &str = "sui";
 const ACCEPTED_SEPARATORS: [char; 2] = ['.', '*'];

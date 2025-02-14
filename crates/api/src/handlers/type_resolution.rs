@@ -6,15 +6,10 @@ use axum::{
     extract::{Path, State},
     Json,
 };
+use mvr_types::{errors::MoveRegistryError, named_type::NamedType};
 use sui_types::TypeTag;
 
-use crate::{
-    types::{
-        errors::{ApiError, MoveRegistryError},
-        named_type::NamedType,
-    },
-    AppState,
-};
+use crate::{errors::ApiError, AppState};
 
 use super::resolution::bulk_resolve_names_impl;
 

@@ -16,7 +16,7 @@ use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
 use sui_types::base_types::ObjectID;
 
-use crate::{types::errors::ApiError, AppState};
+use crate::{errors::ApiError, AppState};
 
 use super::network_field;
 

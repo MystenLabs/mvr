@@ -241,6 +241,7 @@ dependencies = [
  "dotenvy",
  "futures",
  "move-core-types",
+ "mvr_types",
  "once_cell",
  "rand 0.9.0",
  "regex",
@@ -3406,6 +3407,18 @@ dependencies = [
  "toml_edit",
  "url",
  "yansi",
+]
+
+[[package]]
+name = "mvr_types"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "once_cell",
+ "regex",
+ "serde",
+ "sui-types",
+ "thiserror 2.0.11",
 ]
 
 [[package]]
