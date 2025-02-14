@@ -1,8 +1,11 @@
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+    sync::Arc,
+};
 
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
     Json,
 };
 use diesel::{
@@ -11,8 +14,9 @@ use diesel::{
 };
 use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
+use sui_types::base_types::ObjectID;
 
-use crate::AppState;
+use crate::{types::errors::ApiError, AppState};
 
 use super::network_field;
 
@@ -24,31 +28,32 @@ pub struct ReverseNameResolution {
     pub package_id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ReverseResolutionData {
-    pub name: Option<String>,
-    pub package_id: String,
-}
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkReverseResolutionData {
-    pub package_ids: Vec<String>,
+    pub package_ids: Vec<ObjectID>,
 }
 
-impl ReverseNameResolution {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ResolvedName(pub Option<String>);
+
+pub struct ReverseResolution;
+
+impl ReverseResolution {
     pub async fn resolve(
-        Path((network, package_id)): Path<(String, String)>,
+        Path((network, package_id)): Path<(String, ObjectID)>,
         State(app_state): State<Arc<AppState>>,
-    ) -> Result<Json<ReverseResolutionData>, StatusCode> {
+    ) -> Result<Json<ResolvedName>, ApiError> {
         let results = resolve_name_bulk_impl(vec![package_id], &app_state, network).await?;
-        Ok(Json(results[0].clone()))
+        // SAFETY: `resolve_name_bulk_impl` always returns the requested elements.
+        let result = results.get(&package_id).unwrap();
+        Ok(Json(result.clone()))
     }
 
     pub async fn bulk_resolve(
         Path(network): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkReverseResolutionData>,
-    ) -> Result<Json<Vec<ReverseResolutionData>>, StatusCode> {
+    ) -> Result<Json<HashMap<ObjectID, ResolvedName>>, ApiError> {
         let unique_pkg_ids: Vec<_> = payload
             .package_ids
             .into_iter()
@@ -61,21 +66,19 @@ impl ReverseNameResolution {
 }
 
 async fn resolve_name_bulk_impl(
-    package_ids: Vec<String>,
+    package_ids: Vec<ObjectID>,
     app_state: &AppState,
     network: String,
-) -> Result<Vec<ReverseResolutionData>, StatusCode> {
+) -> Result<HashMap<ObjectID, ResolvedName>, ApiError> {
     if package_ids.is_empty() {
-        return Ok(vec![]);
+        return Ok(HashMap::new());
     }
 
-    let mut conn = app_state
-        .db
-        .get()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let mut conn = app_state.db.get().await.map_err(|_| {
+        ApiError::InternalServerError("Failed to get database connection".to_string())
+    })?;
 
-    let results = diesel::sql_query(format!(
+    let query_result = diesel::sql_query(format!(
         "WITH pkg AS (
             SELECT package_id, original_id
             FROM packages
@@ -92,28 +95,29 @@ async fn resolve_name_bulk_impl(
         WHERE package_infos.default_name = name_records.name;",
         network_field(&network)?
     ))
-    .bind::<Array<Text>, _>(package_ids.clone())
+    .bind::<Array<Text>, _>(
+        package_ids
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>(),
+    )
     .get_results::<ReverseNameResolution>(&mut conn)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| ApiError::InternalServerError("Failed to query database".to_string()))?;
 
-    let results = package_ids
-        .iter()
-        .map(|package_id| {
-            let item = results
-                .iter()
-                .find(|r| r.package_id == *package_id)
-                .map(|r| ReverseResolutionData {
-                    name: Some(r.name.clone()),
-                    package_id: package_id.clone(),
-                })
-                .unwrap_or(ReverseResolutionData {
-                    name: None,
-                    package_id: package_id.clone(),
-                });
-            item
+    let mut results = query_result
+        .into_iter()
+        .map(|result| {
+            (
+                ObjectID::from_str(&result.package_id).unwrap(),
+                ResolvedName(Some(result.name)),
+            )
         })
-        .collect::<Vec<_>>();
+        .collect::<HashMap<_, _>>();
+
+    package_ids.iter().for_each(|package_id| {
+        results.entry(*package_id).or_insert(ResolvedName(None));
+    });
 
     Ok(results)
 }

@@ -6,10 +6,12 @@ use sui_types::{base_types::ObjectID, TypeTag};
 
 use crate::types::name::{VersionedName, VERSIONED_NAME_UNBOUND_REG};
 
+use super::errors::MoveRegistryError;
+
 pub struct NamedType;
 
 impl NamedType {
-    fn replace_names(
+    pub(crate) fn replace_names(
         type_name: &str,
         names: &HashMap<String, ObjectID>,
     ) -> Result<String, anyhow::Error> {
@@ -33,7 +35,7 @@ impl NamedType {
         Ok(struct_tag_str.to_string())
     }
 
-    fn parse_names(name: &str) -> Result<Vec<String>, anyhow::Error> {
+    pub(crate) fn parse_names(name: &str) -> Result<Vec<String>, MoveRegistryError> {
         let mut names = vec![];
         let struct_tag = VERSIONED_NAME_UNBOUND_REG.replace_all(name, |m: &regex::Captures| {
             // SAFETY: we know that the regex will always have a match on position 0.
@@ -50,7 +52,8 @@ impl NamedType {
         // We attempt to parse the type_tag with these replacements, to make sure there are no other
         // errors in the type tag (apart from the move names). That protects us from unnecessary
         // queries to resolve .move names, for a type tag that will be invalid anyway.
-        TypeTag::from_str(&struct_tag).map_err(|e| anyhow!(format!("bad type: {e}")))?;
+        TypeTag::from_str(&struct_tag)
+            .map_err(|e| MoveRegistryError::InvalidType(format!("bad type: {e}")))?;
 
         Ok(names)
     }

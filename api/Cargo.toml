@@ -22,4 +22,4 @@ bcs = "0.1.6"
 sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git" }
 move-core-types = { git = "https://github.com/MystenLabs/sui.git" }
 sui-types = { git = "https://github.com/MystenLabs/sui.git" }
-
+futures = "0.3.31"

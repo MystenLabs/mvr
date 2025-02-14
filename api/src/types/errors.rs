@@ -3,6 +3,51 @@
 
 use serde::{Deserialize, Serialize};
 
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    Json,
+};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum ApiError {
+    #[error("Invalid input: {0}")]
+    BadRequest(String),
+
+    #[error("Internal server error: {0}")]
+    InternalServerError(String),
+}
+
+#[derive(Serialize)]
+struct ErrorResponse {
+    message: String,
+}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let (status, message) = match self {
+            ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            ApiError::InternalServerError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+        };
+
+        let body = Json(ErrorResponse { message });
+        (status, body).into_response()
+    }
+}
+
+impl From<MoveRegistryError> for ApiError {
+    fn from(error: MoveRegistryError) -> Self {
+        ApiError::InternalServerError(error.to_string())
+    }
+}
+
+impl From<NameServiceError> for ApiError {
+    fn from(error: NameServiceError) -> Self {
+        ApiError::InternalServerError(error.to_string())
+    }
+}
+
 #[derive(thiserror::Error, Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub enum MoveRegistryError {
     // The chain identifier is not available, so we cannot determine where to look for the name.
@@ -11,6 +56,9 @@ pub enum MoveRegistryError {
     // The name was found in the service, but it is not a valid name.
     #[error("Move Registry: The request name {0} is malformed.")]
     InvalidName(String),
+
+    #[error("Move Registry: The request type {0} is malformed.")]
+    InvalidType(String),
 
     #[error("Move Registry: External API url is not available so resolution is not on this RPC.")]
     ExternalApiUrlUnavailable,

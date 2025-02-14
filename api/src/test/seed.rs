@@ -1,8 +1,14 @@
+use std::str::FromStr;
+
 use crate::models::{NameRecord, Package, PackageInfo};
 use crate::schema::{name_records, package_infos, packages};
 use crate::AppState;
 use diesel_async::RunQueryDsl;
 use rand::Rng;
+use sui_types::base_types::ObjectID;
+
+const ORIGINAL_ID_PREFIX: &str = "0x1";
+const PACKAGE_ID_PREFIX: &str = "0x5";
 
 /// Some more predictable data, for testing.
 pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
@@ -10,26 +16,26 @@ pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
 
     let package_seeds = vec![
         Package {
-            package_id: "0x222".to_string(),
-            original_id: "0x2".to_string(),
+            package_id: normalized_package_id("0x222"),
+            original_id: normalized_package_id("0x2"),
             package_version: 3,
             move_package: vec![],
         },
         Package {
-            package_id: "0x22".to_string(),
-            original_id: "0x2".to_string(),
+            package_id: normalized_package_id("0x22"),
+            original_id: normalized_package_id("0x2"),
             package_version: 2,
             move_package: vec![],
         },
         Package {
-            package_id: "0x2".to_string(),
-            original_id: "0x2".to_string(),
+            package_id: normalized_package_id("0x2"),
+            original_id: normalized_package_id("0x2"),
             package_version: 1,
             move_package: vec![],
         },
         Package {
-            package_id: "0x3".to_string(),
-            original_id: "0x3".to_string(),
+            package_id: normalized_package_id("0x3"),
+            original_id: normalized_package_id("0x3"),
             package_version: 1,
             move_package: vec![],
         },
@@ -39,7 +45,7 @@ pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
         PackageInfo {
             id: "0xRandomPackageInfo".to_string(),
             // registered on v2
-            package_id: "0x22".to_string(),
+            package_id: normalized_package_id("0x22"),
             git_table_id: "0xRandomPackageInfoTableId".to_string(),
             default_name: Some("@test/wow".to_string()),
             metadata: serde_json::json!({}),
@@ -47,7 +53,7 @@ pub async fn seed_database(state: &AppState) -> Result<(), anyhow::Error> {
         PackageInfo {
             id: "0xPackageInfoFor0x3".to_string(),
             // registered on v1
-            package_id: "0x3".to_string(),
+            package_id: normalized_package_id("0x3"),
             git_table_id: "0xPackageInfoFor0x3TableId".to_string(),
             default_name: Some("@test/wowo".to_string()),
             metadata: serde_json::json!({}),
@@ -144,18 +150,18 @@ pub async fn load_seed_data(state: &AppState) -> Result<(), anyhow::Error> {
     for original_id_counter in 1..=num_original_ids {
         for version in 1..=num_versions {
             let package_id = if version == 1 {
-                format!("0xoriginal_{}", original_id_counter)
+                format!("{}{}", ORIGINAL_ID_PREFIX, original_id_counter)
             } else {
-                format!("0xpackage{}{}", original_id_counter, version)
+                format!("{}{}{}", PACKAGE_ID_PREFIX, original_id_counter, version)
             };
 
-            let original_id = format!("0xoriginal_{}", original_id_counter);
+            let original_id = format!("{}{}", ORIGINAL_ID_PREFIX, original_id_counter);
             let move_package = vec![0u8; 100];
 
             package_entries.push(format!(
                 "('{}', '{}', '{}', '{}')",
-                package_id,
-                original_id,
+                normalized_package_id(&package_id),
+                normalized_package_id(&original_id),
                 version,
                 serde_json::to_string(&move_package).unwrap()
             ));
@@ -179,7 +185,8 @@ pub async fn load_seed_data(state: &AppState) -> Result<(), anyhow::Error> {
         let package_info = PackageInfo {
             id: name.1,
             package_id: format!(
-                "0xpackage{}{}",
+                "{}{}{}",
+                PACKAGE_ID_PREFIX,
                 rng.random_range(1..=num_original_ids),
                 rng.random_range(1..=num_versions)
             ),
@@ -196,9 +203,9 @@ pub async fn load_seed_data(state: &AppState) -> Result<(), anyhow::Error> {
             .map(|info| format!(
                 "('{}', '{}', '{}', '{}', '{}')",
                 info.id,
-                info.package_id,
+                normalized_package_id(&info.package_id),
                 info.git_table_id,
-                info.default_name.as_ref().map(|s| s.as_str()).unwrap_or("NULL"),
+                info.default_name.as_deref().unwrap_or("NULL"),
                 serde_json::to_string(&info.metadata).unwrap()
             ))
             .collect::<Vec<_>>()
@@ -210,4 +217,8 @@ pub async fn load_seed_data(state: &AppState) -> Result<(), anyhow::Error> {
         .await?;
 
     Ok(())
+}
+
+fn normalized_package_id(package_id: &str) -> String {
+    ObjectID::from_str(package_id).unwrap().to_string()
 }

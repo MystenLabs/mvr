@@ -1,8 +1,11 @@
-use std::{collections::HashSet, str::FromStr, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+    sync::Arc,
+};
 
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
     Json,
 };
 use diesel::{
@@ -11,8 +14,12 @@ use diesel::{
 };
 use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
+use sui_types::base_types::ObjectID;
 
-use crate::{types::name::VersionedName, AppState};
+use crate::{
+    types::{errors::ApiError, name::VersionedName},
+    AppState,
+};
 
 use super::network_field;
 
@@ -26,26 +33,23 @@ pub struct NameResolution {
     pub version: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ResolutionData {
-    pub name: String,
-    pub package_id: Option<String>,
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct BulkResolutionData {
     pub names: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ResolvedName(pub(crate) Option<ObjectID>);
+
 impl NameResolution {
     pub async fn resolve(
         Path((network, name)): Path<(String, String)>,
         State(app_state): State<Arc<AppState>>,
-    ) -> Result<Json<ResolutionData>, StatusCode> {
-        // validate the name
-        let versioned = VersionedName::from_str(&name).map_err(|_| StatusCode::BAD_REQUEST)?;
-        let names = bulk_resolve_names_impl(vec![versioned], &app_state, network).await?;
-        Ok(Json(names[0].clone()))
+    ) -> Result<Json<ResolvedName>, ApiError> {
+        let names = bulk_resolve_names_impl(&app_state, vec![name.clone()], network).await?;
+
+        let name = names.get(&name).unwrap().clone();
+        Ok(Json(name))
     }
 
     /// Resolve a list of names at once.
@@ -54,28 +58,29 @@ impl NameResolution {
         Path(network): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkResolutionData>,
-    ) -> Result<Json<Vec<ResolutionData>>, StatusCode> {
-        let mut unique_names = HashSet::new();
-        for name in payload.names {
-            let versioned = VersionedName::from_str(&name).map_err(|_| StatusCode::BAD_REQUEST)?;
-            unique_names.insert(versioned);
-        }
+    ) -> Result<Json<HashMap<String, ResolvedName>>, ApiError> {
+        let results = bulk_resolve_names_impl(&app_state, payload.names, network).await?;
 
-        let results =
-            bulk_resolve_names_impl(unique_names.into_iter().collect(), &app_state, network)
-                .await?;
         Ok(Json(results))
     }
 }
 
-async fn bulk_resolve_names_impl(
-    versioned_names: Vec<VersionedName>,
+pub(crate) async fn bulk_resolve_names_impl(
     app_state: &AppState,
+    names: Vec<String>,
     network: String,
-) -> Result<Vec<ResolutionData>, StatusCode> {
-    if versioned_names.is_empty() {
-        return Ok(vec![]);
+) -> Result<HashMap<String, ResolvedName>, ApiError> {
+    if names.is_empty() {
+        return Ok(HashMap::new());
     }
+
+    // deduplicate names
+    let versioned_names = names
+        .into_iter()
+        .map(|name| VersionedName::from_str(&name))
+        .collect::<Result<HashSet<_>, _>>()?
+        .into_iter()
+        .collect::<Vec<_>>();
 
     // Gets a list of all the requested names.
     let names: Vec<String> = versioned_names
@@ -90,11 +95,9 @@ async fn bulk_resolve_names_impl(
         .map(|name| name.version.unwrap_or(0) as i64)
         .collect::<Vec<_>>();
 
-    let mut conn = app_state
-        .db
-        .get()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let mut conn = app_state.db.get().await.map_err(|_| {
+        ApiError::InternalServerError("Failed to get database connection".to_string())
+    })?;
 
     // This query is a bit complex, but it's a way to bulk-get either the latest OR a specific version
     // for a given list of names.
@@ -122,28 +125,30 @@ async fn bulk_resolve_names_impl(
     .bind::<Array<BigInt>, Vec<i64>>(versions)
     .get_results::<NameResolution>(&mut conn)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| ApiError::InternalServerError("Failed to query database".to_string()))?;
 
-    let results = versioned_names
-        .iter()
+    let mut results: HashMap<String, ResolvedName> = result
+        .into_iter()
         .map(|name| {
-            let item = result
-                .iter()
-                .find(|r| {
-                    r.name == *name.name.to_string()
-                        && r.version == name.version.unwrap_or(0) as i64
-                })
-                .map(|r| ResolutionData {
-                    name: name.to_string(),
-                    package_id: Some(r.package_id.clone()),
-                })
-                .unwrap_or(ResolutionData {
-                    name: name.to_string(),
-                    package_id: None,
-                });
-            item
+            let mut versioned_name = VersionedName::from_str(&name.name)?;
+            versioned_name.version = (name.version > 0).then_some(name.version as u64);
+
+            let object_id = ObjectID::from_str(&name.package_id).map_err(|e| {
+                ApiError::BadRequest(format!(
+                    "Failed to parse package id: {e} {}",
+                    name.package_id
+                ))
+            })?;
+
+            Ok((versioned_name.to_string(), ResolvedName(Some(object_id))))
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<_, ApiError>>()?;
+
+    versioned_names.iter().for_each(|name| {
+        results
+            .entry(name.to_string())
+            .or_insert(ResolvedName(None));
+    });
 
     Ok(results)
 }

@@ -11,14 +11,14 @@ use std::{env, sync::Arc};
 
 use axum::http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
-    HeaderValue, Method,
+    Method,
 };
 use data::package_resolver::{ApiPackageStore, PackageResolver};
 use db::{get_connection_pool, PgPool};
 use dotenvy::dotenv;
 use sui_package_resolver::{PackageStoreWithLruCache, Resolver};
 use test::seed::{load_seed_data, seed_database};
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -31,9 +31,8 @@ async fn main() {
     dotenv().ok();
 
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+        .allow_origin(Any)
         .allow_methods([Method::GET])
-        .allow_credentials(true)
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -50,9 +49,12 @@ async fn main() {
         package_resolver,
     };
 
-    // seed_database(&app_state).await.expect("Failed to seed database");
-
-    // load_seed_data(&app_state).await.expect("Failed to load seed data");
+    // seed_database(&app_state)
+    //     .await
+    //     .expect("Failed to seed database");
+    // load_seed_data(&app_state)
+    //     .await
+    //     .expect("Failed to load seed data");
 
     let app = route::create_router(Arc::new(app_state)).layer(cors);
 

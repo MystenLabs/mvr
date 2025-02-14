@@ -239,6 +239,7 @@ dependencies = [
  "diesel",
  "diesel-async",
  "dotenvy",
+ "futures",
  "move-core-types",
  "once_cell",
  "rand 0.9.0",
