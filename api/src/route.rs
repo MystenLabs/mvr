@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     handlers::{
-        handler::root, resolution::NameResolution, reverse_resolution::ReverseResolution,
+        health_check, resolution::NameResolution, reverse_resolution::ReverseResolution,
         type_resolution::TypeResolution,
     },
     AppState,
@@ -15,7 +15,7 @@ use axum::{
 pub fn create_router(app: Arc<AppState>) -> Router {
     let v1 = Router::new()
         .nest("/{network}", network_routes())
-        .route("/health", get(root));
+        .route("/health", get(health_check));
 
     Router::new().nest("/api/v1", v1).with_state(app)
 }
