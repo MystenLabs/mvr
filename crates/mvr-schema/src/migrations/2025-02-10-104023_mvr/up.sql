@@ -11,6 +11,8 @@ CREATE TABLE packages
     CONSTRAINT packages_pkey PRIMARY KEY (package_id, original_id, package_version),
     CONSTRAINT packages_unique_package_id UNIQUE (package_id)
 );
+-- Index to optimize package filtering | Bulk resolution | Tested on Million records operations
+CREATE INDEX idx_packages_original_id_version_filtering ON packages(original_id, package_version DESC);
 
 CREATE TABLE package_dependencies
 (

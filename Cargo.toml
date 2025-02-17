@@ -3,5 +3,15 @@ resolver = "2"
 
 members = [
     "mvr-cli",
-    "mvr-indexer"
+    "crates/mvr-indexer",
+    "crates/mvr-schema"
 ]
+
+[workspace.dependencies]
+serde = "1.0.217"
+serde_json = "1.0.138"
+dotenvy = "0.15.7"
+chrono = "0.4.39"
+diesel = "2.2.7"
+diesel-async = "0.5.2"
+anyhow = "1.0.95"

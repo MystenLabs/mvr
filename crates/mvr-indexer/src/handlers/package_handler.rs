@@ -1,4 +1,4 @@
-use crate::models::{Package, PackageDependency, SuiEnv};
+use mvr_schema::models::{Package, PackageDependency, SuiEnv};
 use chrono::DateTime;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
@@ -21,8 +21,8 @@ impl PackageHandler {
 #[async_trait::async_trait]
 impl Handler for PackageHandler {
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
-        use crate::schema::package_dependencies::dsl::package_dependencies;
-        use crate::schema::packages::dsl::packages;
+        use mvr_schema::schema::package_dependencies::dsl::package_dependencies;
+        use mvr_schema::schema::packages::dsl::packages;
 
         let deps = values
             .iter()

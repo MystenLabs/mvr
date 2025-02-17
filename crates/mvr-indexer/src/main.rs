@@ -1,5 +1,5 @@
 use crate::handlers::package_handler::PackageHandler;
-use crate::models::SuiEnv;
+use mvr_schema::models::SuiEnv;
 use anyhow::Context;
 use clap::Parser;
 use prometheus::Registry;
@@ -10,8 +10,6 @@ use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
 
 pub(crate) mod handlers;
-pub(crate) mod models;
-pub(crate) mod schema;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case", author, version)]
