@@ -39,17 +39,27 @@ pub struct BulkResolutionData {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ResolvedName(pub(crate) Option<ObjectID>);
 
+#[derive(Serialize, Deserialize)]
+pub struct Response {
+    package_id: ResolvedName
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct BulkResponse {
+    resolution: HashMap<String, ResolvedName>,
+}
+
 pub struct Resolution;
 
 impl Resolution {
     pub async fn resolve(
         Path((network, name)): Path<(String, String)>,
         State(app_state): State<Arc<AppState>>,
-    ) -> Result<Json<ResolvedName>, ApiError> {
+    ) -> Result<Json<Response>, ApiError> {
         let names = bulk_resolve_names_impl(&app_state, vec![name.clone()], network).await?;
 
-        let name = names.get(&name).unwrap().clone();
-        Ok(Json(name))
+        let package_id = names.get(&name).unwrap().clone();
+        Ok(Json(Response { package_id }))
     }
 
     /// Resolve a list of names at once.
@@ -58,10 +68,10 @@ impl Resolution {
         Path(network): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkResolutionData>,
-    ) -> Result<Json<HashMap<String, ResolvedName>>, ApiError> {
+    ) -> Result<Json<BulkResponse>, ApiError> {
         let results = bulk_resolve_names_impl(&app_state, payload.names, network).await?;
 
-        Ok(Json(results))
+        Ok(Json(BulkResponse { resolution: results }))
     }
 }
 

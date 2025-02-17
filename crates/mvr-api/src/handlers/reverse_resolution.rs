@@ -36,24 +36,34 @@ pub struct BulkReverseResolutionData {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResolvedName(pub Option<String>);
 
+#[derive(Serialize, Deserialize)]
+pub struct Response {
+    name: ResolvedName,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct BulkResponse {
+    resolution: HashMap<ObjectID, ResolvedName>,
+}
+
 pub struct ReverseResolution;
 
 impl ReverseResolution {
     pub async fn resolve(
         Path((network, package_id)): Path<(String, ObjectID)>,
         State(app_state): State<Arc<AppState>>,
-    ) -> Result<Json<ResolvedName>, ApiError> {
+    ) -> Result<Json<Response>, ApiError> {
         let results = resolve_name_bulk_impl(vec![package_id], &app_state, network).await?;
         // SAFETY: `resolve_name_bulk_impl` always returns the requested elements.
         let result = results.get(&package_id).unwrap();
-        Ok(Json(result.clone()))
+        Ok(Json(Response { name: result.clone() }))
     }
 
     pub async fn bulk_resolve(
         Path(network): Path<String>,
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkReverseResolutionData>,
-    ) -> Result<Json<HashMap<ObjectID, ResolvedName>>, ApiError> {
+    ) -> Result<Json<BulkResponse>, ApiError> {
         let unique_pkg_ids: Vec<_> = payload
             .package_ids
             .into_iter()
@@ -61,7 +71,7 @@ impl ReverseResolution {
             .into_iter()
             .collect();
         let results = resolve_name_bulk_impl(unique_pkg_ids, &app_state, network).await?;
-        Ok(Json(results))
+        Ok(Json(BulkResponse { resolution: results }))
     }
 }
 
