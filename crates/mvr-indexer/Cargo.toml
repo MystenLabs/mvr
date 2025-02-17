@@ -12,7 +12,6 @@ tokio-util = "0.7.13"
 futures = "0.3.31"
 sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git" }
 sui-pg-db = { git = "https://github.com/MystenLabs/sui.git" }
-sui-field-count = { git = "https://github.com/MystenLabs/sui.git" }
 sui-sdk = { git = "https://github.com/MystenLabs/sui.git" }
 sui-config = { git = "https://github.com/MystenLabs/sui.git" }
 sui-move-build = { git = "https://github.com/MystenLabs/sui.git" }
@@ -20,22 +19,23 @@ sui-data-ingestion-core = { git = "https://github.com/MystenLabs/sui.git" }
 mysten-metrics = { git = "https://github.com/MystenLabs/sui.git" }
 telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git" }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
+mvr-schema = { path = "../mvr-schema" }
 
 clap = { version = "4.5.20", features = ["env"] }
-serde = "1.0.213"
-anyhow = "1.0.91"
 tempfile = "3.13.0"
 prometheus = "0.13.4"
 tracing = "0.1.40"
-diesel = { version = "2.2.4", features = ["postgres", "uuid", "chrono", "serde_json", "numeric"] }
-diesel-async = { version = "0.5.1", features = ["bb8", "postgres"] }
 async-trait = "0.1.83"
 uuid = { version = "1.11.0", features = ["serde", "v4"] }
-serde_json = "1.0.132"
-chrono = "0.4.38"
 bigdecimal = "0.4.5"
 bcs = "0.1.4"
 itertools = "0.14.0"
+diesel = { workspace = true, features = ["postgres", "uuid", "chrono", "serde_json", "numeric"] }
+diesel-async = { workspace = true, features = ["bb8", "postgres"] }
+serde = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
 
 [dev-dependencies]
 
