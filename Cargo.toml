@@ -4,7 +4,8 @@ resolver = "2"
 members = [
     "mvr-cli",
     "crates/mvr-indexer",
-    "crates/mvr-schema"
+    "crates/mvr-schema",
+    "crates/mvr-api"
 ]
 
 [workspace.dependencies]

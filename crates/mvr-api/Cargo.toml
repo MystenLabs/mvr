@@ -1,0 +1,28 @@
+[package]
+name = "mvr-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8.1"
+tokio = { version = "1.43.0", features = ["full"] }
+tower-http = { version = "0.6.2", features = ["cors"] }
+regex = "1.11.1"
+once_cell = "1.20.3"
+thiserror = "2.0.11"
+rand = "0.9.0"
+async-trait = "0.1.86"
+bcs = "0.1.6"
+sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git" }
+move-core-types = { git = "https://github.com/MystenLabs/sui.git" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git" }
+futures = "0.3.31"
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+diesel = { workspace = true, features = ["serde_json"] }
+dotenvy = { workspace = true }
+diesel-async = { workspace = true, features = ["bb8", "postgres"] }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+mvr-types = { path = "../mvr-types" }
+mvr-schema = { path = "../mvr-schema" }
