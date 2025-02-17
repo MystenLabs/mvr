@@ -5,7 +5,8 @@ members = [
     "mvr-cli",
     "crates/mvr-indexer",
     "crates/mvr-schema",
-    "crates/mvr-api"
+    "crates/mvr-api",
+    "crates/mvr-types"
 ]
 
 [workspace.dependencies]
