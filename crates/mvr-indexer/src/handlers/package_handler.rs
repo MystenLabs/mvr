@@ -1,7 +1,8 @@
-use mvr_schema::models::{Package, PackageDependency, SuiEnv};
+use crate::models::SuiEnv;
 use chrono::DateTime;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
+use mvr_schema::models::{Package, PackageDependency};
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
