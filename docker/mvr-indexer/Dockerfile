@@ -4,7 +4,7 @@ ARG PROFILE=release
 
 WORKDIR work
 
-COPY indexer/ ./
+COPY crates/mvr-indexer/ ./
 COPY docker/mvr-indexer/entry.sh ./
 RUN apt-get update && apt-get install -y build-essential libssl-dev pkg-config curl cmake clang ca-certificates
 ENV PATH="/root/.cargo/bin:${PATH}"
