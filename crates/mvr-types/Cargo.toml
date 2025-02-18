@@ -1,0 +1,12 @@
+[package]
+name = "mvr-types"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sui-types = { git = "https://github.com/MystenLabs/sui.git" }
+serde = { workspace = true, features = ["derive"] }
+anyhow.workspace = true
+thiserror.workspace = true
+once_cell.workspace = true
+regex = "1.11.1"
