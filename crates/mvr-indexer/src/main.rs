@@ -10,6 +10,7 @@ use sui_indexer_alt_framework::{Indexer, IndexerArgs};
 use sui_pg_db::DbArgs;
 use sui_sdk_types::ObjectId;
 use tokio_util::sync::CancellationToken;
+use crate::handlers::package_info_handler::PackageInfoHandler;
 
 pub(crate) mod handlers;
 
@@ -77,6 +78,13 @@ async fn main() -> Result<(), anyhow::Error> {
     indexer
         .concurrent_pipeline(
             GitInfoHandler::new(mvr_metadata_pkg_id),
+            ConcurrentConfig::default(),
+        )
+        .await?;
+
+    indexer
+        .concurrent_pipeline(
+            PackageInfoHandler::new(mvr_metadata_pkg_id),
             ConcurrentConfig::default(),
         )
         .await?;
