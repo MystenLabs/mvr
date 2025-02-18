@@ -30,10 +30,7 @@ impl GitInfoHandler {
             TypeTag::U64,
             TypeTag::Struct(git_type.into()),
         ));
-
-        GitInfoHandler {
-            type_,
-        }
+        GitInfoHandler { type_ }
     }
 }
 
