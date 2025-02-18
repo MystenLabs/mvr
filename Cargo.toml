@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
-    "mvr-cli",
+    "crates/mvr-cli",
     "crates/mvr-indexer",
     "crates/mvr-schema"
 ]

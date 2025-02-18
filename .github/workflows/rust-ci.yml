@@ -26,12 +26,12 @@ jobs:
 
       - name: Build mvr-cli (debug)
         run: |
-          cargo build
+          cargo build -p mvr
           echo "$(pwd)/target/debug" >> $GITHUB_PATH
 
       - name: Run mvr-cli tests
         run: |
-          cd mvr-cli
+          cd crates/mvr-cli
           cargo nextest run
 
       - name: Get Sui releases JSON file

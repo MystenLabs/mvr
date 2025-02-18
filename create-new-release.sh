@@ -2,7 +2,7 @@
 set -e
 
 # Get the version number from Cargo.toml file
-NEXT_VERSION=$(grep -m1 version mvr-cli/Cargo.toml | sed 's/[^0-9.]*//g')
+NEXT_VERSION=$(grep -m1 version crates/mvr-cli/Cargo.toml | sed 's/[^0-9.]*//g')
 
 echo "Preparing to create release v$NEXT_VERSION"
 

@@ -60,7 +60,7 @@ Below are the `mvr` binaries for macOS (Intel and Apple CPUs), Ubuntu (Intel and
 
 Run the following commands in your terminal:
 - `git clone https://github.com/mystenlabs/mvr.git`
-- `cd mvr/mvr-cli && cargo install --path .`
+- `cd mvr/crates/mvr-cli && cargo install --path .`
 - `mvr --version` to verify that the installation was successful.
 
 Note that if you install both from source and from release, you need to check which folder comes first on the `PATH` environment variable. The binary in that folder will be the one that is executed when you run `mvr`.
