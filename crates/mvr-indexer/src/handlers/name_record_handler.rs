@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
-use itertools::Itertools;
 use mvr_schema::models::NameRecord;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
@@ -35,8 +34,8 @@ impl NameRecordHandler {
 #[async_trait]
 impl Handler for NameRecordHandler {
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
-        use mvr_schema::schema::name_records::dsl::name_records;
         use mvr_schema::schema::name_records::columns::*;
+        use mvr_schema::schema::name_records::dsl::name_records;
         Ok(diesel::insert_into(name_records)
             .values(values)
             .on_conflict(name)
@@ -44,7 +43,7 @@ impl Handler for NameRecordHandler {
             .set((
                 mainnet_id.eq(excluded(mainnet_id)),
                 testnet_id.eq(excluded(testnet_id)),
-                metadata.eq(excluded(metadata))
+                metadata.eq(excluded(metadata)),
             ))
             .execute(conn)
             .await?)

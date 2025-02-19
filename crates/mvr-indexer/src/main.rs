@@ -57,18 +57,18 @@ async fn main() -> Result<(), anyhow::Error> {
     )
     .await?;
 
-    /*    indexer
-            .concurrent_pipeline(PackageHandler::new(sui_env), ConcurrentConfig::default())
-            .await?;
+    indexer
+        .concurrent_pipeline(PackageHandler::new(sui_env), ConcurrentConfig::default())
+        .await?;
 
-        indexer
-            .concurrent_pipeline(GitInfoHandler::new(), ConcurrentConfig::default())
-            .await?;
+    indexer
+        .concurrent_pipeline(GitInfoHandler::new(), ConcurrentConfig::default())
+        .await?;
 
-        indexer
-            .concurrent_pipeline(PackageInfoHandler, ConcurrentConfig::default())
-            .await?;
-    */
+    indexer
+        .concurrent_pipeline(PackageInfoHandler, ConcurrentConfig::default())
+        .await?;
+
     indexer
         .concurrent_pipeline(NameRecordHandler::new(), ConcurrentConfig::default())
         .await?;
