@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"}
+sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050"}
 diesel = { workspace = true, features = ["postgres", "uuid", "chrono", "serde_json", "numeric"] }
 dotenvy = { workspace = true }
 serde = { workspace = true }

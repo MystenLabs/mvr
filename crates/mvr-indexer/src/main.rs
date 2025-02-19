@@ -1,5 +1,7 @@
 use crate::handlers::git_info_handler::GitInfoHandler;
+use crate::handlers::name_record_handler::NameRecordHandler;
 use crate::handlers::package_handler::PackageHandler;
+use crate::handlers::package_info_handler::PackageInfoHandler;
 use crate::models::SuiEnv;
 use anyhow::Context;
 use clap::Parser;
@@ -8,9 +10,7 @@ use sui_indexer_alt_framework::ingestion::{ClientArgs, IngestionConfig};
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
 use sui_indexer_alt_framework::{Indexer, IndexerArgs};
 use sui_pg_db::DbArgs;
-use sui_sdk_types::ObjectId;
 use tokio_util::sync::CancellationToken;
-use crate::handlers::package_info_handler::PackageInfoHandler;
 
 pub(crate) mod handlers;
 
@@ -27,18 +27,6 @@ struct Args {
     client_args: ClientArgs,
     #[clap(env, long, default_value = "mainnet")]
     sui_env: SuiEnv,
-    #[clap(
-        env,
-        long,
-        default_value = "0x0bde14ccbabe5328c867e82495a4c39a3688c69943a5dc333f79029f966f0354"
-    )]
-    mvr_core_pkg_id: ObjectId,
-    #[clap(
-        env,
-        long,
-        default_value = "0x0f6b71233780a3f362137b44ac219290f4fd34eb81e0cb62ddf4bb38d1f9a3a1"
-    )]
-    mvr_metadata_pkg_id: ObjectId,
 }
 
 #[tokio::main]
@@ -52,8 +40,6 @@ async fn main() -> Result<(), anyhow::Error> {
         db_args,
         client_args,
         sui_env,
-        mvr_core_pkg_id,
-        mvr_metadata_pkg_id,
     } = Args::parse();
 
     let registry = Registry::new_custom(Some("mvr_indexer".into()), None)
@@ -71,22 +57,20 @@ async fn main() -> Result<(), anyhow::Error> {
     )
     .await?;
 
-    indexer
-        .concurrent_pipeline(PackageHandler::new(sui_env), ConcurrentConfig::default())
-        .await?;
+    /*    indexer
+            .concurrent_pipeline(PackageHandler::new(sui_env), ConcurrentConfig::default())
+            .await?;
 
-    indexer
-        .concurrent_pipeline(
-            GitInfoHandler::new(mvr_metadata_pkg_id),
-            ConcurrentConfig::default(),
-        )
-        .await?;
+        indexer
+            .concurrent_pipeline(GitInfoHandler::new(), ConcurrentConfig::default())
+            .await?;
 
+        indexer
+            .concurrent_pipeline(PackageInfoHandler, ConcurrentConfig::default())
+            .await?;
+    */
     indexer
-        .concurrent_pipeline(
-            PackageInfoHandler::new(mvr_metadata_pkg_id),
-            ConcurrentConfig::default(),
-        )
+        .concurrent_pipeline(NameRecordHandler::new(), ConcurrentConfig::default())
         .await?;
 
     let h_indexer = indexer.run().await?;
