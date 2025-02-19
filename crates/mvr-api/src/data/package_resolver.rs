@@ -1,61 +1,87 @@
-use std::sync::Arc;
+use std::{
+    collections::{BTreeSet, HashMap},
+    sync::Arc,
+};
 
-use crate::PgPool;
-use async_trait::async_trait;
+use super::reader::Reader;
+use async_graphql::dataloader::{DataLoader, Loader};
 use diesel::{ExpressionMethods, QueryDsl};
-use diesel_async::RunQueryDsl;
 use move_core_types::account_address::AccountAddress;
 use sui_package_resolver::{
-    error::Error as PackageResolverError, Package as NativePackage, PackageStore,
-    PackageStoreWithLruCache, Resolver, Result,
+    error::Error, Package, PackageStore, PackageStoreWithLruCache, Resolver, Result,
 };
 use sui_types::object::Object;
 
 pub(crate) type PackageCache = PackageStoreWithLruCache<ApiPackageStore>;
 pub(crate) type PackageResolver = Arc<Resolver<PackageCache>>;
 
-const STORE: &str = "ApiPackageStore";
+const STORE: &str = "PostgreSQL";
 
-/// Store which fetches package for the given address from the backend db on every call
-/// to `fetch`
-pub struct ApiPackageStore(PgPool);
+pub struct ApiPackageStore(Arc<DataLoader<Reader>>);
+
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
+struct PackageKey(AccountAddress);
 
 impl ApiPackageStore {
-    pub fn new(pool: PgPool) -> Self {
-        Self(pool)
+    pub fn new(loader: Arc<DataLoader<Reader>>) -> Self {
+        Self(loader)
     }
 }
 
-#[async_trait]
+#[async_trait::async_trait]
 impl PackageStore for ApiPackageStore {
-    async fn fetch(&self, id: AccountAddress) -> Result<Arc<NativePackage>> {
-        self.fetch_package(id).await
+    async fn fetch(&self, id: AccountAddress) -> Result<Arc<Package>> {
+        let Self(loader) = self;
+        let Some(package) = loader.load_one(PackageKey(id)).await? else {
+            return Err(Error::PackageNotFound(id));
+        };
+
+        Ok(package)
     }
 }
 
-impl ApiPackageStore {
-    async fn fetch_package(&self, id: AccountAddress) -> Result<Arc<NativePackage>> {
-        use mvr_schema::schema::packages::dsl::*;
-        let mut conn = self
-            .0
-            .get()
+#[async_trait::async_trait]
+impl Loader<PackageKey> for Reader {
+    type Value = Arc<Package>;
+    type Error = Error;
+
+    async fn load(&self, keys: &[PackageKey]) -> Result<HashMap<PackageKey, Self::Value>> {
+        use mvr_schema::schema::packages::dsl as pkg;
+
+        let mut id_to_package = HashMap::new();
+
+        if keys.is_empty() {
+            return Ok(id_to_package);
+        }
+
+        let mut conn = self.connect().await.map_err(|e| Error::Store {
+            store: STORE,
+            error: e.to_string(),
+        })?;
+
+        let ids: BTreeSet<_> = keys
+            .iter()
+            .map(|PackageKey(id)| id.to_canonical_string(true))
+            .collect();
+
+        let stored_packages: Vec<Vec<u8>> = conn
+            .results(
+                pkg::packages
+                    .select(pkg::move_package)
+                    .filter(pkg::package_id.eq_any(ids)),
+            )
             .await
-            .map_err(|_| PackageResolverError::Store {
+            .map_err(|e| Error::Store {
                 store: STORE,
-                error: "Failed to get connection to fetch package".to_string(),
+                error: e.to_string(),
             })?;
 
-        let pkg = packages
-            .select(move_package)
-            .filter(package_id.eq(id.to_canonical_string(true)))
-            .get_result::<Vec<u8>>(&mut conn)
-            .await
-            .map_err(|_| PackageResolverError::PackageNotFound(id))?;
+        for stored_package in stored_packages {
+            let move_package = bcs::from_bytes::<Object>(&stored_package)?;
+            let package = Package::read_from_object(&move_package)?;
+            id_to_package.insert(PackageKey(*move_package.id()), Arc::new(package));
+        }
 
-        let object = bcs::from_bytes::<Object>(&pkg).map_err(PackageResolverError::Bcs)?;
-
-        let package = NativePackage::read_from_object(&object)?;
-
-        Ok(Arc::new(package))
+        Ok(id_to_package)
     }
 }

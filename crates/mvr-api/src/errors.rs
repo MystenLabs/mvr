@@ -11,7 +11,9 @@ use axum::{
 };
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+use crate::data::reader::ReadError;
+
+#[derive(Debug, Error, Clone, Hash, Eq, PartialEq)]
 pub enum ApiError {
     #[error("Invalid input: {0}")]
     BadRequest(String),
@@ -46,5 +48,15 @@ impl From<MoveRegistryError> for ApiError {
 impl From<NameServiceError> for ApiError {
     fn from(error: NameServiceError) -> Self {
         ApiError::BadRequest(error.to_string())
+    }
+}
+
+impl From<ReadError> for ApiError {
+    fn from(error: ReadError) -> Self {
+        match error {
+            ReadError::Create(e) => ApiError::InternalServerError(e.to_string()),
+            ReadError::Connect(e) => ApiError::InternalServerError(e.to_string()),
+            ReadError::RunQuery(e) => ApiError::InternalServerError(e.to_string()),
+        }
     }
 }
