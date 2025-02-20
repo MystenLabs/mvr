@@ -4964,7 +4964,6 @@ dependencies = [
  "sui-indexer-alt-framework",
  "sui-move-build",
  "sui-pg-db",
- "sui-sdk",
  "sui-sdk-macros",
  "sui-sdk-types 0.0.2",
  "sui-types 0.1.0 (git+https://github.com/mystenlabs/sui?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",

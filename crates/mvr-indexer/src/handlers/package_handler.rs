@@ -7,7 +7,8 @@ use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
-use sui_sdk::types::full_checkpoint_content::{CheckpointData, CheckpointTransaction};
+use sui_types::full_checkpoint_content::CheckpointData;
+use sui_types::object::Data;
 
 pub struct PackageHandler {
     sui_env: SuiEnv,
@@ -67,42 +68,32 @@ impl Processor for PackageHandler {
         checkpoint
             .transactions
             .iter()
-            .try_fold(vec![], |mut results, tx| {
-                if contain_package(tx) {
-                    let mut package = tx
-                        .output_objects
-                        .iter()
-                        .map(|o| {
-                            o.data.try_as_package().map(|p| {
-                                let package_id = p.id().to_hex_literal();
-                                let deps = p
-                                    .linkage_table()
-                                    .iter()
-                                    .map(|(id, _)| id.to_hex_literal())
-                                    .dedup()
-                                    .collect();
-                                Ok::<_, anyhow::Error>(Package {
-                                    package_id,
-                                    original_id: p.original_package_id().to_hex_literal(),
-                                    package_version: p.version().value() as i64,
-                                    move_package: bcs::to_bytes(p)?,
-                                    chain_id: self.sui_env.to_string(),
-                                    tx_hash: tx.transaction.digest().base58_encode(),
-                                    sender: tx.transaction.sender_address().to_string(),
-                                    timestamp,
-                                    deps,
-                                })
+            .try_fold(vec![], |results, tx| {
+                tx.output_objects
+                    .iter()
+                    .try_fold(results, |mut results, o| {
+                        if let Data::Package(p) = &o.data {
+                            let package_id = p.id().to_hex_literal();
+                            let deps = p
+                                .linkage_table()
+                                .iter()
+                                .map(|(id, _)| id.to_hex_literal())
+                                .dedup()
+                                .collect();
+                            results.push(Package {
+                                package_id,
+                                original_id: p.original_package_id().to_hex_literal(),
+                                package_version: p.version().value() as i64,
+                                move_package: bcs::to_bytes(p)?,
+                                chain_id: self.sui_env.to_string(),
+                                tx_hash: tx.transaction.digest().base58_encode(),
+                                sender: tx.transaction.sender_address().to_string(),
+                                timestamp,
+                                deps,
                             })
-                        })
-                        .flatten()
-                        .collect::<anyhow::Result<Vec<_>>>()?;
-                    results.append(&mut package)
-                }
-                Ok(results)
+                        }
+                        Ok(results)
+                    })
             })
     }
-}
-
-fn contain_package(tx: &CheckpointTransaction) -> bool {
-    tx.output_objects.iter().any(|o| o.is_package())
 }
