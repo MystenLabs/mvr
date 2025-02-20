@@ -40,6 +40,7 @@ pub struct NameRecord {
 #[diesel(table_name = package_infos)]
 pub struct PackageInfo {
     pub id: String,
+    pub object_version: i64,
     pub package_id: String,
     pub git_table_id: String,
     pub default_name: Option<String>,

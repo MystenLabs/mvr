@@ -30,6 +30,7 @@ diesel::table! {
 diesel::table! {
     package_infos (id) {
         id -> Varchar,
+        object_version -> Int8,
         package_id -> Varchar,
         git_table_id -> Varchar,
         default_name -> Nullable<Varchar>,

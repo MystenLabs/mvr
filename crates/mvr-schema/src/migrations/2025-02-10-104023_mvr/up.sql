@@ -35,11 +35,12 @@ CREATE INDEX idx_name_records_testnet_id ON name_records (testnet_id);
 
 CREATE TABLE package_infos
 (
-    id           VARCHAR NOT NULL PRIMARY KEY,
-    package_id   VARCHAR NOT NULL,
-    git_table_id VARCHAR NOT NULL,
-    default_name VARCHAR,
-    metadata     JSONB   NOT NULL
+    id             VARCHAR NOT NULL PRIMARY KEY,
+    object_version BIGINT  NOT NULL,
+    package_id     VARCHAR NOT NULL,
+    git_table_id   VARCHAR NOT NULL,
+    default_name   VARCHAR,
+    metadata       JSONB   NOT NULL
 );
 
 CREATE INDEX idx_package_infos_package_id ON package_infos (package_id);
