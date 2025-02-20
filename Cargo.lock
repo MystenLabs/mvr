@@ -1424,10 +1424,22 @@ version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
  "fastcrypto 0.1.8",
- "mysten-network",
+ "mysten-network 0.2.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "rand 0.8.5",
  "serde",
- "shared-crypto",
+ "shared-crypto 0.0.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+]
+
+[[package]]
+name = "consensus-config"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "fastcrypto 0.1.8",
+ "mysten-network 0.2.0 (git+https://github.com/mystenlabs/sui)",
+ "rand 0.8.5",
+ "serde",
+ "shared-crypto 0.0.0 (git+https://github.com/mystenlabs/sui)",
 ]
 
 [[package]]
@@ -2321,6 +2333,14 @@ dependencies = [
 name = "enum-compat-util"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
+dependencies = [
+ "serde_yaml",
+]
+
+[[package]]
+name = "enum-compat-util"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
 dependencies = [
  "serde_yaml",
 ]
@@ -4279,7 +4299,7 @@ name = "move-abstract-interpreter"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-verifier-meter",
 ]
 
@@ -4294,9 +4314,23 @@ version = "0.0.3"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
  "anyhow",
- "enum-compat-util",
- "move-core-types",
- "move-proc-macros",
+ "enum-compat-util 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-proc-macros 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "ref-cast",
+ "serde",
+ "variant_count",
+]
+
+[[package]]
+name = "move-binary-format"
+version = "0.0.3"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "anyhow",
+ "enum-compat-util 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "move-core-types 0.0.4 (git+https://github.com/mystenlabs/sui)",
+ "move-proc-macros 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "ref-cast",
  "serde",
  "variant_count",
@@ -4314,9 +4348,9 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "anyhow",
  "bcs",
- "move-binary-format",
- "move-command-line-common",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-ir-types",
  "move-symbol-pool",
  "serde",
@@ -4330,8 +4364,21 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "anyhow",
  "indexmap 2.7.0",
- "move-binary-format",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "petgraph",
+ "serde-reflection",
+]
+
+[[package]]
+name = "move-bytecode-utils"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "anyhow",
+ "indexmap 2.7.0",
+ "move-binary-format 0.0.3 (git+https://github.com/mystenlabs/sui)",
+ "move-core-types 0.0.4 (git+https://github.com/mystenlabs/sui)",
  "petgraph",
  "serde-reflection",
 ]
@@ -4343,11 +4390,11 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "move-abstract-interpreter",
  "move-abstract-stack",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-borrow-graph",
  "move-bytecode-verifier-meter",
- "move-core-types",
- "move-vm-config",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "petgraph",
 ]
 
@@ -4356,9 +4403,9 @@ name = "move-bytecode-verifier-meter"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
- "move-binary-format",
- "move-core-types",
- "move-vm-config",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
 ]
 
 [[package]]
@@ -4372,8 +4419,28 @@ dependencies = [
  "dirs-next",
  "hex",
  "insta",
- "move-binary-format",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "once_cell",
+ "serde",
+ "sha2 0.9.9",
+ "vfs",
+ "walkdir",
+]
+
+[[package]]
+name = "move-command-line-common"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "anyhow",
+ "bcs",
+ "colored",
+ "dirs-next",
+ "hex",
+ "insta",
+ "move-binary-format 0.0.3 (git+https://github.com/mystenlabs/sui)",
+ "move-core-types 0.0.4 (git+https://github.com/mystenlabs/sui)",
  "once_cell",
  "serde",
  "sha2 0.9.9",
@@ -4394,15 +4461,15 @@ dependencies = [
  "hex",
  "insta",
  "lsp-types",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-borrow-graph",
  "move-bytecode-source-map",
  "move-bytecode-verifier",
- "move-command-line-common",
- "move-core-types",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-ir-to-bytecode",
  "move-ir-types",
- "move-proc-macros",
+ "move-proc-macros 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-symbol-pool",
  "once_cell",
  "petgraph",
@@ -4423,11 +4490,35 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "anyhow",
  "bcs",
- "enum-compat-util",
+ "enum-compat-util 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "ethnum",
  "hex",
  "leb128",
- "move-proc-macros",
+ "move-proc-macros 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "num",
+ "once_cell",
+ "primitive-types",
+ "rand 0.8.5",
+ "ref-cast",
+ "serde",
+ "serde_bytes",
+ "serde_with",
+ "thiserror 1.0.69",
+ "uint",
+]
+
+[[package]]
+name = "move-core-types"
+version = "0.0.4"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "anyhow",
+ "bcs",
+ "enum-compat-util 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "ethnum",
+ "hex",
+ "leb128",
+ "move-proc-macros 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "num",
  "once_cell",
  "primitive-types",
@@ -4452,10 +4543,10 @@ dependencies = [
  "colored",
  "indexmap 2.7.0",
  "move-abstract-interpreter",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-source-map",
- "move-command-line-common",
- "move-core-types",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-ir-types",
  "petgraph",
  "serde",
@@ -4472,11 +4563,11 @@ dependencies = [
  "hex",
  "inline_colorization",
  "move-abstract-interpreter",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-source-map",
- "move-command-line-common",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-compiler",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-coverage",
  "move-ir-types",
  "move-symbol-pool",
@@ -4493,9 +4584,9 @@ dependencies = [
  "codespan-reporting",
  "itertools 0.10.5",
  "log",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-compiler",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-ir-types",
  "move-model-2",
  "move-symbol-pool",
@@ -4513,10 +4604,10 @@ dependencies = [
  "anyhow",
  "codespan-reporting",
  "log",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-source-map",
- "move-command-line-common",
- "move-core-types",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-ir-to-bytecode-syntax",
  "move-ir-types",
  "move-symbol-pool",
@@ -4530,8 +4621,8 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "anyhow",
  "hex",
- "move-command-line-common",
- "move-core-types",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-ir-types",
  "move-symbol-pool",
 ]
@@ -4542,8 +4633,8 @@ version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
  "hex",
- "move-command-line-common",
- "move-core-types",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-symbol-pool",
  "once_cell",
  "serde",
@@ -4558,11 +4649,11 @@ dependencies = [
  "bcs",
  "codespan",
  "codespan-reporting",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-source-map",
- "move-command-line-common",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-compiler",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-disassembler",
  "move-ir-types",
  "move-symbol-pool",
@@ -4580,12 +4671,12 @@ dependencies = [
  "clap",
  "colored",
  "itertools 0.10.5",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-source-map",
- "move-bytecode-utils",
- "move-command-line-common",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-compiler",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-disassembler",
  "move-docgen",
  "move-model-2",
@@ -4611,7 +4702,17 @@ name = "move-proc-macros"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
- "enum-compat-util",
+ "enum-compat-util 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "quote",
+ "syn 2.0.90",
+]
+
+[[package]]
+name = "move-proc-macros"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "enum-compat-util 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "quote",
  "syn 2.0.90",
 ]
@@ -4631,7 +4732,16 @@ name = "move-vm-config"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "once_cell",
+]
+
+[[package]]
+name = "move-vm-config"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "move-binary-format 0.0.3 (git+https://github.com/mystenlabs/sui)",
  "once_cell",
 ]
 
@@ -4640,7 +4750,19 @@ name = "move-vm-profiler"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
- "move-vm-config",
+ "move-vm-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "once_cell",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "move-vm-profiler"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "move-vm-config 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "once_cell",
  "serde",
  "serde_json",
@@ -4653,10 +4775,24 @@ version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
  "anyhow",
- "move-binary-format",
- "move-core-types",
- "move-vm-profiler",
- "move-vm-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-profiler 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "once_cell",
+ "serde",
+]
+
+[[package]]
+name = "move-vm-test-utils"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "anyhow",
+ "move-binary-format 0.0.3 (git+https://github.com/mystenlabs/sui)",
+ "move-core-types 0.0.4 (git+https://github.com/mystenlabs/sui)",
+ "move-vm-profiler 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "move-vm-types 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "once_cell",
  "serde",
 ]
@@ -4667,9 +4803,22 @@ version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
  "bcs",
- "move-binary-format",
- "move-core-types",
- "move-vm-profiler",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-profiler 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
+name = "move-vm-types"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "bcs",
+ "move-binary-format 0.0.3 (git+https://github.com/mystenlabs/sui)",
+ "move-core-types 0.0.4 (git+https://github.com/mystenlabs/sui)",
+ "move-vm-profiler 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "serde",
  "smallvec",
 ]
@@ -4813,9 +4962,9 @@ dependencies = [
  "fastcrypto 0.1.9",
  "futures",
  "itertools 0.14.0",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "mvr-schema",
- "mysten-metrics",
+ "mysten-metrics 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "prometheus",
  "serde",
  "serde_json",
@@ -4827,7 +4976,7 @@ dependencies = [
  "sui-sdk",
  "sui-sdk-macros",
  "sui-sdk-types 0.0.2",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "telemetry-subscribers",
  "tempfile",
  "tokio",
@@ -4850,6 +4999,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "mvr-types"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "once_cell",
+ "regex",
+ "serde",
+ "sui-types 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "thiserror 2.0.11",
+]
+
+[[package]]
 name = "mysten-common"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
@@ -4857,13 +5018,13 @@ dependencies = [
  "anyhow",
  "fastcrypto 0.1.8",
  "futures",
- "mysten-metrics",
+ "mysten-metrics 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "parking_lot",
  "prometheus",
  "reqwest",
  "snap",
  "sui-tls",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tokio",
  "tracing",
 ]
@@ -4880,7 +5041,28 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "prometheus",
- "prometheus-closure-metric",
+ "prometheus-closure-metric 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "scopeguard",
+ "simple-server-timing-header",
+ "tap",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "mysten-metrics"
+version = "0.7.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "async-trait",
+ "axum 0.7.9",
+ "dashmap",
+ "futures",
+ "once_cell",
+ "parking_lot",
+ "prometheus",
+ "prometheus-closure-metric 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "scopeguard",
  "simple-server-timing-header",
  "tap",
@@ -4911,7 +5093,40 @@ dependencies = [
  "prometheus",
  "serde",
  "snap",
- "sui-http",
+ "sui-http 0.0.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "tokio",
+ "tokio-rustls",
+ "tokio-stream",
+ "tonic 0.12.3",
+ "tonic-health",
+ "tower 0.4.13",
+ "tower-http",
+ "tracing",
+]
+
+[[package]]
+name = "mysten-network"
+version = "0.2.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "anemo",
+ "anemo-tower",
+ "async-stream",
+ "bcs",
+ "bytes",
+ "eyre",
+ "futures",
+ "http 1.2.0",
+ "http-body 1.0.1",
+ "hyper-rustls",
+ "hyper-util",
+ "multiaddr",
+ "once_cell",
+ "pin-project-lite",
+ "prometheus",
+ "serde",
+ "snap",
+ "sui-http 0.0.0 (git+https://github.com/mystenlabs/sui)",
  "tokio",
  "tokio-rustls",
  "tokio-stream",
@@ -5232,9 +5447,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.20.2"
+version = "1.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
+checksum = "945462a4b81e43c4e3ba96bd7b49d834c6f61198356aa858733bc4acf3cbe62e"
 
 [[package]]
 name = "opaque-debug"
@@ -5953,6 +6168,16 @@ dependencies = [
 name = "prometheus-closure-metric"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
+dependencies = [
+ "anyhow",
+ "prometheus",
+ "protobuf",
+]
+
+[[package]]
+name = "prometheus-closure-metric"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
 dependencies = [
  "anyhow",
  "prometheus",
@@ -7158,6 +7383,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "shared-crypto"
+version = "0.0.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "bcs",
+ "eyre",
+ "fastcrypto 0.1.8",
+ "serde",
+ "serde_repr",
+]
+
+[[package]]
 name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7502,11 +7739,11 @@ dependencies = [
  "anyhow",
  "bcs",
  "clap",
- "consensus-config",
+ "consensus-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "csv",
  "dirs 4.0.0",
  "fastcrypto 0.1.8",
- "move-vm-config",
+ "move-vm-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "mysten-common",
  "object_store",
  "once_cell",
@@ -7517,9 +7754,9 @@ dependencies = [
  "serde_with",
  "serde_yaml",
  "sui-keys",
- "sui-protocol-config",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-rpc-api",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tracing",
 ]
 
@@ -7533,16 +7770,16 @@ dependencies = [
  "backoff",
  "bcs",
  "futures",
- "mysten-metrics",
+ "mysten-metrics 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "notify",
  "object_store",
  "prometheus",
  "serde",
  "serde_json",
- "sui-protocol-config",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-rpc-api",
  "sui-storage",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tap",
  "telemetry-subscribers",
  "tempfile",
@@ -7556,6 +7793,14 @@ dependencies = [
 name = "sui-enum-compat-util"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
+dependencies = [
+ "serde_yaml",
+]
+
+[[package]]
+name = "sui-enum-compat-util"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
 dependencies = [
  "serde_yaml",
 ]
@@ -7583,11 +7828,11 @@ version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
  "bcs",
- "move-binary-format",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "once_cell",
  "serde",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tracing",
 ]
 
@@ -7602,8 +7847,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sui-framework",
- "sui-protocol-config",
- "sui-types",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
 ]
 
 [[package]]
@@ -7658,6 +7903,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "sui-http"
+version = "0.0.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "bytes",
+ "http 1.2.0",
+ "http-body 1.0.1",
+ "http-body-util",
+ "hyper 1.5.1",
+ "hyper-util",
+ "pin-project-lite",
+ "socket2 0.5.8",
+ "tokio",
+ "tokio-rustls",
+ "tokio-util 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tower 0.4.13",
+ "tracing",
+]
+
+[[package]]
 name = "sui-indexer-alt-framework"
 version = "1.44.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
@@ -7680,7 +7945,7 @@ dependencies = [
  "sui-indexer-alt-metrics",
  "sui-pg-db",
  "sui-storage",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tempfile",
  "thiserror 1.0.69",
  "tokio",
@@ -7713,13 +7978,13 @@ dependencies = [
  "anyhow",
  "bcs",
  "fastcrypto 0.1.8",
- "move-binary-format",
- "move-bytecode-utils",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "schemars",
  "serde",
  "serde_json",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
 ]
 
 [[package]]
@@ -7730,14 +7995,14 @@ dependencies = [
  "anyhow",
  "fastcrypto 0.1.8",
  "jsonrpsee",
- "mysten-metrics",
+ "mysten-metrics 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "once_cell",
  "prometheus",
  "sui-json",
  "sui-json-rpc-types",
  "sui-open-rpc",
  "sui-open-rpc-macros",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tap",
  "tracing",
 ]
@@ -7754,22 +8019,22 @@ dependencies = [
  "fastcrypto 0.1.8",
  "itertools 0.13.0",
  "json_to_table",
- "move-binary-format",
- "move-bytecode-utils",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-disassembler",
  "move-ir-types",
- "mysten-metrics",
+ "mysten-metrics 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "schemars",
  "serde",
  "serde_json",
  "serde_with",
- "sui-enum-compat-util",
+ "sui-enum-compat-util 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-json",
- "sui-macros",
+ "sui-macros 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-package-resolver",
- "sui-protocol-config",
- "sui-types",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tabled",
  "tracing",
 ]
@@ -7786,10 +8051,10 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "shared-crypto",
+ "shared-crypto 0.0.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "signature 1.6.4",
  "slip10_ed25519",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tiny-bip39",
 ]
 
@@ -7800,7 +8065,18 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "futures",
  "once_cell",
- "sui-proc-macros",
+ "sui-proc-macros 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "tracing",
+]
+
+[[package]]
+name = "sui-macros"
+version = "0.7.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "futures",
+ "once_cell",
+ "sui-proc-macros 0.7.0 (git+https://github.com/mystenlabs/sui)",
  "tracing",
 ]
 
@@ -7811,19 +8087,19 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "anyhow",
  "fastcrypto 0.1.8",
- "move-binary-format",
- "move-bytecode-utils",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-verifier",
- "move-command-line-common",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-compiler",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-ir-types",
  "move-package",
  "move-symbol-pool",
  "serde-reflection",
  "sui-package-management",
- "sui-protocol-config",
- "sui-types",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-verifier-latest",
  "tempfile",
 ]
@@ -7859,14 +8135,14 @@ version = "1.44.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
 dependencies = [
  "anyhow",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-package",
  "move-symbol-pool",
  "sui-framework-snapshot",
  "sui-json-rpc-types",
- "sui-protocol-config",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-sdk",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "thiserror 1.0.69",
  "tracing",
 ]
@@ -7880,12 +8156,12 @@ dependencies = [
  "bcs",
  "eyre",
  "lru",
- "move-binary-format",
- "move-command-line-common",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "serde",
  "sui-rpc-api",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "thiserror 1.0.69",
  "tokio",
 ]
@@ -7915,7 +8191,19 @@ dependencies = [
  "msim-macros",
  "proc-macro2",
  "quote",
- "sui-enum-compat-util",
+ "sui-enum-compat-util 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "syn 2.0.90",
+]
+
+[[package]]
+name = "sui-proc-macros"
+version = "0.7.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "msim-macros",
+ "proc-macro2",
+ "quote",
+ "sui-enum-compat-util 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "syn 2.0.90",
 ]
 
@@ -7926,12 +8214,28 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "clap",
  "insta",
- "move-vm-config",
+ "move-vm-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "schemars",
  "serde",
  "serde-env",
  "serde_with",
- "sui-protocol-config-macros",
+ "sui-protocol-config-macros 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "tracing",
+]
+
+[[package]]
+name = "sui-protocol-config"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "clap",
+ "insta",
+ "move-vm-config 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "schemars",
+ "serde",
+ "serde-env",
+ "serde_with",
+ "sui-protocol-config-macros 0.1.0 (git+https://github.com/mystenlabs/sui)",
  "tracing",
 ]
 
@@ -7939,6 +8243,16 @@ dependencies = [
 name = "sui-protocol-config-macros"
 version = "0.1.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "sui-protocol-config-macros"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7961,9 +8275,9 @@ dependencies = [
  "http 1.2.0",
  "itertools 0.13.0",
  "mime",
- "move-binary-format",
- "move-core-types",
- "mysten-network",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "mysten-network 0.2.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "prometheus",
  "prost 0.13.4",
  "prost-types 0.13.4",
@@ -7972,10 +8286,10 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
- "sui-protocol-config",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-sdk-types 0.0.1",
  "sui-transaction-builder 0.1.0",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tap",
  "thiserror 1.0.69",
  "tokio",
@@ -8003,19 +8317,19 @@ dependencies = [
  "futures",
  "futures-core",
  "jsonrpsee",
- "move-core-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "reqwest",
  "serde",
  "serde_json",
  "serde_with",
- "shared-crypto",
+ "shared-crypto 0.0.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-config",
  "sui-json",
  "sui-json-rpc-api",
  "sui-json-rpc-types",
  "sui-keys",
  "sui-transaction-builder 0.0.0",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
@@ -8028,14 +8342,14 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "derive-syn-parse",
  "itertools 0.13.0",
- "move-binary-format",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "proc-macro2",
  "quote",
  "reqwest",
  "serde",
  "serde_json",
  "sui-sdk-types 0.0.1",
- "sui-types",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "syn 1.0.109",
  "tokio",
  "unescape",
@@ -8102,10 +8416,10 @@ dependencies = [
  "itertools 0.13.0",
  "lru",
  "moka",
- "move-binary-format",
- "move-bytecode-utils",
- "move-core-types",
- "mysten-metrics",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "mysten-metrics 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "num_enum",
  "object_store",
  "parking_lot",
@@ -8116,8 +8430,8 @@ dependencies = [
  "serde_json",
  "sui-config",
  "sui-json-rpc-types",
- "sui-protocol-config",
- "sui-types",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tap",
  "telemetry-subscribers",
  "tempfile",
@@ -8159,12 +8473,12 @@ dependencies = [
  "async-trait",
  "bcs",
  "futures",
- "move-binary-format",
- "move-core-types",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-json",
  "sui-json-rpc-types",
- "sui-protocol-config",
- "sui-types",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
 ]
 
 [[package]]
@@ -8195,7 +8509,7 @@ dependencies = [
  "byteorder",
  "chrono",
  "ciborium",
- "consensus-config",
+ "consensus-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "derive_more 1.0.0",
  "enum_dispatch",
  "eyre",
@@ -8206,15 +8520,15 @@ dependencies = [
  "indexmap 2.7.0",
  "itertools 0.13.0",
  "lru",
- "move-binary-format",
- "move-bytecode-utils",
- "move-command-line-common",
- "move-core-types",
- "move-vm-profiler",
- "move-vm-test-utils",
- "move-vm-types",
- "mysten-metrics",
- "mysten-network",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-command-line-common 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-profiler 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-test-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "mysten-metrics 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "mysten-network 0.2.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "nonempty",
  "num-bigint 0.4.6",
  "num-traits",
@@ -8234,20 +8548,90 @@ dependencies = [
  "serde-name",
  "serde_json",
  "serde_with",
- "shared-crypto",
+ "shared-crypto 0.0.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "signature 1.6.4",
  "static_assertions",
  "strum 0.24.1",
  "strum_macros 0.24.3",
- "sui-enum-compat-util",
- "sui-macros",
- "sui-protocol-config",
+ "sui-enum-compat-util 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-macros 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "sui-sdk-types 0.0.1",
  "tap",
  "thiserror 1.0.69",
  "tonic 0.12.3",
  "tracing",
- "typed-store-error",
+ "typed-store-error 0.4.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "x509-parser",
+]
+
+[[package]]
+name = "sui-types"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
+dependencies = [
+ "anemo",
+ "anyhow",
+ "async-trait",
+ "bcs",
+ "better_any",
+ "bincode",
+ "byteorder",
+ "chrono",
+ "ciborium",
+ "consensus-config 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "derive_more 1.0.0",
+ "enum_dispatch",
+ "eyre",
+ "fastcrypto 0.1.8",
+ "fastcrypto-tbls",
+ "fastcrypto-zkp",
+ "im",
+ "indexmap 2.7.0",
+ "itertools 0.13.0",
+ "lru",
+ "move-binary-format 0.0.3 (git+https://github.com/mystenlabs/sui)",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "move-command-line-common 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "move-core-types 0.0.4 (git+https://github.com/mystenlabs/sui)",
+ "move-vm-profiler 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "move-vm-test-utils 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "move-vm-types 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "mysten-metrics 0.7.0 (git+https://github.com/mystenlabs/sui)",
+ "mysten-network 0.2.0 (git+https://github.com/mystenlabs/sui)",
+ "nonempty",
+ "num-bigint 0.4.6",
+ "num-traits",
+ "num_enum",
+ "once_cell",
+ "p384",
+ "parking_lot",
+ "passkey-types",
+ "prometheus",
+ "proptest",
+ "proptest-derive",
+ "rand 0.8.5",
+ "roaring",
+ "rustls-pemfile",
+ "schemars",
+ "serde",
+ "serde-name",
+ "serde_json",
+ "serde_with",
+ "shared-crypto 0.0.0 (git+https://github.com/mystenlabs/sui)",
+ "signature 1.6.4",
+ "static_assertions",
+ "strum 0.24.1",
+ "strum_macros 0.24.3",
+ "sui-enum-compat-util 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "sui-macros 0.7.0 (git+https://github.com/mystenlabs/sui)",
+ "sui-protocol-config 0.1.0 (git+https://github.com/mystenlabs/sui)",
+ "sui-sdk-types 0.0.1",
+ "tap",
+ "thiserror 1.0.69",
+ "tonic 0.12.3",
+ "tracing",
+ "typed-store-error 0.4.0 (git+https://github.com/mystenlabs/sui)",
  "x509-parser",
 ]
 
@@ -8258,14 +8642,14 @@ source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f
 dependencies = [
  "move-abstract-interpreter",
  "move-abstract-stack",
- "move-binary-format",
- "move-bytecode-utils",
+ "move-binary-format 0.0.3 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-bytecode-utils 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "move-bytecode-verifier",
  "move-bytecode-verifier-meter",
- "move-core-types",
- "move-vm-config",
- "sui-protocol-config",
- "sui-types",
+ "move-core-types 0.0.4 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "move-vm-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-protocol-config 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
+ "sui-types 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
 ]
 
 [[package]]
@@ -9116,13 +9500,13 @@ dependencies = [
  "rand 0.8.5",
  "rocksdb",
  "serde",
- "sui-macros",
+ "sui-macros 0.7.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "tap",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
  "typed-store-derive",
- "typed-store-error",
+ "typed-store-error 0.4.0 (git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc)",
  "typed-store-workspace-hack",
 ]
 
@@ -9141,6 +9525,15 @@ dependencies = [
 name = "typed-store-error"
 version = "0.4.0"
 source = "git+https://github.com/MystenLabs/sui.git?rev=edc534efa7a4bbc007c94e9f6f64e35cc7359bbc#edc534efa7a4bbc007c94e9f6f64e35cc7359bbc"
+dependencies = [
+ "serde",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "typed-store-error"
+version = "0.4.0"
+source = "git+https://github.com/mystenlabs/sui#433120626bd62bfa3f40c4a72aed023b62d93592"
 dependencies = [
  "serde",
  "thiserror 1.0.69",

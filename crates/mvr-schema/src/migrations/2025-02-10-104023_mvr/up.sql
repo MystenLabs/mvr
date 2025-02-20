@@ -46,11 +46,12 @@ CREATE INDEX idx_package_infos_package_id ON package_infos (package_id);
 
 CREATE TABLE git_infos
 (
-    table_id   VARCHAR NOT NULL,
-    version    INTEGER NOT NULL,
-    repository VARCHAR,
-    path       VARCHAR,
-    tag        VARCHAR,
+    table_id       VARCHAR NOT NULL,
+    object_version BIGINT  NOT NULL,
+    version        INTEGER NOT NULL,
+    repository     VARCHAR,
+    path           VARCHAR,
+    tag            VARCHAR,
     PRIMARY KEY (table_id, version)
 );
 
