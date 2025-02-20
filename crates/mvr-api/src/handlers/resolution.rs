@@ -43,7 +43,6 @@ impl Resolution {
     }
 
     /// Resolve a list of names at once.
-    /// The return order will NOT match the input order
     pub async fn bulk_resolve(
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkResolutionData>,

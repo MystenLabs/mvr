@@ -6,7 +6,7 @@ use crate::{data::app_state::AppState, errors::ApiError};
 
 pub mod resolution;
 pub mod reverse_resolution;
-// pub mod type_resolution;
+pub mod type_resolution;
 
 pub(crate) async fn health_check(
     State(app_state): State<Arc<AppState>>,
