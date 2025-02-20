@@ -1,37 +1,19 @@
+use crate::models::mvr_metadata;
 use async_trait::async_trait;
+use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
-use move_core_types::ident_str;
-use move_core_types::language_storage::StructTag;
 use mvr_schema::models::PackageInfo;
+use std::collections::HashMap;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
-use sui_sdk_types::ObjectId;
-use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
-use diesel::query_dsl::methods::FilterDsl;
 const DEFAULT_NAME_KEY: &str = "default";
-pub struct PackageInfoHandler {
-    type_: MoveObjectType,
-}
 
-impl PackageInfoHandler {
-    pub fn new(metadata_pkg_id: ObjectId) -> Self {
-        // Indexing object [metadata_pkg_id]::package_info::PackageInfo
-        let pkg_info_type = StructTag {
-            address: (*metadata_pkg_id.inner()).into(),
-            module: ident_str!("package_info").into(),
-            name: ident_str!("PackageInfo").into(),
-            type_params: vec![],
-        };
-        let type_ = MoveObjectType::from(pkg_info_type);
-        PackageInfoHandler { type_ }
-    }
-}
-
+pub struct PackageInfoHandler;
 #[async_trait]
 impl Handler for PackageInfoHandler {
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
@@ -60,16 +42,21 @@ impl Processor for PackageInfoHandler {
     fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint.transactions.iter().try_fold(vec![], |result, tx| {
             tx.output_objects.iter().try_fold(result, |mut result, obj| {
-                if matches!(obj.type_(), Some(t) if t == &self.type_) {
+                if matches!(obj.type_(), Some(t) if t == &mvr_metadata::package_info::PackageInfo::type_()) {
                     if let Some(move_obj) = obj.data.try_as_move() {
                         use crate::models::mvr_metadata::package_info::PackageInfo as MovePackageInfo;
                         let MovePackageInfo { id, display: _, upgrade_cap_id: _, package_address, metadata, git_versioning } = bcs::from_bytes(move_obj.contents())?;
+                        let metadata = metadata
+                            .contents
+                            .into_iter()
+                            .map(|entry| (entry.key, entry.value))
+                            .collect::<HashMap<String, String>>();
                         result.push(PackageInfo {
                             id: id.to_string(),
                             object_version: obj.version().value() as i64,
                             package_id: package_address.to_string(),
                             git_table_id: git_versioning.id.to_hex_uncompressed(),
-                            default_name: metadata.get(&DEFAULT_NAME_KEY.into()).cloned(),
+                            default_name: metadata.get(&DEFAULT_NAME_KEY.to_string()).cloned(),
                             metadata: serde_json::to_value(metadata)?,
                         })
                     }

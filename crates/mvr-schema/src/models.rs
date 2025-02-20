@@ -31,6 +31,7 @@ pub struct PackageDependency {
 #[diesel(table_name = name_records)]
 pub struct NameRecord {
     pub name: String,
+    pub object_version: i64,
     pub mainnet_id: Option<String>,
     pub testnet_id: Option<String>,
     pub metadata: serde_json::Value,

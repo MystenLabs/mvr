@@ -24,10 +24,11 @@ CREATE TABLE package_dependencies
 
 CREATE TABLE name_records
 (
-    name       VARCHAR NOT NULL PRIMARY KEY,
-    mainnet_id VARCHAR,
-    testnet_id VARCHAR,
-    metadata   JSONB   NOT NULL
+    name           VARCHAR NOT NULL PRIMARY KEY,
+    object_version BIGINT  NOT NULL,
+    mainnet_id     VARCHAR,
+    testnet_id     VARCHAR,
+    metadata       JSONB   NOT NULL
 );
 
 CREATE INDEX idx_name_records_mainnet_id ON name_records (mainnet_id);
