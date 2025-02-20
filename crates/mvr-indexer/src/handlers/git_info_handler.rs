@@ -1,4 +1,6 @@
 use async_trait::async_trait;
+use diesel::upsert::excluded;
+use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
 use move_core_types::ident_str;
 use move_core_types::language_storage::{StructTag, TypeTag};
@@ -11,7 +13,7 @@ use sui_sdk_types::ObjectId;
 use sui_types::base_types::MoveObjectType;
 use sui_types::dynamic_field::{DynamicFieldInfo, Field};
 use sui_types::full_checkpoint_content::CheckpointData;
-
+use diesel::query_dsl::methods::FilterDsl;
 pub struct GitInfoHandler {
     type_: MoveObjectType,
 }
@@ -37,10 +39,19 @@ impl GitInfoHandler {
 #[async_trait]
 impl Handler for GitInfoHandler {
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
+        use mvr_schema::schema::git_infos::columns::*;
         use mvr_schema::schema::git_infos::dsl::git_infos;
         Ok(diesel::insert_into(git_infos)
             .values(values)
-            .on_conflict_do_nothing()
+            .on_conflict((table_id, version))
+            .do_update()
+            .set((
+                object_version.eq(excluded(object_version)),
+                repository.eq(excluded(repository)),
+                path.eq(excluded(path)),
+                tag.eq(excluded(tag)),
+            ))
+            .filter(object_version.lt(excluded(object_version)))
             .execute(conn)
             .await?)
     }
@@ -68,6 +79,7 @@ impl Processor for GitInfoHandler {
                             } = data.value;
                             result.push(GitInfo {
                                 table_id: o.owner.get_owner_address()?.to_string(),
+                                object_version: o.version().value() as i64,
                                 version: data.name as i32,
                                 repository: Some(repository),
                                 path: Some(path),

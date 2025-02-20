@@ -50,6 +50,7 @@ pub struct PackageInfo {
 #[diesel(table_name = git_infos)]
 pub struct GitInfo {
     pub table_id: String,
+    pub object_version: i64,
     pub version: i32,
     pub repository: Option<String>,
     pub path: Option<String>,
