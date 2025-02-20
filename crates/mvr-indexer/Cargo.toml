@@ -24,8 +24,10 @@ sui-sdk-macros = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e1
 
 
 sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types" , rev="86a9e06", features = ["serde"]}
+sui-client = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-graphql-client" , rev="86a9e06"}
 
 mvr-schema = { path = "../mvr-schema" }
+mvr-types = { path = "../mvr-types" }
 
 clap = { version = "4.5.20", features = ["env"] }
 tempfile = "3.13.0"
@@ -42,6 +44,7 @@ serde = { workspace = true }
 anyhow = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }
+url = "2.5.4"
 
 [dev-dependencies]
 

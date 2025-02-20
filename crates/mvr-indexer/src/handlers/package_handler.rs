@@ -1,4 +1,3 @@
-use crate::models::SuiEnv;
 use chrono::DateTime;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
@@ -11,12 +10,12 @@ use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::object::Data;
 
 pub struct PackageHandler {
-    sui_env: SuiEnv,
+    chain_id: String,
 }
 
 impl PackageHandler {
-    pub fn new(sui_env: SuiEnv) -> Self {
-        Self { sui_env }
+    pub fn new(chain_id: String) -> Self {
+        Self { chain_id }
     }
 }
 
@@ -85,7 +84,7 @@ impl Processor for PackageHandler {
                                 original_id: p.original_package_id().to_hex_literal(),
                                 package_version: p.version().value() as i64,
                                 move_package: bcs::to_bytes(p)?,
-                                chain_id: self.sui_env.to_string(),
+                                chain_id: self.chain_id.clone(),
                                 tx_hash: tx.transaction.digest().base58_encode(),
                                 sender: tx.transaction.sender_address().to_string(),
                                 timestamp,

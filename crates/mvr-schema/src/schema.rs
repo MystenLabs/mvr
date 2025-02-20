@@ -14,6 +14,7 @@ diesel::table! {
 diesel::table! {
     name_records (name) {
         name -> Varchar,
+        object_version -> Int8,
         mainnet_id -> Nullable<Varchar>,
         testnet_id -> Nullable<Varchar>,
         metadata -> Jsonb,

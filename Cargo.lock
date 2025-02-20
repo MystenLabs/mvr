@@ -4955,12 +4955,14 @@ dependencies = [
  "itertools 0.14.0",
  "move-core-types 0.0.4 (git+https://github.com/mystenlabs/sui?rev=f3ab9e11dba953fc5a46f074687578841487a050)",
  "mvr-schema",
+ "mvr-types",
  "mysten-metrics 0.7.0 (git+https://github.com/mystenlabs/sui?rev=f3ab9e11dba953fc5a46f074687578841487a050)",
  "prometheus",
  "serde",
  "serde_json",
  "sui-config",
  "sui-data-ingestion-core",
+ "sui-graphql-client",
  "sui-indexer-alt-framework",
  "sui-move-build",
  "sui-pg-db",
@@ -4972,6 +4974,7 @@ dependencies = [
  "tokio",
  "tokio-util 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "tracing",
+ "url",
  "uuid",
 ]
 

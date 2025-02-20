@@ -62,11 +62,8 @@ pub struct Name {
 }
 
 impl Name {
-    pub fn new(org: Domain, app: &str) -> Self {
-        Self {
-            org,
-            app: vec![app.to_string()],
-        }
+    pub fn new(org: Domain, app: Vec<String>) -> Self {
+        Self { org, app }
     }
 }
 
@@ -134,7 +131,7 @@ impl FromStr for VersionedName {
 
         Ok(Self {
             version,
-            name: Name::new(domain, app_name),
+            name: Name::new(domain, vec![app_name.into()]),
         })
     }
 }

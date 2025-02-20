@@ -1,5 +1,6 @@
 use crate::models::mvr_metadata;
 use async_trait::async_trait;
+use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
@@ -9,7 +10,6 @@ use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::full_checkpoint_content::CheckpointData;
-use diesel::query_dsl::methods::FilterDsl;
 const DEFAULT_NAME_KEY: &str = "default";
 
 pub struct PackageInfoHandler;
