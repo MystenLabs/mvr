@@ -65,9 +65,9 @@ async fn main() -> Result<(), anyhow::Error> {
         &registry,
         cancel.clone(),
     )
-    .await?;
+        .await?;
 
-    /*    indexer
+    indexer
         .concurrent_pipeline(PackageHandler::new(mainnet_chain_id), ConcurrentConfig::default())
         .await?;
 
@@ -77,7 +77,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     indexer
         .concurrent_pipeline(PackageInfoHandler, ConcurrentConfig::default())
-        .await?;*/
+        .await?;
 
     indexer
         .concurrent_pipeline(
