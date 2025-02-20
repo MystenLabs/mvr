@@ -10,15 +10,22 @@ edition = "2021"
 tokio = "1.38.0"
 tokio-util = "0.7.13"
 futures = "0.3.31"
-sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git" }
-sui-pg-db = { git = "https://github.com/MystenLabs/sui.git" }
-sui-sdk = { git = "https://github.com/MystenLabs/sui.git" }
-sui-config = { git = "https://github.com/MystenLabs/sui.git" }
-sui-move-build = { git = "https://github.com/MystenLabs/sui.git" }
-sui-data-ingestion-core = { git = "https://github.com/MystenLabs/sui.git" }
-mysten-metrics = { git = "https://github.com/MystenLabs/sui.git" }
-telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git" }
+sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+sui-sdk = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+sui-config = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+sui-data-ingestion-core = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+sui-sdk-macros = { git = "https://github.com/MystenLabs/sui.git", rev = "edc534efa7a4bbc007c94e9f6f64e35cc7359bbc" }
+
+
+sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types" , rev="86a9e06", features = ["serde"]}
+
 mvr-schema = { path = "../mvr-schema" }
 
 clap = { version = "4.5.20", features = ["env"] }

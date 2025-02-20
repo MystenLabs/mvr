@@ -3,6 +3,7 @@
 diesel::table! {
     git_infos (table_id, version) {
         table_id -> Varchar,
+        object_version -> Int8,
         version -> Int4,
         repository -> Nullable<Varchar>,
         path -> Nullable<Varchar>,
