@@ -5,13 +5,11 @@ use crate::handlers::package_info_handler::PackageInfoHandler;
 use anyhow::Context;
 use clap::Parser;
 use prometheus::Registry;
-use sui_client::Client;
 use sui_indexer_alt_framework::ingestion::{ClientArgs, IngestionConfig};
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
 use sui_indexer_alt_framework::{Indexer, IndexerArgs};
 use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
-use url::Url;
 
 pub(crate) mod handlers;
 
@@ -26,10 +24,10 @@ struct Args {
     db_args: DbArgs,
     #[command(flatten)]
     client_args: ClientArgs,
-    #[clap(env, long, default_value = "https://mvr-rpc.sui-mainnet.mystenlabs.com/")]
-    mainnet_gql_url: Url,
-    #[clap(env, long, default_value = "https://mvr-rpc.sui-testnet.mystenlabs.com/")]
-    testnet_gql_url: Url,
+    #[clap(env, long, default_value = "35834a8a")]
+    mainnet_chain_id: String,
+    #[clap(env, long, default_value = "4c78adac")]
+    testnet_chain_id: String,
 }
 
 #[tokio::main]
@@ -42,15 +40,9 @@ async fn main() -> Result<(), anyhow::Error> {
         indexer_args,
         db_args,
         client_args,
-        mainnet_gql_url,
-        testnet_gql_url,
+        mainnet_chain_id,
+        testnet_chain_id,
     } = Args::parse();
-
-    let mainnet_client = Client::new(mainnet_gql_url.as_str())?;
-    let mainnet_chain_id = mainnet_client.chain_id().await?;
-
-    let testnet_client = Client::new(testnet_gql_url.as_str())?;
-    let testnet_chain_id = testnet_client.chain_id().await?;
 
     let registry = Registry::new_custom(Some("mvr_indexer".into()), None)
         .context("Failed to create Prometheus registry.")?;
@@ -65,10 +57,13 @@ async fn main() -> Result<(), anyhow::Error> {
         &registry,
         cancel.clone(),
     )
-        .await?;
+    .await?;
 
     indexer
-        .concurrent_pipeline(PackageHandler::new(mainnet_chain_id), ConcurrentConfig::default())
+        .concurrent_pipeline(
+            PackageHandler::new(mainnet_chain_id),
+            ConcurrentConfig::default(),
+        )
         .await?;
 
     indexer

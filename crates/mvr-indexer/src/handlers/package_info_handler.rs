@@ -5,6 +5,7 @@ use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
 use mvr_schema::models::PackageInfo;
+use std::collections::HashMap;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
@@ -45,12 +46,17 @@ impl Processor for PackageInfoHandler {
                     if let Some(move_obj) = obj.data.try_as_move() {
                         use crate::models::mvr_metadata::package_info::PackageInfo as MovePackageInfo;
                         let MovePackageInfo { id, display: _, upgrade_cap_id: _, package_address, metadata, git_versioning } = bcs::from_bytes(move_obj.contents())?;
+                        let metadata = metadata
+                            .contents
+                            .into_iter()
+                            .map(|entry| (entry.key, entry.value))
+                            .collect::<HashMap<String, String>>();
                         result.push(PackageInfo {
                             id: id.to_string(),
                             object_version: obj.version().value() as i64,
                             package_id: package_address.to_string(),
                             git_table_id: git_versioning.id.to_hex_uncompressed(),
-                            default_name: metadata.get(&DEFAULT_NAME_KEY.into()).cloned(),
+                            default_name: metadata.get(&DEFAULT_NAME_KEY.to_string()).cloned(),
                             metadata: serde_json::to_value(metadata)?,
                         })
                     }

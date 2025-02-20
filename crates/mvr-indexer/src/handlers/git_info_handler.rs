@@ -1,5 +1,6 @@
 use crate::models::mvr_metadata;
 use async_trait::async_trait;
+use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
@@ -12,7 +13,6 @@ use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
 use sui_types::dynamic_field::{DynamicFieldInfo, Field};
 use sui_types::full_checkpoint_content::CheckpointData;
-use diesel::query_dsl::methods::FilterDsl;
 pub struct GitInfoHandler {
     type_: MoveObjectType,
 }

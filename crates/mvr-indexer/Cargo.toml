@@ -22,9 +22,7 @@ fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
 move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
 sui-sdk-macros = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
 
-
 sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types" , rev="86a9e06", features = ["serde"]}
-sui-client = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-graphql-client" , rev="86a9e06"}
 
 mvr-schema = { path = "../mvr-schema" }
 mvr-types = { path = "../mvr-types" }

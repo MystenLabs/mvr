@@ -8,6 +8,7 @@ use diesel_async::RunQueryDsl;
 use mvr_schema::models::NameRecord;
 use mvr_types::name::Name;
 use mvr_types::name_service::Domain;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
@@ -81,6 +82,13 @@ impl Processor for NameRecordHandler {
                                 metadata,
                                 ..
                             } = data.value;
+
+                            let metadata = metadata
+                                .contents
+                                .into_iter()
+                                .map(|entry| (entry.key, entry.value))
+                                .collect::<HashMap<String, String>>();
+
                             result.push(NameRecord {
                                 name: name.to_string(),
                                 object_version: o.version().value() as i64,

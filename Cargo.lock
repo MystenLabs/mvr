@@ -4962,7 +4962,6 @@ dependencies = [
  "serde_json",
  "sui-config",
  "sui-data-ingestion-core",
- "sui-graphql-client",
  "sui-indexer-alt-framework",
  "sui-move-build",
  "sui-pg-db",
