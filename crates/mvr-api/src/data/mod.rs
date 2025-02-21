@@ -6,6 +6,7 @@ use crate::errors::ApiError;
 pub mod app_state;
 pub mod reader;
 pub mod resolution_loader;
+pub mod reverse_resolution_loader;
 
 fn network_field(network: &str) -> Result<&str, ApiError> {
     match network {
