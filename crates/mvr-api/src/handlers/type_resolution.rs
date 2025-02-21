@@ -6,7 +6,7 @@ use axum::{
     extract::{Path, State},
     Json,
 };
-use mvr_types::{errors::MoveRegistryError, name::VersionedName, named_type::NamedType};
+use mvr_types::{name::VersionedName, named_type::NamedType};
 use sui_types::TypeTag;
 
 use crate::{data::resolution::ResolutionKey, errors::ApiError, AppState};
@@ -44,7 +44,7 @@ async fn bulk_resolve_types_impl(
     state: Arc<AppState>,
     types: Vec<String>,
 ) -> Result<HashMap<String, TypeTag>, ApiError> {
-    let names = types
+    let names= types
         .iter()
         .map(|type_name| NamedType::parse_names(type_name))
         .collect::<Result<Vec<_>, _>>()?
@@ -54,7 +54,7 @@ async fn bulk_resolve_types_impl(
             let versioned_name = VersionedName::from_str(&name)?;
             Ok(ResolutionKey(versioned_name))
         })
-        .collect::<Result<Vec<ResolutionKey>, ApiError>>()?;
+        .collect::<Result<Vec<_>, ApiError>>()?;
 
     let parsed_name_addresses = state
         .loader()

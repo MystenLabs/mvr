@@ -48,11 +48,11 @@ impl ReverseResolution {
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkReverseResolutionData>,
     ) -> Result<Json<BulkResponse>, ApiError> {
-        let keys = payload
+        let keys: Vec<_> = payload
             .package_ids
             .iter()
             .map(|id| ReverseResolutionKey(*id))
-            .collect::<Vec<_>>();
+            .collect();
 
         let results = app_state.loader().load_many(keys).await?;
 
