@@ -7,7 +7,7 @@ use sui::test_scenario::{Self as ts, Scenario};
 use sui::test_utils::destroy;
 use suins::domain;
 use suins::registry;
-use suins::subdomain_registration::{Self as sub_nft, SubDomainRegistration};
+use suins::subdomain_registration::SubDomainRegistration;
 use suins::suins_registration::{Self as ns_nft, SuinsRegistration};
 
 use fun wrapup as Scenario.wrap;
@@ -51,12 +51,7 @@ fun test_subdomain_e2e() {
 
     scenario.next_tx(@0x1);
 
-    public_names::new_subdomain(subname_nft, scenario.ctx());
-
-    scenario.next_tx(@0x1);
-
-    let cap = scenario.take_from_sender<PublicNameCap>();
-    let mut pg = scenario.take_shared<PublicName>();
+    let (mut pg, cap) = new_subdomain(subname_nft, &mut scenario);
 
     let app = pg.create_app(
         &mut registry,

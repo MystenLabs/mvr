@@ -48,7 +48,7 @@ public fun new_subdomain(nft: SubDomainRegistration, ctx: &mut TxContext) {
 
 /// Create a new app in the registry.
 public fun create_app(
-    pg: &mut PublicName,
+    public_name: &mut PublicName,
     registry: &mut MoveRegistry,
     name: String,
     clock: &Clock,
@@ -56,22 +56,22 @@ public fun create_app(
 ): AppCap {
     let key = SuinsNftKey();
 
-    if (pg.id.exists_with_type<_, SuinsRegistration>(key)) {
-        let nft: &mut SuinsRegistration = pg.id.borrow_mut(key);
+    if (public_name.id.exists_with_type<_, SuinsRegistration>(key)) {
+        let nft: &mut SuinsRegistration = public_name.id.borrow_mut(key);
         registry.register(nft, name, clock, ctx)
     } else {
-        let nft: &mut SubDomainRegistration = pg.id.borrow_mut(key);
+        let nft: &mut SubDomainRegistration = public_name.id.borrow_mut(key);
         utils::register(registry, nft, name, clock, ctx)
     }
 }
 
 /// Destroys the `PublicName` and returns the NFT to the owner.
-public fun destroy<T: store>(pg: PublicName, cap: PublicNameCap): T {
+public fun destroy<T: store>(public_name: PublicName, cap: PublicNameCap): T {
     let key = SuinsNftKey();
-    assert!(pg.id.exists_with_type<_, T>(key), EInvalidType);
-    assert!(cap.is_valid_for(&pg), EUnauthorized);
+    assert!(public_name.id.exists_with_type<_, T>(key), EInvalidType);
+    assert!(cap.is_valid_for(&public_name), EUnauthorized);
 
-    let PublicName { mut id, .. } = pg;
+    let PublicName { mut id, .. } = public_name;
 
     let nft: T = id.remove(key);
     id.delete();
@@ -82,8 +82,8 @@ public fun destroy<T: store>(pg: PublicName, cap: PublicNameCap): T {
     nft
 }
 
-fun is_valid_for(cap: &PublicNameCap, pg: &PublicName): bool {
-    cap.valid_for == pg.id.to_inner()
+fun is_valid_for(cap: &PublicNameCap, public_name: &PublicName): bool {
+    cap.valid_for == public_name.id.to_inner()
 }
 
 fun new(ctx: &mut TxContext): (PublicName, PublicNameCap) {
