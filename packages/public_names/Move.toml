@@ -1,0 +1,11 @@
+[package]
+name = "public_names"
+edition = "2024.beta"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet", override = true }
+mvr_subdomain_proxy = { local = "../proxy" }
+
+[addresses]
+public_names = "0x0"
+
