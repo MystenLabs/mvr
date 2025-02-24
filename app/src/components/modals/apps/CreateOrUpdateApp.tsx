@@ -118,6 +118,7 @@ export default function CreateOrUpdateApp({
   // handle name availability state.
   useEffect(() => {
     if (isNameAvailableLoading) return;
+    if (isUpdate) return;
     if (!isNameAvailable && !!name) {
       form.setError('name', {
         type: 'manual',
