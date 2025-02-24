@@ -143,7 +143,7 @@ export default function CreateOrUpdateApp({
     <DialogContent>
       <DialogHeader>
         <DialogTitle>
-          {isUpdate ? "Updating" : "Create"} Application{" "}
+          {isUpdate ? "Updating" : "Create"} Package
           {isUpdate && `: ${appRecord.normalized}`}
         </DialogTitle>
       </DialogHeader>

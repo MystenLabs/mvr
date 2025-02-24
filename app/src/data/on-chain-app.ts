@@ -12,14 +12,16 @@ export const registerApp = ({
   name,
   mainnetPackageInfo,
   suinsObjectId,
+  isSubname,
 }: {
   tx: Transaction;
   name: string;
   suinsObjectId: TransactionObjectArgument | string;
   mainnetPackageInfo?: TransactionObjectArgument | string;
+  isSubname?: boolean;
 }) => {
   const appCap = tx.moveCall({
-    target: `@mvr/core::move_registry::register`,
+    target: isSubname ? `@mvr/subnames-proxy::utils::register` : `@mvr/core::move_registry::register`,
     arguments: [
       tx.object(Constants.appsRegistryId),
       tx.object(suinsObjectId),

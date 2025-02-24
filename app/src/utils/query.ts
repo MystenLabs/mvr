@@ -45,7 +45,7 @@ export const fetchAllOwnedObjects = async ({
   client,
   address,
   filter,
-  options = { showContent: true },
+  options = { showContent: true, showType: true },
 }: {
   client: SuiClient;
   address: string;

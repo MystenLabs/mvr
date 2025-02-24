@@ -11,6 +11,7 @@ import { useFetchObjectByIds } from "./useGetObjectsById";
 import { KioskOwnerCap } from "@mysten/kiosk";
 
 const NS_MAINNET_TYPE = `${MAINNET_CONFIG.suinsPackageId!.v1}::suins_registration::SuinsRegistration`;
+const NS_SUBNAME_MAINNET_TYPE = `0x00c2f85e07181b90c140b15c5ce27d863f93c4d9159d2a4e7bdaeb40e286d6f5::subdomain_registration::SubDomainRegistration`;
 
 export type SuinsName = {
   nftId: string;
@@ -18,17 +19,24 @@ export type SuinsName = {
   expirationTimestampMs: number;
   kioskCap?: KioskOwnerCap;
   objectType?: string;
+  isSubname?: boolean;
 };
 
-const parseName = (response: SuiObjectResponse) => {
+const parse = (response: SuiObjectResponse) => {
   if (response.data?.content?.dataType !== "moveObject")
     throw new Error("Invalid object type");
-  const fields = response.data.content.fields as Record<string, any>;
+
+  const objectFields = response.data.content.fields as Record<string, any>;
+  const isSubname = response.data.type === NS_SUBNAME_MAINNET_TYPE;
+  const nftFields = isSubname ? objectFields.nft.fields : objectFields;
+
   return {
-    ...fields,
-    nftId: fields.id.id,
-    expirationTimestampMs: fields.expiration_timestamp_ms,
-    domainName: normalizeSuiNSName(fields.domain_name, "at"),
+    ...nftFields,
+    nftId: objectFields.id.id,
+    domainName: normalizeSuiNSName(nftFields.domain_name, "at"),
+    expirationTimestampMs: nftFields.expiration_timestamp_ms,
+    isSubname,
+    objectType: response.data.type,
   };
 };
 
@@ -55,7 +63,31 @@ export function useOwnedSuinsNames() {
     enabled: !!activeAddress,
 
     select: (data) => {
-      return data.map(parseName) as SuinsName[];
+      return data.map(parse) as SuinsName[];
+    },
+  });
+}
+
+export function useOwnedSuinsSubnames() {
+  const activeAddress = useActiveAddress();
+  const client = useSuiClientsContext().mainnet;
+
+  return useQuery({
+    queryKey: [AppQueryKeys.OWNED_SUINS_SUBNAMES, activeAddress],
+    queryFn: async () => {
+      const ownedSubnames = await fetchAllOwnedObjects({
+        client,
+        address: activeAddress!,
+        filter: {
+          StructType: NS_SUBNAME_MAINNET_TYPE,
+        },
+      });
+
+      return ownedSubnames;
+    },
+
+    select: (data) => {
+      return data.map(parse) as SuinsName[];
     },
   });
 }
@@ -66,7 +98,12 @@ export function useOwnedAndKioskSuinsNames() {
   const { data: suinsNames, isLoading: ownedNamesLoading } =
     useOwnedSuinsNames();
 
-  const ids = kioskItems?.filter((x) => x.type === NS_MAINNET_TYPE) ?? [];
+  const { data: suinsSubnames, isLoading: suinsSubnamesLoading } =
+    useOwnedSuinsSubnames();
+  const ids =
+    kioskItems?.filter(
+      (x) => x.type === NS_MAINNET_TYPE || x.type === NS_SUBNAME_MAINNET_TYPE,
+    ) ?? [];
 
   const { data: kioskSuinsObjects } = useFetchObjectByIds(
     ids.map((x) => x.objectId),
@@ -74,20 +111,24 @@ export function useOwnedAndKioskSuinsNames() {
   );
 
   const parsed =
-    kioskSuinsObjects?.map(parseName).map((nsName) => {
+    kioskSuinsObjects?.map(parse).map((nsName) => {
       const name = { ...nsName } as SuinsName;
 
       name.kioskCap = kioskItems?.find(
         (x) => x.objectId === nsName.nftId,
       )?.kioskCap;
-      name.objectType = NS_MAINNET_TYPE;
+      name.objectType = nsName.objectType;
 
       return name;
     }) ?? [];
 
+  const names = [...(suinsNames ?? []), ...parsed, ...(suinsSubnames ?? [])];
+
   return {
-    isLoading: ownedNamesLoading || kioskItemsLoading,
-    names: [...(suinsNames ?? []), ...parsed],
+    isLoading:
+      names.length === 0 &&
+      (ownedNamesLoading || kioskItemsLoading || suinsSubnamesLoading),
+    names,
   };
 }
 

@@ -28,7 +28,7 @@ export function useFetchObjectByIds(objectIds: string[], network: Network) {
           if (batch.length === 0) return [];
           return await client.multiGetObjects({
             ids: batch,
-            options: { showContent: true },
+            options: { showContent: true, showType: true },
           });
         }),
       );
