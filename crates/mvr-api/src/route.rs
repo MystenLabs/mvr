@@ -5,7 +5,10 @@ use std::sync::Arc;
 
 use crate::{
     data::app_state::AppState,
-    handlers::{health_check, resolution::Resolution, reverse_resolution::ReverseResolution},
+    handlers::{
+        health_check, resolution::Resolution, reverse_resolution::ReverseResolution,
+        type_resolution::TypeResolution,
+    },
 };
 use axum::{
     routing::{get, post},
@@ -23,6 +26,11 @@ pub fn create_router(app: Arc<AppState>) -> Router {
         .route(
             "/reverse-resolution/{package_id}",
             get(ReverseResolution::resolve),
+        )
+        .route("/type-resolution/bulk", post(TypeResolution::bulk_resolve))
+        .route(
+            "/type-resolution/{*type_name}",
+            get(TypeResolution::resolve),
         );
 
     Router::new()
