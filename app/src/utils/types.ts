@@ -52,4 +52,5 @@ export enum AppQueryKeys {
     GIT_SOURCE = 'git-source',
     PACKAGE_LATEST_VERSION = 'package-latest-version',
     PACKAGE_INIT_AND_AT_VERSION = 'package-init-and-at-version',
+    IS_NAME_AVAILABLE = 'is-name-available',
 }
