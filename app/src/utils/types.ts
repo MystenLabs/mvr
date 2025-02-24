@@ -39,6 +39,7 @@ export const packageInfoType = (network: Network) =>
 export enum AppQueryKeys {
     APP = 'app',
     OWNED_SUINS_NAMES = 'owned-suins-names',
+    OWNED_SUINS_SUBNAMES = 'owned-suins-subnames',
     OWNED_APPS = 'owned-apps',
     OWNED_PACKAGE_INFOS = 'owned-package-infos',
     OWNED_UPGRADE_CAPS = 'owned-upgrade-caps',

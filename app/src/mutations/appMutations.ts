@@ -61,6 +61,7 @@ export function useCreateAppMutation() {
         name,
         suinsObjectId: nsObject ?? suins.nftId,
         mainnetPackageInfo: mainnetPackageInfo?.objectId,
+        isSubname: suins.isSubname,
       });
 
       if (testnetPackageInfo) {
