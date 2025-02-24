@@ -10,19 +10,21 @@ edition = "2021"
 tokio = "1.38.0"
 tokio-util = "0.7.13"
 futures = "0.3.31"
-sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-sui-config = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-sui-data-ingestion-core = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
+sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git" }
+sui-pg-db = { git = "https://github.com/MystenLabs/sui.git" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git" }
+sui-config = { git = "https://github.com/MystenLabs/sui.git" }
+sui-move-build = { git = "https://github.com/MystenLabs/sui.git" }
+sui-data-ingestion-core = { git = "https://github.com/MystenLabs/sui.git" }
+mysten-metrics = { git = "https://github.com/MystenLabs/sui.git" }
+telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git" }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
-move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
-sui-sdk-macros = { git = "https://github.com/MystenLabs/sui.git", rev = "f3ab9e11dba953fc5a46f074687578841487a050" }
+move-core-types = { git = "https://github.com/MystenLabs/sui.git" }
 
-sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types" , rev="86a9e06", features = ["serde"]}
+move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "7a5db383cace688c54027a9dc4949ae6b7da3fdb"}
+move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "7a5db383cace688c54027a9dc4949ae6b7da3fdb"}
+
+sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", features = ["serde"]}
 
 mvr-schema = { path = "../mvr-schema" }
 mvr-types = { path = "../mvr-types" }
