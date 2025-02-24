@@ -7,6 +7,7 @@ export const Constants = {
   appsRegistryId:
     "0x0e5d473a055b6b7d014af557a13ad9075157fdc19b6d51562a18511afd397727",
 
+  appsNameType: '0x62c1f5b1cb9e3bfc3dd1f73c95066487b662048a6358eabdbf67f6cdeca6db4b::name::Name',
   // TODO: Replace this logic with MVR logic once GQL is out.
   packageInfoIds: {
     mainnet:

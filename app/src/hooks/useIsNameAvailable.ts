@@ -19,7 +19,7 @@ export function useIsNameAvailable(name: string, enabled = true) {
             const exists = await client.getDynamicFieldObject({
                 parentId: Constants.appsRegistryTableId,
                 name: {
-                    type: `0x62c1f5b1cb9e3bfc3dd1f73c95066487b662048a6358eabdbf67f6cdeca6db4b::name::Name`,
+                    type: Constants.appsNameType,
                     value: {
                         app: [appName],
                         org: {
