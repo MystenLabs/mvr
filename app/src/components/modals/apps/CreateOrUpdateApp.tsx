@@ -289,7 +289,7 @@ export default function CreateOrUpdateApp({
                 form.reset();
                 closeDialog();
               }}
-              rightBtnDisabled={!form.formState.isValid || !!form.formState.errors.name || !isNameAvailable}
+              rightBtnDisabled={!form.formState.isValid || !isNameAvailable}
               rightBtnText={isUpdate ? "Update" : "Create"}
               rightBtnHandler={async () => {
                 const values = form.getValues();
