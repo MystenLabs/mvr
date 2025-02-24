@@ -7,18 +7,19 @@ import {
   AppContextType,
 } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
+import { PublicNameLabel } from "@/components/ui/public-name-label";
 import { Text } from "@/components/ui/Text";
 import { LocalStorageKeys } from "@/data/localStorage";
 import {
   formatNamesForComboBox,
-  useOwnedAndKioskSuinsNames,
-} from "@/hooks/useOwnedSuiNSNames";
+  useOrganizationList,
+} from "@/hooks/useOrganizationList";
 import { useEffect, useState } from "react";
 
 export default function AppsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { names: ownedNames } = useOwnedAndKioskSuinsNames();
+  const { names: ownedNames } = useOrganizationList();
 
   const [appValue, setAppValue] = useState<AppContextType["value"]>({
     selectedSuinsName: null
@@ -75,7 +76,7 @@ export default function AppsLayout({
               <ComboBox
                 placeholder="Select a name..."
                 value={appValue.selectedSuinsName?.nftId}
-                options={formatNamesForComboBox(ownedNames)}
+                options={formatNamesForComboBox(ownedNames, <PublicNameLabel />)}
                 setValue={selectSuinsName}
               />
             </div>

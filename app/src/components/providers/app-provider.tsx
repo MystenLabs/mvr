@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
-import { SuinsName } from '@/hooks/useOwnedSuiNSNames';
+import { SuinsName } from '@/hooks/useOrganizationList';
 import { createContext, useContext } from 'react';
 
 export type AppContextType = {

@@ -5,8 +5,8 @@ import { Content } from "../../data/content";
 import Link from "next/link";
 import {
   formatNamesForComboBox,
-  useOwnedAndKioskSuinsNames,
-} from "@/hooks/useOwnedSuiNSNames";
+  useOrganizationList,
+} from "@/hooks/useOrganizationList";
 import { useAppState } from "@/components/providers/app-provider";
 import { ComboBox } from "@/components/ui/combobox";
 import { AppCap, useOwnedApps } from "@/hooks/useOwnedApps";
@@ -17,9 +17,10 @@ import { Text } from "@/components/ui/Text";
 import { AppViewer } from "@/components/apps/AppViewer";
 import CreateOrUpdateApp from "@/components/modals/apps/CreateOrUpdateApp";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
+import { PublicNameLabel } from "@/components/ui/public-name-label";
 
 export default function App() {
-  const { names: suinsNames } = useOwnedAndKioskSuinsNames();
+  const { names: namesList } = useOrganizationList();
   const { data: apps } = useOwnedApps();
   const { value: appValue, setValue } = useAppState();
 
@@ -40,35 +41,38 @@ export default function App() {
   }, [appValue.selectedSuinsName]);
 
   const selectSuinsName = (nftId: string) => {
-    const selectedSuinsName =
-      suinsNames?.find((x) => x.nftId === nftId) ?? null;
+    const selectedSuinsName = namesList?.find((x) => x.nftId === nftId) ?? null;
     if (!selectedSuinsName) return;
     setValue({ selectedSuinsName });
   };
 
-  const state = suinsNames?.length
+  const state = namesList?.length
     ? Content.suinsNames
     : Content.emptyStates.suinsNames;
 
-  if (suinsNames?.length === 0 || !appValue.selectedSuinsName)
+  if (namesList?.length === 0 || !appValue.selectedSuinsName)
     return (
       <EmptyState
         icon={state.icon}
         title={state.title}
         description={state.description}
       >
-        {suinsNames.length > 0 && (
+        {namesList.length > 0 && (
           <ComboBox
             placeholder="Select one..."
             value={appValue.selectedSuinsName?.nftId}
-            options={formatNamesForComboBox(suinsNames ?? [])}
+            options={formatNamesForComboBox(
+              namesList ?? [],
+              <PublicNameLabel />,
+            )}
             setValue={selectSuinsName}
           />
         )}
 
         <Button size="lg" variant="outline" asChild className="mt-Large">
           <Link href="https://www.suins.io" target="_blank">
-            {formatNamesForComboBox(suinsNames ?? []).length > 0 && "or"}{" "}
+            {formatNamesForComboBox(namesList ?? [], <PublicNameLabel />)
+              .length > 0 && "or"}{" "}
             {state.button}
           </Link>
         </Button>

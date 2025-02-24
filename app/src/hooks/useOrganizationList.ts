@@ -10,6 +10,7 @@ import { useKioskItems } from "./useKioskItems";
 import { useFetchObjectByIds } from "./useGetObjectsById";
 import { KioskOwnerCap } from "@mysten/kiosk";
 import { useOwnedApps } from "./useOwnedApps";
+import { ReactNode } from "react";
 
 const NS_MAINNET_TYPE = `${MAINNET_CONFIG.suinsPackageId!.v1}::suins_registration::SuinsRegistration`;
 const NS_SUBNAME_MAINNET_TYPE = `0x00c2f85e07181b90c140b15c5ce27d863f93c4d9159d2a4e7bdaeb40e286d6f5::subdomain_registration::SubDomainRegistration`;
@@ -24,7 +25,19 @@ export type SuinsName = {
   // if true, this name is a capability only, meaning we cannot create
   // any other apps under it.
   isCapabilityOnly?: boolean;
+  isPublicGood?: boolean;
 };
+
+// A list of known public good names.
+const PUBLIC_NAMES: SuinsName[] = [
+  {
+    nftId: '0xToReplace', // replace this with the `public good` object id.
+    domainName: '@pkg',
+    expirationTimestampMs: 0,
+    isCapabilityOnly: false,
+    isPublicGood: true,
+  }
+]
 
 const parse = (response: SuiObjectResponse) => {
   if (response.data?.content?.dataType !== "moveObject")
@@ -97,7 +110,7 @@ export function useOwnedSuinsSubnames() {
 }
 
 /** Returns */
-export function useOwnedAndKioskSuinsNames() {
+export function useOrganizationList() {
   const { data: kioskItems, isLoading: kioskItemsLoading } = useKioskItems();
   const { data: suinsNames, isLoading: ownedNamesLoading } =
     useOwnedSuinsNames();
@@ -131,7 +144,7 @@ export function useOwnedAndKioskSuinsNames() {
       return name;
     }) ?? [];
 
-  const names = [...(suinsNames ?? []), ...parsed, ...(suinsSubnames ?? [])];
+  const names = [...PUBLIC_NAMES, ...(suinsNames ?? []), ...parsed, ...(suinsSubnames ?? [])];
 
   for (const app of apps ?? []) {
     // skip if we already have a name for this app.
@@ -153,9 +166,10 @@ export function useOwnedAndKioskSuinsNames() {
   };
 }
 
-export function formatNamesForComboBox(names: SuinsName[]) {
+export function formatNamesForComboBox(names: SuinsName[], publicGoodLabel: ReactNode) {
   return names.map((x) => ({
     value: x.nftId,
     label: x.domainName,
+    children: x.isPublicGood ? publicGoodLabel : null,
   }));
 }

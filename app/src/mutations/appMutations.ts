@@ -7,7 +7,7 @@ import {
 } from "@/data/on-chain-app";
 import { useChainIdentifier } from "@/hooks/useChainIdentifier";
 import { AppRecord } from "@/hooks/useGetApp";
-import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
+import { SuinsName } from "@/hooks/useOrganizationList";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { sender } from "@/lib/utils";
 import { type PackageInfoData } from "@/utils/types";

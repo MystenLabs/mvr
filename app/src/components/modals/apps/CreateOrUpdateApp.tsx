@@ -28,7 +28,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AppQueryKeys } from "@/utils/types";
 import { AppRecord } from "@/hooks/useGetApp";
 import { AlertCircleIcon } from "lucide-react";
-import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
+import { SuinsName } from "@/hooks/useOrganizationList";
 import { useIsNameAvailable } from "@/hooks/useIsNameAvailable";
 import { useDebounce } from "@/hooks/useDebounce";
 
