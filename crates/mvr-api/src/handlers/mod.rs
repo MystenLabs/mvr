@@ -7,7 +7,9 @@ use axum::{extract::State, http::StatusCode};
 
 use crate::{data::app_state::AppState, errors::ApiError};
 
-pub mod resolution;
+pub(crate) mod resolution;
+pub(crate) mod reverse_resolution;
+pub(crate) mod type_resolution;
 
 pub(crate) async fn health_check(
     State(app_state): State<Arc<AppState>>,

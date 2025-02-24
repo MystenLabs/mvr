@@ -3,9 +3,11 @@
 
 use crate::errors::ApiError;
 
-pub mod app_state;
-pub mod reader;
-pub mod resolution_loader;
+pub(crate) mod app_state;
+pub(crate) mod package_resolver;
+pub(crate) mod reader;
+pub(crate) mod resolution_loader;
+pub(crate) mod reverse_resolution_loader;
 
 fn network_field(network: &str) -> Result<&str, ApiError> {
     match network {
