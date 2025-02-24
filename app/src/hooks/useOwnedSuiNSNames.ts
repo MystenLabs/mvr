@@ -9,6 +9,7 @@ import { AppQueryKeys } from "@/utils/types";
 import { useKioskItems } from "./useKioskItems";
 import { useFetchObjectByIds } from "./useGetObjectsById";
 import { KioskOwnerCap } from "@mysten/kiosk";
+import { useOwnedApps } from "./useOwnedApps";
 
 const NS_MAINNET_TYPE = `${MAINNET_CONFIG.suinsPackageId!.v1}::suins_registration::SuinsRegistration`;
 const NS_SUBNAME_MAINNET_TYPE = `0x00c2f85e07181b90c140b15c5ce27d863f93c4d9159d2a4e7bdaeb40e286d6f5::subdomain_registration::SubDomainRegistration`;
@@ -20,6 +21,9 @@ export type SuinsName = {
   kioskCap?: KioskOwnerCap;
   objectType?: string;
   isSubname?: boolean;
+  // if true, this name is a capability only, meaning we cannot create
+  // any other apps under it.
+  isCapabilityOnly?: boolean;
 };
 
 const parse = (response: SuiObjectResponse) => {
@@ -100,6 +104,11 @@ export function useOwnedAndKioskSuinsNames() {
 
   const { data: suinsSubnames, isLoading: suinsSubnamesLoading } =
     useOwnedSuinsSubnames();
+
+  // make all the "apps" available in the orgs section, even if we do not own
+  // the SuiNS name. We can only manage the individual apps.
+  const { data: apps } = useOwnedApps();
+
   const ids =
     kioskItems?.filter(
       (x) => x.type === NS_MAINNET_TYPE || x.type === NS_SUBNAME_MAINNET_TYPE,
@@ -123,6 +132,18 @@ export function useOwnedAndKioskSuinsNames() {
     }) ?? [];
 
   const names = [...(suinsNames ?? []), ...parsed, ...(suinsSubnames ?? [])];
+
+  for (const app of apps ?? []) {
+    // skip if we already have a name for this app.
+    if (names.find((x) => x.domainName === app.orgName)) continue;
+
+    names.push({
+      nftId: app.objectId,
+      domainName: app.orgName,
+      expirationTimestampMs: 0,
+      isCapabilityOnly: true,
+    });
+  }
 
   return {
     isLoading:
