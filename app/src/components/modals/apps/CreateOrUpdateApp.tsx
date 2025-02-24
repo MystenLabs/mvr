@@ -5,7 +5,7 @@ import { DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { ModalFooter } from "../ModalFooter";
 import { useOwnedApps } from "@/hooks/useOwnedApps";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -29,6 +29,8 @@ import { AppQueryKeys } from "@/utils/types";
 import { AppRecord } from "@/hooks/useGetApp";
 import { AlertCircleIcon } from "lucide-react";
 import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
+import { useIsNameAvailable } from "@/hooks/useIsNameAvailable";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const formSchema = z
   .object({
@@ -104,6 +106,27 @@ export default function CreateOrUpdateApp({
     mode: "onChange",
     resolver: zodResolver(formSchema),
   });
+
+  const name = useWatch({ control: form.control, name: "name" });
+  const debouncedName = useDebounce(name, 300);
+
+  const { data: isNameAvailable, isLoading: isNameAvailableLoading } = useIsNameAvailable(
+    `${suins?.domainName}/${debouncedName}`,
+    !!debouncedName && !!suins?.domainName,
+  );
+
+  // handle name availability state.
+  useEffect(() => {
+    if (isNameAvailableLoading) return;
+    if (!isNameAvailable && !!name) {
+      form.setError('name', {
+        type: 'manual',
+        message:'Name is already taken'
+      })
+    } else {
+      form.clearErrors('name');
+    }
+  }, [isNameAvailable, debouncedName])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     let isSuccess = false;
@@ -266,7 +289,7 @@ export default function CreateOrUpdateApp({
                 form.reset();
                 closeDialog();
               }}
-              rightBtnDisabled={!form.formState.isValid}
+              rightBtnDisabled={!form.formState.isValid || !!form.formState.errors.name || !isNameAvailable}
               rightBtnText={isUpdate ? "Update" : "Create"}
               rightBtnHandler={async () => {
                 const values = form.getValues();
