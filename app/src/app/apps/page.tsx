@@ -97,17 +97,23 @@ export default function App() {
   return (
     <main className="container flex-grow">
       <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic py-Regular max-lg:py-Large max-lg:border-b lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r lg:px-Regular">
+        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic py-Regular max-lg:border-b max-lg:py-Large lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r lg:px-Regular">
           <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
             <CreateOrUpdateApp
               suins={appValue.selectedSuinsName}
               closeDialog={() => setShowCreateApp(false)}
             />
-            <DialogTrigger asChild>
-              <Button variant="outline" className="mb-Large lg:mb-Small w-full">
-                {Content.app.button}
-              </Button>
-            </DialogTrigger>
+            {!appValue.selectedSuinsName?.isCapabilityOnly && (
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="mb-Large w-full lg:mb-Small"
+                  disabled={appValue.selectedSuinsName?.isCapabilityOnly}
+                >
+                  {Content.app.button}
+                </Button>
+              </DialogTrigger>
+            )}
           </Dialog>
           {isTabletOrAbove && nsMatchingApps.length < 5 ? (
             nsMatchingApps.map((app) => (
