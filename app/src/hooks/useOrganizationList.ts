@@ -25,19 +25,19 @@ export type SuinsName = {
   // if true, this name is a capability only, meaning we cannot create
   // any other apps under it.
   isCapabilityOnly?: boolean;
-  isPublicGood?: boolean;
+  isPublicName?: boolean;
 };
 
 // A list of known public good names.
 const PUBLIC_NAMES: SuinsName[] = [
   {
-    nftId: '0xToReplace', // replace this with the `public good` object id.
-    domainName: '@pkg',
+    nftId: "0xToReplace", // replace this with the `public good` object id.
+    domainName: "@pkg",
     expirationTimestampMs: 0,
     isCapabilityOnly: false,
-    isPublicGood: true,
-  }
-]
+    isPublicName: true,
+  },
+];
 
 const parse = (response: SuiObjectResponse) => {
   if (response.data?.content?.dataType !== "moveObject")
@@ -144,7 +144,12 @@ export function useOrganizationList() {
       return name;
     }) ?? [];
 
-  const names = [...PUBLIC_NAMES, ...(suinsNames ?? []), ...parsed, ...(suinsSubnames ?? [])];
+  const names = [
+    ...PUBLIC_NAMES,
+    ...(suinsNames ?? []),
+    ...parsed,
+    ...(suinsSubnames ?? []),
+  ];
 
   for (const app of apps ?? []) {
     // skip if we already have a name for this app.
@@ -166,10 +171,13 @@ export function useOrganizationList() {
   };
 }
 
-export function formatNamesForComboBox(names: SuinsName[], publicGoodLabel: ReactNode) {
+export function formatNamesForComboBox(
+  names: SuinsName[],
+  publicNameLabel: ReactNode,
+) {
   return names.map((x) => ({
     value: x.nftId,
     label: x.domainName,
-    children: x.isPublicGood ? publicGoodLabel : null,
+    children: x.isPublicName ? publicNameLabel : null,
   }));
 }
