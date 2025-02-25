@@ -110,24 +110,25 @@ export default function CreateOrUpdateApp({
   const name = useWatch({ control: form.control, name: "name" });
   const debouncedName = useDebounce(name, 300);
 
-  const { data: isNameAvailable, isLoading: isNameAvailableLoading } = useIsNameAvailable(
-    `${suins?.domainName}/${debouncedName}`,
-    !!debouncedName && !!suins?.domainName,
-  );
+  const { data: isNameAvailable, isLoading: isNameAvailableLoading } =
+    useIsNameAvailable(
+      `${suins?.domainName}/${debouncedName}`,
+      !!debouncedName && !!suins?.domainName,
+    );
 
   // handle name availability state.
   useEffect(() => {
     if (isNameAvailableLoading) return;
     if (isUpdate) return;
     if (!isNameAvailable && !!name) {
-      form.setError('name', {
-        type: 'manual',
-        message:'Name is already taken'
-      })
+      form.setError("name", {
+        type: "manual",
+        message: "Name is already taken",
+      });
     } else {
-      form.clearErrors('name');
+      form.clearErrors("name");
     }
-  }, [isNameAvailable, debouncedName])
+  }, [isNameAvailable, debouncedName]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     let isSuccess = false;
@@ -290,7 +291,9 @@ export default function CreateOrUpdateApp({
                 form.reset();
                 closeDialog();
               }}
-              rightBtnDisabled={!form.formState.isValid || !isNameAvailable}
+              rightBtnDisabled={
+                !form.formState.isValid || (!isUpdate && !isNameAvailable)
+              }
               rightBtnText={isUpdate ? "Update" : "Create"}
               rightBtnHandler={async () => {
                 const values = form.getValues();
