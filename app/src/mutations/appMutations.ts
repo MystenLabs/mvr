@@ -2,24 +2,25 @@ import { useSuiClientsContext } from "@/components/providers/client-provider";
 import {
   assignMainnetPackage,
   registerApp,
+  registerPublicNameApp,
   setExternalNetwork,
   unsetExternalNetwork,
 } from "@/data/on-chain-app";
 import { useChainIdentifier } from "@/hooks/useChainIdentifier";
 import { AppRecord } from "@/hooks/useGetApp";
-import { SuinsName } from "@/hooks/useOwnedSuiNSNames";
+import { SuinsName } from "@/hooks/useOrganizationList";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { sender } from "@/lib/utils";
 import { type PackageInfoData } from "@/utils/types";
 import { KioskTransaction } from "@mysten/kiosk";
-import {
-  Transaction,
-} from "@mysten/sui/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 
 export function useCreateAppMutation() {
-  const { kiosk: {mainnet: kioskClient } } = useSuiClientsContext();
-  const { executeTransaction } = useTransactionExecution('mainnet');
+  const {
+    kiosk: { mainnet: kioskClient },
+  } = useSuiClientsContext();
+  const { executeTransaction } = useTransactionExecution("mainnet");
   const { data: testnetChainIdentifier } = useChainIdentifier("testnet");
 
   return useMutation({
@@ -39,7 +40,7 @@ export function useCreateAppMutation() {
 
       let kioskTx;
       let nsObject, promise;
-      
+
       if (suins.kioskCap) {
         kioskTx = new KioskTransaction({
           transaction: tx,
@@ -56,13 +57,20 @@ export function useCreateAppMutation() {
         promise = returnPromise;
       }
 
-      const appCap = registerApp({
-        tx,
-        name,
-        suinsObjectId: nsObject ?? suins.nftId,
-        mainnetPackageInfo: mainnetPackageInfo?.objectId,
-        isSubname: suins.isSubname,
-      });
+      const appCap = suins.isPublicName
+        ? registerPublicNameApp({
+            tx,
+            name,
+            publicNameObjectId: suins.nftId,
+            mainnetPackageInfo: mainnetPackageInfo?.objectId,
+          })
+        : registerApp({
+            tx,
+            name,
+            suinsObjectId: nsObject ?? suins.nftId,
+            mainnetPackageInfo: mainnetPackageInfo?.objectId,
+            isSubname: suins.isSubname,
+          });
 
       if (testnetPackageInfo) {
         setExternalNetwork({
@@ -83,10 +91,7 @@ export function useCreateAppMutation() {
         kioskTx?.finalize();
       }
 
-      tx.transferObjects(
-        [appCap],
-        sender(tx),
-      );
+      tx.transferObjects([appCap], sender(tx));
 
       const res = await executeTransaction(tx);
       return res;
@@ -96,7 +101,7 @@ export function useCreateAppMutation() {
 
 export function useUpdateAppMutation() {
   const { mainnet: client } = useSuiClientsContext();
-  const { executeTransaction } = useTransactionExecution('mainnet');
+  const { executeTransaction } = useTransactionExecution("mainnet");
   const { data: testnetChainIdentifier } = useChainIdentifier("testnet");
 
   return useMutation({
@@ -138,7 +143,11 @@ export function useUpdateAppMutation() {
         updates++;
       }
 
-      if (record.testnet && testnetPackageInfo && record.testnet?.packageInfoId !== testnetPackageInfo.objectId) {
+      if (
+        record.testnet &&
+        testnetPackageInfo &&
+        record.testnet?.packageInfoId !== testnetPackageInfo.objectId
+      ) {
         unsetExternalNetwork({
           tx,
           appCap: record.appCapId,

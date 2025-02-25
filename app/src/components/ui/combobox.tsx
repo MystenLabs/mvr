@@ -35,7 +35,12 @@ export function ComboBox({
   emptyState?: string;
   searchText?: string;
   title?: string;
-  options: { value: any; label: string; search?: string }[];
+  options: {
+    value: any;
+    label: string;
+    search?: string;
+    children?: React.ReactNode;
+  }[];
   value: any;
   setValue: (value: any) => void;
 }) {
@@ -53,9 +58,14 @@ export function ComboBox({
             disabled={options.length === 0}
             className="w-full justify-between"
           >
-            {value
-              ? options.find((framework) => framework.value === value)?.label
-              : placeholder}
+            <span>
+              {value
+                ? options.find((framework) => framework.value === value)?.label
+                : placeholder}
+
+              {options.find((framework) => framework.value === value)?.children}
+            </span>
+
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </div>
@@ -92,13 +102,17 @@ export function ComboBox({
                 <CommandItem
                   key={option.value}
                   value={option.value}
-                  className="cursor-pointer"
+                  className="flex cursor-pointer justify-between"
                   onSelect={(currentValue) => {
                     if (value !== currentValue) setValue(currentValue);
                     setOpen(false);
                   }}
                 >
-                  {option.label}
+                  <span>
+                    {option.label}
+
+                    {option.children}
+                  </span>
 
                   <Check
                     className={cn(

@@ -5,6 +5,40 @@ import {
   TransactionObjectArgument,
 } from "@mysten/sui/transactions";
 
+export const registerPublicNameApp = ({
+  tx,
+  name,
+  publicNameObjectId,
+  mainnetPackageInfo,
+}: {
+  tx: Transaction;
+  name: string;
+  publicNameObjectId: TransactionObjectArgument | string;
+  mainnetPackageInfo?: TransactionObjectArgument | string;
+}) => {
+  // TODO: Replace with mvr name (@mvr/public-names) once I've finished the operations.
+  const target = `0xbd73f4a4dd8348947e8fe942866d8d1e8b3cae25b2099743e69ddb5391acbe19`;
+  const appCap = tx.moveCall({
+    target: `${target}::public_names::create_app`,
+    arguments: [
+      tx.object(publicNameObjectId),
+      tx.object(Constants.appsRegistryId),
+      tx.pure.string(name),
+      tx.object.clock(),
+    ],
+  });
+
+  if (mainnetPackageInfo) {
+    assignMainnetPackage({
+      tx,
+      appCap,
+      packageInfo: mainnetPackageInfo,
+    });
+  }
+
+  return appCap;
+};
+
 /// Registers an app with the given name.
 /// Optionally assigns a package to the app.
 export const registerApp = ({
@@ -21,7 +55,9 @@ export const registerApp = ({
   isSubname?: boolean;
 }) => {
   const appCap = tx.moveCall({
-    target: isSubname ? `@mvr/subnames-proxy::utils::register` : `@mvr/core::move_registry::register`,
+    target: isSubname
+      ? `@mvr/subnames-proxy::utils::register`
+      : `@mvr/core::move_registry::register`,
     arguments: [
       tx.object(Constants.appsRegistryId),
       tx.object(suinsObjectId),
@@ -34,8 +70,8 @@ export const registerApp = ({
     assignMainnetPackage({
       tx,
       appCap,
-      packageInfo: mainnetPackageInfo
-    })
+      packageInfo: mainnetPackageInfo,
+    });
   }
 
   return appCap;
@@ -50,8 +86,10 @@ export const assignMainnetPackage = ({
   appCap: TransactionObjectArgument | string;
   packageInfo: PackageInfoData | TransactionObjectArgument | string;
 }) => {
-
-  const pkgInfoArg = (typeof packageInfo === 'object' && 'objectId' in packageInfo) ? tx.object(packageInfo.objectId) : tx.object(packageInfo);
+  const pkgInfoArg =
+    typeof packageInfo === "object" && "objectId" in packageInfo
+      ? tx.object(packageInfo.objectId)
+      : tx.object(packageInfo);
 
   tx.moveCall({
     target: `@mvr/core::move_registry::assign_package`,
@@ -97,7 +135,6 @@ export const setExternalNetwork = async ({
   });
 };
 
-
 /**
  * Unsets the external network for the given app.
  */
@@ -118,4 +155,4 @@ export const unsetExternalNetwork = async ({
       tx.pure.string(chainId),
     ],
   });
-}
+};
