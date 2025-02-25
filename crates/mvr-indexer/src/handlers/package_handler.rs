@@ -9,18 +9,18 @@ use sui_pg_db::Connection;
 use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::object::Data;
 
-pub struct PackageHandler {
+pub struct PackageHandler<const MAINNET: bool> {
     chain_id: String,
 }
 
-impl PackageHandler {
+impl<const MAINNET: bool> PackageHandler<MAINNET> {
     pub fn new(chain_id: String) -> Self {
         Self { chain_id }
     }
 }
 
 #[async_trait::async_trait]
-impl Handler for PackageHandler {
+impl<const MAINNET: bool> Handler for PackageHandler<MAINNET> {
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
         use mvr_schema::schema::package_dependencies::dsl::package_dependencies;
         use mvr_schema::schema::packages::dsl::packages;
@@ -34,6 +34,7 @@ impl Handler for PackageHandler {
                     .map(|dependency_package_id| PackageDependency {
                         package_id: p.package_id.clone(),
                         dependency_package_id,
+                        chain_id: p.chain_id.clone(),
                     })
             })
             .collect::<Vec<_>>();
@@ -54,8 +55,12 @@ impl Handler for PackageHandler {
     }
 }
 
-impl Processor for PackageHandler {
-    const NAME: &'static str = "Package";
+impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
+    const NAME: &'static str = if MAINNET {
+        "Package - Mainnet"
+    } else {
+        "Package - Testnet"
+    };
     type Value = Package;
 
     fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
