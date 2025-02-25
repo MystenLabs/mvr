@@ -21,10 +21,11 @@ pub struct Package {
 }
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]
-#[diesel(table_name = package_dependencies, primary_key(package_id, dependency_package_id))]
+#[diesel(table_name = package_dependencies)]
 pub struct PackageDependency {
     pub package_id: String,
     pub dependency_package_id: String,
+    pub chain_id: String
 }
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]
@@ -44,6 +45,7 @@ pub struct PackageInfo {
     pub object_version: i64,
     pub package_id: String,
     pub git_table_id: String,
+    pub chain_id: String,
     pub default_name: Option<String>,
     pub metadata: serde_json::Value,
 }
@@ -54,6 +56,7 @@ pub struct GitInfo {
     pub table_id: String,
     pub object_version: i64,
     pub version: i32,
+    pub chain_id: String,
     pub repository: Option<String>,
     pub path: Option<String>,
     pub tag: Option<String>,

@@ -5,6 +5,7 @@ diesel::table! {
         table_id -> Varchar,
         object_version -> Int8,
         version -> Int4,
+        chain_id -> Varchar,
         repository -> Nullable<Varchar>,
         path -> Nullable<Varchar>,
         tag -> Nullable<Varchar>,
@@ -22,9 +23,10 @@ diesel::table! {
 }
 
 diesel::table! {
-    package_dependencies (package_id, dependency_package_id) {
+    package_dependencies (package_id, dependency_package_id, chain_id) {
         package_id -> Varchar,
         dependency_package_id -> Varchar,
+        chain_id -> Varchar
     }
 }
 
@@ -34,13 +36,14 @@ diesel::table! {
         object_version -> Int8,
         package_id -> Varchar,
         git_table_id -> Varchar,
+        chain_id -> Varchar,
         default_name -> Nullable<Varchar>,
         metadata -> Jsonb,
     }
 }
 
 diesel::table! {
-    packages (package_id, original_id, package_version) {
+    packages (package_id, original_id, package_version, chain_id) {
         package_id -> Varchar,
         original_id -> Varchar,
         package_version -> Int8,

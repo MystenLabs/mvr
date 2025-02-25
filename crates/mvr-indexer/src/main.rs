@@ -1,15 +1,18 @@
-use crate::handlers::git_info_handler::GitInfoHandler;
+use crate::handlers::git_info_handler::{GitInfoHandler, MainnetGitInfo, TestnetGitInfo};
 use crate::handlers::name_record_handler::NameRecordHandler;
 use crate::handlers::package_handler::PackageHandler;
 use crate::handlers::package_info_handler::PackageInfoHandler;
+use crate::models::{mainnet, testnet};
 use anyhow::Context;
 use clap::Parser;
+use futures::future::join_all;
 use prometheus::Registry;
-use sui_indexer_alt_framework::ingestion::{ClientArgs, IngestionConfig};
+use sui_indexer_alt_framework::ingestion::ClientArgs;
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
-use sui_indexer_alt_framework::{Indexer, IndexerArgs};
+use sui_indexer_alt_framework::Indexer;
 use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
+use url::Url;
 
 pub(crate) mod handlers;
 
@@ -19,15 +22,19 @@ pub(crate) mod models;
 #[clap(rename_all = "kebab-case", author, version)]
 struct Args {
     #[command(flatten)]
-    indexer_args: IndexerArgs,
-    #[command(flatten)]
     db_args: DbArgs,
-    #[command(flatten)]
-    client_args: ClientArgs,
+    #[clap(env, long, default_value = "https://checkpoints.mainnet.sui.io")]
+    remote_store_url: Url,
+    #[clap(env, long, default_value = "https://checkpoints.testnet.sui.io")]
+    testnet_remote_store_url: Url,
     #[clap(env, long, default_value = "35834a8a")]
     mainnet_chain_id: String,
     #[clap(env, long, default_value = "4c78adac")]
     testnet_chain_id: String,
+    #[clap(env, long)]
+    disable_mainnet: bool,
+    #[clap(env, long)]
+    disable_testnet: bool,
 }
 
 #[tokio::main]
@@ -37,41 +44,92 @@ async fn main() -> Result<(), anyhow::Error> {
         .init();
 
     let Args {
-        indexer_args,
         db_args,
-        client_args,
+        remote_store_url,
+        testnet_remote_store_url,
         mainnet_chain_id,
         testnet_chain_id,
+        disable_mainnet,
+        disable_testnet,
     } = Args::parse();
 
-    let registry = Registry::new_custom(Some("mvr_indexer".into()), None)
-        .context("Failed to create Prometheus registry.")?;
-
     let cancel = CancellationToken::new();
+
+    let mut indexer_handles = vec![];
+
+    if !disable_mainnet {
+        let registry = Registry::new_custom(Some("mvr_indexer_mainnet".into()), None)
+            .context("Failed to create Prometheus registry.")?;
+        let mainnet_indexer = create_mainnet_indexer(
+            db_args.clone(),
+            remote_store_url,
+            &registry,
+            mainnet_chain_id,
+            testnet_chain_id.clone(),
+            cancel.clone(),
+        )
+        .await?;
+        indexer_handles.push(mainnet_indexer.run().await?);
+    }
+
+    if !disable_testnet {
+        let registry = Registry::new_custom(Some("mvr_indexer_testnet".into()), None)
+            .context("Failed to create Prometheus registry.")?;
+        let mainnet_indexer = create_testnet_indexer(
+            db_args,
+            testnet_remote_store_url,
+            &registry,
+            testnet_chain_id,
+            cancel.clone(),
+        )
+        .await?;
+        indexer_handles.push(mainnet_indexer.run().await?);
+    }
+
+    let _ = join_all(indexer_handles).await;
+    cancel.cancel();
+
+    Ok(())
+}
+
+async fn create_mainnet_indexer(
+    db_args: DbArgs,
+    remote_store_url: Url,
+    registry: &Registry,
+    mainnet_chain_id: String,
+    testnet_chain_id: String,
+    cancel: CancellationToken,
+) -> Result<Indexer, anyhow::Error> {
     let mut indexer = Indexer::new(
         db_args,
-        indexer_args,
-        client_args,
-        IngestionConfig::default(),
+        Default::default(),
+        ClientArgs {
+            remote_store_url: Some(remote_store_url),
+            local_ingestion_path: None,
+        },
+        Default::default(),
         None,
-        &registry,
+        registry,
         cancel.clone(),
     )
     .await?;
 
     indexer
         .concurrent_pipeline(
-            PackageHandler::new(mainnet_chain_id),
-            ConcurrentConfig::default(),
+            PackageHandler::<true>::new(mainnet_chain_id.clone()),
+            Default::default(),
         )
         .await?;
 
     indexer
-        .concurrent_pipeline(GitInfoHandler::new(), ConcurrentConfig::default())
+        .concurrent_pipeline(GitInfoHandler::<MainnetGitInfo>::new(mainnet_chain_id.clone()), Default::default())
         .await?;
 
     indexer
-        .concurrent_pipeline(PackageInfoHandler, ConcurrentConfig::default())
+        .concurrent_pipeline(
+            PackageInfoHandler::<mainnet::mvr_metadata::package_info::PackageInfo>::new(mainnet_chain_id),
+            Default::default(),
+        )
         .await?;
 
     indexer
@@ -81,9 +139,46 @@ async fn main() -> Result<(), anyhow::Error> {
         )
         .await?;
 
-    let h_indexer = indexer.run().await?;
-    let _ = h_indexer.await;
-    cancel.cancel();
+    Ok(indexer)
+}
 
-    Ok(())
+async fn create_testnet_indexer(
+    db_args: DbArgs,
+    testnet_remote_store_url: Url,
+    registry: &Registry,
+    testnet_chain_id: String,
+    cancel: CancellationToken,
+) -> Result<Indexer, anyhow::Error> {
+    let mut indexer = Indexer::new(
+        db_args,
+        Default::default(),
+        ClientArgs {
+            remote_store_url: Some(testnet_remote_store_url),
+            local_ingestion_path: None,
+        },
+        Default::default(),
+        None,
+        registry,
+        cancel.clone(),
+    )
+    .await?;
+
+    indexer
+        .concurrent_pipeline(
+            PackageHandler::<false>::new(testnet_chain_id.clone()),
+            Default::default(),
+        )
+        .await?;
+
+    indexer
+        .concurrent_pipeline(GitInfoHandler::<TestnetGitInfo>::new(testnet_chain_id.clone()), Default::default())
+        .await?;
+
+    indexer
+        .concurrent_pipeline(
+            PackageInfoHandler::<testnet::mvr_metadata::package_info::PackageInfo>::new(testnet_chain_id),
+            Default::default(),
+        )
+        .await?;
+    Ok(indexer)
 }
