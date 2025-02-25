@@ -1,10 +1,12 @@
-use crate::models::mvr_core;
+use crate::models::mvr_core::app_record::AppRecord;
 use crate::models::mvr_core::name::Name as MoveName;
+use crate::models::sui::dynamic_field::Field;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
+use move_types::MoveStruct;
 use mvr_schema::models::NameRecord;
 use mvr_types::name::Name;
 use mvr_types::name_service::Domain;
@@ -15,8 +17,8 @@ use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
-use sui_types::dynamic_field::{DynamicFieldInfo, Field};
 use sui_types::full_checkpoint_content::CheckpointData;
+
 pub struct NameRecordHandler {
     type_: MoveObjectType,
     testnet_chain_id: String,
@@ -25,12 +27,7 @@ pub struct NameRecordHandler {
 impl NameRecordHandler {
     pub fn new(testnet_chain_id: String) -> Self {
         // Indexing dynamic field object Field<[mvr_core]::name::Name, [mvr_core]::app_record::AppRecord>
-        let name_type = MoveName::type_();
-        let app_record = mvr_core::app_record::AppRecord::type_();
-        let type_ = MoveObjectType::from(DynamicFieldInfo::dynamic_field_type(
-            name_type.into(),
-            app_record.into(),
-        ));
+        let type_ = MoveObjectType::from(Field::<MoveName, AppRecord>::struct_type());
         NameRecordHandler {
             type_,
             testnet_chain_id,
@@ -87,7 +84,13 @@ impl Processor for NameRecordHandler {
                                 .contents
                                 .into_iter()
                                 .map(|entry| (entry.key, entry.value))
-                                .collect::<HashMap<String, String>>();
+                                .collect::<HashMap<_, _>>();
+
+                            let networks = networks
+                                .contents
+                                .into_iter()
+                                .map(|entry| (entry.key, entry.value))
+                                .collect::<HashMap<_, _>>();
 
                             result.push(NameRecord {
                                 name: name.to_string(),
