@@ -16,8 +16,10 @@ export const registerPublicNameApp = ({
   publicNameObjectId: TransactionObjectArgument | string;
   mainnetPackageInfo?: TransactionObjectArgument | string;
 }) => {
+  // TODO: Replace with mvr name (@mvr/public-names) once I've finished the operations.
+  const target = `0xbd73f4a4dd8348947e8fe942866d8d1e8b3cae25b2099743e69ddb5391acbe19`;
   const appCap = tx.moveCall({
-    target: `@mvr/public-names::public_names::create_app`,
+    target: `${target}::public_names::create_app`,
     arguments: [
       tx.object(publicNameObjectId),
       tx.object(Constants.appsRegistryId),

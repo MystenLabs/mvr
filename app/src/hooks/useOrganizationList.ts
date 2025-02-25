@@ -31,7 +31,7 @@ export type SuinsName = {
 // A list of known public good names.
 const PUBLIC_NAMES: SuinsName[] = [
   {
-    nftId: "0xToReplace", // replace this with the `public good` object id.
+    nftId: "0xa7427dd0bde7fc61856a9955e52f855451ea3d01f96cc042cfacd80bd76af0c3", // replace this with the `public good` object id.
     domainName: "@pkg",
     expirationTimestampMs: 0,
     isCapabilityOnly: false,
