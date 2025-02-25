@@ -4494,7 +4494,7 @@ dependencies = [
 [[package]]
 name = "move-binding-derive"
 version = "0.1.0"
-source = "git+https://github.com/MystenLabs/move-binding.git?rev=7a5db383cace688c54027a9dc4949ae6b7da3fdb#7a5db383cace688c54027a9dc4949ae6b7da3fdb"
+source = "git+https://github.com/MystenLabs/move-binding.git?rev=f867aa2d7aadd9341ef1de983de7a60d44ecef4a#f867aa2d7aadd9341ef1de983de7a60d44ecef4a"
 dependencies = [
  "itertools 0.14.0",
  "move-core-types",
@@ -4835,7 +4835,7 @@ dependencies = [
 [[package]]
 name = "move-types"
 version = "0.1.0"
-source = "git+https://github.com/MystenLabs/move-binding.git?rev=7a5db383cace688c54027a9dc4949ae6b7da3fdb#7a5db383cace688c54027a9dc4949ae6b7da3fdb"
+source = "git+https://github.com/MystenLabs/move-binding.git?rev=f867aa2d7aadd9341ef1de983de7a60d44ecef4a#f867aa2d7aadd9341ef1de983de7a60d44ecef4a"
 dependencies = [
  "move-core-types",
  "serde",

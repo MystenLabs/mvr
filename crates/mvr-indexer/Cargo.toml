@@ -21,8 +21,8 @@ telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git" }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
 move-core-types = { git = "https://github.com/MystenLabs/sui.git" }
 
-move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "7a5db383cace688c54027a9dc4949ae6b7da3fdb"}
-move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "7a5db383cace688c54027a9dc4949ae6b7da3fdb"}
+move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "f867aa2d7aadd9341ef1de983de7a60d44ecef4a"}
+move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "f867aa2d7aadd9341ef1de983de7a60d44ecef4a"}
 
 sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", features = ["serde"]}
 
