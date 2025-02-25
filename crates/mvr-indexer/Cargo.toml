@@ -24,7 +24,7 @@ move-core-types = { git = "https://github.com/MystenLabs/sui.git" }
 move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "7a5db383cace688c54027a9dc4949ae6b7da3fdb"}
 move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "7a5db383cace688c54027a9dc4949ae6b7da3fdb"}
 
-sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", features = ["serde"]}
+sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", rev="86a9e06", features = ["serde"]}
 
 mvr-schema = { path = "../mvr-schema" }
 mvr-types = { path = "../mvr-types" }
