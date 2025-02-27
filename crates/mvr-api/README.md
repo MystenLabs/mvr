@@ -11,5 +11,3 @@ The `network` can be either `mainnet` or `testnet`. This will determine which ne
 ```bash
 cargo run --bin mvr-api -- --database-url postgres://postgres:postgres@localhost:5432/mvr --network mainnet
 ```
-
-
