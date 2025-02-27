@@ -10,8 +10,12 @@ use sui_types::base_types::ObjectID;
 use crate::{data::reverse_resolution_loader::ReverseResolutionKey, errors::ApiError, AppState};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct BulkReverseResolutionData {
-    pub package_ids: Vec<ObjectID>,
+pub struct BulkRequest {
+    package_ids: Vec<ObjectID>,
+}
+#[derive(Serialize, Deserialize)]
+pub struct BulkResponse {
+    resolution: HashMap<ObjectID, String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -20,11 +24,6 @@ pub struct ResolvedName(pub Option<String>);
 #[derive(Serialize, Deserialize)]
 pub struct Response {
     name: Option<String>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct BulkResponse {
-    resolution: HashMap<ObjectID, String>,
 }
 
 pub struct ReverseResolution;
@@ -46,7 +45,7 @@ impl ReverseResolution {
 
     pub async fn bulk_resolve(
         State(app_state): State<Arc<AppState>>,
-        Json(payload): Json<BulkReverseResolutionData>,
+        Json(payload): Json<BulkRequest>,
     ) -> Result<Json<BulkResponse>, ApiError> {
         let keys: Vec<_> = payload
             .package_ids
