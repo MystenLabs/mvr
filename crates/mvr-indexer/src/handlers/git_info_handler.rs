@@ -1,3 +1,4 @@
+use crate::handlers::convert_struct_tag;
 use crate::handlers::MoveObjectProcessor;
 use crate::models::mainnet::sui::dynamic_field::Field;
 use crate::models::{mainnet, testnet};
@@ -17,7 +18,7 @@ use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
-use crate::handlers::convert_struct_tag;
+use sui_types::object::Object;
 
 pub type MainnetGitInfo = Field<u64, mainnet::mvr_metadata::git::GitInfo>;
 pub type TestnetGitInfo = Field<u64, testnet::mvr_metadata::git::GitInfo>;
@@ -31,7 +32,7 @@ pub struct GitInfoHandler<T> {
 impl<T: MoveStruct> GitInfoHandler<T> {
     pub fn new(chain_id: String) -> Self {
         // Indexing dynamic field object Field<u64, [metadata_pkg_id]::git::GitInfo>
-        let struct_tag = Field::<u64, MoveGitInfo>::struct_type();
+        let struct_tag = Field::<u64, T>::struct_type();
         GitInfoHandler {
             chain_id,
             type_: MoveObjectType::from(convert_struct_tag(struct_tag)),

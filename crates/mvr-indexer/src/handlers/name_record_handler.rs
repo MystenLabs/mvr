@@ -1,3 +1,4 @@
+use crate::handlers::convert_struct_tag;
 use crate::models::mainnet::mvr_core::app_record::AppRecord;
 use crate::models::mainnet::mvr_core::name::Name as MoveName;
 use crate::models::mainnet::sui::dynamic_field::Field;
@@ -18,7 +19,6 @@ use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
-use crate::handlers::convert_struct_tag;
 
 pub struct NameRecordHandler {
     type_: MoveObjectType,

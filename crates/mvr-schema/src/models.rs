@@ -25,7 +25,7 @@ pub struct Package {
 pub struct PackageDependency {
     pub package_id: String,
     pub dependency_package_id: String,
-    pub chain_id: String
+    pub chain_id: String,
 }
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]

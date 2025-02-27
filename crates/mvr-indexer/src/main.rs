@@ -122,12 +122,17 @@ async fn create_mainnet_indexer(
         .await?;
 
     indexer
-        .concurrent_pipeline(GitInfoHandler::<MainnetGitInfo>::new(mainnet_chain_id.clone()), Default::default())
+        .concurrent_pipeline(
+            GitInfoHandler::<MainnetGitInfo>::new(mainnet_chain_id.clone()),
+            Default::default(),
+        )
         .await?;
 
     indexer
         .concurrent_pipeline(
-            PackageInfoHandler::<mainnet::mvr_metadata::package_info::PackageInfo>::new(mainnet_chain_id),
+            PackageInfoHandler::<mainnet::mvr_metadata::package_info::PackageInfo>::new(
+                mainnet_chain_id,
+            ),
             Default::default(),
         )
         .await?;
@@ -171,12 +176,17 @@ async fn create_testnet_indexer(
         .await?;
 
     indexer
-        .concurrent_pipeline(GitInfoHandler::<TestnetGitInfo>::new(testnet_chain_id.clone()), Default::default())
+        .concurrent_pipeline(
+            GitInfoHandler::<TestnetGitInfo>::new(testnet_chain_id.clone()),
+            Default::default(),
+        )
         .await?;
 
     indexer
         .concurrent_pipeline(
-            PackageInfoHandler::<testnet::mvr_metadata::package_info::PackageInfo>::new(testnet_chain_id),
+            PackageInfoHandler::<testnet::mvr_metadata::package_info::PackageInfo>::new(
+                testnet_chain_id,
+            ),
             Default::default(),
         )
         .await?;
