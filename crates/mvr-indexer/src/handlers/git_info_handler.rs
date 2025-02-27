@@ -13,6 +13,7 @@ use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
+use crate::handlers::convert_struct_tag;
 
 pub struct GitInfoHandler {
     type_: MoveObjectType,
@@ -21,8 +22,9 @@ pub struct GitInfoHandler {
 impl GitInfoHandler {
     pub fn new() -> Self {
         // Indexing dynamic field object Field<u64, [metadata_pkg_id]::git::GitInfo>
+        let struct_tag = Field::<u64, MoveGitInfo>::struct_type();
         GitInfoHandler {
-            type_: MoveObjectType::from(Field::<u64, MoveGitInfo>::struct_type()),
+            type_: MoveObjectType::from(convert_struct_tag(struct_tag)),
         }
     }
 }

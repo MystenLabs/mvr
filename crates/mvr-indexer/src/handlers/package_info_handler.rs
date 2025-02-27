@@ -1,3 +1,4 @@
+use crate::handlers::convert_struct_tag;
 use crate::models::mvr_metadata::package_info::PackageInfo as MovePackageInfo;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
@@ -45,7 +46,7 @@ impl Processor for PackageInfoHandler {
     fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint.transactions.iter().try_fold(vec![], |result, tx| {
             tx.output_objects.iter().try_fold(result, |mut result, obj| {
-                if matches!(obj.type_(), Some(t) if matches!(t.other(), Some(s) if s == &MovePackageInfo::struct_type()) ) {
+                if matches!(obj.type_(), Some(t) if matches!(t.other(), Some(s) if s == &convert_struct_tag(MovePackageInfo::struct_type())) ) {
                     if let Some(move_obj) = obj.data.try_as_move() {
                         let MovePackageInfo { id, display: _, upgrade_cap_id: _, package_address, metadata, git_versioning } = bcs::from_bytes(move_obj.contents())?;
                         let metadata = metadata

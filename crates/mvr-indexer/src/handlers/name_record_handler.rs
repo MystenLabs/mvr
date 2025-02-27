@@ -18,6 +18,7 @@ use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
+use crate::handlers::convert_struct_tag;
 
 pub struct NameRecordHandler {
     type_: MoveObjectType,
@@ -27,7 +28,8 @@ pub struct NameRecordHandler {
 impl NameRecordHandler {
     pub fn new(testnet_chain_id: String) -> Self {
         // Indexing dynamic field object Field<[mvr_core]::name::Name, [mvr_core]::app_record::AppRecord>
-        let type_ = MoveObjectType::from(Field::<MoveName, AppRecord>::struct_type());
+        let struct_tag = Field::<MoveName, AppRecord>::struct_type();
+        let type_ = MoveObjectType::from(convert_struct_tag(struct_tag));
         NameRecordHandler {
             type_,
             testnet_chain_id,
