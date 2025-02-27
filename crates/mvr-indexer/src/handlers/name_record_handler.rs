@@ -1,6 +1,7 @@
-use crate::models::mvr_core::app_record::AppRecord;
-use crate::models::mvr_core::name::Name as MoveName;
-use crate::models::sui::dynamic_field::Field;
+use crate::handlers::convert_struct_tag;
+use crate::models::mainnet::mvr_core::app_record::AppRecord;
+use crate::models::mainnet::mvr_core::name::Name as MoveName;
+use crate::models::mainnet::sui::dynamic_field::Field;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
@@ -18,7 +19,6 @@ use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
-use crate::handlers::convert_struct_tag;
 
 pub struct NameRecordHandler {
     type_: MoveObjectType,
@@ -69,30 +69,20 @@ impl Processor for NameRecordHandler {
                     // TODO: do we need to check if the parent of the DF table entry is the MVR registry?
                     if matches!(o.type_(), Some(t) if t == &self.type_) {
                         if let Some(move_obj) = o.data.try_as_move() {
-                            use crate::models::mvr_core::app_record::AppRecord as MoveAppRecord;
-                            let data: Field<MoveName, MoveAppRecord> =
+                            let data: Field<MoveName, AppRecord> =
                                 bcs::from_bytes(move_obj.contents())?;
                             let MoveName { org, app } = data.name;
                             // TODO: better way to convert Move SuiNS types to Rust type?
                             let name = Name::new(Domain::from_str(&org.labels.join("."))?, app);
-                            let MoveAppRecord {
+                            let AppRecord {
                                 app_info,
                                 networks,
                                 metadata,
                                 ..
                             } = data.value;
 
-                            let metadata = metadata
-                                .contents
-                                .into_iter()
-                                .map(|entry| (entry.key, entry.value))
-                                .collect::<HashMap<_, _>>();
-
-                            let networks = networks
-                                .contents
-                                .into_iter()
-                                .map(|entry| (entry.key, entry.value))
-                                .collect::<HashMap<_, _>>();
+                            let networks: HashMap<_, _> = networks.into();
+                            let metadata: HashMap<_, _> = metadata.into();
 
                             result.push(NameRecord {
                                 name: name.to_string(),
