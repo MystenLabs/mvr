@@ -76,7 +76,7 @@ impl Reader {
     }
 }
 
-impl<'p> Connection<'p> {
+impl Connection<'_> {
     pub(crate) async fn first<Q, U>(&mut self, query: Q) -> Result<U, ReadError>
     where
         U: Send,

@@ -14,7 +14,7 @@ use sui_types::base_types::ObjectID;
 use crate::{data::resolution_loader::ResolutionKey, errors::ApiError, AppState};
 
 #[derive(Serialize, Deserialize)]
-pub struct BulkResolutionData {
+pub struct BulkRequest {
     pub names: Vec<String>,
 }
 
@@ -48,7 +48,7 @@ impl Resolution {
     /// Resolve a list of names at once.
     pub async fn bulk_resolve(
         State(app_state): State<Arc<AppState>>,
-        Json(payload): Json<BulkResolutionData>,
+        Json(payload): Json<BulkRequest>,
     ) -> Result<Json<BulkResponse>, ApiError> {
         let names = payload
             .names

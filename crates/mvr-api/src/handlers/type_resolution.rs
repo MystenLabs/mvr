@@ -7,9 +7,20 @@ use axum::{
     Json,
 };
 use mvr_types::{name::VersionedName, named_type::NamedType};
+use serde::{Deserialize, Serialize};
 use sui_types::TypeTag;
 
 use crate::{data::resolution_loader::ResolutionKey, errors::ApiError, AppState};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BulkRequest {
+    types: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BulkResponse {
+    resolution: HashMap<String, String>,
+}
 
 pub struct TypeResolution;
 
@@ -29,13 +40,13 @@ impl TypeResolution {
 
     pub async fn bulk_resolve(
         State(state): State<Arc<AppState>>,
-        Json(payload): Json<Vec<String>>,
-    ) -> Result<Json<HashMap<String, String>>, ApiError> {
-        let tags = bulk_resolve_types_impl(state, payload).await?;
+        Json(payload): Json<BulkRequest>,
+    ) -> Result<Json<BulkResponse>, ApiError> {
+        let tags = bulk_resolve_types_impl(state, payload.types).await?;
 
-        Ok(Json(
-            tags.into_iter().map(|(k, v)| (k, v.to_string())).collect(),
-        ))
+        Ok(Json(BulkResponse {
+            resolution: tags.into_iter().map(|(k, v)| (k, v.to_string())).collect(),
+        }))
     }
 }
 

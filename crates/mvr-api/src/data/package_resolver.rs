@@ -10,7 +10,7 @@ use move_core_types::account_address::AccountAddress;
 use sui_package_resolver::{
     error::Error, Package, PackageStore, PackageStoreWithLruCache, Resolver, Result,
 };
-use sui_types::object::Object;
+use sui_types::move_package::MovePackage;
 
 pub(crate) type PackageCache = PackageStoreWithLruCache<ApiPackageStore>;
 pub(crate) type PackageResolver = Arc<Resolver<PackageCache>>;
@@ -77,8 +77,8 @@ impl Loader<PackageKey> for Reader {
             })?;
 
         for stored_package in stored_packages {
-            let move_package = bcs::from_bytes::<Object>(&stored_package)?;
-            let package = Package::read_from_object(&move_package)?;
+            let move_package: MovePackage = bcs::from_bytes(&stored_package)?;
+            let package = Package::read_from_package(&move_package)?;
             id_to_package.insert(PackageKey(*move_package.id()), Arc::new(package));
         }
 
