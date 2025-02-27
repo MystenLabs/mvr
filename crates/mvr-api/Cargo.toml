@@ -32,3 +32,7 @@ tracing.workspace = true
 url = "2.5.4"
 mvr-types = { path = "../mvr-types" }
 mvr-schema = { path = "../mvr-schema" }
+
+[[bin]]
+name = "mvr-api"
+path = "src/main.rs"
