@@ -16,20 +16,20 @@ tokio = { version = "1.43.0", features = ["full"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 regex = "1.11.1"
 rand = "0.9.0"
-async-trait = "0.1.86"
-bcs = "0.1.6"
 futures = "0.3.31"
 serde = { workspace = true, features = ["derive"] }
 diesel = { workspace = true, features = ["serde_json"] }
 diesel-async = { workspace = true, features = ["bb8", "postgres"] }
+async-trait.workspace = true
 serde_json.workspace = true
-dotenvy.workspace = true
 anyhow.workspace = true
 chrono.workspace = true
 once_cell.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
-url = "2.5.4"
+url.workspace = true
+bcs.workspace = true
+clap = { workspace = true, features = ["derive", "env"] }
 mvr-types = { path = "../mvr-types" }
 mvr-schema = { path = "../mvr-schema" }
 
