@@ -3,7 +3,6 @@ use crate::handlers::MoveObjectProcessor;
 use crate::models::mainnet::mvr_metadata::package_info::PackageInfo as MainnetPkgInfo;
 use crate::models::mainnet::sui::vec_map::VecMap;
 use crate::models::testnet::mvr_metadata::package_info::PackageInfo as TestnetPkgInfo;
-use crate::models::VecMapToHashMap;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
@@ -12,6 +11,7 @@ use diesel_async::RunQueryDsl;
 use move_types::MoveStruct;
 use mvr_schema::models::PackageInfo;
 use serde::de::DeserializeOwned;
+use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
@@ -43,7 +43,7 @@ impl<T> PackageInfoHandler<T> {
         git_table_id: ObjectId,
         object_version: u64,
     ) -> Result<PackageInfo, anyhow::Error> {
-        let metadata = metadata.to_map();
+        let metadata: HashMap<_, _> = metadata.into();
         Ok(PackageInfo {
             id: id.to_string(),
             object_version: object_version as i64,

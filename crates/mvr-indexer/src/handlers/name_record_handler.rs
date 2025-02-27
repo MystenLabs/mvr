@@ -2,7 +2,6 @@ use crate::handlers::convert_struct_tag;
 use crate::models::mainnet::mvr_core::app_record::AppRecord;
 use crate::models::mainnet::mvr_core::name::Name as MoveName;
 use crate::models::mainnet::sui::dynamic_field::Field;
-use crate::models::VecMapToHashMap;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
@@ -12,6 +11,7 @@ use move_types::MoveStruct;
 use mvr_schema::models::NameRecord;
 use mvr_types::name::Name;
 use mvr_types::name_service::Domain;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
@@ -81,16 +81,18 @@ impl Processor for NameRecordHandler {
                                 ..
                             } = data.value;
 
+                            let networks: HashMap<_, _> = networks.into();
+                            let metadata: HashMap<_, _> = metadata.into();
+
                             result.push(NameRecord {
                                 name: name.to_string(),
                                 object_version: o.version().value() as i64,
                                 mainnet_id: app_info
                                     .and_then(|info| Some(info.package_info_id?.to_string())),
                                 testnet_id: networks
-                                    .to_map()
                                     .get(&self.testnet_chain_id)
                                     .and_then(|info| Some(info.package_info_id?.to_string())),
-                                metadata: serde_json::to_value(metadata.to_map())?,
+                                metadata: serde_json::to_value(metadata)?,
                             })
                         }
                     }

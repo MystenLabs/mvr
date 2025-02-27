@@ -14,13 +14,10 @@ pub mod testnet {
     move_contract! {alias = "mvr_metadata", package = "@mvr/metadata", network = "testnet", deps = [crate::models::mainnet::sui]}
 }
 
-pub trait VecMapToHashMap<K, V> {
-    fn to_map(self) -> HashMap<K, V>;
-}
-
-impl<K: Eq + Hash, V> VecMapToHashMap<K, V> for VecMap<K, V> {
-    fn to_map(self) -> HashMap<K, V> {
-        self.contents
+impl<K: Eq + Hash, V> From<VecMap<K, V>> for HashMap<K, V> {
+    fn from(value: VecMap<K, V>) -> Self {
+        value
+            .contents
             .into_iter()
             .map(|entry| (entry.key, entry.value))
             .collect::<HashMap<K, V>>()
