@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sui-types = { git = "https://github.com/MystenLabs/sui.git" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84"}
 serde = { workspace = true, features = ["derive"] }
 anyhow.workspace = true
 thiserror.workspace = true

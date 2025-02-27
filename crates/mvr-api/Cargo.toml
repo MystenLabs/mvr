@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git" }
-move-core-types = { git = "https://github.com/MystenLabs/sui.git" }
-sui-types = { git = "https://github.com/MystenLabs/sui.git" }
-sui-pg-db = { git = "https://github.com/MystenLabs/sui.git" }
+sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
+move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
+sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 
 async-graphql = { version = "7.0.15", features = ["dataloader", "boxed-trait"] }
 
