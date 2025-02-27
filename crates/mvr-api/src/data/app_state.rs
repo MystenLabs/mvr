@@ -18,6 +18,11 @@ pub struct AppState {
 impl AppState {
     pub async fn new(args: db::DbArgs, network: String) -> Result<Self, ReadError> {
         let reader = Reader::new(args, network).await?;
+
+        // Try to open a read connection to verify we can
+        // connect to the DB on startup.
+        let _ = reader.connect().await?;
+
         let loader = Arc::new(reader.as_data_loader());
         let api_pkg_resolver = ApiPackageStore::new(loader.clone());
         let package_cache = PackageStoreWithLruCache::new(api_pkg_resolver);

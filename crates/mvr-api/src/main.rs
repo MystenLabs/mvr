@@ -6,46 +6,66 @@ mod errors;
 mod handlers;
 mod route;
 
-use std::{env, sync::Arc};
+use std::sync::Arc;
 
 use axum::http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     Method,
 };
+use clap::Parser;
+use clap::ValueEnum;
 use data::app_state::AppState;
 use sui_pg_db::DbArgs;
-use url::Url;
-
-use dotenvy::dotenv;
 use tower_http::cors::{Any, CorsLayer};
+
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case", author, version)]
+struct Args {
+    #[command(flatten)]
+    db_args: DbArgs,
+    #[clap(long, value_enum, env)]
+    network: Network,
+    #[clap(long, default_value = "8000", env)]
+    api_port: u16,
+}
 
 #[tokio::main]
 async fn main() {
-    dotenv().ok();
-
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_methods([Method::GET])
+        .allow_methods([Method::GET, Method::POST])
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let port = env::var("PORT").unwrap_or("8000".to_string());
+    let Args {
+        db_args,
+        network,
+        api_port,
+    } = Args::parse();
 
-    // TODO: Parse from args instead of env, and also allow pool size & timeout configuration!
-    let db_args = DbArgs {
-        database_url: Url::parse(&db_url).expect("Invalid database URL"),
-        db_connection_pool_size: 20,
-        connection_timeout_ms: 5000,
-    };
-
-    // TODO: Parse `network` from env (now defaults to mainnet)
-    let app_state = AppState::new(db_args, "mainnet".to_string()).await.unwrap();
+    let app_state = AppState::new(db_args, network.to_string())
+        .await
+        .expect("Failed to connect to the Database");
 
     let app = route::create_router(Arc::new(app_state)).layer(cors);
 
-    println!("🚀 Server started successfully");
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port))
+    println!("🚀 Server started successfully on port {}", api_port);
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", api_port))
         .await
         .unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+enum Network {
+    Mainnet,
+    Testnet,
+}
+
+impl std::fmt::Display for Network {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Network::Mainnet => write!(f, "mainnet"),
+            Network::Testnet => write!(f, "testnet"),
+        }
+    }
 }
