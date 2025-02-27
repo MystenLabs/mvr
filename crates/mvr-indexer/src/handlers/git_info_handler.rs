@@ -1,18 +1,20 @@
-use crate::models::mvr_metadata;
+use crate::models::mvr_metadata::git::GitInfo as MoveGitInfo;
+use crate::models::sui::dynamic_field::Field;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
-use move_core_types::language_storage::TypeTag;
+use move_types::MoveStruct;
 use mvr_schema::models::GitInfo;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
 use sui_types::base_types::MoveObjectType;
-use sui_types::dynamic_field::{DynamicFieldInfo, Field};
 use sui_types::full_checkpoint_content::CheckpointData;
+use crate::handlers::convert_struct_tag;
+
 pub struct GitInfoHandler {
     type_: MoveObjectType,
 }
@@ -20,12 +22,10 @@ pub struct GitInfoHandler {
 impl GitInfoHandler {
     pub fn new() -> Self {
         // Indexing dynamic field object Field<u64, [metadata_pkg_id]::git::GitInfo>
-        let git_type = mvr_metadata::git::GitInfo::type_();
-        let type_ = MoveObjectType::from(DynamicFieldInfo::dynamic_field_type(
-            TypeTag::U64,
-            git_type.into(),
-        ));
-        GitInfoHandler { type_ }
+        let struct_tag = Field::<u64, MoveGitInfo>::struct_type();
+        GitInfoHandler {
+            type_: MoveObjectType::from(convert_struct_tag(struct_tag)),
+        }
     }
 }
 
@@ -62,7 +62,6 @@ impl Processor for GitInfoHandler {
                 tx.output_objects.iter().try_fold(result, |mut result, o| {
                     if matches!(o.type_(), Some(t) if t == &self.type_) {
                         if let Some(move_obj) = o.data.try_as_move() {
-                            use crate::models::mvr_metadata::git::GitInfo as MoveGitInfo;
                             let data: Field<u64, MoveGitInfo> =
                                 bcs::from_bytes(move_obj.contents())?;
                             let MoveGitInfo {
