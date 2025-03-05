@@ -21,7 +21,7 @@ pub enum DomainFormat {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, Hash, PartialEq)]
 pub struct Domain {
-    labels: Vec<String>,
+    pub labels: Vec<String>,
 }
 
 impl Domain {

@@ -12,7 +12,6 @@ use mvr_schema::models::NameRecord;
 use mvr_types::name::Name;
 use mvr_types::name_service::Domain;
 use std::collections::HashMap;
-use std::str::FromStr;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
@@ -72,8 +71,7 @@ impl Processor for NameRecordHandler {
                             let data: Field<MoveName, AppRecord> =
                                 bcs::from_bytes(move_obj.contents())?;
                             let MoveName { org, app } = data.name;
-                            // TODO: better way to convert Move SuiNS types to Rust type?
-                            let name = Name::new(Domain::from_str(&org.labels.join("."))?, app);
+                            let name = Name::new(Domain { labels: org.labels }, app);
                             let AppRecord {
                                 app_info,
                                 networks,
