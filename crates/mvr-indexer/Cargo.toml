@@ -11,6 +11,7 @@ tokio = "1.38.0"
 tokio-util = "0.7.13"
 futures = "0.3.31"
 sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
+sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sui-config = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
