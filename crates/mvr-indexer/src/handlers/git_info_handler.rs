@@ -32,7 +32,7 @@ pub struct GitInfoHandler<T> {
 impl<T: MoveStruct> GitInfoHandler<T> {
     pub fn new(chain_id: String) -> Self {
         // Indexing dynamic field object Field<u64, [metadata_pkg_id]::git::GitInfo>
-        let struct_tag = Field::<u64, T>::struct_type();
+        let struct_tag = T::struct_type();
         GitInfoHandler {
             chain_id,
             type_: MoveObjectType::from(convert_struct_tag(struct_tag)),
