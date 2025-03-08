@@ -24,7 +24,7 @@ sui-client = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "su
 bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "e919e84" }
 
 clap = { workspace = true, features = ["derive"] }
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 tempfile = "3.13"
 tokio = { version = "1.40.0", features = ["full"] }
 toml_edit = "0.22"
@@ -32,7 +32,7 @@ toml = "0.8"
 regex = "1.11"
 yansi = "1.0"
 comfy-table = "7.1"
-dirs = "5.0.1"
+dirs = "6.0.0"
 serde_yml = "0.0.11"
 base64ct = "1.6.0"
 url.workspace = true
