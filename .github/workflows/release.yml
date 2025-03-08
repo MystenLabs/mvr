@@ -87,6 +87,11 @@ jobs:
           echo "os_type=${os_type}" >> $GITHUB_ENV
           echo "extension=$(echo ".exe")" >> $GITHUB_ENV
 
+      - name: Allow Git long paths (Windows)
+        if: ${{ matrix.os == 'windows-ghcloud' }}
+        shell: bash
+        run: git config --global core.longpaths true 
+
       - name: Set os/arch variables
         if: ${{ matrix.os != 'windows-ghcloud' }}
         shell: bash
