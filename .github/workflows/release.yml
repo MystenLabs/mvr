@@ -100,7 +100,7 @@ jobs:
         shell: bash
         run: |
           [ -f ~/.cargo/env ] && source ~/.cargo/env 
-          cargo build --release
+          cd crates/mvr-cli && cargo build --release && cd ../../
           cp target/release/mvr${{ env.extension }} target/release/mvr-${{ env.os_type }}${{ env.extension }}
 
       - name: Attach artifacts to ${{ env.mvr_tag }} release in GH
