@@ -38,7 +38,7 @@ pub struct NameRecord {
     pub metadata: serde_json::Value,
 }
 
-#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount, Clone)]
 #[diesel(table_name = package_infos)]
 pub struct PackageInfo {
     pub id: String,

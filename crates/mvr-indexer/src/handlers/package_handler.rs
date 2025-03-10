@@ -77,16 +77,16 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
                     .iter()
                     .try_fold(results, |mut results, o| {
                         if let Data::Package(p) = &o.data {
-                            let package_id = p.id().to_hex_literal();
+                            let package_id = p.id().to_hex_uncompressed();
                             let deps = p
                                 .linkage_table()
                                 .iter()
-                                .map(|(id, _)| id.to_hex_literal())
+                                .map(|(id, _)| id.to_hex_uncompressed())
                                 .dedup()
                                 .collect();
                             results.push(Package {
                                 package_id,
-                                original_id: p.original_package_id().to_hex_literal(),
+                                original_id: p.original_package_id().to_hex_uncompressed(),
                                 package_version: p.version().value() as i64,
                                 move_package: bcs::to_bytes(p)?,
                                 chain_id: self.chain_id.clone(),
