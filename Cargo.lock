@@ -4996,7 +4996,7 @@ dependencies = [
 
 [[package]]
 name = "mvr"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "anyhow",
  "base64ct",

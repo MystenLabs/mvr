@@ -116,8 +116,17 @@ where
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
         use mvr_schema::schema::package_infos::columns::*;
         use mvr_schema::schema::package_infos::dsl::package_infos;
+
+        // 1, dedup values to avoid affecting same row twice
+        let deduped_values: HashMap<String, Self::Value> = values.iter().fold(HashMap::new(), |mut results, value| {
+            if !matches!(results.get(&value.id), Some(existing_value) if existing_value.object_version > value.object_version) {
+                results.insert(value.id.clone(), value.clone());
+            }
+            results
+        });
+
         Ok(diesel::insert_into(package_infos)
-            .values(values)
+            .values(deduped_values.values().collect::<Vec<_>>())
             .on_conflict(id)
             .do_update()
             .set((
