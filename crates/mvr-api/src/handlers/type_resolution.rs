@@ -18,8 +18,13 @@ pub struct BulkRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct Response {
+    type_tag: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BulkResponse {
-    resolution: HashMap<String, String>,
+    resolution: HashMap<String, Response>,
 }
 
 pub struct TypeResolution;
@@ -28,14 +33,18 @@ impl TypeResolution {
     pub async fn resolve(
         Path(type_name): Path<String>,
         State(state): State<Arc<AppState>>,
-    ) -> Result<Json<String>, ApiError> {
+    ) -> Result<Json<Response>, ApiError> {
         let tags = bulk_resolve_types_impl(state, vec![type_name.clone()]).await?;
 
         let tag = tags
             .get(&type_name)
+            .ok_or(ApiError::BadRequest(format!("type not found: {type_name}")))?
+            .clone()
             .ok_or(ApiError::BadRequest(format!("type not found: {type_name}")))?;
 
-        Ok(Json(tag.to_string()))
+        Ok(Json(Response {
+            type_tag: Some(tag.to_string()),
+        }))
     }
 
     pub async fn bulk_resolve(
@@ -45,7 +54,17 @@ impl TypeResolution {
         let tags = bulk_resolve_types_impl(state, payload.types).await?;
 
         Ok(Json(BulkResponse {
-            resolution: tags.into_iter().map(|(k, v)| (k, v.to_string())).collect(),
+            resolution: tags
+                .into_iter()
+                .map(|(k, v)| {
+                    (
+                        k,
+                        Response {
+                            type_tag: v.map(|t| t.to_string()),
+                        },
+                    )
+                })
+                .collect(),
         }))
     }
 }
@@ -56,7 +75,7 @@ impl TypeResolution {
 async fn bulk_resolve_types_impl(
     state: Arc<AppState>,
     types: Vec<String>,
-) -> Result<HashMap<String, TypeTag>, ApiError> {
+) -> Result<HashMap<String, Option<TypeTag>>, ApiError> {
     let names = types
         .iter()
         .map(|type_name| NamedType::parse_names(type_name))
@@ -90,15 +109,14 @@ async fn bulk_resolve_types_impl(
             let parsed_type_tag = TypeTag::from_str(&correct_type_tag)
                 .map_err(|e| ApiError::BadRequest(format!("bad type: {e}")))?;
 
+            // not finding the specified tag is OK for bulk operations.
             let tag = state
                 .package_resolver()
                 .canonical_type(parsed_type_tag)
                 .await
-                .map_err(|e| {
-                    ApiError::InternalServerError(format!("Failed to retrieve type: {e}"))
-                })?;
+                .ok();
 
-            Ok::<(String, TypeTag), ApiError>((type_name, tag))
+            Ok::<(String, Option<TypeTag>), ApiError>((type_name, tag))
         }
     });
 

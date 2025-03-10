@@ -15,7 +15,7 @@ pub struct BulkRequest {
 }
 #[derive(Serialize, Deserialize)]
 pub struct BulkResponse {
-    resolution: HashMap<ObjectID, String>,
+    resolution: HashMap<ObjectID, Response>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -58,7 +58,14 @@ impl ReverseResolution {
         Ok(Json(BulkResponse {
             resolution: results
                 .into_iter()
-                .map(|(key, name)| (key.0, name.to_string()))
+                .map(|(key, name)| {
+                    (
+                        key.0,
+                        Response {
+                            name: Some(name.to_string()),
+                        },
+                    )
+                })
                 .collect(),
         }))
     }
