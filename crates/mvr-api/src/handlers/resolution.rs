@@ -40,9 +40,12 @@ impl Resolution {
         let package_id = app_state
             .loader()
             .load_one(ResolutionKey(versioned_name))
-            .await?;
+            .await?
+            .ok_or(ApiError::BadRequest(format!("Name not found: {name}")))?;
 
-        Ok(Json(Response { package_id }))
+        Ok(Json(Response {
+            package_id: Some(package_id),
+        }))
     }
 
     /// Resolve a list of names at once.

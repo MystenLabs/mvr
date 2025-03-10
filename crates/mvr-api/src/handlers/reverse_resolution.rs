@@ -36,10 +36,13 @@ impl ReverseResolution {
         let name = app_state
             .loader()
             .load_one(ReverseResolutionKey(package_id))
-            .await?;
+            .await?
+            .ok_or(ApiError::BadRequest(format!(
+                "Name not found for package: {package_id}"
+            )))?;
 
         Ok(Json(Response {
-            name: name.map(|name| name.to_string()),
+            name: Some(name.to_string()),
         }))
     }
 
