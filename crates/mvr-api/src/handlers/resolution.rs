@@ -25,7 +25,7 @@ pub struct Response {
 
 #[derive(Serialize, Deserialize)]
 pub struct BulkResponse {
-    resolution: HashMap<String, ObjectID>,
+    resolution: HashMap<String, Response>,
 }
 
 pub struct Resolution;
@@ -40,9 +40,12 @@ impl Resolution {
         let package_id = app_state
             .loader()
             .load_one(ResolutionKey(versioned_name))
-            .await?;
+            .await?
+            .ok_or(ApiError::BadRequest(format!("Name not found: {name}")))?;
 
-        Ok(Json(Response { package_id }))
+        Ok(Json(Response {
+            package_id: Some(package_id),
+        }))
     }
 
     /// Resolve a list of names at once.
@@ -61,8 +64,15 @@ impl Resolution {
             .load_many(names)
             .await?
             .into_iter()
-            .map(|(name, package_id): (ResolutionKey, ObjectID)| (name.0.to_string(), package_id))
-            .collect::<HashMap<String, ObjectID>>();
+            .map(|(name, package_id): (ResolutionKey, ObjectID)| {
+                (
+                    name.0.to_string(),
+                    Response {
+                        package_id: Some(package_id),
+                    },
+                )
+            })
+            .collect::<HashMap<String, Response>>();
 
         Ok(Json(BulkResponse { resolution }))
     }
