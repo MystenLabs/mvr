@@ -4996,7 +4996,7 @@ dependencies = [
 
 [[package]]
 name = "mvr"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "anyhow",
  "base64ct",
@@ -5040,16 +5040,21 @@ dependencies = [
  "move-core-types",
  "mvr-schema",
  "mvr-types",
+ "mysten-metrics",
  "once_cell",
+ "prometheus",
  "rand 0.9.0",
  "regex",
  "serde",
  "serde_json",
+ "sui-indexer-alt-metrics",
  "sui-package-resolver",
  "sui-pg-db",
  "sui-types",
+ "telemetry-subscribers",
  "thiserror 2.0.11",
  "tokio",
+ "tokio-util 0.7.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "tower-http 0.6.2",
  "tracing",
  "url",

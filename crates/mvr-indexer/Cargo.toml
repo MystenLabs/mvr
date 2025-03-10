@@ -8,19 +8,13 @@ edition = "2021"
 
 [dependencies]
 tokio = "1.38.0"
-tokio-util = "0.7.13"
 futures = "0.3.31"
 sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sui-config = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sui-data-ingestion-core = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
-move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
+
 
 move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "1fb0964b" }
 move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "1fb0964b" }
@@ -33,7 +27,6 @@ mvr-types = { path = "../mvr-types" }
 
 clap = { workspace = true, features = ["env"] }
 tempfile = "3.13.0"
-prometheus = "0.13.4"
 uuid = { version = "1.11.0", features = ["serde", "v4"] }
 bigdecimal = "0.4.5"
 itertools = "0.14.0"
@@ -47,6 +40,15 @@ anyhow.workspace = true
 serde_json.workspace = true
 chrono.workspace = true
 url.workspace = true
+
+sui-pg-db.workspace = true
+prometheus.workspace = true
+sui-indexer-alt-metrics.workspace = true
+mysten-metrics.workspace = true
+sui-types.workspace = true
+move-core-types.workspace = true
+telemetry-subscribers.workspace = true
+tokio-util.workspace = true
 
 [dev-dependencies]
 
