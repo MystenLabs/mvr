@@ -18,13 +18,21 @@ module mvr::move_registry;
 
 use mvr::app_info::AppInfo;
 use mvr::app_record::{Self, AppRecord, AppCap};
+use mvr::config_keys;
 use mvr::name::{Self, Name};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::clock::Clock;
+use sui::dynamic_field as df;
 use sui::package;
 use sui::table::{Self, Table};
+use sui::vec_set::VecSet;
 use suins::suins_registration::SuinsRegistration;
+
+use fun df::add as UID.add;
+use fun df::borrow as UID.borrow;
+use fun df::exists_ as UID.exists;
+use fun df::remove as UID.remove;
 
 /// The package's version.
 /// This is unlikely to change, and is only here for security
@@ -32,18 +40,19 @@ use suins::suins_registration::SuinsRegistration;
 const VERSION: u8 = 1;
 
 #[error]
-const EAppAlreadyRegistered: vector<u8> =
-    b"App has already been assigned and is immutable.";
+const EAppAlreadyRegistered: vector<u8> = b"App has already been assigned and is immutable.";
 #[error]
 const EUnauthorized: vector<u8> = b"Unauthorized access to the app.";
 #[error]
 const EAppDoesNotExist: vector<u8> = b"App does not exist.";
 #[error]
-const ENSNameExpired: vector<u8> =
-    b"SuiNS name has expired and cannot be used.";
+const ENSNameExpired: vector<u8> = b"SuiNS name has expired and cannot be used.";
 #[error]
-const EVersionMismatch: vector<u8> =
-    b"Version mismatch. Please use the latest package version.";
+const EVersionMismatch: vector<u8> = b"Version mismatch. Please use the latest package version.";
+#[error]
+const ENotAcceptedMetadataKey: vector<u8> = b"Not accepted metadata key.";
+#[error]
+const ECapAlreadyClaimed: vector<u8> = b"ConfigCap is already claimed";
 
 /// The shared object holding the registry of packages.
 /// There are no "admin" actions for this registry, apart from the
@@ -54,8 +63,16 @@ public struct MoveRegistry has key {
     version: u8,
 }
 
-/// This capability can only manage the package's version.
-/// It is only used in case of emergency.
+/// This capability can manage the package's configuration.
+/// Can be claimed once by the `VersionCap`.
+public struct ConfigCap has key, store {
+    id: UID,
+}
+
+public struct CapClaimed() has copy, drop, store;
+
+/// This capability can manage the package's version, and adding/removing configs.
+/// It is only used in case of emergency or expansion of the registry.
 public struct VersionCap has key, store {
     id: UID,
 }
@@ -130,11 +147,7 @@ public fun remove(
 ///
 /// In a realistic scenario, this is when we attach an app
 /// to a package on mainnet.
-public fun assign_package(
-    registry: &mut MoveRegistry,
-    cap: &mut AppCap,
-    info: &PackageInfo,
-) {
+public fun assign_package(registry: &mut MoveRegistry, cap: &mut AppCap, info: &PackageInfo) {
     registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     assert!(!record.is_immutable(), EAppAlreadyRegistered);
@@ -142,12 +155,7 @@ public fun assign_package(
 }
 
 /// Sets a network's value for a given app name.
-public fun set_network(
-    registry: &mut MoveRegistry,
-    cap: &AppCap,
-    network: String,
-    info: AppInfo,
-) {
+public fun set_network(registry: &mut MoveRegistry, cap: &AppCap, network: String, info: AppInfo) {
     registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     record.set_network(network, info);
@@ -155,11 +163,7 @@ public fun set_network(
 
 /// Removes a network's value for a given app name.
 /// Should be used to clean-up frequently re-publishing networks (e.g. devnet).
-public fun unset_network(
-    registry: &mut MoveRegistry,
-    cap: &AppCap,
-    network: String,
-) {
+public fun unset_network(registry: &mut MoveRegistry, cap: &AppCap, network: String) {
     registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     record.unset_network(network);
@@ -181,11 +185,7 @@ public fun burn_cap(registry: &mut MoveRegistry, cap: AppCap) {
 }
 
 /// Set the version of the registry.
-public fun set_version(
-    registry: &mut MoveRegistry,
-    _: &VersionCap,
-    version: u8,
-) {
+public fun set_version(registry: &mut MoveRegistry, _: &VersionCap, version: u8) {
     registry.assert_is_valid_version();
     registry.version = version;
 }
@@ -195,13 +195,52 @@ public fun app_exists(registry: &MoveRegistry, name: Name): bool {
     registry.registry.contains(name)
 }
 
+/// Set metadata for the app record.
+public fun set_metadata(registry: &mut MoveRegistry, cap: &AppCap, key: String, value: String) {
+    let accepted_keys = registry.config<_, VecSet<String>>(config_keys::new_metadata_key());
+    assert!(accepted_keys.contains(&key), ENotAcceptedMetadataKey);
+
+    registry.borrow_record_mut(cap).set_metadata_key(key, value);
+}
+
+/// Unset metadata for the app record.
+public fun unset_metadata(registry: &mut MoveRegistry, cap: &AppCap, key: String) {
+    registry.borrow_record_mut(cap).unset_metadata_key(key);
+}
+
+public fun config<K: copy + store + drop, V: store>(registry: &MoveRegistry, key: K): &V {
+    registry.id.borrow<_, V>(key)
+}
+
+public fun add_config<K: copy + store + drop, V: store>(
+    registry: &mut MoveRegistry,
+    _: &ConfigCap,
+    key: K,
+    value: V,
+) {
+    registry.id.add(key, value);
+}
+
+public fun remove_config<K: copy + store + drop, V: store>(
+    registry: &mut MoveRegistry,
+    _: &ConfigCap,
+    key: K,
+): V {
+    registry.id.remove<_, V>(key)
+}
+
+/// Allow contract author to create a `ConfigCap`, only once.
+public fun new_cap(cap: &mut VersionCap, ctx: &mut TxContext): ConfigCap {
+    assert!(!cap.id.exists(CapClaimed()), ECapAlreadyClaimed);
+    ConfigCap {
+        id: object::new(ctx),
+    }
+}
+
 /// Borrows a record for a given cap.
 /// Aborts if the app does not exist or the cap is not still valid for the
 /// record.
-fun borrow_record_mut(
-    registry: &mut MoveRegistry,
-    cap: &AppCap,
-): &mut AppRecord {
+fun borrow_record_mut(registry: &mut MoveRegistry, cap: &AppCap): &mut AppRecord {
     assert!(registry.app_exists(cap.app()), EAppDoesNotExist);
     let record = registry.registry.borrow_mut(cap.app());
     assert!(cap.is_valid_for(record), EUnauthorized);
