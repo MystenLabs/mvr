@@ -51,9 +51,7 @@ fun test_move_registry_plain() {
     // remove the app normally since we have not yet assigned a pkg.
     registry.remove(&ns_nft, APP_1.to_string(), &clock, scenario.ctx());
 
-    assert!(
-        !registry.app_exists(name::new(APP_1.to_string(), ns_nft.domain())),
-    );
+    assert!(!registry.app_exists(name::new(APP_1.to_string(), ns_nft.domain())));
 
     transfer::public_transfer(cap, scenario.ctx().sender());
     transfer::public_transfer(ns_nft, scenario.ctx().sender());
@@ -113,9 +111,7 @@ fun test_burn_cap_with_valid_app() {
     );
 
     registry.burn_cap(app_cap);
-    assert!(
-        !registry.app_exists(name::new(APP_1.to_string(), ns_nft.domain())),
-    );
+    assert!(!registry.app_exists(name::new(APP_1.to_string(), ns_nft.domain())));
 
     transfer::public_transfer(upgrade_cap, scenario.ctx().sender());
     transfer::public_transfer(ns_nft, scenario.ctx().sender());
@@ -164,12 +160,35 @@ fun test_burn_cap_without_matching_record() {
     scenario.cleanup(registry, clock);
 }
 
-#[
-    test,
-    expected_failure(
-        abort_code = ::mvr::app_record::ECannotBurnImmutableRecord,
-    ),
-]
+#[test]
+fun test_configs() {
+    let (mut scenario, mut registry, clock) = test_setup();
+    scenario.next_tx(ADDR_1);
+
+    let ns_nft = scenario.ns_nft(DOMAIN_1.to_string(), &clock);
+    let cap = registry.register(
+        &ns_nft,
+        APP_1.to_string(),
+        &clock,
+        scenario.ctx(),
+    );
+
+    let url = b"https://moveregistry.com".to_string();
+
+    registry.set_metadata(&cap, b"project_url".to_string(), url);
+
+    assert!(registry.borrow_record(&cap).metadata().get(&b"project_url".to_string()) == &url);
+
+    registry.unset_metadata(&cap, b"project_url".to_string());
+
+    assert!(!registry.borrow_record(&cap).metadata().contains(&b"project_url".to_string()));
+
+    transfer::public_transfer(cap, scenario.ctx().sender());
+    transfer::public_transfer(ns_nft, scenario.ctx().sender());
+    scenario.cleanup(registry, clock);
+}
+
+#[test, expected_failure(abort_code = ::mvr::app_record::ECannotBurnImmutableRecord)]
 fun try_to_remove_immutable() {
     let (mut scenario, mut registry, clock) = test_setup();
     scenario.next_tx(ADDR_1);
@@ -194,12 +213,7 @@ fun try_to_remove_immutable() {
     abort 1337
 }
 
-#[
-    test,
-    expected_failure(
-        abort_code = ::mvr::move_registry::EAppAlreadyRegistered,
-    ),
-]
+#[test, expected_failure(abort_code = ::mvr::move_registry::EAppAlreadyRegistered)]
 fun try_to_assign_twice() {
     let (mut scenario, mut registry, clock) = test_setup();
     scenario.next_tx(ADDR_1);
@@ -366,11 +380,7 @@ fun try_to_use_unauthorized_cap() {
 }
 
 // Test function helpers
-fun ns_nft(
-    scenario: &mut Scenario,
-    org: String,
-    clock: &Clock,
-): SuinsRegistration {
+fun ns_nft(scenario: &mut Scenario, org: String, clock: &Clock): SuinsRegistration {
     suins_registration::new_for_testing(
         domain::new(org),
         1,

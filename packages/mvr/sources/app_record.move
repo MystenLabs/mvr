@@ -145,3 +145,7 @@ public(package) fun set_metadata_key(record: &mut AppRecord, key: String, value:
 public(package) fun unset_metadata_key(record: &mut AppRecord, key: String) {
     record.metadata.remove(&key);
 }
+
+public(package) fun metadata(record: &AppRecord): &VecMap<String, String> {
+    &record.metadata
+}

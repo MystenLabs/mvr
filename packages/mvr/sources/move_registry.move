@@ -18,21 +18,14 @@ module mvr::move_registry;
 
 use mvr::app_info::AppInfo;
 use mvr::app_record::{Self, AppRecord, AppCap};
-use mvr::config_keys;
 use mvr::name::{Self, Name};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::clock::Clock;
-use sui::dynamic_field as df;
 use sui::package;
 use sui::table::{Self, Table};
-use sui::vec_set::VecSet;
 use suins::suins_registration::SuinsRegistration;
 
-use fun df::add as UID.add;
-use fun df::borrow as UID.borrow;
-use fun df::exists_ as UID.exists;
-use fun df::remove as UID.remove;
 
 /// The package's version.
 /// This is unlikely to change, and is only here for security
@@ -197,44 +190,12 @@ public fun app_exists(registry: &MoveRegistry, name: Name): bool {
 
 /// Set metadata for the app record.
 public fun set_metadata(registry: &mut MoveRegistry, cap: &AppCap, key: String, value: String) {
-    let accepted_keys = registry.config<_, VecSet<String>>(config_keys::new_metadata_key());
-    assert!(accepted_keys.contains(&key), ENotAcceptedMetadataKey);
-
     registry.borrow_record_mut(cap).set_metadata_key(key, value);
 }
 
 /// Unset metadata for the app record.
 public fun unset_metadata(registry: &mut MoveRegistry, cap: &AppCap, key: String) {
     registry.borrow_record_mut(cap).unset_metadata_key(key);
-}
-
-public fun config<K: copy + store + drop, V: store>(registry: &MoveRegistry, key: K): &V {
-    registry.id.borrow<_, V>(key)
-}
-
-public fun add_config<K: copy + store + drop, V: store>(
-    registry: &mut MoveRegistry,
-    _: &ConfigCap,
-    key: K,
-    value: V,
-) {
-    registry.id.add(key, value);
-}
-
-public fun remove_config<K: copy + store + drop, V: store>(
-    registry: &mut MoveRegistry,
-    _: &ConfigCap,
-    key: K,
-): V {
-    registry.id.remove<_, V>(key)
-}
-
-/// Allow contract author to create a `ConfigCap`, only once.
-public fun new_cap(cap: &mut VersionCap, ctx: &mut TxContext): ConfigCap {
-    assert!(!cap.id.exists(CapClaimed()), ECapAlreadyClaimed);
-    ConfigCap {
-        id: object::new(ctx),
-    }
 }
 
 /// Borrows a record for a given cap.
@@ -255,4 +216,9 @@ fun assert_is_valid_version(registry: &MoveRegistry) {
 #[test_only]
 public fun init_for_testing(ctx: &mut TxContext) {
     init(MOVE_REGISTRY {}, ctx)
+}
+
+#[test_only]
+public(package) fun borrow_record(registry: &MoveRegistry, cap: &AppCap): &AppRecord {
+    registry.registry.borrow(cap.app())
 }
