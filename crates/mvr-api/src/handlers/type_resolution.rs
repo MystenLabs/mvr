@@ -103,20 +103,23 @@ async fn bulk_resolve_types_impl(
         let mapping = mapping_ref.clone();
 
         async move {
-            let correct_type_tag = NamedType::replace_names(&type_name, &mapping)
-                .map_err(|e| ApiError::BadRequest(format!("bad type: {e}")))?;
+            let fixed_type_tag = NamedType::replace_names(&type_name, &mapping).ok();
 
-            let parsed_type_tag = TypeTag::from_str(&correct_type_tag)
-                .map_err(|e| ApiError::BadRequest(format!("bad type: {e}")))?;
+            if let Some(correct_type_tag) = fixed_type_tag {
+                let parsed_type_tag = TypeTag::from_str(&correct_type_tag)
+                    .map_err(|e| ApiError::BadRequest(format!("bad type: {e}")))?;
 
-            // not finding the specified tag is OK for bulk operations.
-            let tag = state
-                .package_resolver()
-                .canonical_type(parsed_type_tag)
-                .await
-                .ok();
+                // not finding the specified tag is OK for bulk operations.
+                let tag = state
+                    .package_resolver()
+                    .canonical_type(parsed_type_tag)
+                    .await
+                    .ok();
 
-            Ok::<(String, Option<TypeTag>), ApiError>((type_name, tag))
+                Ok::<(String, Option<TypeTag>), ApiError>((type_name, tag))
+            } else {
+                Ok::<(String, Option<TypeTag>), ApiError>((type_name, None))
+            }
         }
     });
 

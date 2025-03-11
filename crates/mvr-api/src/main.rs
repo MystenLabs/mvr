@@ -76,6 +76,10 @@ async fn main() -> Result<(), anyhow::Error> {
         .await
         .unwrap();
 
+    let _handle = tokio::spawn(async move {
+        let _ = metrics.run().await;
+    });
+
     axum::serve(listener, app)
         .with_graceful_shutdown(async move {
             cancel.cancelled().await;
