@@ -4,6 +4,9 @@ use crate::handlers::package_handler::PackageHandler;
 use crate::handlers::package_info_handler::PackageInfoHandler;
 use anyhow::Context;
 use clap::Parser;
+use mvr_indexer::{
+    MAINNET_CHAIN_ID, MAINNET_REMOTE_STORE_URL, TESTNET_CHAIN_ID, TESTNET_REMOTE_STORE_URL,
+};
 use mvr_schema::MIGRATIONS;
 use prometheus::Registry;
 use std::collections::HashMap;
@@ -20,11 +23,6 @@ use url::Url;
 pub(crate) mod handlers;
 
 pub(crate) mod models;
-
-const MAINNET_REMOTE_STORE_URL: &str = "https://checkpoints.mainnet.sui.io";
-const TESTNET_REMOTE_STORE_URL: &str = "https://checkpoints.testnet.sui.io";
-const MAINNET_CHAIN_ID: &str = "35834a8a";
-const TESTNET_CHAIN_ID: &str = "4c78adac";
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case", author, version)]
