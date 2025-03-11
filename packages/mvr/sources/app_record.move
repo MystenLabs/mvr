@@ -1,9 +1,6 @@
 module mvr::app_record;
 
-use mvr::app_cap_display::{Self, AppCapDisplay};
-use mvr::app_info::{Self, AppInfo};
-use mvr::constants;
-use mvr::name::Name;
+use mvr::{app_cap_display::{Self, AppCapDisplay}, app_info::{Self, AppInfo}, constants, name::Name};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::vec_map::{Self, VecMap};

@@ -2,7 +2,7 @@ module package_info::git;
 
 use std::string::String;
 
-public struct GitInfo has copy, store, drop {
+public struct GitInfo has copy, drop, store {
     // The repository that our code's open source at
     repository: String,
     // The sub-path inside the repository

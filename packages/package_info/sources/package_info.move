@@ -1,12 +1,13 @@
 module package_info::package_info;
 
-use package_info::display::{Self, PackageDisplay};
-use package_info::git::GitInfo;
+use package_info::{display::{Self, PackageDisplay}, git::GitInfo};
 use std::string::String;
-use sui::dynamic_field as df;
-use sui::package::{Self, UpgradeCap};
-use sui::table::{Self, Table};
-use sui::vec_map::{Self, VecMap};
+use sui::{
+    dynamic_field as df,
+    package::{Self, UpgradeCap},
+    table::{Self, Table},
+    vec_map::{Self, VecMap}
+};
 
 use fun df::remove as UID.remove;
 use fun df::add as UID.add;
@@ -15,8 +16,7 @@ use fun df::add as UID.add;
 const ECannotCreateDuringUpgrade: vector<u8> =
     b"Cannot create a package metadata object during upgrade";
 #[error]
-const EVersionNotFound: vector<u8> =
-    b"Cannot remove a version that does not exist";
+const EVersionNotFound: vector<u8> = b"Cannot remove a version that does not exist";
 #[error]
 const EVersionAlreadyExists: vector<u8> =
     b"Cannot override a version that already exists. Call `unset_git_versioning` first";
@@ -54,10 +54,7 @@ fun init(otw: PACKAGE_INFO, ctx: &mut TxContext) {
 /// Expects a `&mut UpgradeCap` for added security.
 /// (All privileged upgrade cap functions require &mut)/
 public fun new(cap: &mut UpgradeCap, ctx: &mut TxContext): PackageInfo {
-    assert!(
-        cap.upgrade_package().to_address() != @0x0,
-        ECannotCreateDuringUpgrade,
-    );
+    assert!(cap.upgrade_package().to_address() != @0x0, ECannotCreateDuringUpgrade);
 
     PackageInfo {
         id: object::new(ctx),
@@ -96,11 +93,7 @@ public fun unset_metadata(info: &mut PackageInfo, key: String) {
 /// 1. Source validation services: It will work on all set versions with the
 /// correct source code on those revisions.
 /// 2. Development process: Easy to depend on any version of the package.
-public fun set_git_versioning(
-    info: &mut PackageInfo,
-    version: u64,
-    git_info: GitInfo,
-) {
+public fun set_git_versioning(info: &mut PackageInfo, version: u64, git_info: GitInfo) {
     assert!(!info.git_versioning.contains(version), EVersionAlreadyExists);
     info.git_versioning.add(version, git_info);
 }

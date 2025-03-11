@@ -1,16 +1,11 @@
 #[test_only]
 module mvr::mvr_tests;
 
-use mvr::app_info;
-use mvr::move_registry::{Self, MoveRegistry, VersionCap};
-use mvr::name;
+use mvr::{app_info, move_registry::{Self, MoveRegistry, VersionCap}, name};
 use package_info::package_info;
 use std::string::String;
-use sui::clock::{Self, Clock};
-use sui::package;
-use sui::test_scenario::{Self as ts, Scenario};
-use suins::domain;
-use suins::suins_registration::{Self, SuinsRegistration};
+use sui::{clock::{Self, Clock}, package, test_scenario::{Self as ts, Scenario}};
+use suins::{domain, suins_registration::{Self, SuinsRegistration}};
 
 use fun cleanup as Scenario.cleanup;
 use fun ns_nft as Scenario.ns_nft;
