@@ -10,9 +10,7 @@ module mvr::name;
 
 use mvr::constants;
 use std::string::String;
-use suins::constants as ns_constants;
-use suins::domain::Domain;
-use suins::suins_registration::SuinsRegistration;
+use suins::{constants as ns_constants, domain::Domain, suins_registration::SuinsRegistration};
 
 #[error]
 const EInvalidName: vector<u8> = b"Name format is invalid.";
@@ -26,7 +24,7 @@ const EUnknownTLD: vector<u8> = b"Unknown TLD.";
 /// also be nested.
 /// So `example@org/app` would also be valid, and `inner.example@org/app` would
 /// also be valid.
-public struct Name has copy, store, drop {
+public struct Name has copy, drop, store {
     /// The ORG part of the name is a SuiNS Domain.
     org: Domain,
     /// The APP part of the name. We keep it as a vector, even though it'll

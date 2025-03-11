@@ -1,10 +1,8 @@
 module mvr_subdomain_proxy::utils;
 
+use mvr::{app_record::AppCap, move_registry::MoveRegistry};
 use std::string::String;
 use sui::clock::Clock;
-use mvr::move_registry::MoveRegistry;
-use mvr::app_record::AppCap;
-
 use suins::subdomain_registration::SubDomainRegistration;
 
 /// No testing needed, we're only calling public functions.

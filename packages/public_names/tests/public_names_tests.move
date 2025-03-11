@@ -2,13 +2,13 @@ module public_names::public_names_tests;
 
 use mvr::move_registry::{Self, MoveRegistry};
 use public_names::public_names::{Self, PublicName, PublicNameCap};
-use sui::clock::{Self, Clock};
-use sui::test_scenario::{Self as ts, Scenario};
-use sui::test_utils::destroy;
-use suins::domain;
-use suins::registry;
-use suins::subdomain_registration::SubDomainRegistration;
-use suins::suins_registration::{Self as ns_nft, SuinsRegistration};
+use sui::{clock::{Self, Clock}, test_scenario::{Self as ts, Scenario}, test_utils::destroy};
+use suins::{
+    domain,
+    registry,
+    subdomain_registration::SubDomainRegistration,
+    suins_registration::{Self as ns_nft, SuinsRegistration}
+};
 
 use fun wrapup as Scenario.wrap;
 

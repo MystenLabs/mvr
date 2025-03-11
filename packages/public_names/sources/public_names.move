@@ -1,13 +1,10 @@
 module public_names::public_names;
 
-use mvr::app_record::AppCap;
-use mvr::move_registry::MoveRegistry;
+use mvr::{app_record::AppCap, move_registry::MoveRegistry};
 use mvr_subdomain_proxy::utils;
 use std::string::String;
-use sui::clock::Clock;
-use sui::dynamic_field as df;
-use suins::subdomain_registration::SubDomainRegistration;
-use suins::suins_registration::SuinsRegistration;
+use sui::{clock::Clock, dynamic_field as df};
+use suins::{subdomain_registration::SubDomainRegistration, suins_registration::SuinsRegistration};
 
 use fun df::add as UID.add;
 use fun df::exists_with_type as UID.exists_with_type;

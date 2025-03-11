@@ -20,7 +20,7 @@ const DEFAULT_GRADIENT_FROM_COLOR: vector<u8> = b"E0E1EC";
 const DEFAULT_GRADIENT_TO_COLOR: vector<u8> = b"BDBFEC";
 const DEFAULT_TEXT_COLOR: vector<u8> = b"030F1C";
 
-public struct PackageDisplay has copy, store, drop {
+public struct PackageDisplay has copy, drop, store {
     gradient_from: String,
     gradient_to: String,
     text_color: String,

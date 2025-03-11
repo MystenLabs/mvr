@@ -1,7 +1,7 @@
 /// A simple re-usable struct to store an app's information.
 module mvr::app_info;
 
-public struct AppInfo has copy, store, drop {
+public struct AppInfo has copy, drop, store {
     package_info_id: Option<ID>,
     package_address: Option<address>,
     upgrade_cap_id: Option<ID>,

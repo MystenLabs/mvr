@@ -20,7 +20,7 @@ const APP_TEXT_SIZE: u64 = 26;
 const APP_CHARACTERS_PER_LINE: u64 = 13;
 const APP_LINE_HEIGHT: u64 = 26;
 
-public struct AppCapDisplay has copy, store, drop {
+public struct AppCapDisplay has copy, drop, store {
     title: String,
     link_opacity: u8, // 0 if not immutable / 1 if immutable.
     uri_encoded_text: String, // SVG URI encoded text
@@ -42,10 +42,7 @@ public(package) fun new(name: Name, is_immutable: bool): AppCapDisplay {
     display
 }
 
-public(package) fun set_link_opacity(
-    display: &mut AppCapDisplay,
-    is_immutable: bool,
-) {
+public(package) fun set_link_opacity(display: &mut AppCapDisplay, is_immutable: bool) {
     let link_opacity = if (is_immutable) {
         100
     } else {
@@ -127,13 +124,7 @@ fun render_batch(
 
 /// Helper function to create a new SVG text element based on our custom display
 /// system.
-fun new_svg_text(
-    part: String,
-    x: u64,
-    y: u64,
-    font_size: u64,
-    text_fill_color: String,
-): String {
+fun new_svg_text(part: String, x: u64, y: u64, font_size: u64, text_fill_color: String): String {
     let mut text = b"<text x='".to_string();
     text.append(x.to_string());
     text.append(b"' y='".to_string());

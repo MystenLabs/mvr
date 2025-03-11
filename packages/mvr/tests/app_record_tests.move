@@ -1,20 +1,12 @@
 module mvr::app_record_tests;
 
-use mvr::app_info;
-use mvr::app_record;
-use mvr::constants;
-use mvr::name::{Self, Name};
+use mvr::{app_info, app_record, constants, name::{Self, Name}};
 use package_info::package_info::{Self, PackageInfo};
 use std::string::String;
 use sui::package;
 use suins::domain;
 
-#[
-    test,
-    expected_failure(
-        abort_code = ::mvr::app_record::EPackageAlreadyAssigned,
-    ),
-]
+#[test, expected_failure(abort_code = ::mvr::app_record::EPackageAlreadyAssigned)]
 fun test_package_reassignment() {
     let mut ctx = tx_context::dummy();
     let (mut record, mut cap) = app_record::new(
@@ -32,12 +24,7 @@ fun test_package_reassignment() {
     abort 1337
 }
 
-#[
-    test,
-    expected_failure(
-        abort_code = ::mvr::app_record::ECannotBurnImmutableCap,
-    ),
-]
+#[test, expected_failure(abort_code = ::mvr::app_record::ECannotBurnImmutableCap)]
 fun try_burn_immutable_cap() {
     let mut ctx = tx_context::dummy();
     let (mut record, mut cap) = app_record::new(

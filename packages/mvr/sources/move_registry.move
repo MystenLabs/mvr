@@ -16,16 +16,11 @@
 /// RPCs to resolve a package at a specified address.
 module mvr::move_registry;
 
-use mvr::app_info::AppInfo;
-use mvr::app_record::{Self, AppRecord, AppCap};
-use mvr::name::{Self, Name};
+use mvr::{app_info::AppInfo, app_record::{Self, AppRecord, AppCap}, name::{Self, Name}};
 use package_info::package_info::PackageInfo;
 use std::string::String;
-use sui::clock::Clock;
-use sui::package;
-use sui::table::{Self, Table};
+use sui::{clock::Clock, package, table::{Self, Table}};
 use suins::suins_registration::SuinsRegistration;
-
 
 /// The package's version.
 /// This is unlikely to change, and is only here for security
