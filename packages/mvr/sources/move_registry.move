@@ -22,6 +22,7 @@ use mvr::name::{Self, Name};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::clock::Clock;
+use sui::dynamic_field as df;
 use sui::package;
 use sui::table::{Self, Table};
 use suins::suins_registration::SuinsRegistration;
@@ -42,10 +43,6 @@ const EAppDoesNotExist: vector<u8> = b"App does not exist.";
 const ENSNameExpired: vector<u8> = b"SuiNS name has expired and cannot be used.";
 #[error]
 const EVersionMismatch: vector<u8> = b"Version mismatch. Please use the latest package version.";
-#[error]
-const ENotAcceptedMetadataKey: vector<u8> = b"Not accepted metadata key.";
-#[error]
-const ECapAlreadyClaimed: vector<u8> = b"ConfigCap is already claimed";
 
 /// The shared object holding the registry of packages.
 /// There are no "admin" actions for this registry, apart from the
