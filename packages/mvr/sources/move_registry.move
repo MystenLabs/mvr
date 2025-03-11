@@ -53,14 +53,6 @@ public struct MoveRegistry has key {
     version: u8,
 }
 
-/// This capability can manage the package's configuration.
-/// Can be claimed once by the `VersionCap`.
-public struct ConfigCap has key, store {
-    id: UID,
-}
-
-public struct CapClaimed() has copy, drop, store;
-
 /// This capability can manage the package's version, and adding/removing configs.
 /// It is only used in case of emergency or expansion of the registry.
 public struct VersionCap has key, store {
