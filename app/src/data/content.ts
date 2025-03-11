@@ -112,7 +112,7 @@ export const FAQContent = {
     },
     {
       title: "Can I register a MVR name for a package I do not own?",
-      content: `No, you must own the package to register an MVR name for it -- or more precisely, you must control the package UpgradeCap. `,
+      content: `You must own a package to connect a MVR name to it. Access to the package's UpgradeCap is a pre-requisite to creating your Metadata object.`,
     },
     {
       title: "What's the difference between apps and packages?",
