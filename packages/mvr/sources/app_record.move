@@ -1,28 +1,24 @@
 module mvr::app_record;
 
+use mvr::app_cap_display::{Self, AppCapDisplay};
 use mvr::app_info::{Self, AppInfo};
 use mvr::constants;
 use mvr::name::Name;
-use mvr::app_cap_display::{Self, AppCapDisplay};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::vec_map::{Self, VecMap};
 
 #[error]
-const EPackageAlreadyAssigned: vector<u8> =
-    b"This record is immutable and cannot be re-assigned.";
+const EPackageAlreadyAssigned: vector<u8> = b"This record is immutable and cannot be re-assigned.";
 /// The network ID was not found.
 #[error]
 const ENetworkNotFound: vector<u8> = b"Network ID not found.";
 #[error]
-const EMaxNetworksReached: vector<u8> =
-    b"Maximum number of networks has been reached.";
+const EMaxNetworksReached: vector<u8> = b"Maximum number of networks has been reached.";
 #[error]
-const ECannotBurnImmutableCap: vector<u8> =
-    b"Cannot burn an immutable capability.";
+const ECannotBurnImmutableCap: vector<u8> = b"Cannot burn an immutable capability.";
 #[error]
-const ECannotBurnImmutableRecord: vector<u8> =
-    b"Cannot burn an immutable record.";
+const ECannotBurnImmutableRecord: vector<u8> = b"Cannot burn an immutable record.";
 
 public struct AppRecord has store {
     /// The Capability object used for managing the `AppRecord`.
@@ -62,16 +58,12 @@ public fun name(cap: &AppCap): Name {
 }
 
 /// Returns a plain `AppRecord` to be populated.
-public(package) fun new(
-    name: Name,
-    ns_nft_id: ID,
-    ctx: &mut TxContext,
-): (AppRecord, AppCap) {
+public(package) fun new(name: Name, ns_nft_id: ID, ctx: &mut TxContext): (AppRecord, AppCap) {
     let cap = AppCap {
         id: object::new(ctx),
         name,
         is_immutable: false,
-        display: app_cap_display::new(name, false)
+        display: app_cap_display::new(name, false),
     };
 
     (
@@ -107,15 +99,8 @@ public(package) fun assign_package(
 }
 
 /// Set a specified network ID (we expect a chain identifier) -> AppInfo.
-public(package) fun set_network(
-    record: &mut AppRecord,
-    network: String,
-    info: AppInfo,
-) {
-    assert!(
-        record.networks.size() < constants::max_networks!(),
-        EMaxNetworksReached,
-    );
+public(package) fun set_network(record: &mut AppRecord, network: String, info: AppInfo) {
+    assert!(record.networks.size() < constants::max_networks!(), EMaxNetworksReached);
     record.networks.insert(network, info);
 }
 
@@ -151,4 +136,16 @@ public(package) fun is_valid_for(cap: &AppCap, record: &AppRecord): bool {
 
 public(package) fun app(cap: &AppCap): Name {
     cap.name
+}
+
+public(package) fun set_metadata_key(record: &mut AppRecord, key: String, value: String) {
+    record.metadata.insert(key, value);
+}
+
+public(package) fun unset_metadata_key(record: &mut AppRecord, key: String) {
+    record.metadata.remove(&key);
+}
+
+public(package) fun metadata(record: &AppRecord): &VecMap<String, String> {
+    &record.metadata
 }

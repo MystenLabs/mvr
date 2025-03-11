@@ -26,24 +26,22 @@ use sui::package;
 use sui::table::{Self, Table};
 use suins::suins_registration::SuinsRegistration;
 
+
 /// The package's version.
 /// This is unlikely to change, and is only here for security
 /// purposes (in case anything is miss-configured)
 const VERSION: u8 = 1;
 
 #[error]
-const EAppAlreadyRegistered: vector<u8> =
-    b"App has already been assigned and is immutable.";
+const EAppAlreadyRegistered: vector<u8> = b"App has already been assigned and is immutable.";
 #[error]
 const EUnauthorized: vector<u8> = b"Unauthorized access to the app.";
 #[error]
 const EAppDoesNotExist: vector<u8> = b"App does not exist.";
 #[error]
-const ENSNameExpired: vector<u8> =
-    b"SuiNS name has expired and cannot be used.";
+const ENSNameExpired: vector<u8> = b"SuiNS name has expired and cannot be used.";
 #[error]
-const EVersionMismatch: vector<u8> =
-    b"Version mismatch. Please use the latest package version.";
+const EVersionMismatch: vector<u8> = b"Version mismatch. Please use the latest package version.";
 
 /// The shared object holding the registry of packages.
 /// There are no "admin" actions for this registry, apart from the
@@ -54,8 +52,8 @@ public struct MoveRegistry has key {
     version: u8,
 }
 
-/// This capability can only manage the package's version.
-/// It is only used in case of emergency.
+/// This capability can manage the package's version, and adding/removing configs.
+/// It is only used in case of emergency or expansion of the registry.
 public struct VersionCap has key, store {
     id: UID,
 }
@@ -130,11 +128,7 @@ public fun remove(
 ///
 /// In a realistic scenario, this is when we attach an app
 /// to a package on mainnet.
-public fun assign_package(
-    registry: &mut MoveRegistry,
-    cap: &mut AppCap,
-    info: &PackageInfo,
-) {
+public fun assign_package(registry: &mut MoveRegistry, cap: &mut AppCap, info: &PackageInfo) {
     registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     assert!(!record.is_immutable(), EAppAlreadyRegistered);
@@ -142,12 +136,7 @@ public fun assign_package(
 }
 
 /// Sets a network's value for a given app name.
-public fun set_network(
-    registry: &mut MoveRegistry,
-    cap: &AppCap,
-    network: String,
-    info: AppInfo,
-) {
+public fun set_network(registry: &mut MoveRegistry, cap: &AppCap, network: String, info: AppInfo) {
     registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     record.set_network(network, info);
@@ -155,11 +144,7 @@ public fun set_network(
 
 /// Removes a network's value for a given app name.
 /// Should be used to clean-up frequently re-publishing networks (e.g. devnet).
-public fun unset_network(
-    registry: &mut MoveRegistry,
-    cap: &AppCap,
-    network: String,
-) {
+public fun unset_network(registry: &mut MoveRegistry, cap: &AppCap, network: String) {
     registry.assert_is_valid_version();
     let record = registry.borrow_record_mut(cap);
     record.unset_network(network);
@@ -181,11 +166,7 @@ public fun burn_cap(registry: &mut MoveRegistry, cap: AppCap) {
 }
 
 /// Set the version of the registry.
-public fun set_version(
-    registry: &mut MoveRegistry,
-    _: &VersionCap,
-    version: u8,
-) {
+public fun set_version(registry: &mut MoveRegistry, _: &VersionCap, version: u8) {
     registry.assert_is_valid_version();
     registry.version = version;
 }
@@ -195,13 +176,20 @@ public fun app_exists(registry: &MoveRegistry, name: Name): bool {
     registry.registry.contains(name)
 }
 
+/// Set metadata for the app record.
+public fun set_metadata(registry: &mut MoveRegistry, cap: &AppCap, key: String, value: String) {
+    registry.borrow_record_mut(cap).set_metadata_key(key, value);
+}
+
+/// Unset metadata for the app record.
+public fun unset_metadata(registry: &mut MoveRegistry, cap: &AppCap, key: String) {
+    registry.borrow_record_mut(cap).unset_metadata_key(key);
+}
+
 /// Borrows a record for a given cap.
 /// Aborts if the app does not exist or the cap is not still valid for the
 /// record.
-fun borrow_record_mut(
-    registry: &mut MoveRegistry,
-    cap: &AppCap,
-): &mut AppRecord {
+fun borrow_record_mut(registry: &mut MoveRegistry, cap: &AppCap): &mut AppRecord {
     assert!(registry.app_exists(cap.app()), EAppDoesNotExist);
     let record = registry.registry.borrow_mut(cap.app());
     assert!(cap.is_valid_for(record), EUnauthorized);
@@ -216,4 +204,9 @@ fun assert_is_valid_version(registry: &MoveRegistry) {
 #[test_only]
 public fun init_for_testing(ctx: &mut TxContext) {
     init(MOVE_REGISTRY {}, ctx)
+}
+
+#[test_only]
+public(package) fun borrow_record(registry: &MoveRegistry, cap: &AppCap): &AppRecord {
+    registry.registry.borrow(cap.app())
 }
