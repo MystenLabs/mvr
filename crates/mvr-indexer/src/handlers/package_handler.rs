@@ -1,3 +1,4 @@
+use crate::{MAINNET_CHAIN_ID, TESTNET_CHAIN_ID};
 use chrono::DateTime;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
@@ -9,14 +10,14 @@ use sui_pg_db::Connection;
 use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::object::Data;
 
-pub struct PackageHandler<const MAINNET: bool> {
-    chain_id: String,
-}
+pub struct PackageHandler<const MAINNET: bool>;
 
 impl<const MAINNET: bool> PackageHandler<MAINNET> {
-    pub fn new(chain_id: String) -> Self {
-        Self { chain_id }
-    }
+    const CHAIN_ID: &'static str = if MAINNET {
+        MAINNET_CHAIN_ID
+    } else {
+        TESTNET_CHAIN_ID
+    };
 }
 
 #[async_trait::async_trait]
@@ -89,7 +90,7 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
                                 original_id: p.original_package_id().to_hex_uncompressed(),
                                 package_version: p.version().value() as i64,
                                 move_package: bcs::to_bytes(p)?,
-                                chain_id: self.chain_id.clone(),
+                                chain_id: Self::CHAIN_ID.to_string(),
                                 tx_hash: tx.transaction.digest().base58_encode(),
                                 sender: tx.transaction.sender_address().to_string(),
                                 timestamp,

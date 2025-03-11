@@ -2,15 +2,15 @@ use crate::handlers::git_info_handler::{GitInfoHandler, MainnetGitInfo, TestnetG
 use crate::handlers::name_record_handler::NameRecordHandler;
 use crate::handlers::package_handler::PackageHandler;
 use crate::handlers::package_info_handler::PackageInfoHandler;
-use crate::models::{mainnet, testnet};
 use anyhow::Context;
 use clap::Parser;
-use futures::future::join_all;
 use prometheus::Registry;
+use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 use std::net::SocketAddr;
 use sui_indexer_alt_framework::ingestion::ClientArgs;
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
-use sui_indexer_alt_framework::Indexer;
+use sui_indexer_alt_framework::{Indexer, IndexerArgs};
 use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
@@ -20,27 +20,22 @@ pub(crate) mod handlers;
 
 pub(crate) mod models;
 
+const MAINNET_REMOTE_STORE_URL: &str = "https://checkpoints.mainnet.sui.io";
+const TESTNET_REMOTE_STORE_URL: &str = "https://checkpoints.testnet.sui.io";
+const MAINNET_CHAIN_ID: &str = "35834a8a";
+const TESTNET_CHAIN_ID: &str = "4c78adac";
+
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case", author, version)]
 struct Args {
     #[command(flatten)]
     db_args: DbArgs,
+    #[command(flatten)]
+    indexer_args: IndexerArgs,
     #[clap(env, long, default_value = "0.0.0.0:9184")]
     metrics_address: SocketAddr,
-    #[clap(env, long, default_value = "0.0.0.0:9185")]
-    testnet_metrics_address: SocketAddr,
-    #[clap(env, long, default_value = "https://checkpoints.mainnet.sui.io")]
-    remote_store_url: Url,
-    #[clap(env, long, default_value = "https://checkpoints.testnet.sui.io")]
-    testnet_remote_store_url: Url,
-    #[clap(env, long, default_value = "35834a8a")]
-    mainnet_chain_id: String,
-    #[clap(env, long, default_value = "4c78adac")]
-    testnet_chain_id: String,
-    #[clap(env, long)]
-    disable_mainnet: bool,
-    #[clap(env, long)]
-    disable_testnet: bool,
+    #[clap(env, long, default_value_t = Default::default())]
+    env: MvrEnv,
 }
 
 #[tokio::main]
@@ -51,166 +46,126 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let Args {
         db_args,
+        indexer_args,
         metrics_address,
-        testnet_metrics_address,
-        remote_store_url,
-        testnet_remote_store_url,
-        mainnet_chain_id,
-        testnet_chain_id,
-        disable_mainnet,
-        disable_testnet,
+        env,
     } = Args::parse();
 
     let cancel = CancellationToken::new();
+    let registry = Registry::new_custom(
+        Some("mvr".into()),
+        Some(HashMap::from([("mvr_env".to_string(), env.to_string())])),
+    )
+        .context("Failed to create Prometheus registry.")?;
+    let metrics = MetricsService::new(
+        MetricsArgs { metrics_address },
+        registry,
+        cancel.child_token(),
+    );
 
-    let mut indexer_handles = vec![];
-    let mut metrics_handles = vec![];
-
-    if !disable_mainnet {
-        let registry = Registry::new_custom(Some("mvr_indexer_mainnet".into()), None)
-            .context("Failed to create Prometheus registry.")?;
-        let metrics = MetricsService::new(
-            MetricsArgs { metrics_address },
-            registry,
-            cancel.child_token(),
-        );
-        let mainnet_indexer = create_mainnet_indexer(
-            db_args.clone(),
-            remote_store_url,
-            metrics.registry(),
-            mainnet_chain_id,
-            testnet_chain_id.clone(),
-            cancel.clone(),
-        )
+    let mut indexer = Indexer::new(
+        db_args,
+        indexer_args,
+        ClientArgs {
+            remote_store_url: Some(env.remote_store_url()),
+            local_ingestion_path: None,
+        },
+        Default::default(),
+        None,
+        metrics.registry(),
+        cancel.clone(),
+    )
         .await?;
-        indexer_handles.push(mainnet_indexer.run().await?);
-        metrics_handles.push(metrics.run().await?)
-    }
 
-    if !disable_testnet {
-        let registry = Registry::new_custom(Some("mvr_indexer_testnet".into()), None)
-            .context("Failed to create Prometheus registry.")?;
-        let metrics = MetricsService::new(
-            MetricsArgs {
-                metrics_address: testnet_metrics_address,
-            },
-            registry,
-            cancel.child_token(),
-        );
-        let testnet_indexer = create_testnet_indexer(
-            db_args,
-            testnet_remote_store_url,
-            metrics.registry(),
-            testnet_chain_id,
-            cancel.clone(),
-        )
-        .await?;
-        indexer_handles.push(testnet_indexer.run().await?);
-        metrics_handles.push(metrics.run().await?)
-    }
-    let _ = join_all(indexer_handles).await;
+    match env {
+        MvrEnv::Mainnet => create_mainnet_pipelines(&mut indexer).await?,
+        MvrEnv::Testnet => create_testnet_pipelines(&mut indexer).await?,
+    };
+
+    let h_indexer = indexer.run().await?;
+    let h_metrics = metrics.run().await?;
+
+    let _ = h_indexer.await;
     cancel.cancel();
-    let _ = join_all(metrics_handles).await;
+    let _ = h_metrics.await;
     Ok(())
 }
 
-async fn create_mainnet_indexer(
-    db_args: DbArgs,
-    remote_store_url: Url,
-    registry: &Registry,
-    mainnet_chain_id: String,
-    testnet_chain_id: String,
-    cancel: CancellationToken,
-) -> Result<Indexer, anyhow::Error> {
-    let mut indexer = Indexer::new(
-        db_args,
-        Default::default(),
-        ClientArgs {
-            remote_store_url: Some(remote_store_url),
-            local_ingestion_path: None,
-        },
-        Default::default(),
-        None,
-        registry,
-        cancel.clone(),
-    )
-    .await?;
+async fn create_mainnet_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::Error> {
+    use models::mainnet::mvr_metadata::package_info::PackageInfo;
+    indexer
+        .concurrent_pipeline(PackageHandler::<true>, Default::default())
+        .await?;
 
     indexer
         .concurrent_pipeline(
-            PackageHandler::<true>::new(mainnet_chain_id.clone()),
+            GitInfoHandler::<MainnetGitInfo>::new(MAINNET_CHAIN_ID.to_string()),
             Default::default(),
         )
         .await?;
 
     indexer
         .concurrent_pipeline(
-            GitInfoHandler::<MainnetGitInfo>::new(mainnet_chain_id.clone()),
+            PackageInfoHandler::<PackageInfo>::new(MAINNET_CHAIN_ID.to_string()),
             Default::default(),
         )
         .await?;
 
     indexer
-        .concurrent_pipeline(
-            PackageInfoHandler::<mainnet::mvr_metadata::package_info::PackageInfo>::new(
-                mainnet_chain_id,
-            ),
-            Default::default(),
-        )
+        .concurrent_pipeline(NameRecordHandler::new(), ConcurrentConfig::default())
         .await?;
 
-    indexer
-        .concurrent_pipeline(
-            NameRecordHandler::new(testnet_chain_id),
-            ConcurrentConfig::default(),
-        )
-        .await?;
-
-    Ok(indexer)
+    Ok(())
 }
 
-async fn create_testnet_indexer(
-    db_args: DbArgs,
-    testnet_remote_store_url: Url,
-    registry: &Registry,
-    testnet_chain_id: String,
-    cancel: CancellationToken,
-) -> Result<Indexer, anyhow::Error> {
-    let mut indexer = Indexer::new(
-        db_args,
-        Default::default(),
-        ClientArgs {
-            remote_store_url: Some(testnet_remote_store_url),
-            local_ingestion_path: None,
-        },
-        Default::default(),
-        None,
-        registry,
-        cancel.clone(),
-    )
-    .await?;
-
+async fn create_testnet_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::Error> {
+    use models::testnet::mvr_metadata::package_info::PackageInfo;
+    indexer
+        .concurrent_pipeline(PackageHandler::<false>, Default::default())
+        .await?;
     indexer
         .concurrent_pipeline(
-            PackageHandler::<false>::new(testnet_chain_id.clone()),
+            GitInfoHandler::<TestnetGitInfo>::new(TESTNET_CHAIN_ID.to_string()),
             Default::default(),
         )
         .await?;
-
     indexer
         .concurrent_pipeline(
-            GitInfoHandler::<TestnetGitInfo>::new(testnet_chain_id.clone()),
+            PackageInfoHandler::<PackageInfo>::new(TESTNET_CHAIN_ID.to_string()),
             Default::default(),
         )
         .await?;
+    Ok(())
+}
 
-    indexer
-        .concurrent_pipeline(
-            PackageInfoHandler::<testnet::mvr_metadata::package_info::PackageInfo>::new(
-                testnet_chain_id,
-            ),
-            Default::default(),
-        )
-        .await?;
-    Ok(indexer)
+#[derive(Debug, Clone, clap::ValueEnum)]
+enum MvrEnv {
+    Mainnet,
+    Testnet,
+}
+
+impl Default for MvrEnv {
+    fn default() -> Self {
+        Self::Mainnet
+    }
+}
+
+impl Display for MvrEnv {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MvrEnv::Mainnet => write!(f, "mainnet"),
+            MvrEnv::Testnet => write!(f, "testnet")
+        }
+    }
+}
+
+impl MvrEnv {
+    fn remote_store_url(&self) -> Url {
+        let remote_store_url = match self {
+            MvrEnv::Mainnet => MAINNET_REMOTE_STORE_URL,
+            MvrEnv::Testnet => TESTNET_REMOTE_STORE_URL,
+        };
+        // Safe to unwrap on verified static URLs
+        Url::parse(remote_store_url).unwrap()
+    }
 }
