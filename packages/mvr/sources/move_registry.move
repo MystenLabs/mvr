@@ -22,7 +22,6 @@ use mvr::name::{Self, Name};
 use package_info::package_info::PackageInfo;
 use std::string::String;
 use sui::clock::Clock;
-use sui::dynamic_field as df;
 use sui::package;
 use sui::table::{Self, Table};
 use suins::suins_registration::SuinsRegistration;
