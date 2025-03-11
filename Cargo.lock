@@ -5109,6 +5109,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "diesel",
+ "diesel_migrations",
  "dotenvy",
  "serde",
  "serde_json",
