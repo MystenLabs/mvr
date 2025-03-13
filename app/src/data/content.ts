@@ -111,6 +111,10 @@ export const FAQContent = {
       content: `First, register a SuiNS name. MVR names are scoped within a SuiNS name. If your SuiNS name is @name (previously name.sui), and you want to create an MVR name called app, the MVR name will be @name/app. Next, upload your Move package on Testnet or Mainnet. Finally, navigate to the MVR frontend and complete the registration flow.`,
     },
     {
+      title: "Can I register a MVR name for a package I do not own?",
+      content: `You must own a package to connect a MVR name to it. Access to the package's UpgradeCap is a pre-requisite to creating your Metadata object.`,
+    },
+    {
       title: "What's the difference between apps and packages?",
       content: `An MVR app name can point to the latest or any particular version (numbered consecutively from 1) of a package. More than one MVR app can be configured to point to the same package.`,
     },
