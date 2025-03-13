@@ -15,6 +15,7 @@ use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
 use url::Url;
+use mvr_schema::MIGRATIONS;
 
 pub(crate) mod handlers;
 
@@ -71,7 +72,7 @@ async fn main() -> Result<(), anyhow::Error> {
             local_ingestion_path: None,
         },
         Default::default(),
-        None,
+        Some(&MIGRATIONS),
         metrics.registry(),
         cancel.clone(),
     )
