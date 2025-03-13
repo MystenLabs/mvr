@@ -2,6 +2,7 @@ use crate::handlers::convert_struct_tag;
 use crate::models::mainnet::mvr_core::app_record::AppRecord;
 use crate::models::mainnet::mvr_core::name::Name as MoveName;
 use crate::models::mainnet::sui::dynamic_field::Field;
+use crate::TESTNET_CHAIN_ID;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
@@ -21,18 +22,14 @@ use sui_types::full_checkpoint_content::CheckpointData;
 
 pub struct NameRecordHandler {
     type_: MoveObjectType,
-    testnet_chain_id: String,
 }
 
 impl NameRecordHandler {
-    pub fn new(testnet_chain_id: String) -> Self {
+    pub fn new() -> Self {
         // Indexing dynamic field object Field<[mvr_core]::name::Name, [mvr_core]::app_record::AppRecord>
         let struct_tag = Field::<MoveName, AppRecord>::struct_type();
         let type_ = MoveObjectType::from(convert_struct_tag(struct_tag));
-        NameRecordHandler {
-            type_,
-            testnet_chain_id,
-        }
+        NameRecordHandler { type_ }
     }
 }
 #[async_trait]
@@ -88,7 +85,7 @@ impl Processor for NameRecordHandler {
                                 mainnet_id: app_info
                                     .and_then(|info| Some(info.package_info_id?.to_string())),
                                 testnet_id: networks
-                                    .get(&self.testnet_chain_id)
+                                    .get(TESTNET_CHAIN_ID)
                                     .and_then(|info| Some(info.package_info_id?.to_string())),
                                 metadata: serde_json::to_value(metadata)?,
                             })
