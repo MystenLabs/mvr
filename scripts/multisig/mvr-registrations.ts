@@ -11,16 +11,18 @@ Transaction.registerGlobalSerializationPlugin(
   })
 );
 
+const VERSION = 3;
+
 export const run = async () => {
   const transaction = new Transaction();
 
-  // Add `version 2` source code info to the existing `@mvr/core` package.
+  // Add `version 3` source code info to the existing `@mvr/core` package.
   const git = transaction.moveCall({
     target: `@mvr/metadata::git::new`,
     arguments: [
       transaction.pure.string("https://github.com/mystenlabs/mvr"),
       transaction.pure.string("packages/mvr"),
-      transaction.pure.string("9081c38e594b70db4e1e10c1d1bd20bc34eaa937"),
+      transaction.pure.string("536b6209dedfb08229cd57dd32860236f8f7d589"),
     ],
   });
 
@@ -30,7 +32,7 @@ export const run = async () => {
       transaction.object(
         `0xb68f1155b210ef649fa86c5a1b85d419b1593e08e2ee58d400d1090d36c93543`
       ),
-      transaction.pure.u64(2),
+      transaction.pure.u64(VERSION),
       git,
     ],
   });
@@ -45,7 +47,7 @@ export const run = async () => {
       transaction.object(
         "0x96cb21bd8681633154f793b7fbbb3f1ba648e75522669c3402d7e80315af9cb7"
       ),
-      transaction.pure.string("subnames-proxy"),
+      transaction.pure.string("public-names"),
       transaction.object.clock(),
     ],
   });
@@ -60,7 +62,7 @@ export const run = async () => {
       ),
       appCap,
       transaction.object(
-        "0x04de61f83f793aa89349263e04af8e186cffbbb4f4582422afd054a8bfb2c706"
+        "0xe91836471642e44ba0c52b1f5223fcfa74686272192390295f7c8cbb2f44b51c"
       ),
     ],
   });

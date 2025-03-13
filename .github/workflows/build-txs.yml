@@ -9,7 +9,7 @@ on:
         type: choice
         options:
           - Upgrade MVR package
-          - Register Proxy
+          - Register Public Names
       sui_tools_image:
         description: 'image reference of sui_tools'
         default: 'mysten/sui-tools:mainnet'
@@ -74,8 +74,8 @@ jobs:
         run: |
           cd scripts && pnpm ts-node multisig/upgrade-mvr.ts
 
-      - name: Register Proxy
-        if: ${{ inputs.transaction_type == 'Register Proxy' }}
+      - name: Register Public Names
+        if: ${{ inputs.transaction_type == 'Register Public Names' }}
         env:
           NODE_ENV: production
           GAS_OBJECT: ${{ inputs.gas_object_id }}
