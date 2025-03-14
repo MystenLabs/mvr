@@ -27,7 +27,7 @@ jobs:
       - name: Install postgres
         shell: bash
         run: |
-          sudo apt update && sudo apt install postgresql
+          sudo apt update && sudo apt install postgresql-14
 
       - name: Add postgres to PATH
         run: echo "/usr/lib/postgresql/14/bin" >> $GITHUB_PATH
