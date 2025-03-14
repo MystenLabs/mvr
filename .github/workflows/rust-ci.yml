@@ -24,8 +24,7 @@ jobs:
 
       - uses: taiki-e/install-action@cargo-nextest
 
-      - name: Install postgres (Ubuntu arm64)
-        if: ${{ matrix.os == 'ubuntu-arm64' && env.s3_archive_exist == '' }}
+      - name: Install postgres
         shell: bash
         run: |
           sudo apt update && sudo apt install libpq-dev
