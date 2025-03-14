@@ -27,10 +27,10 @@ jobs:
       - name: Install postgres
         shell: bash
         run: |
-          sudo apt update && sudo apt install postgresql-14
+          sudo apt update && sudo apt install postgresql
 
       - name: Add postgres to PATH
-        run: echo "/usr/lib/postgresql/14/bin" >> $GITHUB_PATH
+        run: echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
 
       - name: Build mvr (debug)
         run: |
