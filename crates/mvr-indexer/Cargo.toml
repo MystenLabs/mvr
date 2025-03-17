@@ -50,9 +50,6 @@ telemetry-subscribers.workspace = true
 tokio-util.workspace = true
 
 [dev-dependencies]
-sui-indexer-alt-jsonrpc = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-sui-indexer-alt = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
 sqlx = {version = "0.8.3", features = ["runtime-tokio", "postgres", "chrono"]}
 prettytable = "0.10.0"
