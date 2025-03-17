@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
-use diffy::create_patch;
 use fastcrypto::hash::{HashFunction, Sha256};
+use insta::assert_snapshot;
 use mvr_indexer::handlers::git_info_handler::GitInfoHandler;
 use mvr_indexer::handlers::git_info_handler::MainnetGitInfo;
 use mvr_indexer::handlers::name_record_handler::NameRecordHandler;
@@ -85,16 +85,7 @@ where
     // Check results by comparing database tables with snapshots
     for table in tables_to_check {
         let rows = read_table(&table, &url.to_string()).await?;
-        let snapshot_path = test_path.join(format!("{table}.snapshot"));
-
-        if snapshot_path.exists() {
-            let old = fs::read_to_string(snapshot_path)?;
-            let new = to_table(rows);
-            let patch = create_patch(&old, &new);
-            assert!(patch.modified().is_some(), "{}", patch);
-        } else if !rows.is_empty() {
-            fs::write(snapshot_path, to_table(rows))?;
-        }
+        assert_snapshot!(format!("{test_name}:{table}"), to_table(rows));
     }
     Ok(())
 }
@@ -111,6 +102,8 @@ async fn run_pipeline<T: Handler + Processor, P: AsRef<Path>>(
     Ok(())
 }
 
+/// Read the entire table from database as json value.
+/// note: bytea values will be hashed to reduce output size.
 async fn read_table(table_name: &str, db_url: &str) -> Result<Vec<Value>, anyhow::Error> {
     let pool = PgPool::connect(db_url).await?;
     let rows = sqlx::query(&format!("SELECT * FROM {table_name}"))
@@ -144,7 +137,7 @@ async fn read_table(table_name: &str, db_url: &str) -> Result<Vec<Value>, anyhow
                     Value::String(digest2.to_string())
                 } else if let Ok(v) = row.try_get::<NaiveDateTime, _>(column_name) {
                     Value::String(v.to_string())
-                } else if let Ok(true) = row.try_get_raw(column_name).map(|v|v.is_null()) {
+                } else if let Ok(true) = row.try_get_raw(column_name).map(|v| v.is_null()) {
                     Value::Null
                 } else {
                     panic!(
@@ -173,7 +166,6 @@ fn to_table(rows: Vec<Value>) -> String {
     if let Some(row) = rows.first() {
         if let Some(obj) = row.as_object() {
             let headers: Vec<Cell> = obj.keys().map(|k| Cell::new(k)).collect();
-
             table.add_row(prettytable::Row::new(headers));
         }
     }
@@ -182,7 +174,6 @@ fn to_table(rows: Vec<Value>) -> String {
     for row in rows {
         if let Some(obj) = row.as_object() {
             let values: Vec<Cell> = obj.values().map(|v| Cell::new(&v.to_string())).collect();
-
             table.add_row(prettytable::Row::new(values));
         }
     }
