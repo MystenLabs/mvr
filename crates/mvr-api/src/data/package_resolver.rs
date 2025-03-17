@@ -20,7 +20,7 @@ const STORE: &str = "PostgreSQL";
 pub struct ApiPackageStore(Arc<DataLoader<Reader>>);
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
-struct PackageKey(AccountAddress);
+pub(crate) struct PackageKey(pub AccountAddress);
 
 impl ApiPackageStore {
     pub fn new(loader: Arc<DataLoader<Reader>>) -> Self {
