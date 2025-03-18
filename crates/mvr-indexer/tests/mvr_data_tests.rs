@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
 use fastcrypto::hash::{HashFunction, Sha256};
-use insta::assert_snapshot;
+use insta::assert_json_snapshot;
 use mvr_indexer::handlers::git_info_handler::GitInfoHandler;
 use mvr_indexer::handlers::git_info_handler::MainnetGitInfo;
 use mvr_indexer::handlers::name_record_handler::NameRecordHandler;
@@ -9,7 +9,6 @@ use mvr_indexer::handlers::package_info_handler::PackageInfoHandler;
 use mvr_indexer::models::mainnet::mvr_metadata::package_info::PackageInfo;
 use mvr_indexer::MAINNET_CHAIN_ID;
 use mvr_schema::MIGRATIONS;
-use prettytable::{Cell, Table};
 use serde_json::Value;
 use sqlx::{Column, PgPool, Row, ValueRef};
 use std::fs;
@@ -85,7 +84,7 @@ where
     // Check results by comparing database tables with snapshots
     for table in tables_to_check {
         let rows = read_table(&table, &url.to_string()).await?;
-        assert_snapshot!(format!("{test_name}:{table}"), to_table(rows));
+        assert_json_snapshot!(format!("{test_name}:{table}"), rows);
     }
     Ok(())
 }
@@ -152,32 +151,6 @@ async fn read_table(table_name: &str, db_url: &str) -> Result<Vec<Value>, anyhow
             Value::Object(obj)
         })
         .collect())
-}
-
-fn to_table(rows: Vec<Value>) -> String {
-    if rows.is_empty() {
-        println!("No data to display.");
-        return "".to_string();
-    }
-
-    let mut table = Table::new();
-
-    // Extract headers from the first row
-    if let Some(row) = rows.first() {
-        if let Some(obj) = row.as_object() {
-            let headers: Vec<Cell> = obj.keys().map(|k| Cell::new(k)).collect();
-            table.add_row(prettytable::Row::new(headers));
-        }
-    }
-
-    // Add row data
-    for row in rows {
-        if let Some(obj) = row.as_object() {
-            let values: Vec<Cell> = obj.values().map(|v| Cell::new(&v.to_string())).collect();
-            table.add_row(prettytable::Row::new(values));
-        }
-    }
-    table.to_string()
 }
 
 fn get_checkpoints_in_folder(folder: &Path) -> Result<Vec<String>, anyhow::Error> {
