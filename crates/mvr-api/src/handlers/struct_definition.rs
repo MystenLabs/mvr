@@ -45,8 +45,8 @@ impl StructDefinition {
 
         let tag = tags
             .get(&type_name)
-            .ok_or(ApiError::BadRequest(format!("type not found: {type_name}")))?
-            .clone()
+            .cloned()
+            .flatten()
             .ok_or(ApiError::BadRequest(format!("type not found: {type_name}")))?;
 
         Ok(Json(Response {
@@ -91,7 +91,7 @@ async fn bulk_resolve_definitions_impl(
 
     let parsed_name_addresses = state
         .loader()
-        .load_many(names.clone())
+        .load_many(names)
         .await?
         .into_iter()
         .map(|(k, v)| (k.0.to_string(), v))
@@ -99,12 +99,9 @@ async fn bulk_resolve_definitions_impl(
 
     let mapping_ref = Arc::new(parsed_name_addresses);
 
-    let futures = types.into_iter().map(|type_name| {
-        let state = state.clone();
-        let mapping = mapping_ref.clone();
-
-        async move { resolve_definition(type_name, &mapping, &state).await }
-    });
+    let futures = types
+        .into_iter()
+        .map(|type_name| resolve_definition(type_name, &mapping_ref, &state));
 
     Ok(try_join_all(futures).await?.into_iter().collect())
 }
@@ -117,13 +114,9 @@ async fn resolve_definition(
     mapping: &HashMap<String, ObjectID>,
     state: &AppState,
 ) -> Result<(String, Option<String>), ApiError> {
-    let fixed_type_tag = NamedType::replace_names(&type_name, mapping).ok();
-
-    if fixed_type_tag.is_none() {
+    let Ok(correct_type_tag) = NamedType::replace_names(&type_name, mapping) else {
         return Ok((type_name, None));
-    }
-
-    let correct_type_tag = fixed_type_tag.unwrap();
+    };
 
     // For input errors, we throw an error.
     let parsed_type_tag = StructTag::from_str(&correct_type_tag)
