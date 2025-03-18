@@ -1,5 +1,5 @@
-use crate::handlers::convert_struct_tag;
 use crate::handlers::MoveObjectProcessor;
+use crate::handlers::{convert_struct_tag, OrderedDedup};
 use crate::models::mainnet::mvr_metadata::package_info::PackageInfo as MainnetPkgInfo;
 use crate::models::mainnet::sui::vec_map::VecMap;
 use crate::models::testnet::mvr_metadata::package_info::PackageInfo as TestnetPkgInfo;
@@ -117,16 +117,14 @@ where
         use mvr_schema::schema::package_infos::columns::*;
         use mvr_schema::schema::package_infos::dsl::package_infos;
 
-        // 1, dedup values to avoid affecting same row twice
-        let deduped_values: HashMap<String, Self::Value> = values.iter().fold(HashMap::new(), |mut results, value| {
-            if !matches!(results.get(&value.id), Some(existing_value) if existing_value.object_version > value.object_version) {
-                results.insert(value.id.clone(), value.clone());
-            }
-            results
-        });
+        // dedup values to avoid affecting same row twice
+        let values = values.iter().cmp_dedup(
+            |v| v.id.clone(),
+            |v1, v2| v1.object_version.cmp(&v2.object_version),
+        );
 
         Ok(diesel::insert_into(package_infos)
-            .values(deduped_values.values().collect::<Vec<_>>())
+            .values(values)
             .on_conflict(id)
             .do_update()
             .set((

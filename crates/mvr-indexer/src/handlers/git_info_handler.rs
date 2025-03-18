@@ -1,5 +1,5 @@
-use crate::handlers::convert_struct_tag;
 use crate::handlers::MoveObjectProcessor;
+use crate::handlers::{convert_struct_tag, OrderedDedup};
 use crate::models::mainnet::sui::dynamic_field::Field;
 use crate::models::{mainnet, testnet};
 use anyhow::Error;
@@ -99,6 +99,13 @@ where
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
         use mvr_schema::schema::git_infos::columns::*;
         use mvr_schema::schema::git_infos::dsl::git_infos;
+
+        // dedup values to avoid affecting same row twice
+        let values = values.iter().cmp_dedup(
+            |v| (v.table_id.clone(), v.version),
+            |v1, v2| v1.object_version.cmp(&v2.object_version),
+        );
+
         Ok(diesel::insert_into(git_infos)
             .values(values)
             .on_conflict((table_id, version))
