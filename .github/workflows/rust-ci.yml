@@ -26,6 +26,7 @@ jobs:
     needs: diff
     if: needs.diff.outputs.isRust == 'true'
     steps:
+      - uses: actions/checkout@v4
       - uses: taiki-e/install-action@cargo-nextest
       - name: Install postgres
         shell: bash
@@ -37,8 +38,7 @@ jobs:
 
       - name: Run mvr-indexer tests
         run: |
-          cd crates/mvr-indexer
-          cargo nextest run
+          cargo nextest run -E 'package(mvr-indexer)'
 
   build:
     runs-on: ubuntu-latest
