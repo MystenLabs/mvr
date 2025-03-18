@@ -19,8 +19,8 @@ pub(crate) async fn track_metrics(
         .extensions()
         .get::<MatchedPath>()
         .map(|p| p.as_str()) // Gets the route name e.g. `/v1/resolution/{*name}`
-        .unwrap_or("UNKNOWN")
-        .to_string(); // defaults to UNKNOWN
+        .unwrap_or("/UNSUPPORTED")
+        .to_string();
 
     // Add the `network` as part of the route. That way both API instances can report
     // metrics for the same route name.

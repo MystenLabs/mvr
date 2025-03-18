@@ -9,6 +9,7 @@ use crate::{data::app_state::AppState, errors::ApiError};
 
 pub(crate) mod resolution;
 pub(crate) mod reverse_resolution;
+pub(crate) mod struct_definition;
 pub(crate) mod type_resolution;
 
 pub(crate) async fn health_check(

@@ -8,7 +8,7 @@ use axum::{
 };
 use mvr_types::{name::VersionedName, named_type::NamedType};
 use serde::{Deserialize, Serialize};
-use sui_types::TypeTag;
+use sui_types::{base_types::ObjectID, TypeTag};
 
 use crate::{data::resolution_loader::ResolutionKey, errors::ApiError, AppState};
 
@@ -98,30 +98,31 @@ async fn bulk_resolve_types_impl(
 
     let mapping_ref = Arc::new(parsed_name_addresses);
 
-    let futures = types.into_iter().map(|type_name| {
-        let state = state.clone();
-        let mapping = mapping_ref.clone();
-
-        async move {
-            let fixed_type_tag = NamedType::replace_names(&type_name, &mapping).ok();
-
-            if let Some(correct_type_tag) = fixed_type_tag {
-                let parsed_type_tag = TypeTag::from_str(&correct_type_tag)
-                    .map_err(|e| ApiError::BadRequest(format!("bad type: {e}")))?;
-
-                // not finding the specified tag is OK for bulk operations.
-                let tag = state
-                    .package_resolver()
-                    .canonical_type(parsed_type_tag)
-                    .await
-                    .ok();
-
-                Ok::<(String, Option<TypeTag>), ApiError>((type_name, tag))
-            } else {
-                Ok::<(String, Option<TypeTag>), ApiError>((type_name, None))
-            }
-        }
-    });
+    let futures = types
+        .into_iter()
+        .map(|type_name| resolve_type(type_name, &mapping_ref, &state));
 
     Ok(try_join_all(futures).await?.into_iter().collect())
+}
+
+async fn resolve_type(
+    type_name: String,
+    mapping: &HashMap<String, ObjectID>,
+    state: &AppState,
+) -> Result<(String, Option<TypeTag>), ApiError> {
+    let Ok(correct_type_tag) = NamedType::replace_names(&type_name, mapping) else {
+        return Ok((type_name, None));
+    };
+
+    let parsed_type_tag = TypeTag::from_str(&correct_type_tag)
+        .map_err(|e| ApiError::BadRequest(format!("bad type: {e}")))?;
+
+    // not finding the specified tag is OK for bulk operations.
+    let tag = state
+        .package_resolver()
+        .canonical_type(parsed_type_tag)
+        .await
+        .ok();
+
+    Ok((type_name, tag))
 }

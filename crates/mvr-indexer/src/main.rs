@@ -4,6 +4,7 @@ use crate::handlers::package_handler::PackageHandler;
 use crate::handlers::package_info_handler::PackageInfoHandler;
 use anyhow::Context;
 use clap::Parser;
+use mvr_schema::MIGRATIONS;
 use prometheus::Registry;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
@@ -15,7 +16,6 @@ use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
 use url::Url;
-use mvr_schema::MIGRATIONS;
 
 pub(crate) mod handlers;
 
@@ -57,7 +57,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Some("mvr".into()),
         Some(HashMap::from([("mvr_env".to_string(), env.to_string())])),
     )
-        .context("Failed to create Prometheus registry.")?;
+    .context("Failed to create Prometheus registry.")?;
     let metrics = MetricsService::new(
         MetricsArgs { metrics_address },
         registry,
@@ -76,7 +76,7 @@ async fn main() -> Result<(), anyhow::Error> {
         metrics.registry(),
         cancel.clone(),
     )
-        .await?;
+    .await?;
 
     match env {
         MvrEnv::Mainnet => create_mainnet_pipelines(&mut indexer).await?,
@@ -155,7 +155,7 @@ impl Display for MvrEnv {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             MvrEnv::Mainnet => write!(f, "mainnet"),
-            MvrEnv::Testnet => write!(f, "testnet")
+            MvrEnv::Testnet => write!(f, "testnet"),
         }
     }
 }

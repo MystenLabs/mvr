@@ -7,7 +7,7 @@ use crate::{
     data::app_state::AppState,
     handlers::{
         health_check, resolution::Resolution, reverse_resolution::ReverseResolution,
-        type_resolution::TypeResolution,
+        struct_definition::StructDefinition, type_resolution::TypeResolution,
     },
     metrics::middleware::track_metrics,
 };
@@ -33,6 +33,14 @@ pub fn create_router(app: Arc<AppState>) -> Router {
         .route(
             "/type-resolution/{*type_name}",
             get(TypeResolution::resolve),
+        )
+        .route(
+            "/struct-definition/bulk",
+            post(StructDefinition::bulk_resolve),
+        )
+        .route(
+            "/struct-definition/{*type_name}",
+            get(StructDefinition::resolve),
         );
 
     Router::new()
