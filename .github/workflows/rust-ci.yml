@@ -1,4 +1,4 @@
-name: mvr-cli Rust CI
+name: Rust
 
 on:
   push:
