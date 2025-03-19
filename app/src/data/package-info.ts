@@ -106,7 +106,7 @@ export class PackageInfo {
     return this;
   }
 
-  tranfer({
+  transfer({
     to,
     selfTransfer,
   }: {

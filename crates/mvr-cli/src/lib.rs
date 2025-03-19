@@ -514,7 +514,7 @@ async fn check_single_package_consistency(
     Ok(())
 }
 
-/// Returns as information from the Move.toml that resovles the original published address of a
+/// Returns as information from the Move.toml that resolves the original published address of a
 /// package, and likely internal package name based on addresses in the [addresses] section. The
 /// internal package name may be assigned the "0x0" address (if automated address management is
 /// used). Otherwise, it may be assigned the value of the known original_address_on_chain, which is
