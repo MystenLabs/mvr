@@ -1,4 +1,4 @@
-use crate::handlers::convert_struct_tag;
+use crate::handlers::{convert_struct_tag, OrderedDedup};
 use crate::models::mainnet::mvr_core::app_record::AppRecord;
 use crate::models::mainnet::mvr_core::name::Name as MoveName;
 use crate::models::mainnet::sui::dynamic_field::Field;
@@ -37,6 +37,13 @@ impl Handler for NameRecordHandler {
     async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
         use mvr_schema::schema::name_records::columns::*;
         use mvr_schema::schema::name_records::dsl::name_records;
+
+        // dedup values to avoid affecting same row twice
+        let values = values.iter().cmp_dedup(
+            |v| v.name.clone(),
+            |v1, v2| v1.object_version.cmp(&v2.object_version),
+        );
+
         Ok(diesel::insert_into(name_records)
             .values(values)
             .on_conflict(name)

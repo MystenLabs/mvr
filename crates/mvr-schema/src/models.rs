@@ -28,7 +28,7 @@ pub struct PackageDependency {
     pub chain_id: String,
 }
 
-#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount, Clone)]
 #[diesel(table_name = name_records)]
 pub struct NameRecord {
     pub name: String,
@@ -50,7 +50,7 @@ pub struct PackageInfo {
     pub metadata: serde_json::Value,
 }
 
-#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount, Clone)]
 #[diesel(table_name = git_infos)]
 pub struct GitInfo {
     pub table_id: String,
