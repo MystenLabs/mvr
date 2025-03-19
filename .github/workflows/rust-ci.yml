@@ -3,28 +3,26 @@ name: Rust
 on:
   push:
     branches: ["main"]
+    paths:
+      - crates/**
+      - .github/workflows/rust-ci.yml
+      - Cargo.lock
+      - Cargo.toml
   pull_request:
     branches: ["main"]
+    paths:
+      - crates/**
+      - .github/workflows/rust-ci.yml
+      - Cargo.lock
+      - Cargo.toml
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  diff:
-    runs-on: [ ubuntu-latest ]
-    outputs:
-      isRust: ${{ steps.diff.outputs.isRust }}
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # Pin v4.1.1
-      - name: Detect Changes
-        uses: './.github/actions/diffs'
-        id: diff
-
   test-indexer:
     name: test-indexer
     runs-on: ubuntu-latest
-    needs: diff
-    if: needs.diff.outputs.isRust == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: taiki-e/install-action@cargo-nextest
@@ -112,8 +110,6 @@ jobs:
           ./ci/integration_test.sh
 
   rustfmt:
-    needs: diff
-    if: needs.diff.outputs.isRust == 'true'
     runs-on: [ ubuntu-latest ]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # Pin v4.1.1
