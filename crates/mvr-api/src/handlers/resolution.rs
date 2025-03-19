@@ -20,7 +20,7 @@ pub struct BulkRequest {
 
 #[derive(Serialize, Deserialize)]
 pub struct Response {
-    package_id: Option<ObjectID>,
+    package_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -44,7 +44,7 @@ impl Resolution {
             .ok_or(ApiError::BadRequest(format!("Name not found: {name}")))?;
 
         Ok(Json(Response {
-            package_id: Some(package_id),
+            package_id: Some(package_id.to_canonical_string(true)),
         }))
     }
 
@@ -68,7 +68,7 @@ impl Resolution {
                 (
                     name.0.to_string(),
                     Response {
-                        package_id: Some(package_id),
+                        package_id: Some(package_id.to_canonical_string(true)),
                     },
                 )
             })
