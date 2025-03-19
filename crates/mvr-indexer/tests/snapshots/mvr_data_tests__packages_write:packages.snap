@@ -1,0 +1,36 @@
+---
+source: crates/mvr-indexer/tests/mvr_data_tests.rs
+expression: rows
+---
+[
+  {
+    "package_id": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "original_id": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "package_version": 1,
+    "chain_id": "35834a8a",
+    "move_package": "tdmSlWA5Z6oIb6y8X7PR9/ESE04vWF0Anjuvo4mt1fo=",
+    "tx_hash": "7CuBm1AnLgkBMB6GiEn5d3RizznF5LbawjJTs8A5dcXF",
+    "sender": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "timestamp": "2023-04-12 17:00:00"
+  },
+  {
+    "package_id": "0x0000000000000000000000000000000000000000000000000000000000000002",
+    "original_id": "0x0000000000000000000000000000000000000000000000000000000000000002",
+    "package_version": 1,
+    "chain_id": "35834a8a",
+    "move_package": "wI2HV/zF7DoUCvhydqdlUDQddvgeBM1ULtQMzn8DWuE=",
+    "tx_hash": "7CuBm1AnLgkBMB6GiEn5d3RizznF5LbawjJTs8A5dcXF",
+    "sender": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "timestamp": "2023-04-12 17:00:00"
+  },
+  {
+    "package_id": "0x0000000000000000000000000000000000000000000000000000000000000003",
+    "original_id": "0x0000000000000000000000000000000000000000000000000000000000000003",
+    "package_version": 1,
+    "chain_id": "35834a8a",
+    "move_package": "UkmPPqPRNDuZmCJz7NbK/9If3kblmJFfZVxfpEcyAEA=",
+    "tx_hash": "7CuBm1AnLgkBMB6GiEn5d3RizznF5LbawjJTs8A5dcXF",
+    "sender": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "timestamp": "2023-04-12 17:00:00"
+  }
+]

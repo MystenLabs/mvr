@@ -5,7 +5,8 @@ edition = "2021"
 
 [dependencies]
 sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "e919e84" }
-async-graphql = { version = "7.0.15", features = ["dataloader", "boxed-trait"] }
+async-graphql = { version = "=7.0.1", features = ["dataloader"] }
+async-graphql-value = "=7.0.1"
 axum = "0.8.1"
 tokio = { version = "1.43.0", features = ["full"] }
 tower-http = { version = "0.6.2", features = ["cors"] }

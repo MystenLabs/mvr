@@ -1,0 +1,13 @@
+---
+source: crates/mvr-indexer/tests/mvr_data_tests.rs
+expression: rows
+---
+[
+  {
+    "name": "demo@testingafreeclaim/sub",
+    "object_version": 497770418,
+    "mainnet_id": "0x10016ab4d6c9447c60980df6d896ce2283d3cdf8ba8a2f6a6f33b302a55c70cb",
+    "testnet_id": null,
+    "metadata": {}
+  }
+]

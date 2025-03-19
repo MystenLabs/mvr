@@ -1,0 +1,15 @@
+---
+source: crates/mvr-indexer/tests/mvr_data_tests.rs
+expression: rows
+---
+[
+  {
+    "id": "0xc26a4e0911be378f8d27f6d2455d710d33dc7c241d434cb0c0444eff6a5ddca9",
+    "object_version": 498036367,
+    "package_id": "0x51f46d8fe32e6b94808c4dc950fe61f445cc76fee0d0b2aa4bc7ef05945e06aa",
+    "git_table_id": "0x04cf253187a53c55a94864b383e63591728cca329501f63b40ee2a3220bcb646",
+    "chain_id": "35834a8a",
+    "default_name": null,
+    "metadata": {}
+  }
+]
