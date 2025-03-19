@@ -43,7 +43,7 @@ impl TypeResolution {
             .ok_or(ApiError::BadRequest(format!("type not found: {type_name}")))?;
 
         Ok(Json(Response {
-            type_tag: Some(tag.to_string()),
+            type_tag: Some(tag.to_canonical_string(true)),
         }))
     }
 
@@ -60,7 +60,7 @@ impl TypeResolution {
                     (
                         k,
                         Response {
-                            type_tag: v.map(|t| t.to_string()),
+                            type_tag: v.map(|t| t.to_canonical_string(true)),
                         },
                     )
                 })
