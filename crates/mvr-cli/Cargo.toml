@@ -21,7 +21,7 @@ path = "src/tests/unit_tests.rs"
 [dependencies]
 sui-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", rev="86a9e06"}
 sui-client = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-graphql-client", rev="86a9e06"}
-bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "e919e84" }
+bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "42ba6c0" }
 
 clap = { workspace = true, features = ["derive"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

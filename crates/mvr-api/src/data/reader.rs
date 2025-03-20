@@ -3,6 +3,7 @@
 
 use std::sync::Arc;
 
+use crate::metrics::RpcMetrics;
 use async_graphql::dataloader::DataLoader;
 use diesel::dsl::Limit;
 use diesel::pg::Pg;
@@ -16,8 +17,7 @@ use sui_indexer_alt_metrics::db::DbConnectionStatsCollector;
 // use prometheus::Registry;
 use sui_pg_db as db;
 use tracing::debug;
-
-use crate::metrics::RpcMetrics;
+use url::Url;
 
 /// This wrapper type exists to perform error conversion between the data fetching layer and the
 /// RPC layer, metrics collection, and debug logging of database queries.
@@ -47,12 +47,15 @@ pub(crate) enum ReadError {
 
 impl Reader {
     pub(crate) async fn new(
+        database_url: Url,
         db_args: db::DbArgs,
         network: String,
         metrics: Arc<RpcMetrics>,
         registry: &Registry,
     ) -> Result<Self, ReadError> {
-        let db = db::Db::for_read(db_args).await.map_err(ReadError::Create)?;
+        let db = db::Db::for_read(database_url, db_args)
+            .await
+            .map_err(ReadError::Create)?;
 
         registry
             .register(Box::new(DbConnectionStatsCollector::new(

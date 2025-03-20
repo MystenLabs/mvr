@@ -35,6 +35,12 @@ struct Args {
     metrics_address: SocketAddr,
     #[clap(env, long, default_value_t = Default::default())]
     env: MvrEnv,
+    #[clap(
+        env,
+        long,
+        default_value = "postgres://postgres:postgrespw@localhost:5432/mvr"
+    )]
+    database_url: Url,
 }
 
 #[tokio::main]
@@ -48,6 +54,7 @@ async fn main() -> Result<(), anyhow::Error> {
         indexer_args,
         metrics_address,
         env,
+        database_url,
     } = Args::parse();
 
     let cancel = CancellationToken::new();
@@ -63,11 +70,15 @@ async fn main() -> Result<(), anyhow::Error> {
     );
 
     let mut indexer = Indexer::new(
+        database_url,
         db_args,
         indexer_args,
         ClientArgs {
             remote_store_url: Some(env.remote_store_url()),
             local_ingestion_path: None,
+            rpc_api_url: None,
+            rpc_username: None,
+            rpc_password: None,
         },
         Default::default(),
         Some(&MIGRATIONS),

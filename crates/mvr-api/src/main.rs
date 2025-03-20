@@ -21,6 +21,7 @@ use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::{Any, CorsLayer};
+use url::Url;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case", author, version)]
@@ -33,6 +34,12 @@ struct Args {
     network: Network,
     #[clap(long, default_value = "8000", env)]
     api_port: u16,
+    #[clap(
+        long,
+        default_value = "postgres://postgres:postgrespw@localhost:5432/mvr",
+        env
+    )]
+    database_url: Url,
 }
 
 #[tokio::main]
@@ -51,6 +58,7 @@ async fn main() -> Result<(), anyhow::Error> {
         network,
         api_port,
         metrics_address,
+        database_url,
     } = Args::parse();
 
     let cancel = CancellationToken::new();
@@ -64,9 +72,14 @@ async fn main() -> Result<(), anyhow::Error> {
         cancel.child_token(),
     );
 
-    let app_state = AppState::new(db_args, network.to_string(), metrics.registry())
-        .await
-        .expect("Failed to connect to the Database");
+    let app_state = AppState::new(
+        database_url,
+        db_args,
+        network.to_string(),
+        metrics.registry(),
+    )
+    .await
+    .expect("Failed to connect to the Database");
 
     let app = route::create_router(Arc::new(app_state)).layer(cors);
 
