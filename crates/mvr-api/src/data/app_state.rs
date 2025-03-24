@@ -1,3 +1,4 @@
+use super::reader::ReadError;
 use crate::data::package_resolver::ApiPackageStore;
 use crate::data::package_resolver::PackageResolver;
 use crate::data::reader::Reader;
@@ -7,8 +8,7 @@ use prometheus::Registry;
 use std::sync::Arc;
 use sui_package_resolver::{PackageStoreWithLruCache, Resolver};
 use sui_pg_db as db;
-
-use super::reader::ReadError;
+use url::Url;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -20,12 +20,13 @@ pub struct AppState {
 
 impl AppState {
     pub async fn new(
+        database_url: Url,
         args: db::DbArgs,
         network: String,
         registry: &Registry,
     ) -> Result<Self, ReadError> {
         let metrics = RpcMetrics::new(registry);
-        let reader = Reader::new(args, network, metrics.clone(), registry).await?;
+        let reader = Reader::new(database_url, args, network, metrics.clone(), registry).await?;
 
         // Try to open a read connection to verify we can
         // connect to the DB on startup.

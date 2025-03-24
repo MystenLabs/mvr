@@ -68,7 +68,7 @@ where
     // Set up the temporary database
     let temp_db = TempDb::new()?;
     let url = temp_db.database().url();
-    let db = Db::for_write(DbArgs::new_for_testing(url.clone())).await?;
+    let db = Db::for_write(url.clone(), DbArgs::default()).await?;
     db.run_migrations(MIGRATIONS).await?;
     let mut conn = db.connect().await?;
 
