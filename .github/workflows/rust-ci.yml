@@ -38,6 +38,10 @@ jobs:
         run: |
           cargo nextest run -E 'package(mvr-indexer)'
 
+      - name: Run mvr-api tests
+        run: |
+          cargo nextest run -E 'package(mvr-api)'
+
   build:
     runs-on: ubuntu-latest
     continue-on-error: true
