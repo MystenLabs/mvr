@@ -20,8 +20,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test-indexer:
-    name: test-indexer
+  test-crates:
+    name: test-crates
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +37,10 @@ jobs:
       - name: Run mvr-indexer tests
         run: |
           cargo nextest run -E 'package(mvr-indexer)'
+
+      - name: Run mvr-api tests
+        run: |
+          cargo nextest run -E 'package(mvr-api)'
 
   build:
     runs-on: ubuntu-latest
