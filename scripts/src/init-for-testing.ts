@@ -85,9 +85,9 @@ export const setupOnLocalnet = async () => {
     // });
 
     // tx.transferObjects([app, name], sender(tx));
-    pkgInfo.tranfer({ selfTransfer: true });
-    pkgInfo2.tranfer({ selfTransfer: true });
-    pkgInfo3.tranfer({ selfTransfer: true });
+    pkgInfo.transfer({ selfTransfer: true });
+    pkgInfo2.transfer({ selfTransfer: true });
+    pkgInfo3.transfer({ selfTransfer: true });
 
     const res = await signAndExecute(tx, NETWORK);
     console.dir(res.effects?.created, {depth: null});
