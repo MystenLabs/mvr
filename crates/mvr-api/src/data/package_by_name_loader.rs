@@ -104,8 +104,7 @@ impl Loader<PackageByNameKey> for Reader {
 
         for r_name in keys {
             let name = r_name.0.name.to_string();
-
-            let results = result.iter().filter(|p| p.name == name).collect::<Vec<_>>();
+            let results: Vec<_> = result.iter().filter(|p| p.name == name).collect();
 
             // no results found for this name, skip it.
             if results.is_empty() {
@@ -129,7 +128,6 @@ impl Loader<PackageByNameKey> for Reader {
                     name: pkg.name,
                     metadata: pkg.metadata,
                     mainnet: mainnet.map(|p| PackageInfoResponse {
-                        // SAFETY: we know its not null otherwise this "map" would never happen.
                         id: p.package_info_id.unwrap_or_default(),
                         git_table_id: p.git_table_id.unwrap_or_default(),
                         default_name: p.default_name.clone(),
