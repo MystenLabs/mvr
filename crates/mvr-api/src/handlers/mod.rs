@@ -7,6 +7,7 @@ use axum::{extract::State, http::StatusCode};
 
 use crate::{data::app_state::AppState, errors::ApiError};
 
+pub(crate) mod names;
 pub(crate) mod resolution;
 pub(crate) mod reverse_resolution;
 pub(crate) mod struct_definition;

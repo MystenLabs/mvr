@@ -20,6 +20,9 @@ pub enum ApiError {
 
     #[error("Internal server error: {0}")]
     InternalServerError(String),
+
+    #[error("Resource not found: {0}")]
+    NotFound(String),
 }
 
 #[derive(Serialize)]
@@ -32,6 +35,7 @@ impl IntoResponse for ApiError {
         let (status, message) = match self {
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             ApiError::InternalServerError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
         };
 
         let body = Json(ErrorResponse { message });
