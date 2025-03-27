@@ -6,7 +6,7 @@ use std::sync::Arc;
 use crate::{
     data::app_state::AppState,
     handlers::{
-        health_check, resolution::Resolution, reverse_resolution::ReverseResolution,
+        health_check, names::Names, resolution::Resolution, reverse_resolution::ReverseResolution,
         struct_definition::StructDefinition, type_resolution::TypeResolution,
     },
     metrics::middleware::track_metrics,
@@ -41,7 +41,14 @@ pub fn create_router(app: Arc<AppState>) -> Router {
         .route(
             "/struct-definition/{*type_name}",
             get(StructDefinition::resolve),
-        );
+        )
+        // TODO: (paginated) Generic name querying, with optional search query.
+        // .route(
+        //     "/names",
+        //     // Queries all names (paginated & can supply search query)
+        //     get(Name::search),
+        // )
+        .route("/names/{*name}", get(Names::get_by_name));
 
     Router::new()
         .route("/health", get(health_check))
