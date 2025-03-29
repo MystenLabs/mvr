@@ -7,7 +7,7 @@ use std::process::Command;
 use std::process::Output;
 use yansi::Paint;
 
-use super::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
+use crate::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
 
 const VERSION_REGEX: &str = r"(\d+)\.(\d+)\.(\d+)";
 
