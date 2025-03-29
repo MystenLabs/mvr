@@ -9,4 +9,4 @@ anyhow.workspace = true
 thiserror.workspace = true
 once_cell.workspace = true
 regex = "1.11.1"
-sui-types.workspace = true
+sui-sdk-types.workspace = true

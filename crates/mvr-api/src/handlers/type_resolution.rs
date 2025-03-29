@@ -8,7 +8,8 @@ use axum::{
 };
 use mvr_types::{name::VersionedName, named_type::NamedType};
 use serde::{Deserialize, Serialize};
-use sui_types::{base_types::ObjectID, TypeTag};
+use sui_sdk_types::ObjectId;
+use sui_types::TypeTag;
 
 use crate::{data::resolution_loader::ResolutionKey, errors::ApiError, AppState};
 
@@ -107,7 +108,7 @@ async fn bulk_resolve_types_impl(
 
 async fn resolve_type(
     type_name: String,
-    mapping: &HashMap<String, ObjectID>,
+    mapping: &HashMap<String, ObjectId>,
     state: &AppState,
 ) -> Result<(String, Option<TypeTag>), ApiError> {
     let Ok(correct_type_tag) = NamedType::replace_names(&type_name, mapping) else {

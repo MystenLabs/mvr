@@ -1,6 +1,6 @@
 use sui_client::DynamicFieldOutput;
-use sui_types::Address;
-use sui_types::ObjectId;
+use sui_sdk_types::Address;
+use sui_sdk_types::ObjectId;
 
 use anyhow::Result;
 use serde::Deserialize;
