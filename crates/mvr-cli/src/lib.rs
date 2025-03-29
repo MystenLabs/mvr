@@ -258,8 +258,7 @@ async fn fetch_package_files(
         )
     })?;
 
-    let (move_toml_path, move_lock_path) =
-        fetch_move_files(&name.to_string(), git_info, temp_dir).await?;
+    let (move_toml_path, move_lock_path) = fetch_move_files(&name, git_info, temp_dir).await?;
 
     Ok((
         name_with_version.to_string(),
@@ -277,7 +276,11 @@ async fn resolve_on_chain_package_info(
     let package_name_map: Result<HashMap<String, String>> = dependency
         .packages
         .iter()
-        .map(|package| parse_package_version(package).map(|(name, _)| (name, package.clone())))
+        .map(|package| {
+            VersionedName::from_str(package)
+                .map_err(|e| anyhow!("Failed to parse versioned name: {e}"))
+                .map(|name| (name.name.to_string(), package.clone()))
+        })
         .collect();
     let package_name_map = package_name_map?;
     // Create set of package names with version stripped (we check version info later).
@@ -648,9 +651,9 @@ pub async fn build_lock_files(
     let mut lock_files: Vec<String> = vec![];
 
     for (name_with_version, package_info) in resolved_packages {
-        let (_name, version) = parse_package_version(name_with_version)?;
+        let name = VersionedName::from_str(name_with_version)?;
         // Use version or default to the highest (i.e., latest) version number otherwise.
-        let version = match version {
+        let version = match name.version {
             Some(v) => v,
             None => package_info
                 .git_versioning
@@ -796,14 +799,8 @@ fn extract_index(dynamic_field: &DynamicFieldOutput) -> Result<u64> {
     }
 }
 
-/// Given a normalized Move Registry package name, split out the version number (if any).
-pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
-    let versioned_name = VersionedName::from_str(name)?;
-    Ok((versioned_name.name.to_string(), versioned_name.version))
-}
-
 async fn fetch_move_files(
-    name: &str,
+    name: &VersionedName,
     git_info: &GitInfo,
     temp_dir: &TempDir,
 ) -> Result<(PathBuf, PathBuf)> {
@@ -816,16 +813,17 @@ async fn fetch_move_files(
 }
 
 fn shallow_clone_repo(
-    package_name: &str,
+    package_name: &VersionedName,
     git_info: &GitInfo,
     temp_dir: &TempDir,
 ) -> Result<PathBuf> {
+    let pkg_name_str = package_name.to_string();
     if Command::new("git").arg("--version").output().is_err() {
         return Err(anyhow!(
             "Git is not available in the system PATH. Please install git and try again.".red()
         ));
     }
-    let repo_dir = temp_dir.path().join(package_name);
+    let repo_dir = temp_dir.path().join(&pkg_name_str);
     let output = Command::new("git")
         .arg("clone")
         .arg(&git_info.repository)
@@ -838,7 +836,7 @@ fn shallow_clone_repo(
         return Err(anyhow!(
             "{} {} {} {} {} {}",
             "Failed to clone repository for package".red(),
-            package_name.red().bold(),
+            pkg_name_str.red().bold(),
             ": Git error:".red(),
             stderr.red().bold(),
             "Repository:".red(),
@@ -859,7 +857,7 @@ fn shallow_clone_repo(
         return Err(anyhow!(
             "{} {} {} {} {} {}",
             "Failed to checkout repository for package".red(),
-            package_name.red().bold(),
+            pkg_name_str.red().bold(),
             ": Git error:".red(),
             stderr.red().bold(),
             "Repository:".red(),

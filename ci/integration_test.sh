@@ -66,6 +66,7 @@ fi
 
 # Add a dependency which has more than 1 versions (and rely on the latest).
 cd demo-package && mvr add @testingafreeclaim/upgraded --network mainnet && cd ..
+cd demo-package && mvr add @pkg/qwer --network mainnet && cd ..
 
 ###########################################
 # Invokes `mvr` when building the package #

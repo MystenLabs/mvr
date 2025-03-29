@@ -1,7 +1,7 @@
 use anyhow::Result;
 use expect_test::expect;
 use mvr::types::package::{GitInfo, PackageInfo, PackageInfoNetwork};
-use mvr::{build_lock_files, check_address_consistency, parse_package_version, published_ids};
+use mvr::{build_lock_files, check_address_consistency, published_ids};
 use std::collections::HashMap;
 use std::fs;
 use std::str::FromStr;
@@ -116,60 +116,6 @@ dependencies = [
         ]
     "##]]
     .assert_eq(&result[0]);
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_parse_package_version() -> Result<()> {
-    let result = parse_package_version("@foo/bar/1")?;
-    expect![[r#"
-        (
-            "@foo/bar",
-            Some(
-                1,
-            ),
-        )
-    "#]]
-    .assert_debug_eq(&result);
-
-    let result = parse_package_version("foo/bar")?;
-    expect![[r#"
-        (
-            "foo/bar",
-            None,
-        )
-    "#]]
-    .assert_debug_eq(&result);
-
-    let result = parse_package_version("@foo/bar")?;
-    expect![[r#"
-        (
-            "@foo/bar",
-            None,
-        )
-    "#]]
-    .assert_debug_eq(&result);
-
-    let result = parse_package_version("@foo/bar/baz");
-    expect![[r#"
-        Err(
-            "Invalid name format: @foo/bar/baz",
-        )
-    "#]]
-    .assert_debug_eq(&result);
-
-    let result = parse_package_version("@foo/bar/0");
-    expect![[r#"
-        Ok(
-            (
-                "@foo/bar",
-                Some(
-                    0,
-                ),
-            ),
-        )
-    "#]]
-    .assert_debug_eq(&result);
     Ok(())
 }
 
