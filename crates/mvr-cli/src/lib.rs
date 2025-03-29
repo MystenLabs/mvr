@@ -9,12 +9,11 @@ use crate::types::SuiConfig;
 use crate::types::{MoveRegistryDependency, MoveTomlPublishedID};
 
 use commands::CommandOutput;
+use mvr_types::name::VersionedName;
 use types::app_record::AppInfo;
 use types::app_record::AppRecord;
 use types::package::GitInfo;
 use types::package::PackageInfo;
-use types::Name;
-use types::VersionedName;
 
 use sui_client::Client;
 use sui_client::DynamicFieldOutput;
@@ -22,6 +21,7 @@ use sui_client::PaginationFilter;
 use sui_sdk_types::Address;
 use sui_sdk_types::ObjectId;
 use sui_sdk_types::TypeTag;
+use types::LocalName;
 
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -34,7 +34,6 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, bail, Context, Result};
 use once_cell::sync::Lazy;
-use regex::Regex;
 use serde_json::Value as JValue;
 use tempfile::TempDir;
 use toml_edit::{
@@ -71,15 +70,6 @@ const MAINNET_CHAIN_ID: &str = "35834a8a";
 const MAINNET_GQL_URL: &str = "https://mvr-rpc.sui-mainnet.mystenlabs.com/";
 const TESTNET_GQL_URL: &str = "https://mvr-rpc.sui-testnet.mystenlabs.com/";
 
-const VERSIONED_NAME_REGEX: &str = concat!(
-    "^",
-    r"([a-z0-9.\-@]*)",
-    r"\/",
-    "([a-z0-9.-]*)",
-    r"(?:\/(\d+))?",
-    "$"
-);
-
 static PACKAGE_INFO_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
     TypeTag::from_str(&format!("{PACKAGE_INFO_PACKAGE_ID}::package::PackageInfo"))
         .expect("Failed to parse TypeTag for PackageInfo")
@@ -94,8 +84,6 @@ static APP_REC_TYPETAG: Lazy<TypeTag> = Lazy::new(|| {
     TypeTag::from_str(&format!("{MVR_PACKAGE_ID}::app_record::AppRecord"))
         .expect("Failed to parse TypeTag for AppRecord")
 });
-
-static VERSIONED_NAME_REG: Lazy<Regex> = Lazy::new(|| Regex::new(VERSIONED_NAME_REGEX).unwrap());
 
 fn find_mvr_package(value: &toml::Value) -> Option<String> {
     value
@@ -249,8 +237,9 @@ async fn fetch_package_files(
     package_info: &PackageInfo,
     temp_dir: &TempDir,
 ) -> Result<(String, (PathBuf, PathBuf))> {
-    let (name, version) = parse_package_version(name_with_version)?;
-    let version = match version {
+    let name = VersionedName::from_str(name_with_version)?;
+
+    let version = match name.version {
         Some(v) => v,
         None => package_info
             .git_versioning
@@ -261,7 +250,6 @@ async fn fetch_package_files(
                 anyhow!("No version specified and no versions found in git_versioning".red())
             })?,
     };
-
     let git_info = package_info.git_versioning.get(&version).ok_or_else(|| {
         anyhow!(
             "version {version} of {name} does not exist in on-chain PackageInfo. \
@@ -270,7 +258,9 @@ async fn fetch_package_files(
         )
     })?;
 
-    let (move_toml_path, move_lock_path) = fetch_move_files(&name, git_info, temp_dir).await?;
+    let (move_toml_path, move_lock_path) =
+        fetch_move_files(&name.to_string(), git_info, temp_dir).await?;
+
     Ok((
         name_with_version.to_string(),
         (move_toml_path, move_lock_path),
@@ -350,9 +340,10 @@ async fn check_single_package_consistency(
     network: &PackageInfoNetwork,
     fetched_files: &HashMap<String, (PathBuf, PathBuf)>,
 ) -> Result<()> {
-    let (name, version) = parse_package_version(name_with_version)?;
+    let versioned_name = VersionedName::from_str(name_with_version)?;
+
     // Use version or default to the highest (i.e., latest) version number otherwise.
-    let version = match version {
+    let version = match versioned_name.version {
         Some(v) => v,
         None => package_info
             .git_versioning
@@ -383,7 +374,7 @@ async fn check_single_package_consistency(
 
     let git_info = package_info.git_versioning.get(&version).ok_or_else(|| {
         anyhow!(
-            "version {version} of {name} does not exist in on-chain PackageInfo. \
+            "version {version} of {versioned_name.name} does not exist in on-chain PackageInfo. \
              Please check that it is valid and try again."
                 .red()
         )
@@ -490,9 +481,10 @@ async fn check_single_package_consistency(
         }
         _ => {
             bail!(
-                "Unable to find the original published address in package {name}'s \
+                "Unable to find the original published address in package {}'s \
                  repository {} branch {} subdirectory {}. For predictable detection, see documentation \
                  on Automated Address Management for recording published addresses in the `Move.lock` file.",
+                versioned_name.name,
                 git_info.repository,
                 git_info.tag,
                 git_info.path
@@ -503,9 +495,11 @@ async fn check_single_package_consistency(
     // Main consistency check: The on-chain package address should correspond to the original ID in the source package.
     if original_address_on_chain != original_source_id {
         bail!(
-            "Mismatch: The original package address for {name} on {network} is {original_address_on_chain}, \
-             but the {provenance} in {name}'s repository was found to be {original_source_id}.\n\
+            "Mismatch: The original package address for {} on {network} is {original_address_on_chain}, \
+             but the {provenance} in {}'s repository was found to be {original_source_id}.\n\
              Check the configuration of the package's repository {} in branch {} in subdirectory {}",
+            versioned_name.name,
+            versioned_name.name,
             git_info.repository,
             git_info.tag,
             git_info.path
@@ -701,18 +695,6 @@ fn setup_sui_clients() -> (Client, Client) {
     (mainnet_client, testnet_client)
 }
 
-fn normalize_app_name(name: &Name) -> Result<String> {
-    let unknown = "unknown".to_string();
-    let org_name = name.org.labels.get(1);
-    let app_name = name.app.first();
-
-    Ok(format!(
-        "@{}/{}",
-        org_name.unwrap_or(&unknown),
-        app_name.unwrap_or(&unknown)
-    ))
-}
-
 async fn package_info(app_info: &AppInfo, client: &Client) -> Result<Option<PackageInfo>> {
     let package_info_id = app_info
         .package_info_id
@@ -817,7 +799,7 @@ fn extract_index(dynamic_field: &DynamicFieldOutput) -> Result<u64> {
 /// Given a normalized Move Registry package name, split out the version number (if any).
 pub fn parse_package_version(name: &str) -> anyhow::Result<(String, Option<u64>)> {
     let versioned_name = VersionedName::from_str(name)?;
-    Ok((versioned_name.name, versioned_name.version))
+    Ok((versioned_name.name.to_string(), versioned_name.version))
 }
 
 async fn fetch_move_files(
@@ -1127,11 +1109,11 @@ pub async fn subcommand_list(filter: Option<String>) -> Result<CommandOutput> {
             )
             .await?;
         for dynamic_field_info in page.data().iter() {
-            let df_name: Name = dynamic_field_info.try_into()?;
+            let df_name: LocalName = dynamic_field_info.try_into()?;
             let app_record: AppRecord = dynamic_field_info.try_into()?;
             let (pkg_testnet, pkg_mainnet) = extract_pkg_info(&app_record).await;
 
-            let name = normalize_app_name(&df_name)?;
+            let name = df_name.0.to_string();
             let app = App {
                 name: name.clone(),
                 package_info: vec![
@@ -1201,12 +1183,13 @@ pub async fn resolve_package_by_name(
     name: &str,
 ) -> Result<(Option<PackageInfo>, Option<PackageInfo>)> {
     let (mainnet_client, _) = setup_sui_clients();
-    let df_name: Name = name.try_into()?;
+    let df_name = VersionedName::from_str(name)?;
+
     let df = mainnet_client
         .dynamic_field(
             Address::from_str(APP_REGISTRY_TABLE_ID)?,
             NAME_TYPETAG.clone(),
-            df_name,
+            df_name.name,
         )
         .await?;
 
