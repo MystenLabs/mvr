@@ -8,7 +8,6 @@ use async_graphql::dataloader::DataLoader;
 use diesel::dsl::Limit;
 use diesel::pg::Pg;
 use diesel::query_builder::QueryFragment;
-use diesel::query_dsl::methods::LimitDsl;
 use diesel::result::Error as DieselError;
 use diesel_async::methods::LoadQuery;
 use diesel_async::RunQueryDsl;
@@ -89,28 +88,6 @@ impl Reader {
 }
 
 impl Connection<'_> {
-    pub(crate) async fn first<Q, U>(&mut self, query: Q) -> Result<U, ReadError>
-    where
-        U: Send,
-        Q: RunQueryDsl<db::ManagedConnection> + 'static,
-        Q: LimitDsl,
-        Limit<Q>: LoadQuery<'static, db::ManagedConnection, U> + QueryFragment<Pg> + Send,
-    {
-        let query = query.limit(1);
-        debug!("{}", diesel::debug_query(&query));
-
-        let _guard = self.metrics.db_latency.start_timer();
-        let res = query.get_result(&mut self.conn).await;
-
-        if res.is_ok() {
-            self.metrics.db_requests_succeeded.inc();
-        } else {
-            self.metrics.db_requests_failed.inc();
-        }
-
-        Ok(res?)
-    }
-
     pub(crate) async fn results<Q, U>(&mut self, query: Q) -> Result<Vec<U>, ReadError>
     where
         U: Send,

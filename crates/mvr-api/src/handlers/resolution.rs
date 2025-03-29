@@ -43,7 +43,7 @@ impl Resolution {
             .ok_or(ApiError::BadRequest(format!("Name not found: {name}")))?;
 
         Ok(Json(Response {
-            package_id: Some(pkg.id.to_canonical_string(true)),
+            package_id: Some(pkg.id.to_string()),
         }))
     }
 
@@ -67,7 +67,7 @@ impl Resolution {
                 (
                     name.0.to_string(),
                     Response {
-                        package_id: Some(pkg.id.to_canonical_string(true)),
+                        package_id: Some(pkg.id.to_string()),
                     },
                 )
             })
