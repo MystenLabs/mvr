@@ -132,7 +132,7 @@ mod tests {
     use std::collections::HashMap;
     use std::str::FromStr;
 
-    use sui_types::ObjectId;
+    use sui_sdk_types::ObjectId;
 
     use crate::commands::App;
     use crate::commands::PackageInfo;

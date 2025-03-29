@@ -5,7 +5,7 @@ use mvr::{build_lock_files, check_address_consistency, parse_package_version, pu
 use std::collections::HashMap;
 use std::fs;
 use std::str::FromStr;
-use sui_types::ObjectId;
+use sui_sdk_types::ObjectId;
 use tempfile::tempdir;
 
 fn create_resolved_packages() -> HashMap<String, PackageInfo> {

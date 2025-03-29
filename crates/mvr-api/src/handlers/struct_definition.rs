@@ -9,7 +9,7 @@ use axum::{
 use move_core_types::language_storage::StructTag;
 use mvr_types::{name::VersionedName, named_type::NamedType};
 use serde::{Deserialize, Serialize};
-use sui_types::base_types::ObjectID;
+use sui_sdk_types::ObjectId;
 
 use crate::{
     data::{package_resolver::PackageKey, resolution_loader::ResolutionKey},
@@ -111,7 +111,7 @@ async fn bulk_resolve_definitions_impl(
 /// but requires the full-type to be valid (cannot do partial generic resolution).
 async fn resolve_definition(
     type_name: String,
-    mapping: &HashMap<String, ObjectID>,
+    mapping: &HashMap<String, ObjectId>,
     state: &AppState,
 ) -> Result<(String, Option<String>), ApiError> {
     let Ok(correct_type_tag) = NamedType::replace_names(&type_name, mapping) else {

@@ -35,6 +35,7 @@ move-core-types.workspace = true
 sui-types.workspace = true
 telemetry-subscribers.workspace = true
 tokio-util.workspace = true
+sui-sdk-types.workspace = true
 mvr-types = { path = "../mvr-types" }
 mvr-schema = { path = "../mvr-schema" }
 

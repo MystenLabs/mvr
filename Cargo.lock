@@ -5135,6 +5135,7 @@ dependencies = [
  "comfy-table",
  "dirs 6.0.0",
  "expect-test",
+ "mvr-types",
  "once_cell",
  "regex",
  "reqwest",
@@ -5183,6 +5184,7 @@ dependencies = [
  "sui-move-build",
  "sui-package-resolver",
  "sui-pg-db",
+ "sui-sdk-types 0.0.2 (git+https://github.com/mystenlabs/sui-rust-sdk?rev=86a9e06)",
  "sui-types",
  "telemetry-subscribers",
  "thiserror 2.0.12",
@@ -5260,7 +5262,7 @@ dependencies = [
  "once_cell",
  "regex",
  "serde",
- "sui-types",
+ "sui-sdk-types 0.0.2 (git+https://github.com/mystenlabs/sui-rust-sdk?rev=86a9e06)",
  "thiserror 2.0.12",
 ]
 

@@ -9,7 +9,7 @@ use diesel::{
     sql_types::{Array, BigInt, Text},
 };
 use mvr_types::name::VersionedName;
-use sui_types::base_types::ObjectID;
+use sui_sdk_types::ObjectId;
 
 use crate::errors::ApiError;
 
@@ -31,7 +31,7 @@ pub struct ResolutionKey(pub VersionedName);
 
 #[async_trait::async_trait]
 impl Loader<ResolutionKey> for Reader {
-    type Value = ObjectID;
+    type Value = ObjectId;
     type Error = ApiError;
 
     async fn load(
@@ -77,7 +77,7 @@ impl Loader<ResolutionKey> for Reader {
             .map(|name| {
                 let mut versioned_name = VersionedName::from_str(&name.name)?;
                 versioned_name.version = (name.version > 0).then_some(name.version as u64);
-                let object_id = ObjectID::from_str(&name.package_id).map_err(|e| {
+                let object_id = ObjectId::from_str(&name.package_id).map_err(|e| {
                     ApiError::BadRequest(format!(
                         "Failed to parse package id: {e} {}",
                         name.package_id
