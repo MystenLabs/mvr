@@ -1,6 +1,7 @@
 pub mod binary_version_check;
 pub mod commands;
 pub mod constants;
+pub(crate) mod git;
 pub mod types;
 
 use crate::commands::App;
@@ -9,6 +10,7 @@ use crate::types::SuiConfig;
 use crate::types::{MoveRegistryDependency, MoveTomlPublishedID};
 
 use commands::CommandOutput;
+use git::shallow_clone_repo;
 use mvr_types::name::VersionedName;
 use types::app_record::AppInfo;
 use types::app_record::AppRecord;
@@ -29,7 +31,6 @@ use std::fs::{self};
 use std::io::{self, Write};
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::Command;
 use std::str::FromStr;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -810,62 +811,6 @@ async fn fetch_move_files(
     let file_paths = files_to_fetch.map(|file_name| repo_dir.join(&git_info.path).join(file_name));
 
     Ok((file_paths[0].clone(), file_paths[1].clone()))
-}
-
-fn shallow_clone_repo(
-    package_name: &VersionedName,
-    git_info: &GitInfo,
-    temp_dir: &TempDir,
-) -> Result<PathBuf> {
-    let pkg_name_str = package_name.to_string();
-    if Command::new("git").arg("--version").output().is_err() {
-        return Err(anyhow!(
-            "Git is not available in the system PATH. Please install git and try again.".red()
-        ));
-    }
-    let repo_dir = temp_dir.path().join(&pkg_name_str);
-    let output = Command::new("git")
-        .arg("clone")
-        .arg(&git_info.repository)
-        .arg(&repo_dir)
-        .output()
-        .context("Failed to execute git clone command")?;
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow!(
-            "{} {} {} {} {} {}",
-            "Failed to clone repository for package".red(),
-            pkg_name_str.red().bold(),
-            ": Git error:".red(),
-            stderr.red().bold(),
-            "Repository:".red(),
-            git_info.repository.red().bold(),
-        ));
-    }
-
-    let switch_to_sha = Command::new("git")
-        .arg("-C")
-        .arg(&repo_dir)
-        .arg("checkout")
-        .arg(&git_info.tag)
-        .output()
-        .context("Failed to execute git checkout command")?;
-
-    if !switch_to_sha.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow!(
-            "{} {} {} {} {} {}",
-            "Failed to checkout repository for package".red(),
-            pkg_name_str.red().bold(),
-            ": Git error:".red(),
-            stderr.red().bold(),
-            "Repository:".red(),
-            git_info.repository.red().bold(),
-        ));
-    }
-
-    Ok(repo_dir)
 }
 
 /// For a given package `foo` and its original `Move.lock` (containing transitive dependencies),
