@@ -64,7 +64,6 @@ cd demo-package && mvr add @mvr/demo --network mainnet && cd ..
 cd demo-package && mvr add @testingafreeclaim/upgraded --network mainnet && cd ..
 cd demo-package && mvr add @pkg/qwer --network mainnet && cd ..
 
-
 ### Check if the expected Move.toml file and the generated one are the same
 if ! diff -u demo-package/expected_move.toml demo-package/Move.toml > /dev/null; then
   echo "ERROR: after adding package dependency via \"mvr add\" command, the Move.toml file is not as expected."
