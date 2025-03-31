@@ -106,7 +106,9 @@ mod tests {
             .unwrap();
 
         assert!(command.status.success());
-        String::from_utf8_lossy(&command.stdout).trim().to_ascii_lowercase()
+        String::from_utf8_lossy(&command.stdout)
+            .trim()
+            .to_ascii_lowercase()
     }
 
     fn get_git_info(tag: &str) -> GitInfo {
@@ -132,7 +134,7 @@ mod tests {
     fn test_shallow_clone_repo_by_tag_name() {
         let temp_dir = TempDir::new().unwrap();
         let git_info = get_git_info("v0.0.1");
-    
+
         let versioned = VersionedName::from_str("@mvr/demo").unwrap();
 
         let repo_dir = shallow_clone_repo(&versioned, &git_info, &temp_dir).unwrap();

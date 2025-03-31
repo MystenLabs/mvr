@@ -1,8 +1,8 @@
 pub mod binary_version_check;
 pub mod commands;
 pub mod constants;
-pub mod types;
 pub(crate) mod git;
+pub mod types;
 
 use crate::commands::App;
 use crate::types::package::PackageInfoNetwork;
