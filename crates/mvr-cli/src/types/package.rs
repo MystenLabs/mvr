@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use sui_client::DynamicFieldOutput;
-use sui_types::ObjectId;
+use sui_sdk_types::ObjectId;
 
 use crate::PACKAGE_INFO_TYPETAG;
 

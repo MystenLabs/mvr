@@ -54,8 +54,9 @@ async fn test_reverse_resolution() -> Result<(), anyhow::Error> {
     test_cluster.setup_dummy_data().await?;
 
     let response = test_cluster
-        .bulk_reverse_resolution(&["0xc1", "0xc2", "0x1"])
+        .bulk_reverse_resolution(&["0xc1", "0xc2", "0x1", &v1_id()]) // we dedup inside the API.
         .await?;
+
     assert_eq!(response[v2_id()]["name"].as_str().unwrap(), "@test/core");
     assert_eq!(response[v1_id()]["name"].as_str().unwrap(), "@test/core");
     assert!(response[ObjectID::from_single_byte(0x1).to_canonical_string(true)]["name"].is_null());

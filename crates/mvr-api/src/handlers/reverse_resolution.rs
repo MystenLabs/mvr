@@ -5,17 +5,17 @@ use axum::{
     Json,
 };
 use serde::{Deserialize, Serialize};
-use sui_types::base_types::ObjectID;
+use sui_sdk_types::ObjectId;
 
 use crate::{data::reverse_resolution_loader::ReverseResolutionKey, errors::ApiError, AppState};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkRequest {
-    package_ids: Vec<ObjectID>,
+    package_ids: Vec<ObjectId>,
 }
 #[derive(Serialize, Deserialize)]
 pub struct BulkResponse {
-    resolution: HashMap<ObjectID, Response>,
+    resolution: HashMap<ObjectId, Response>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -30,7 +30,7 @@ pub struct ReverseResolution;
 
 impl ReverseResolution {
     pub async fn resolve(
-        Path(package_id): Path<ObjectID>,
+        Path(package_id): Path<ObjectId>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<Response>, ApiError> {
         let name = app_state

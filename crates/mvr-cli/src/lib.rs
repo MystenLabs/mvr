@@ -19,9 +19,9 @@ use types::VersionedName;
 use sui_client::Client;
 use sui_client::DynamicFieldOutput;
 use sui_client::PaginationFilter;
-use sui_types::Address;
-use sui_types::ObjectId;
-use sui_types::TypeTag;
+use sui_sdk_types::Address;
+use sui_sdk_types::ObjectId;
+use sui_sdk_types::TypeTag;
 
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -216,7 +216,8 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
         }
     };
 
-    let resolved_packages = resolve_on_chain_package_info(network, &dependency).await?;
+    let resolved_packages: HashMap<String, PackageInfo> =
+        resolve_on_chain_package_info(network, &dependency).await?;
     let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
     let mut fetched_files: HashMap<String, (PathBuf, PathBuf)> = HashMap::new();
 

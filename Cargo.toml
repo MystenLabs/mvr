@@ -28,9 +28,13 @@ url = "2.5.4"
 prometheus = "0.13.4"
 tokio-util = "0.7.13"
 
+# Main Sui Mono-repo
 sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
 mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
 telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
 sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
 move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
 sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
+
+# New Rust SDK
+sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", rev="86a9e06"}
