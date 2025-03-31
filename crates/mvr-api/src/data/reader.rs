@@ -5,7 +5,6 @@ use std::sync::Arc;
 
 use crate::metrics::RpcMetrics;
 use async_graphql::dataloader::DataLoader;
-use diesel::dsl::Limit;
 use diesel::pg::Pg;
 use diesel::query_builder::QueryFragment;
 use diesel::result::Error as DieselError;
@@ -13,7 +12,6 @@ use diesel_async::methods::LoadQuery;
 use diesel_async::RunQueryDsl;
 use prometheus::Registry;
 use sui_indexer_alt_metrics::db::DbConnectionStatsCollector;
-// use prometheus::Registry;
 use sui_pg_db as db;
 use tracing::debug;
 use url::Url;
