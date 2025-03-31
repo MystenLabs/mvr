@@ -1,0 +1,6 @@
+[package]
+name = "mvr"
+edition = "2024.alpha" # edition = "legacy" to use legacy (pre-2024) Move
+
+[addresses]
+mvr = "0x0"

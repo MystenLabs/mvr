@@ -1,8 +1,7 @@
-pub mod binary_version_check;
 pub mod commands;
 pub mod constants;
-pub(crate) mod git;
 pub mod types;
+pub mod utils;
 
 use crate::commands::App;
 use crate::types::package::PackageInfoNetwork;
@@ -10,12 +9,12 @@ use crate::types::SuiConfig;
 use crate::types::{MoveRegistryDependency, MoveTomlPublishedID};
 
 use commands::CommandOutput;
-use git::shallow_clone_repo;
 use mvr_types::name::VersionedName;
 use types::app_record::AppInfo;
 use types::app_record::AppRecord;
 use types::package::GitInfo;
 use types::package::PackageInfo;
+use utils::git::shallow_clone_repo;
 
 use sui_client::Client;
 use sui_client::DynamicFieldOutput;
@@ -24,12 +23,15 @@ use sui_sdk_types::Address;
 use sui_sdk_types::ObjectId;
 use sui_sdk_types::TypeTag;
 use types::LocalName;
+use utils::manifest::{
+    MoveToml, ADDRESSES_KEY, DEPENDENCIES_KEY, MVR_RESOLVER_KEY, NETWORK_KEY, PUBLISHED_AT_KEY,
+    RESOLVER_PREFIX_KEY,
+};
 
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::{self};
 use std::io::{self, Write};
-use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -45,13 +47,6 @@ use yansi::Paint;
 const SUI_DIR: &str = ".sui";
 const SUI_CONFIG_DIR: &str = "sui_config";
 const SUI_CLIENT_CONFIG: &str = "client.yaml";
-
-const RESOLVER_PREFIX_KEY: &str = "r";
-const MVR_RESOLVER_KEY: &str = "mvr";
-const NETWORK_KEY: &str = "network";
-const DEPENDENCIES_KEY: &str = "dependencies";
-const PUBLISHED_AT_KEY: &str = "published-at";
-const ADDRESSES_KEY: &str = "addresses";
 
 const LOCK_MOVE_KEY: &str = "move";
 const LOCK_PACKAGE_KEY: &str = "package";
@@ -926,7 +921,7 @@ fn parse_source_package_name(toml_content: &str) -> Result<String> {
 }
 
 async fn update_mvr_packages(
-    move_toml_path: &Path,
+    mut move_toml: MoveToml,
     package_name: &str,
     network: &str,
 ) -> Result<String> {
@@ -934,7 +929,7 @@ async fn update_mvr_packages(
         network: network.to_string(),
         packages: vec![package_name.to_string()],
     };
-    let network = match dependency.network.as_str() {
+    let network: &PackageInfoNetwork = match dependency.network.as_str() {
         "testnet" => &PackageInfoNetwork::Testnet,
         "mainnet" => &PackageInfoNetwork::Mainnet,
         _ => bail!(
@@ -946,29 +941,6 @@ async fn update_mvr_packages(
     };
 
     let resolved_packages = resolve_on_chain_package_info(network, &dependency).await?;
-    let toml_content = fs::read_to_string(move_toml_path).with_context(|| {
-        format!(
-            "{} {}",
-            "Failed to read file:".red(),
-            move_toml_path.display().red().bold()
-        )
-    })?;
-    let mut doc = toml_content
-        .parse::<DocumentMut>()
-        .context("Failed to parse TOML content")?;
-
-    if !doc.contains_key(DEPENDENCIES_KEY) {
-        doc[DEPENDENCIES_KEY] = Item::Table(Table::new());
-    }
-    let dependencies = doc[DEPENDENCIES_KEY].as_table_mut().unwrap();
-    let mut new_dep_table = InlineTable::new();
-    let mut r_table = InlineTable::new();
-    r_table.set_dotted(true); // our `r.mvr` is a dotted table
-    r_table.insert(
-        MVR_RESOLVER_KEY,
-        Value::String(Formatted::new(package_name.to_string())),
-    );
-    new_dep_table.insert(RESOLVER_PREFIX_KEY, Value::InlineTable(r_table));
 
     // Infer package name to insert.
     let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
@@ -990,34 +962,11 @@ async fn update_mvr_packages(
                 .red()
         );
     };
-    dependencies.insert(&name, Item::Value(Value::InlineTable(new_dep_table)));
+    move_toml.add_dependency(&name, &package_name)?;
 
-    let network_exists = doc
-        .get(RESOLVER_PREFIX_KEY)
-        .and_then(|r| r.as_table())
-        .and_then(|r_table| r_table.get(MVR_RESOLVER_KEY))
-        .and_then(|mvr| mvr.as_table())
-        .and_then(|mvr_table| mvr_table.get(NETWORK_KEY))
-        .is_some();
-    if network_exists {
-        eprintln!(
-            "{}",
-            "Network value already exists in r.mvr section. It will be overwritten.".yellow()
-        );
-    }
+    move_toml.set_network(network.to_string())?;
 
-    if !doc.contains_key(RESOLVER_PREFIX_KEY) {
-        doc[RESOLVER_PREFIX_KEY] = Item::Table(Table::new());
-    }
-    let r_table = doc[RESOLVER_PREFIX_KEY].as_table_mut().unwrap();
-    r_table.set_dotted(true); // expecting to create `[r.mvr]` section only
-    if !r_table.contains_key(MVR_RESOLVER_KEY) {
-        r_table.insert(MVR_RESOLVER_KEY, Item::Table(Table::new()));
-    }
-    let mvr_table = r_table[MVR_RESOLVER_KEY].as_table_mut().unwrap();
-    mvr_table.insert(NETWORK_KEY, toml_edit::value(network.to_string()));
-    fs::write(move_toml_path, doc.to_string())
-        .with_context(|| format!("Failed to write updated TOML to file: {:?}", move_toml_path))?;
+    move_toml.save_to_file()?;
 
     let output_msg = format!(
         "{}\nYou can use this dependency in your modules by calling: {}",
@@ -1108,16 +1057,37 @@ async fn extract_pkg_info(app_record: &AppRecord) -> (Option<PackageInfo>, Optio
     (pkg_testnet, pkg_mainnet)
 }
 
-pub async fn subcommand_add_dependency(package_name: &str, network: &str) -> Result<CommandOutput> {
-    if network != "testnet" && network != "mainnet" {
-        bail!("network must be one of \"testnet\" or \"mainnet\"".red());
-    }
-    let current_dir = env::current_dir().context("Failed to get current directory")?;
-    let move_toml_path = current_dir.join("Move.toml");
-    if !move_toml_path.exists() {
-        return Err(anyhow!("Move.toml not found in the current directory".red()));
-    }
-    let cmd_output = update_mvr_packages(&move_toml_path, package_name, network).await?;
+pub async fn subcommand_add_dependency(
+    package_name: &str,
+    opt_network: Option<String>,
+) -> Result<CommandOutput> {
+    let move_toml = MoveToml::new(
+        env::current_dir()
+            .context("Failed to get current directory")?
+            .join("Move.toml"),
+    )?;
+
+    let network = match opt_network {
+        Some(network) => {
+            if !is_valid_network(&network) {
+                bail!("Network must be one of \"testnet\" or \"mainnet\"".red());
+            }
+            network
+        }
+        None => {
+            let network = move_toml.get_network()?;
+
+            if !is_valid_network(&network) {
+                bail!(
+                    "Invalid network found in your Move.toml file. Please re-run using the --network flag.".red()
+                );
+            }
+
+            network
+        }
+    };
+
+    let cmd_output = update_mvr_packages(move_toml, package_name, &network).await?;
 
     Ok(CommandOutput::Add(cmd_output))
 }
@@ -1212,4 +1182,8 @@ fn migrate_to_version_three(packages: &mut ArrayOfTables) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn is_valid_network(network: &str) -> bool {
+    network == "testnet" || network == "mainnet"
 }

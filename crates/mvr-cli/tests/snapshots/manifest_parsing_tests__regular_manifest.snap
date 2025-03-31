@@ -1,0 +1,18 @@
+---
+source: crates/mvr-cli/tests/manifest_parsing_tests.rs
+expression: move_toml.doc.to_string()
+---
+[package]
+name = "mvr"
+edition = "2024.alpha" # edition = "legacy" to use legacy (pre-2024) Move
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet", override = true }
+mvr_demo = { r.mvr = "@mvr/demo" }
+another_demo = { r.mvr = "@mvr/another_demo" }
+
+[addresses]
+mvr = "0x0"
+
+[r.mvr]
+network = "mainnet"

@@ -1,0 +1,16 @@
+---
+source: crates/mvr-cli/tests/manifest_parsing_tests.rs
+expression: move_toml.doc.to_string()
+---
+[package]
+name = "mvr"
+edition = "2024.alpha" # edition = "legacy" to use legacy (pre-2024) Move
+
+[addresses]
+mvr = "0x0"
+
+[dependencies]
+mvr_demo = { r.mvr = "@mvr/demo" }
+
+[r.mvr]
+network = "mainnet"

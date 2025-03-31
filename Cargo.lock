@@ -5135,6 +5135,7 @@ dependencies = [
  "comfy-table",
  "dirs 6.0.0",
  "expect-test",
+ "insta",
  "mvr-types",
  "once_cell",
  "regex",

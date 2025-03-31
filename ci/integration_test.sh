@@ -61,8 +61,8 @@ EOF
 cd demo-package && mvr add @mvr/demo --network mainnet && cd ..
 
 # Add a dependency which has more than 1 versions (and rely on the latest).
-cd demo-package && mvr add @testingafreeclaim/upgraded --network mainnet && cd ..
-cd demo-package && mvr add @pkg/qwer --network mainnet && cd ..
+cd demo-package && mvr add @testingafreeclaim/upgraded && cd ..
+cd demo-package && mvr add @pkg/qwer && cd ..
 
 ### Check if the expected Move.toml file and the generated one are the same
 if ! diff -u demo-package/expected_move.toml demo-package/Move.toml > /dev/null; then
