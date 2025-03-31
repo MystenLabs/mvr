@@ -1,18 +1,10 @@
-pub mod app_record;
-pub mod package;
+pub mod api_types;
 
-use std::fs;
-use std::path::PathBuf;
+use std::fmt;
+use std::str::FromStr;
 
-use anyhow::anyhow;
-use anyhow::Context;
-use anyhow::Result;
-use mvr_types::name::Name;
 use serde::Deserialize;
 use serde::Serialize;
-use sui_client::DynamicFieldOutput;
-
-use crate::NAME_TYPETAG;
 
 #[derive(Serialize, Default, Debug)]
 pub struct MoveTomlPublishedID {
@@ -21,9 +13,9 @@ pub struct MoveTomlPublishedID {
     pub internal_pkg_name: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct MoveRegistryDependency {
-    pub network: String,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct MoveRegistryDependencies {
+    pub network: Network,
     pub packages: Vec<String>,
 }
 
@@ -42,35 +34,32 @@ pub(crate) struct SuiConfig {
     envs: Vec<Env>,
 }
 
-pub(crate) struct LocalName(pub Name);
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+pub enum Network {
+    Mainnet,
+    Testnet,
+}
 
-impl TryFrom<&DynamicFieldOutput> for LocalName {
-    type Error = anyhow::Error;
-
-    fn try_from(df: &DynamicFieldOutput) -> Result<Self> {
-        let name: Name = df
-            .deserialize_name(&NAME_TYPETAG)
-            .map_err(|e| anyhow::anyhow!(e))?;
-        Ok(LocalName(name))
+impl fmt::Display for Network {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Network::Mainnet => write!(f, "mainnet"),
+            Network::Testnet => write!(f, "testnet"),
+        }
     }
 }
 
-impl SuiConfig {
-    pub(crate) fn read_from_file(path: &PathBuf) -> Result<Self> {
-        let content = fs::read_to_string(path)?;
-        serde_yml::from_str(&content).context("Failed to parse config file")
-    }
+impl FromStr for Network {
+    type Err = anyhow::Error;
 
-    pub(crate) fn active_env(&self) -> Result<&Env> {
-        self.envs
-            .iter()
-            .find(|e| e.alias == self.active_env)
-            .ok_or_else(|| anyhow!("Cannot find active environment in config"))
-    }
-}
-
-impl Env {
-    pub(crate) fn rpc(&self) -> &str {
-        &self.rpc
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "mainnet" => Ok(Network::Mainnet),
+            "testnet" => Ok(Network::Testnet),
+            _ => Err(anyhow::anyhow!(
+                "Invalid network: {:?}. The only supported networks are `mainnet` and `testnet`.",
+                s
+            )),
+        }
     }
 }
