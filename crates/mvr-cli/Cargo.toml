@@ -52,3 +52,4 @@ sui-client-build = { git = "https://github.com/mystenlabs/sui-rust-sdk", package
 
 [dev-dependencies]
 expect-test = "1.5.0"
+insta = "1.42.2"
