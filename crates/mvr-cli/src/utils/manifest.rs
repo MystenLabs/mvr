@@ -80,8 +80,12 @@ impl MoveToml {
 
     /// Writes the state of `MoveToml` file back to the file system (replaces the initial state).
     pub fn save_to_file(&self) -> Result<()> {
-        fs::write(self.path.clone(), self.doc.to_string())
-            .with_context(|| format!("Failed to write updated TOML to file: {:?}", self.path.display()))?;
+        fs::write(self.path.clone(), self.doc.to_string()).with_context(|| {
+            format!(
+                "Failed to write updated TOML to file: {:?}",
+                self.path.display()
+            )
+        })?;
 
         Ok(())
     }
