@@ -9,13 +9,17 @@ use axum::{
 use move_core_types::language_storage::StructTag;
 use mvr_types::{name::VersionedName, named_type::NamedType};
 use serde::{Deserialize, Serialize};
-use sui_types::base_types::ObjectID;
 
 use crate::{
-    data::{package_resolver::PackageKey, resolution_loader::ResolutionKey},
+    data::{
+        package_resolver::PackageKey,
+        resolution_loader::{ResolutionData, ResolutionKey},
+    },
     errors::ApiError,
     AppState,
 };
+
+use super::into_object_id_map;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkRequest {
@@ -111,10 +115,11 @@ async fn bulk_resolve_definitions_impl(
 /// but requires the full-type to be valid (cannot do partial generic resolution).
 async fn resolve_definition(
     type_name: String,
-    mapping: &HashMap<String, ObjectID>,
+    mapping: &HashMap<String, ResolutionData>,
     state: &AppState,
 ) -> Result<(String, Option<String>), ApiError> {
-    let Ok(correct_type_tag) = NamedType::replace_names(&type_name, mapping) else {
+    let Ok(correct_type_tag) = NamedType::replace_names(&type_name, &into_object_id_map(mapping))
+    else {
         return Ok((type_name, None));
     };
 
