@@ -8,9 +8,15 @@ use axum::{
 };
 use mvr_types::{name::VersionedName, named_type::NamedType};
 use serde::{Deserialize, Serialize};
-use sui_types::{base_types::ObjectID, TypeTag};
+use sui_types::TypeTag;
 
-use crate::{data::resolution_loader::ResolutionKey, errors::ApiError, AppState};
+use crate::{
+    data::resolution_loader::{ResolutionData, ResolutionKey},
+    errors::ApiError,
+    AppState,
+};
+
+use super::into_object_id_map;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkRequest {
@@ -107,10 +113,11 @@ async fn bulk_resolve_types_impl(
 
 async fn resolve_type(
     type_name: String,
-    mapping: &HashMap<String, ObjectID>,
+    mapping: &HashMap<String, ResolutionData>,
     state: &AppState,
 ) -> Result<(String, Option<TypeTag>), ApiError> {
-    let Ok(correct_type_tag) = NamedType::replace_names(&type_name, mapping) else {
+    let Ok(correct_type_tag) = NamedType::replace_names(&type_name, &into_object_id_map(mapping))
+    else {
         return Ok((type_name, None));
     };
 

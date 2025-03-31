@@ -9,7 +9,6 @@ use axum::{
 };
 use mvr_types::name::VersionedName;
 use serde::{Deserialize, Serialize};
-use sui_types::base_types::ObjectID;
 
 use crate::{data::resolution_loader::ResolutionKey, errors::ApiError, AppState};
 
@@ -37,14 +36,14 @@ impl Resolution {
     ) -> Result<Json<Response>, ApiError> {
         let versioned_name = VersionedName::from_str(&name)?;
 
-        let package_id = app_state
+        let pkg = app_state
             .loader()
             .load_one(ResolutionKey(versioned_name))
             .await?
             .ok_or(ApiError::BadRequest(format!("Name not found: {name}")))?;
 
         Ok(Json(Response {
-            package_id: Some(package_id.to_canonical_string(true)),
+            package_id: Some(pkg.id.to_canonical_string(true)),
         }))
     }
 
@@ -64,11 +63,11 @@ impl Resolution {
             .load_many(names)
             .await?
             .into_iter()
-            .map(|(name, package_id): (ResolutionKey, ObjectID)| {
+            .map(|(name, pkg)| {
                 (
                     name.0.to_string(),
                     Response {
-                        package_id: Some(package_id.to_canonical_string(true)),
+                        package_id: Some(pkg.id.to_canonical_string(true)),
                     },
                 )
             })

@@ -24,6 +24,14 @@ pub struct NameResolution {
     pub name: String,
     #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub version: i64,
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    pub package_version: i64,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct ResolutionData {
+    pub id: ObjectID,
+    pub version: i64,
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
@@ -31,7 +39,7 @@ pub struct ResolutionKey(pub VersionedName);
 
 #[async_trait::async_trait]
 impl Loader<ResolutionKey> for Reader {
-    type Value = ObjectID;
+    type Value = ResolutionData;
     type Error = ApiError;
 
     async fn load(
@@ -50,9 +58,7 @@ impl Loader<ResolutionKey> for Reader {
         let mut connection = self.connect().await?;
 
         let query = diesel::sql_query(format!(
-            "WITH inp AS (
-        SELECT unnest($1) AS name, unnest($2) AS version
-    ),
+            "WITH inp AS (SELECT unnest($1) AS name, unnest($2) AS version),
     pkg AS (
         SELECT p.original_id, p.package_id, nr.name, i.version
         FROM packages p
@@ -60,7 +66,7 @@ impl Loader<ResolutionKey> for Reader {
         INNER JOIN name_records nr ON pi.id = nr.{}
         INNER JOIN inp i ON nr.name = i.name
     )
-    SELECT DISTINCT ON (pkg.name, pkg.version) pkg.name, p.package_id, pkg.version
+    SELECT DISTINCT ON (pkg.name, pkg.version) pkg.name, p.package_id, pkg.version, p.package_version
     FROM pkg
     INNER JOIN packages p ON p.original_id = pkg.original_id
     AND (pkg.version = 0 OR p.package_version = pkg.version)
@@ -84,7 +90,13 @@ impl Loader<ResolutionKey> for Reader {
                     ))
                 })?;
 
-                Ok((ResolutionKey(versioned_name), object_id))
+                Ok((
+                    ResolutionKey(versioned_name),
+                    ResolutionData {
+                        id: object_id,
+                        version: name.package_version,
+                    },
+                ))
             })
             .collect()
     }
