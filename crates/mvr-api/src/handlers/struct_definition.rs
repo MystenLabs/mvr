@@ -9,7 +9,6 @@ use axum::{
 use move_core_types::language_storage::StructTag;
 use mvr_types::{name::VersionedName, named_type::NamedType};
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
 
 use crate::{
     data::{

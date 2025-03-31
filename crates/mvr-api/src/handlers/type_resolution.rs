@@ -8,7 +8,6 @@ use axum::{
 };
 use mvr_types::{name::VersionedName, named_type::NamedType};
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
 use sui_types::TypeTag;
 
 use crate::{

@@ -6,7 +6,7 @@ use axum::{
 };
 use mvr_types::name::VersionedName;
 use serde::{Deserialize, Serialize};
-use sui_types::base_types::ObjectID;
+use sui_sdk_types::ObjectId;
 
 use crate::{
     data::{
@@ -22,7 +22,7 @@ pub struct PackageByNameResponse {
     #[serde(flatten)]
     pub package_by_name_data: PackageByNameBaseData,
     pub version: i64,
-    pub package_address: ObjectID,
+    pub package_address: ObjectId,
 }
 
 pub struct Names;
