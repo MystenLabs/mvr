@@ -1,6 +1,7 @@
 use anyhow::Result;
 use expect_test::expect;
-use mvr::types::package::{GitInfo, PackageInfo, PackageInfoNetwork};
+use mvr::types::api_types::{GitInfo, PackageRequest};
+use mvr::types::Network;
 use mvr::{build_lock_files, check_address_consistency, published_ids};
 use std::collections::HashMap;
 use std::fs;
@@ -8,28 +9,22 @@ use std::str::FromStr;
 use sui_sdk_types::ObjectId;
 use tempfile::tempdir;
 
-fn create_resolved_packages() -> HashMap<String, PackageInfo> {
+fn create_resolved_packages() -> HashMap<String, PackageRequest> {
     let mut resolved_packages = HashMap::new();
+
     resolved_packages.insert(
         "@mvr-test/first-app/1".to_string(),
-        PackageInfo {
-            upgrade_cap_id: ObjectId::from_str(
-                "0x14e7ac25259adcc373c96627893976d4fe562a3f3fedce493fc187c5ebd53eee",
-            )
-            .unwrap(),
-            package_address: ObjectId::from_str("0x1234567890abcdef").unwrap(),
-            git_versioning: {
-                let mut map = HashMap::new();
-                map.insert(
-                    1,
-                    GitInfo {
-                        repository: "https://github.com/example/demo.git".to_string(),
-                        tag: "v1.0.0".to_string(),
-                        path: "packages/demo".to_string(),
-                    },
-                );
-                map
-            },
+        PackageRequest {
+            name: "@mvr-test/first-app/1".to_string(),
+            metadata: serde_json::Value::Null,
+            package_info: None,
+            git_info: Some(GitInfo {
+                repository_url: Some("https://github.com/example/demo.git".to_string()),
+                tag: Some("v1.0.0".to_string()),
+                path: Some("packages/demo".to_string()),
+            }),
+            version: 1,
+            package_address: "0x1234567890abcdef".to_string(),
         },
     );
     resolved_packages
@@ -158,7 +153,6 @@ published-version = "1"
     fs::write(&move_toml_path, move_toml_content)?;
     fs::write(&move_lock_path, move_lock_content)?;
 
-    let resolved_packages = create_resolved_packages();
     let mut fetched_files = HashMap::new();
     fetched_files.insert(
         "@mvr-test/first-app/1".to_string(),
@@ -167,7 +161,8 @@ published-version = "1"
     ////////////////////////////////////////////////////////////////////////////////////////////
     // Expect success: Move.lock matches expected resolved address.                           //
     ////////////////////////////////////////////////////////////////////////////////////////////
-    let network = PackageInfoNetwork::Testnet;
+    let resolved_packages = create_resolved_packages();
+    let network = Network::Testnet;
     let result = check_address_consistency(&resolved_packages, &network, &fetched_files).await;
     expect![[r#"
         Ok(

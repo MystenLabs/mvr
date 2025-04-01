@@ -5,7 +5,7 @@ use mvr_types::name::VersionedName;
 use tempfile::TempDir;
 use yansi::Paint;
 
-use crate::types::package::GitInfo;
+use crate::types::api_types::SafeGitInfo;
 
 macro_rules! clone_error {
     ($phase:expr, $name:expr, $git:expr, $stderr:expr) => {
@@ -16,7 +16,7 @@ macro_rules! clone_error {
             "Git error:".red(),
             $stderr.red().bold(),
             "Repository:".red(),
-            $git.repository.red().bold(),
+            $git.repository_url.red().bold(),
         );
     };
 }
@@ -26,7 +26,7 @@ macro_rules! clone_error {
 /// but only the latest commit (for mainnet), as well as the requested tag / branch.
 pub(crate) fn shallow_clone_repo(
     package_name: &VersionedName,
-    git_info: &GitInfo,
+    git_info: &SafeGitInfo,
     temp_dir: &TempDir,
 ) -> Result<PathBuf> {
     let name = package_name.to_string();
@@ -42,7 +42,7 @@ pub(crate) fn shallow_clone_repo(
         .arg("clone")
         .arg("--depth")
         .arg("1") // on the initial download, just clone the latest commit.
-        .arg(&git_info.repository)
+        .arg(&git_info.repository_url)
         .arg(&repo_dir)
         .output()
         .context("Failed to execute git clone command")?;
@@ -65,7 +65,7 @@ pub(crate) fn shallow_clone_repo(
         .context(format!(
             "Failed to find the specified SHA / Tag / Branch: {} on {}",
             git_info.tag.red().bold(),
-            git_info.repository.red().bold()
+            git_info.repository_url.red().bold()
         ))?;
 
     if !output.status.success() {
@@ -111,9 +111,9 @@ mod tests {
             .to_ascii_lowercase()
     }
 
-    fn get_git_info(tag: &str) -> GitInfo {
-        GitInfo {
-            repository: "https://github.com/MystenLabs/mvr.git".to_string(),
+    fn get_git_info(tag: &str) -> SafeGitInfo {
+        SafeGitInfo {
+            repository_url: "https://github.com/MystenLabs/mvr.git".to_string(),
             path: "crates/mvr-cli".to_string(),
             tag: tag.to_string(),
         }
