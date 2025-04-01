@@ -396,7 +396,6 @@ demo = "0x1234567890abcdef"
     Ok(())
 }
 
-
 #[tokio::test]
 async fn test_local_dep_to_git_dep() -> Result<()> {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
