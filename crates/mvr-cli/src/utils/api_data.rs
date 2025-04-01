@@ -14,10 +14,7 @@ const MVR_API_MAINNET_URL: &str = "https://mainnet.mvr.mystenlabs.com";
 const MVR_API_TESTNET_URL: &str = "https://testnet.mvr.mystenlabs.com";
 
 /// Query the MVR API to get Package Information by name.
-pub async fn query_package(
-    name: &str,
-    network: &Network,
-) -> Result<(String, PackageRequest)> {
+pub async fn query_package(name: &str, network: &Network) -> Result<(String, PackageRequest)> {
     let versioned_name = VersionedName::from_str(name)?;
     let response = reqwest::get(format!(
         "{}/v1/names/{}",
