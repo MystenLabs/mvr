@@ -1,0 +1,2 @@
+mvr add @pkg/qwer --network testnet
+sui move build

@@ -53,6 +53,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Nodejs
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # pin@v4.0.2
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
       - name: rust version
         run: |
           rustc --version
@@ -112,10 +118,9 @@ jobs:
           active_address: "0x14e7ac25259adcc373c96627893976d4fe562a3f3fedce493fc187c5ebd53eee"
           EOF
 
-      - name: Run custom integration test
+      - name: Run mvr-cli integration tests
         run: |
-          chmod +x ./ci/integration_test.sh
-          ./ci/integration_test.sh
+          cd crates/ci && pnpm install && pnpm test
 
   rustfmt:
     runs-on: [ ubuntu-latest ]

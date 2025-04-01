@@ -662,7 +662,7 @@ pub async fn subcommand_resolve_name(
 
     let package_mainnet = query_package(name, &network.unwrap_or(Network::Mainnet)).await?;
 
-    Ok(CommandOutput::List(vec![package_mainnet]))
+    Ok(CommandOutput::List(vec![package_mainnet.1]))
 }
 
 /// Migrates the lockfile to version 3 from older versions, if necessary.

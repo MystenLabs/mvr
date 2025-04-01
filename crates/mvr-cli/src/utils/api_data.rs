@@ -14,7 +14,10 @@ const MVR_API_MAINNET_URL: &str = "https://mainnet.mvr.mystenlabs.com";
 const MVR_API_TESTNET_URL: &str = "https://testnet.mvr.mystenlabs.com";
 
 /// Query the MVR API to get Package Information by name.
-pub async fn query_package(name: VersionedName, network: &Network) -> Result<PackageRequest> {
+pub async fn query_package(
+    name: VersionedName,
+    network: &Network,
+) -> Result<(VersionedName, PackageRequest)> {
     let response = reqwest::get(format!(
         "{}/v1/names/{}",
         get_api_url(network)?,
@@ -28,7 +31,7 @@ pub async fn query_package(name: VersionedName, network: &Network) -> Result<Pac
         .await
         .map_err(|e| anyhow::anyhow!("Failed to resolve package: {}. Error: {}", name, e))?;
 
-    Ok(body)
+    Ok((name, body))
 }
 
 pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<ObjectId> {
@@ -62,8 +65,8 @@ pub async fn query_multiple_dependencies(
         try_join_all(requests)
             .await?
             .iter()
-            .fold(HashMap::new(), |mut acc, package_request| {
-                acc.insert(package_request.name.clone(), package_request.clone());
+            .fold(HashMap::new(), |mut acc, (name, response)| {
+                acc.insert(name.to_string(), response.clone());
                 acc
             });
 
