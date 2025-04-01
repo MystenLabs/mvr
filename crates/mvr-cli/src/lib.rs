@@ -529,12 +529,11 @@ fn insert_root_dependency(
         .as_array_of_tables_mut()
         .ok_or_else(|| anyhow!("Failed to get or create package array in lock file".red()))?;
 
-    // Convert local deps to git deps for that package.
-    packages.iter_mut().for_each(|package| {
-        if let Some(source) = convert_local_dep_to_git(package, &git_info) {
+    for package in packages.iter_mut() {
+        if let Some(source) = convert_local_dep_to_git(package, &git_info)? {
             package.insert("source", value(source));
         }
-    });
+    }
 
     packages.push(new_package);
 
@@ -554,18 +553,18 @@ fn insert_root_dependency(
 /// with the `local` dependency's `path`.
 ///
 /// Before:
-/// ```
-/// [[move.package]]
+///
 /// id = "dep"
 /// source = { local = "../token" }
-/// ```
 /// After:
-/// ```
-/// [[move.package]]
+///
 /// id = "dep"
 /// source = { git = "https://github.com/mvr-test/parent-package.git", rev = "v1.0.0", subdir = "packages/parent-package-dir/token" }
-/// ```
-fn convert_local_dep_to_git(dependency: &Table, git_info: &SafeGitInfo) -> Option<InlineTable> {
+///
+fn convert_local_dep_to_git(
+    dependency: &Table,
+    git_info: &SafeGitInfo,
+) -> Result<Option<InlineTable>> {
     dependency
         .get("source")
         .and_then(|items| items.as_table_like())
@@ -575,15 +574,20 @@ fn convert_local_dep_to_git(dependency: &Table, git_info: &SafeGitInfo) -> Optio
             new_source.insert("git", value(&git_info.repository_url.clone()));
             new_source.insert("rev", value(&git_info.tag.clone()));
 
+            let local_str = local.as_str().ok_or_else(|| {
+                anyhow!("Failed to get local dependency path. Found empty path on transitive dependency: {}", local)
+            })?;
+
             let path = PathBuf::from(git_info.path.clone())
-                .join(local.to_string())
+                .join(local_str)
                 .to_string_lossy()
                 .to_string();
 
             new_source.insert("subdir", value(&path));
 
-            new_source.into_inline_table()
+            Ok(new_source.into_inline_table())
         })
+        .transpose()
 }
 
 fn parse_source_package_name(toml_content: &str) -> Result<String> {

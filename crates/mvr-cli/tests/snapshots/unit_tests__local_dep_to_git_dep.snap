@@ -23,7 +23,7 @@ dependencies = [
 
 [[move.package]]
 id = "token"
-source = { git = "https://github.com/example/demo.git", rev = "v1.0.0", subdir = 'packages/demo/ "../token" ' }
+source = { git = "https://github.com/example/demo.git", rev = "v1.0.0", subdir = "packages/demo/../token" }
 
 dependencies = [
   { id = "Sui", name = "Sui" },
