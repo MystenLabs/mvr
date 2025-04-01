@@ -10,7 +10,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.7.0",
   "dependencies": {
     "deep-diff": "^1.0.2",
     "js-toml": "^1.0.1",
