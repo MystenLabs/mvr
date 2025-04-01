@@ -1,10 +1,12 @@
 use anyhow::Result;
 use expect_test::expect;
+use insta::assert_snapshot;
 use mvr::types::api_types::{GitInfo, PackageRequest};
 use mvr::types::Network;
 use mvr::{build_lock_files, check_address_consistency, published_ids};
 use std::collections::HashMap;
 use std::fs;
+use std::path::PathBuf;
 use std::str::FromStr;
 use sui_sdk_types::ObjectId;
 use tempfile::tempdir;
@@ -391,5 +393,25 @@ demo = "0x1234567890abcdef"
     "#]]
     .assert_debug_eq(&result);
 
+    Ok(())
+}
+
+
+#[tokio::test]
+async fn test_local_dep_to_git_dep() -> Result<()> {
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.extend(["tests", "test_data", "test_local_dep_to_git"]);
+
+    let resolved_packages = create_resolved_packages();
+    let mut fetched_files = HashMap::new();
+
+    fetched_files.insert(
+        "@mvr-test/first-app/1".to_string(),
+        (path.join("Move.toml"), path.join("Move.lock")),
+    );
+
+    let result = build_lock_files(&resolved_packages, &fetched_files).await?;
+
+    assert_snapshot!(result[0]);
     Ok(())
 }
