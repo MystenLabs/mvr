@@ -29,15 +29,11 @@ export type Clients = {
 const mainnet = new SuiClient({ url: "https://suins-rpc.mainnet.sui.io:443" });
 
 const testnetNamedPackagesPlugin = namedPackagesPlugin({
-  suiGraphQLClient: new SuiGraphQLClient({
-    url: 'https://mvr-rpc.sui-testnet.mystenlabs.com/graphql'
-  })
+  url: 'https://testnet.mvr.mystenlabs.com'
 });
 
 const mainnetNamedPackagesPlugin = namedPackagesPlugin({
-  suiGraphQLClient: new SuiGraphQLClient({
-    url: 'https://mvr-rpc.sui-mainnet.mystenlabs.com/graphql'
-  })
+  url: 'https://mainnet.mvr.mystenlabs.com',
 });
 
 export const DefaultClients: Clients = {
@@ -53,10 +49,10 @@ export const DefaultClients: Clients = {
   },
   graphql: {
     mainnet: new SuiGraphQLClient({
-      url: "https://mvr-rpc.sui-mainnet.mystenlabs.com",
+      url: "https://sui-mainnet.mystenlabs.com",
     }),
     testnet: new SuiGraphQLClient({
-      url: "https://mvr-rpc.sui-testnet.mystenlabs.com",
+      url: "https://sui-testnet.mystenlabs.com",
     }),
   },
   mvrPlugin: {

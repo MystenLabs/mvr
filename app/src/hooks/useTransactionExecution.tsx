@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { useSignTransaction } from '@mysten/dapp-kit';
+import { useSignAndExecuteTransaction, useSignTransaction } from '@mysten/dapp-kit';
 import { useState } from 'react';
 import {toast} from 'sonner';
 import { Transaction } from '@mysten/sui/transactions';
 import { SuiTransactionBlockResponse } from '@mysten/sui/client';
-import { isValidSuiAddress, toB64 } from '@mysten/sui/utils';
+import { isValidSuiAddress, toBase64 } from '@mysten/sui/utils';
 import { useMVRContext } from '@/components/providers/mvr-provider';
 import { useSuiClientsContext } from '@/components/providers/client-provider';
 
@@ -14,9 +14,7 @@ export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 	const clients = useSuiClientsContext();
 	const client = clients[network];
 
-	// register the plugin based on the selected network.
-	Transaction.registerGlobalSerializationPlugin('namedPackagesPlugin', clients.mvrPlugin[network]);
-
+	const {mutateAsync: signAndExecute } = useSignAndExecuteTransaction();
 
 	const { mutateAsync: signTransaction } = useSignTransaction();
 	const [txData, setTxData] = useState<string | undefined>(undefined);
@@ -28,6 +26,7 @@ export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 	const executeTransaction = async (
 		tx: Transaction,
 	): Promise<SuiTransactionBlockResponse | void> => {
+		tx.addSerializationPlugin(clients.mvrPlugin[network]);
 		if (!client) throw new Error("Client is not defined. Please refresh.");
 		if (isCustom) {
 			if (!customAddress || !isValidSuiAddress(customAddress)) {
@@ -37,7 +36,7 @@ export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 
 			tx.setSender(customAddress);
 
-			const txData = toB64(
+			const txData = toBase64(
 				await tx.build({
 					client,
 				}),
@@ -48,22 +47,21 @@ export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 		}
 
 		try {
-			const signature = await signTransaction({
-				// @ts-ignore temporary due to dapp-kit not deploying.
+			const digest = await signAndExecute({
 				transaction: tx!,
+				chain: network === 'mainnet' ? 'sui:mainnet' : 'sui:testnet',
 			});
 
-			const res = await client.executeTransactionBlock({
-				transactionBlock: signature.bytes,
-				signature: signature.signature,
+			await client.waitForTransaction({
+				digest: digest.digest,
+			});
+
+			const res = await client.getTransactionBlock({
+				digest: digest.digest,
 				options: {
 					showEffects: true,
 					showObjectChanges: true,
-				},
-			});
-			
-			await client.waitForTransaction({
-				digest: res.digest
+				}
 			});
 
 			toast.success('Successfully executed transaction!');

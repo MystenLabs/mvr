@@ -10,7 +10,6 @@ import "@mysten/dapp-kit/dist/index.css";
 import { mvrWalletTheme } from "@/data/wallet-theme";
 
 const networks = {
-  devnet: { url: getFullnodeUrl("devnet") },
   testnet: { url: getFullnodeUrl("testnet") },
   mainnet: { url: getFullnodeUrl("mainnet") },
 };
