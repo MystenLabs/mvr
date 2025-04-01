@@ -10,8 +10,8 @@ use crate::types::{
     MoveRegistryDependencies, Network,
 };
 
-const MVR_API_MAINNET_URL: &str = "https://qa.mainnet.mvr.mystenlabs.com";
-const MVR_API_TESTNET_URL: &str = "https://qa.testnet.mvr.mystenlabs.com";
+const MVR_API_MAINNET_URL: &str = "https://mainnet.mvr.mystenlabs.com";
+const MVR_API_TESTNET_URL: &str = "https://testnet.mvr.mystenlabs.com";
 
 /// Query the MVR API to get Package Information by name.
 pub async fn query_package(name: VersionedName, network: &Network) -> Result<PackageRequest> {
