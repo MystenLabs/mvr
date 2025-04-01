@@ -1,7 +1,6 @@
 "use client";
 
 import { WalletConnectedContent } from "@/components/layouts/WalletConnectedContent";
-import { NetworkMissmatch } from "@/components/NetworkMissmatch";
 import {
   AppContext,
   AppContextType,
@@ -82,7 +81,6 @@ export default function AppsLayout({
             </div>
           </div>
         </div>
-        <NetworkMissmatch expectedNetwork="mainnet" />
         {children}
       </AppContext.Provider>
     </WalletConnectedContent>

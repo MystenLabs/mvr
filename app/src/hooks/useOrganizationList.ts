@@ -1,5 +1,5 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
-import { MAINNET_CONFIG } from "@mysten/suins";
+import { mainPackage } from "@mysten/suins";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
 import { fetchAllOwnedObjects } from "@/utils/query";
@@ -12,7 +12,7 @@ import { KioskOwnerCap } from "@mysten/kiosk";
 import { useOwnedApps } from "./useOwnedApps";
 import { ReactNode } from "react";
 
-const NS_MAINNET_TYPE = `${MAINNET_CONFIG.suinsPackageId!.v1}::suins_registration::SuinsRegistration`;
+const NS_MAINNET_TYPE = `${mainPackage.mainnet.packageIdV1}::suins_registration::SuinsRegistration`;
 const NS_SUBNAME_MAINNET_TYPE = `0x00c2f85e07181b90c140b15c5ce27d863f93c4d9159d2a4e7bdaeb40e286d6f5::subdomain_registration::SubDomainRegistration`;
 
 export type SuinsName = {
