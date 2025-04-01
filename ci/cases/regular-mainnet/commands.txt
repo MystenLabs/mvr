@@ -1,0 +1,4 @@
+mvr add @mvr/demo --network mainnet
+mvr add @testingafreeclaim/upgraded
+mvr add @pkg/qwer
+sui move build

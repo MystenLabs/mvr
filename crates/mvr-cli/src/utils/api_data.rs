@@ -14,11 +14,12 @@ const MVR_API_MAINNET_URL: &str = "https://mainnet.mvr.mystenlabs.com";
 const MVR_API_TESTNET_URL: &str = "https://testnet.mvr.mystenlabs.com";
 
 /// Query the MVR API to get Package Information by name.
-pub async fn query_package(name: VersionedName, network: &Network) -> Result<PackageRequest> {
+pub async fn query_package(name: &str, network: &Network) -> Result<(String, PackageRequest)> {
+    let versioned_name = VersionedName::from_str(name)?;
     let response = reqwest::get(format!(
         "{}/v1/names/{}",
         get_api_url(network)?,
-        name.to_string()
+        versioned_name.to_string()
     ))
     .await
     .map_err(|e| anyhow::anyhow!("Failed to query package: {}. Error: {}", name, e))?;
@@ -28,7 +29,7 @@ pub async fn query_package(name: VersionedName, network: &Network) -> Result<Pac
         .await
         .map_err(|e| anyhow::anyhow!("Failed to resolve package: {}. Error: {}", name, e))?;
 
-    Ok(body)
+    Ok((name.to_string(), body))
 }
 
 pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<ObjectId> {
@@ -53,8 +54,7 @@ pub async fn query_multiple_dependencies(
 ) -> Result<HashMap<String, PackageRequest>> {
     let mut requests = vec![];
     deps.packages.iter().try_for_each(|package| {
-        let versioned_name = VersionedName::from_str(package)?;
-        requests.push(query_package(versioned_name, &deps.network));
+        requests.push(query_package(package, &deps.network));
         Ok::<(), anyhow::Error>(())
     })?;
 
@@ -62,8 +62,8 @@ pub async fn query_multiple_dependencies(
         try_join_all(requests)
             .await?
             .iter()
-            .fold(HashMap::new(), |mut acc, package_request| {
-                acc.insert(package_request.name.clone(), package_request.clone());
+            .fold(HashMap::new(), |mut acc, (name, response)| {
+                acc.insert(name.clone(), response.clone());
                 acc
             });
 

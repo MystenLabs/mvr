@@ -1,0 +1,15 @@
+[package]
+name = "nftmaker"
+edition = "2024.beta"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
+demo = { r.mvr = "@mvr/demo" }
+upgraded = { r.mvr = "@testingafreeclaim/upgraded" }
+mvr_a = { r.mvr = "@pkg/qwer" }
+
+[addresses]
+nftmaker = "0x0"
+
+[r.mvr]
+network = "mainnet"
