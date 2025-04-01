@@ -125,7 +125,7 @@ jobs:
 
       - name: Run mvr-cli integration tests
         run: |
-          cd crates/ci && pnpm install && pnpm test
+          cd ci && pnpm install && pnpm test
 
   rustfmt:
     runs-on: [ ubuntu-latest ]

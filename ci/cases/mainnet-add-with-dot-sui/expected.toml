@@ -1,0 +1,13 @@
+[package]
+name = "nftmaker"
+edition = "2024.beta"
+
+[dependencies]
+mvr_a = { r.mvr = "pkg.sui/qwer/1" }
+
+[addresses]
+nftmaker = "0x0"
+
+[r.mvr]
+network = "mainnet"
+
