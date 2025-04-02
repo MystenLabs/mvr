@@ -440,7 +440,7 @@ pub async fn build_lock_files(
         let lock_with_root =
             insert_root_dependency(&move_lock_content, &root_name_from_source, &git_info)?;
 
-        lock_files.push(lock_with_root.to_string());
+        lock_files.push(lock_with_root);
     }
 
     Ok(lock_files)
@@ -468,7 +468,7 @@ fn insert_root_dependency(
     toml_content: &str,
     root_name: &str,
     git_info: &SafeGitInfo,
-) -> Result<DocumentMut> {
+) -> Result<String> {
     let mut doc = toml_content
         .parse::<DocumentMut>()
         .context("Failed to parse TOML content")?;
@@ -544,12 +544,12 @@ fn insert_root_dependency(
         move_section.insert(LOCK_PACKAGE_VERSION_KEY, value(3));
     }
 
-    Ok(doc)
+    Ok(doc.to_string())
 }
 
 /// For `local` dependencies of a given package, we want to convert them into `git` dependencies,
 /// where the `git` dependency's `repository_url` is the parent package's `repository_url`,
-/// the `tag` is the parent package's `tag`, and the `path` is the parent package's `path` joined
+/// the `tag` is the parent package's `rev`, and the `path` is the parent package's `path` joined
 /// with the `local` dependency's `path`.
 ///
 /// Before:
