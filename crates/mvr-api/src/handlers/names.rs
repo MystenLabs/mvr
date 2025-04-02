@@ -50,15 +50,9 @@ pub struct NameSearchQueryParams {
     pub limit: Option<u32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct NameCursor {
     pub name: Option<String>,
-}
-
-impl Default for NameCursor {
-    fn default() -> Self {
-        Self { name: None }
-    }
 }
 
 pub struct Names;
