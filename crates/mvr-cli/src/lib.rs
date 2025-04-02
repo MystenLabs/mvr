@@ -81,6 +81,7 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
     }
 
     check_address_consistency(&resolved_packages, &network, &fetched_files).await?;
+
     let lock_files = build_lock_files(&resolved_packages, &fetched_files).await?;
 
     // Output each lock file content separated by null characters
@@ -438,6 +439,7 @@ pub async fn build_lock_files(
         let root_name_from_source = parse_source_package_name(&move_toml_content)?;
         let lock_with_root =
             insert_root_dependency(&move_lock_content, &root_name_from_source, &git_info)?;
+
         lock_files.push(lock_with_root);
     }
 
@@ -527,6 +529,12 @@ fn insert_root_dependency(
         .as_array_of_tables_mut()
         .ok_or_else(|| anyhow!("Failed to get or create package array in lock file".red()))?;
 
+    for package in packages.iter_mut() {
+        if let Some(source) = convert_local_dep_to_git(package, &git_info)? {
+            package.insert("source", value(source));
+        }
+    }
+
     packages.push(new_package);
 
     // If the lockfile is version 2, migrate to version 3.
@@ -537,6 +545,49 @@ fn insert_root_dependency(
     }
 
     Ok(doc.to_string())
+}
+
+/// For `local` dependencies of a given package, we want to convert them into `git` dependencies,
+/// where the `git` dependency's `repository_url` is the parent package's `repository_url`,
+/// the `tag` is the parent package's `rev`, and the `path` is the parent package's `path` joined
+/// with the `local` dependency's `path`.
+///
+/// Before:
+///
+/// id = "dep"
+/// source = { local = "../token" }
+/// After:
+///
+/// id = "dep"
+/// source = { git = "https://github.com/mvr-test/parent-package.git", rev = "v1.0.0", subdir = "packages/parent-package-dir/token" }
+///
+fn convert_local_dep_to_git(
+    dependency: &Table,
+    git_info: &SafeGitInfo,
+) -> Result<Option<InlineTable>> {
+    dependency
+        .get("source")
+        .and_then(|items| items.as_table_like())
+        .and_then(|items| items.get("local"))
+        .map(|local| {
+            let mut new_source = Table::new();
+            new_source.insert("git", value(&git_info.repository_url.clone()));
+            new_source.insert("rev", value(&git_info.tag.clone()));
+
+            let local_str = local.as_str().ok_or_else(|| {
+                anyhow!("Failed to get local dependency path. Found empty path on transitive dependency: {}", local)
+            })?;
+
+            let path = PathBuf::from(git_info.path.clone())
+                .join(local_str)
+                .to_string_lossy()
+                .to_string();
+
+            new_source.insert("subdir", value(&path));
+
+            Ok(new_source.into_inline_table())
+        })
+        .transpose()
 }
 
 fn parse_source_package_name(toml_content: &str) -> Result<String> {
