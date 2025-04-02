@@ -3,6 +3,7 @@ pub(crate) mod errors;
 pub(crate) mod handlers;
 pub(crate) mod metrics;
 pub(crate) mod route;
+pub(crate) mod utils;
 
 use std::{net::SocketAddr, sync::Arc};
 

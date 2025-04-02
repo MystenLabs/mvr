@@ -23,6 +23,9 @@ pub enum ApiError {
 
     #[error("Resource not found: {0}")]
     NotFound(String),
+
+    #[error("Invalid cursor: {0}")]
+    InvalidCursor(String),
 }
 
 #[derive(Serialize)]
@@ -36,6 +39,7 @@ impl IntoResponse for ApiError {
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             ApiError::InternalServerError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            ApiError::InvalidCursor(msg) => (StatusCode::BAD_REQUEST, msg),
         };
 
         let body = Json(ErrorResponse { message });

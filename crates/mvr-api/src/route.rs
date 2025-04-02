@@ -43,11 +43,11 @@ pub fn create_router(app: Arc<AppState>) -> Router {
             get(StructDefinition::resolve),
         )
         // TODO: (paginated) Generic name querying, with optional search query.
-        // .route(
-        //     "/names",
-        //     // Queries all names (paginated & can supply search query)
-        //     get(Name::search),
-        // )
+        .route(
+            "/names",
+            // Queries all names (paginated & can supply search query)
+            get(Names::search_names),
+        )
         .route("/names/{*name}", get(Names::get_by_name));
 
     Router::new()

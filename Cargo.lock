@@ -5018,6 +5018,7 @@ dependencies = [
  "async-graphql-value",
  "async-trait",
  "axum 0.8.1",
+ "base64 0.22.1",
  "bcs",
  "chrono",
  "clap",
