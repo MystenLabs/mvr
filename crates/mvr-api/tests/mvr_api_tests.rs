@@ -1,4 +1,6 @@
+use insta::assert_snapshot;
 use mvr_test_cluster::MvrTestCluster;
+use reqwest::StatusCode;
 use sui_types::base_types::ObjectID;
 #[cfg(test)]
 mod mvr_test_cluster;
@@ -139,6 +141,26 @@ async fn test_struct_definition() -> Result<(), anyhow::Error> {
             .unwrap(),
         format!("{}::c::WPhantomTypeParam", v1_id())
     );
+
+    test_cluster.teardown();
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_package_by_name() -> Result<(), anyhow::Error> {
+    let test_cluster = MvrTestCluster::new(None).await?;
+    test_cluster.setup_dummy_data().await?;
+
+    let (_, v2) = test_cluster.package_by_name("@test/core").await?;
+    assert_snapshot!(v2.to_string());
+
+    let (_, v1) = test_cluster.package_by_name("@test/core/1").await?;
+    assert_snapshot!(v1.to_string());
+
+    let (status, non_existent) = test_cluster.package_by_name("@test/does-not-exist").await?;
+
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_snapshot!(non_existent.to_string());
 
     test_cluster.teardown();
     Ok(())

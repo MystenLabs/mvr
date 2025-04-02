@@ -1,0 +1,5 @@
+---
+source: crates/mvr-api/tests/mvr_api_tests.rs
+expression: non_existent.to_string()
+---
+{"message":"Package @test/does-not-exist not found"}

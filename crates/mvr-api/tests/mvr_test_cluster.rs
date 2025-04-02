@@ -13,7 +13,7 @@ use mvr_schema::{
     schema::{name_records, package_infos, packages},
     MIGRATIONS,
 };
-use reqwest::Client;
+use reqwest::{Client, Response, StatusCode};
 use serde_json::json;
 use sui_move_build::{BuildConfig, CompiledPackage};
 use sui_pg_db::{temp::TempDb, Db, DbArgs};
@@ -128,6 +128,19 @@ impl MvrTestCluster {
         Ok(res_body)
     }
 
+    pub async fn package_by_name(&self, name: &str) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
+        let res = self
+            .client
+            .get(format!("{}v1/names/{}", self.server_url.as_str(), name).parse::<Url>()?)
+            .send()
+            .await?;
+
+        let status = res.status();
+        let res_body = res.json::<serde_json::Value>().await?;
+
+        Ok((status, res_body))
+    }
+
     pub fn teardown(&self) {
         self.server_handle.abort();
         self.cancellation_token.cancel();
@@ -235,7 +248,12 @@ async fn setup_dummy_data(db: &Db) -> Result<(), anyhow::Error> {
         // use v2 for the mainnet_id
         mainnet_id: Some(c_pkg_info_id),
         testnet_id: None,
-        metadata: serde_json::Value::Null,
+        metadata: json!({
+            "description": "This is a test package",
+            "icon_url": "https://moveregistry.com/icon.png",
+            "website_url": "https://moveregistry.com",
+            "documentation_url": "https://docs.suins.io/move-registry",
+        }),
     };
 
     insert_into(name_records::table)
