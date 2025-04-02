@@ -12,6 +12,7 @@ tokio = { version = "1.43.0", features = ["full"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 regex = "1.11.1"
 rand = "0.9.0"
+base64 = "0.22.1"
 
 futures.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -35,7 +36,7 @@ move-core-types.workspace = true
 sui-types.workspace = true
 telemetry-subscribers.workspace = true
 tokio-util.workspace = true
-sui-sdk-types.workspace = true
+sui-sdk-types = { workspace = true, features = ["serde"] }
 mvr-types = { path = "../mvr-types" }
 mvr-schema = { path = "../mvr-schema" }
 
