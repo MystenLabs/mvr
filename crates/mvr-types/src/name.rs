@@ -4,7 +4,6 @@
 use core::fmt;
 use std::str::FromStr;
 
-use anyhow::Result;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
