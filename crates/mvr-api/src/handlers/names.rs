@@ -20,7 +20,7 @@ use crate::{
         resolution_loader::ResolutionKey,
     },
     errors::ApiError,
-    utils::pagination::{paginate_results, Cursor, PaginatedResponse, PaginationLimit},
+    utils::pagination::{format_paginated_response, Cursor, PaginatedResponse, PaginationLimit},
 };
 
 #[derive(Serialize, Deserialize)]
@@ -114,10 +114,12 @@ ORDER BY relevance DESC, name ASC LIMIT $4"
 
         let results: Vec<NameSearchResponse> = connection.results(query).await?;
 
-        Ok(Json(paginate_results(results, limit.get(), |item| {
-            NameCursor {
+        Ok(Json(format_paginated_response(
+            results,
+            limit.get(),
+            |item| NameCursor {
                 name: Some(item.name.clone()),
-            }
-        })))
+            },
+        )))
     }
 }

@@ -97,7 +97,7 @@ impl<T> PaginatedResponse<T> {
 ///
 /// This does not (yet and until needed) account for ASC/DESC
 /// ordering (where we'd use the first item instead).
-pub fn paginate_results<T, C: Serialize, F>(
+pub fn format_paginated_response<T, C: Serialize, F>(
     mut results: Vec<T>,
     limit: u32,
     encode_cursor: F,
@@ -170,7 +170,7 @@ mod tests {
             },
         ];
 
-        let paginated = paginate_results(results.clone(), 3, |item| TestCursor {
+        let paginated = format_paginated_response(results.clone(), 3, |item| TestCursor {
             id: item.id,
             name: item.name.clone(),
         });
@@ -179,7 +179,7 @@ mod tests {
         // limit is 3, and we pass exactly 3 results, so no next cursor. We always query with 1 more than the limit.
         assert!(paginated.next_cursor.is_none());
 
-        let paginated = paginate_results(results.clone(), 2, |item| TestCursor {
+        let paginated = format_paginated_response(results.clone(), 2, |item| TestCursor {
             id: item.id,
             name: item.name.clone(),
         });
@@ -190,7 +190,7 @@ mod tests {
         assert_eq!(paginated.items[1], results[1]);
         assert_eq!(paginated.next_cursor, Some(Cursor::encode(&results[1])));
 
-        let paginated = paginate_results::<TestCursor, _, _>(vec![], 25, |_| TestCursor {
+        let paginated = format_paginated_response::<TestCursor, _, _>(vec![], 25, |_| TestCursor {
             id: None,
             name: None,
         });
