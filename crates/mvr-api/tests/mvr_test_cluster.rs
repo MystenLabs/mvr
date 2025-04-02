@@ -128,7 +128,10 @@ impl MvrTestCluster {
         Ok(res_body)
     }
 
-    pub async fn package_by_name(&self, name: &str) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
+    pub async fn package_by_name(
+        &self,
+        name: &str,
+    ) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
         let res = self
             .client
             .get(format!("{}v1/names/{}", self.server_url.as_str(), name).parse::<Url>()?)
