@@ -2,10 +2,12 @@ use crate::handlers::git_info_handler::{GitInfoHandler, MainnetGitInfo, TestnetG
 use crate::handlers::name_record_handler::NameRecordHandler;
 use crate::handlers::package_handler::PackageHandler;
 use crate::handlers::package_info_handler::PackageInfoHandler;
+use crate::handlers::NoOpsHandler;
 use anyhow::Context;
 use clap::Parser;
 use mvr_indexer::{
-    MAINNET_CHAIN_ID, MAINNET_REMOTE_STORE_URL, TESTNET_CHAIN_ID, TESTNET_REMOTE_STORE_URL,
+    DEVNET_FULL_NODE_REST_API_URL, MAINNET_CHAIN_ID, MAINNET_REMOTE_STORE_URL, TESTNET_CHAIN_ID,
+    TESTNET_REMOTE_STORE_URL,
 };
 use mvr_schema::MIGRATIONS;
 use prometheus::Registry;
@@ -16,8 +18,11 @@ use sui_indexer_alt_framework::ingestion::ClientArgs;
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
 use sui_indexer_alt_framework::{Indexer, IndexerArgs};
 use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
+use sui_pg_db::temp::TempDb;
 use sui_pg_db::DbArgs;
+use sui_rpc_api::Client;
 use tokio_util::sync::CancellationToken;
+use tracing::info;
 use url::Url;
 
 pub(crate) mod handlers;
@@ -69,27 +74,61 @@ async fn main() -> Result<(), anyhow::Error> {
         cancel.child_token(),
     );
 
-    let mut indexer = Indexer::new(
-        database_url,
-        db_args,
-        indexer_args,
-        ClientArgs {
-            remote_store_url: Some(env.remote_store_url()),
-            local_ingestion_path: None,
-            rpc_api_url: None,
-            rpc_username: None,
-            rpc_password: None,
-        },
-        Default::default(),
-        Some(&MIGRATIONS),
-        metrics.registry(),
-        cancel.clone(),
-    )
-    .await?;
+    let (mut indexer, _temp_db) = if matches!(env, MvrEnv::CI) {
+        let latest_cp = Client::new(env.remote_store_url().to_string())?
+            .get_latest_checkpoint()
+            .await?;
+        info!("Starting from checkpoint : {}", latest_cp.sequence_number);
+
+        let temp_db = TempDb::new()?;
+        let indexer = Indexer::new(
+            temp_db.database().url().clone(),
+            db_args,
+            IndexerArgs {
+                first_checkpoint: Some(latest_cp.sequence_number),
+                last_checkpoint: None,
+                pipeline: vec![],
+                skip_watermark: true,
+            },
+            ClientArgs {
+                remote_store_url: None,
+                local_ingestion_path: None,
+                rpc_api_url: Some(env.remote_store_url()),
+                rpc_username: None,
+                rpc_password: None,
+            },
+            Default::default(),
+            None,
+            metrics.registry(),
+            cancel.clone(),
+        )
+        .await?;
+        (indexer, Some(temp_db))
+    } else {
+        let indexer = Indexer::new(
+            database_url,
+            db_args,
+            indexer_args,
+            ClientArgs {
+                remote_store_url: Some(env.remote_store_url()),
+                local_ingestion_path: None,
+                rpc_api_url: None,
+                rpc_username: None,
+                rpc_password: None,
+            },
+            Default::default(),
+            Some(&MIGRATIONS),
+            metrics.registry(),
+            cancel.clone(),
+        )
+        .await?;
+        (indexer, None)
+    };
 
     match env {
         MvrEnv::Mainnet => create_mainnet_pipelines(&mut indexer).await?,
         MvrEnv::Testnet => create_testnet_pipelines(&mut indexer).await?,
+        MvrEnv::CI => create_ci_pipelines(&mut indexer).await?,
     };
 
     let h_indexer = indexer.run().await?;
@@ -148,10 +187,18 @@ async fn create_testnet_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::E
     Ok(())
 }
 
+async fn create_ci_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::Error> {
+    indexer
+        .concurrent_pipeline(NoOpsHandler, Default::default())
+        .await?;
+    Ok(())
+}
+
 #[derive(Debug, Clone, clap::ValueEnum)]
 enum MvrEnv {
     Mainnet,
     Testnet,
+    CI,
 }
 
 impl Default for MvrEnv {
@@ -165,6 +212,7 @@ impl Display for MvrEnv {
         match self {
             MvrEnv::Mainnet => write!(f, "mainnet"),
             MvrEnv::Testnet => write!(f, "testnet"),
+            MvrEnv::CI => write!(f, "ci"),
         }
     }
 }
@@ -174,6 +222,7 @@ impl MvrEnv {
         let remote_store_url = match self {
             MvrEnv::Mainnet => MAINNET_REMOTE_STORE_URL,
             MvrEnv::Testnet => TESTNET_REMOTE_STORE_URL,
+            MvrEnv::CI => DEVNET_FULL_NODE_REST_API_URL,
         };
         // Safe to unwrap on verified static URLs
         Url::parse(remote_store_url).unwrap()

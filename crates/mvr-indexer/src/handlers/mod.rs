@@ -9,9 +9,17 @@ pub mod name_record_handler;
 pub mod package_handler;
 pub mod package_info_handler;
 
+use async_trait::async_trait;
 use move_core_types::language_storage::StructTag as MoveStructTag;
+use mvr_schema::models::Package;
 use std::str::FromStr;
+use std::sync::Arc;
+use sui_indexer_alt_framework::pipeline::concurrent::Handler;
+use sui_indexer_alt_framework::pipeline::Processor;
+use sui_pg_db::Connection;
 use sui_sdk_types::StructTag;
+use sui_types::full_checkpoint_content::CheckpointData;
+use tracing::info;
 
 // Convert rust sdk struct tag to move struct tag.
 pub fn convert_struct_tag(tag: StructTag) -> MoveStructTag {
@@ -64,5 +72,27 @@ mod test {
         let result = values.iter().cmp_dedup(|v| v.0, |v1, v2| v1.1.cmp(&v2.1));
         let expected = vec![("a", 2), ("b", 3), ("c", 4)];
         assert_eq!(expected, result)
+    }
+}
+
+pub struct NoOpsHandler;
+
+#[async_trait]
+impl Handler for NoOpsHandler {
+    async fn commit(_: &[Self::Value], _: &mut Connection<'_>) -> anyhow::Result<usize> {
+        Ok(0)
+    }
+}
+
+impl Processor for NoOpsHandler {
+    const NAME: &'static str = "No Ops Handler";
+    type Value = Package;
+
+    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+        info!(
+            "Processed checkpoint: {}",
+            checkpoint.checkpoint_summary.sequence_number
+        );
+        Ok(vec![])
     }
 }
