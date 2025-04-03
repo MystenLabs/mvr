@@ -42,8 +42,15 @@ export default function CreatePackageInfo({
 
   const postCreation = async () => {
     closeDialog();
+    cleanUp();
     await refetchPackageInfos();
     await refetchUpgradeCaps();
+  };
+
+  const cleanUp = () => {
+    setStep(1);
+    setSelectedPackage(null);
+    setDisplay(DefaultPackageDisplay);
   };
 
   const selectedUpgradeCap = useMemo(() => {
