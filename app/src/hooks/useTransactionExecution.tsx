@@ -8,13 +8,13 @@ import { SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { isValidSuiAddress, toBase64 } from '@mysten/sui/utils';
 import { useMVRContext } from '@/components/providers/mvr-provider';
 import { useSuiClientsContext } from '@/components/providers/client-provider';
+import { useActiveAddress } from './useActiveAddress';
 
 export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 	const { isCustom, customAddress } = useMVRContext();
 	const clients = useSuiClientsContext();
 	const client = clients[network];
-
-	const {mutateAsync: signAndExecute } = useSignAndExecuteTransaction();
+	const activeAddress = useActiveAddress();
 
 	const { mutateAsync: signTransaction } = useSignTransaction();
 	const [txData, setTxData] = useState<string | undefined>(undefined);
@@ -47,21 +47,27 @@ export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 		}
 
 		try {
-			const digest = await signAndExecute({
-				transaction: tx!,
+			if (!activeAddress) throw new Error('No connected wallet found. Please connect a wallet and try again.');
+			tx.setSender(activeAddress);
+
+			const signed = await signTransaction({
+				transaction: toBase64(await tx.build({
+					client,
+				})),
 				chain: network === 'mainnet' ? 'sui:mainnet' : 'sui:testnet',
 			});
 
-			await client.waitForTransaction({
-				digest: digest.digest,
-			});
-
-			const res = await client.getTransactionBlock({
-				digest: digest.digest,
+			const res = await client.executeTransactionBlock({
+				transactionBlock: signed.bytes,
+				signature: signed.signature,
 				options: {
 					showEffects: true,
 					showObjectChanges: true,
 				}
+			});
+
+			await client.waitForTransaction({
+				digest: res.digest,
 			});
 
 			toast.success('Successfully executed transaction!');

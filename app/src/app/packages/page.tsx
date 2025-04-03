@@ -8,10 +8,7 @@ import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import Link from "next/link";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import CreatePackageInfo from "@/components/modals/create-package-info/CreatePackageInfo";
-import { Text } from "@/components/ui/Text";
-import { formatAddress } from "@mysten/sui/utils";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import { PackageInfoViewer } from "@/components/packages/PackageInfoViewer";
 import { useActiveAddress } from "@/hooks/useActiveAddress";
 import LoadingState from "@/components/LoadingState";
@@ -125,13 +122,7 @@ export default function Packages() {
               disableClear
               value={selectedPackage?.objectId}
               options={packageInfos ?? []}
-              onChange={(value) => {
-                setSelectedPackage(
-                  packageInfos.find(
-                    (packageInfo) => packageInfo.objectId === value,
-                  ) ?? null,
-                );
-              }}
+              onChange={(id) => setSelectedPackage(packageInfos?.find((x) => x.objectId === id) ?? null)}
             />
           </div>
         </div>

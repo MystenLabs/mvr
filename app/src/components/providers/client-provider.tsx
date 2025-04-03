@@ -26,7 +26,7 @@ export type Clients = {
   };
 };
 
-const mainnet = new SuiClient({ url: "https://suins-rpc.mainnet.sui.io:443" });
+const mainnet = new SuiClient({ url: "https://suins-rpc.mainnet.sui.io:443", network: 'mainnet' });
 
 const testnetNamedPackagesPlugin = namedPackagesPlugin({
   url: 'https://testnet.mvr.mystenlabs.com'
@@ -38,9 +38,9 @@ const mainnetNamedPackagesPlugin = namedPackagesPlugin({
 
 export const DefaultClients: Clients = {
   mainnet,
-  testnet: new SuiClient({ url: "https://suins-rpc.testnet.sui.io:443" }),
-  devnet: new SuiClient({ url: getFullnodeUrl("devnet") }),
-  localnet: new SuiClient({ url: getFullnodeUrl("localnet") }),
+  testnet: new SuiClient({ url: "https://suins-rpc.testnet.sui.io:443", network: 'testnet' }),
+  devnet: new SuiClient({ url: getFullnodeUrl("devnet"), network: 'devnet' }),
+  localnet: new SuiClient({ url: getFullnodeUrl("localnet"), network: 'localnet' }),
   kiosk: {
     mainnet: new KioskClient({
       client: mainnet,
