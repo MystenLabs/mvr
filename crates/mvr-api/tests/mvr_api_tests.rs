@@ -208,36 +208,46 @@ async fn test_search_with_filters() -> Result<(), anyhow::Error> {
     let next_cursor = query["next_cursor"].as_str().unwrap().to_string();
 
     // now let's paginate again.
-    query = test_cluster.search_names(None, Some(next_cursor), Some(3)).await?;
+    query = test_cluster
+        .search_names(None, Some(next_cursor), Some(3))
+        .await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 3);
     assert!(query["next_cursor"].is_null());
 
     // now let's change the search query to be "@test"
-    query = test_cluster.search_names(Some("@test".to_string()), None, None).await?;
+    query = test_cluster
+        .search_names(Some("@test".to_string()), None, None)
+        .await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 3);
     assert!(query["next_cursor"].is_null());
 
     // now let's change the search query to be "@another"
-    query = test_cluster.search_names(Some("@another".to_string()), None, None).await?;
+    query = test_cluster
+        .search_names(Some("@another".to_string()), None, None)
+        .await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 2);
     assert!(query["next_cursor"].is_null());
 
     // now let's change the search query to be "@final"
-    query = test_cluster.search_names(Some("@final".to_string()), None, None).await?;
+    query = test_cluster
+        .search_names(Some("@final".to_string()), None, None)
+        .await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 1);
     assert!(query["next_cursor"].is_null());
 
-
     // now let's change the search query to include names that have `fi` in them.
-    query = test_cluster.search_names(Some("fi".to_string()), None, None).await?;
+    query = test_cluster
+        .search_names(Some("fi".to_string()), None, None)
+        .await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 2);
     assert!(query["next_cursor"].is_null());
 
     // now let's change the search query to include names that have `final` in them.
-    query = test_cluster.search_names(Some("final".to_string()), None, None).await?;
+    query = test_cluster
+        .search_names(Some("final".to_string()), None, None)
+        .await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 1);
     assert!(query["next_cursor"].is_null());
-
 
     test_cluster.teardown();
 
