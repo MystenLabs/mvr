@@ -32,6 +32,8 @@ pub enum Command {
     },
     /// Search for an app in the move registry.
     Search {
+        /// Your search query. Expects a partial package name or description.
+        /// To lookup for a given organization, use `@<organization_name>/`.
         query: Option<String>,
         /// The number of results to return. Default is 10, maximum is 50.
         #[arg(short, long)]
