@@ -3,15 +3,18 @@ use std::{collections::HashMap, str::FromStr};
 use ::futures::future::try_join_all;
 use anyhow::{bail, Result};
 use mvr_types::name::VersionedName;
+use reqwest::Client;
 use sui_sdk_types::ObjectId;
 
 use crate::types::{
-    api_types::{PackageRequest, ResolutionResponse},
+    api_types::{PackageRequest, ResolutionResponse, SearchNamesResponse},
     MoveRegistryDependencies, Network,
 };
 
 const MVR_API_MAINNET_URL: &str = "https://mainnet.mvr.mystenlabs.com";
 const MVR_API_TESTNET_URL: &str = "https://testnet.mvr.mystenlabs.com";
+
+const DEFAULT_LIMIT: u32 = 10;
 
 /// Query the MVR API to get Package Information by name.
 pub async fn query_package(name: &str, network: &Network) -> Result<(String, PackageRequest)> {
@@ -85,6 +88,48 @@ pub async fn query_multiple_dependencies(
     }
 
     Ok(package_requests)
+}
+
+pub async fn search_names(
+    search: Option<String>,
+    limit: Option<u32>,
+    cursor: Option<String>,
+) -> Result<SearchNamesResponse> {
+    let mut params = HashMap::new();
+    params.insert("limit", limit.unwrap_or(DEFAULT_LIMIT).to_string());
+
+    if let Some(search) = search {
+        params.insert("search", search);
+    }
+
+    if let Some(cursor) = cursor {
+        params.insert("cursor", cursor);
+    }
+
+    let client = Client::new();
+
+    let response = client
+        .get(format!("{}/v1/names", get_api_url(&Network::Mainnet)?,))
+        .query(&params)
+        .send()
+        .await
+        .map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to search names: {}. Error: {}",
+                params.get("search").unwrap_or(&String::default()),
+                e
+            )
+        })?;
+
+    let body = response.json::<SearchNamesResponse>().await.map_err(|e| {
+        anyhow::anyhow!(
+            "Failed to search names: {}. Error: {}",
+            params.get("search").unwrap_or(&String::default()),
+            e
+        )
+    })?;
+
+    Ok(body)
 }
 
 fn get_api_url(network: &Network) -> Result<&str> {
