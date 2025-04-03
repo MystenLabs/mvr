@@ -1,0 +1,5 @@
+---
+source: crates/mvr-api/tests/mvr_api_tests.rs
+expression: v2.to_string()
+---
+{"name":"@test/core","metadata":{"icon_url":"https://moveregistry.com/icon.png","description":"This is a test package","website_url":"https://moveregistry.com","documentation_url":"https://docs.suins.io/move-registry"},"package_info":{"id":"0x0000000000000000000000000000000000000000000000000000000000000002","git_table_id":"","default_name":"@test/core","metadata":null},"git_info":null,"version":2,"package_address":"0x00000000000000000000000000000000000000000000000000000000000000c2"}
