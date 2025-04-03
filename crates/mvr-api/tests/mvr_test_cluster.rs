@@ -13,7 +13,7 @@ use mvr_schema::{
     schema::{name_records, package_infos, packages},
     MIGRATIONS,
 };
-use reqwest::{Client, Response, StatusCode};
+use reqwest::{Client, StatusCode};
 use serde_json::json;
 use sui_move_build::{BuildConfig, CompiledPackage};
 use sui_pg_db::{temp::TempDb, Db, DbArgs};
@@ -44,8 +44,8 @@ impl MvrTestCluster {
     }
 
     pub async fn setup_dummy_data(&self) -> Result<(), anyhow::Error> {
-        let db = self.db_for_write().await?;
-        setup_dummy_data(&db).await?;
+        let mut db = self.db_for_write().await?;
+        setup_dummy_data(&mut db).await?;
         Ok(())
     }
 
@@ -144,6 +144,44 @@ impl MvrTestCluster {
         Ok((status, res_body))
     }
 
+    pub async fn search_names(
+        &self,
+        search: Option<String>,
+        cursor: Option<String>,
+        limit: Option<u32>,
+    ) -> Result<serde_json::Value, anyhow::Error> {
+        let cursor_str = if let Some(cursor) = cursor {
+            format!("&cursor={}", cursor)
+        } else {
+            "".to_string()
+        };
+
+        let limit_str = if let Some(limit) = limit {
+            format!("&limit={}", limit)
+        } else {
+            "".to_string()
+        };
+
+        let res = self
+            .client
+            .get(
+                format!(
+                    "{}v1/names?search={}{}{}",
+                    self.server_url.as_str(),
+                    search.unwrap_or_default(),
+                    cursor_str,
+                    limit_str
+                )
+                .parse::<Url>()?,
+            )
+            .send()
+            .await?;
+
+        let res_body = res.json::<serde_json::Value>().await?;
+
+        Ok(res_body)
+    }
+
     pub fn teardown(&self) {
         self.server_handle.abort();
         self.cancellation_token.cancel();
@@ -190,7 +228,7 @@ async fn setup(port: Option<u16>) -> Result<MvrTestCluster, anyhow::Error> {
     })
 }
 
-async fn setup_dummy_data(db: &Db) -> Result<(), anyhow::Error> {
+async fn setup_dummy_data(db: &mut Db) -> Result<(), anyhow::Error> {
     let c_pkg = MovePackage::new_initial(&build_test_modules("Cv1"), u64::MAX, 7, []).unwrap();
     let c_new = c_pkg
         .new_upgraded(
@@ -225,13 +263,6 @@ async fn setup_dummy_data(db: &Db) -> Result<(), anyhow::Error> {
         deps: vec![],
     };
 
-    let mut connection = db.connect().await?;
-
-    insert_into(packages::table)
-        .values(vec![pkg_v1, pkg_v2])
-        .execute(&mut *connection)
-        .await?;
-
     let c_pkg_info_id = ObjectID::from_str("0x2").unwrap().to_canonical_string(true);
 
     let pkg_info = PackageInfo {
@@ -244,23 +275,24 @@ async fn setup_dummy_data(db: &Db) -> Result<(), anyhow::Error> {
         package_id: c_pkg.id().to_canonical_string(true),
     };
 
-    // Now create the equivalent `name_record` entries.
-    let name_record = NameRecord {
-        name: "@test/core".to_string(),
-        object_version: 0,
-        // use v2 for the mainnet_id
-        mainnet_id: Some(c_pkg_info_id),
-        testnet_id: None,
-        metadata: json!({
+    add_name_record_to_database(
+        db,
+        "@test/core",
+        Some(c_pkg_info_id.clone()),
+        None,
+        Some(json!({
             "description": "This is a test package",
             "icon_url": "https://moveregistry.com/icon.png",
             "website_url": "https://moveregistry.com",
             "documentation_url": "https://docs.suins.io/move-registry",
-        }),
-    };
+        })),
+    )
+    .await?;
 
-    insert_into(name_records::table)
-        .values(vec![name_record])
+    let mut connection = db.connect().await?;
+
+    insert_into(packages::table)
+        .values(vec![pkg_v1, pkg_v2])
         .execute(&mut *connection)
         .await?;
 
@@ -283,4 +315,30 @@ pub fn build_test_modules(test_dir: &str) -> Vec<CompiledModule> {
         .get_modules()
         .cloned()
         .collect()
+}
+
+/// Create a name record in the database.
+pub async fn add_name_record_to_database(
+    db: &mut Db,
+    name: &str,
+    mainnet_id: Option<String>,
+    testnet_id: Option<String>,
+    metadata: Option<serde_json::Value>,
+) -> Result<(), anyhow::Error> {
+    let name_record = NameRecord {
+        name: name.to_string(),
+        object_version: 0,
+        mainnet_id,
+        testnet_id,
+        metadata: metadata.unwrap_or_default(),
+    };
+
+    let mut connection = db.connect().await?;
+
+    insert_into(name_records::table)
+        .values(vec![name_record])
+        .execute(&mut *connection)
+        .await?;
+
+    Ok(())
 }
