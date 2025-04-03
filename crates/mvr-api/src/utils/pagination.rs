@@ -69,23 +69,21 @@ impl Cursor {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PaginatedResponse<T> {
-    pub items: Vec<T>,
+    pub data: Vec<T>,
     pub next_cursor: Option<String>,
     pub limit: u32,
 }
 
 impl<T> PaginatedResponse<T> {
-    pub fn new(items: Vec<T>, next_cursor: Option<String>, limit: u32) -> Self {
+    pub fn new(mut data: Vec<T>, next_cursor: Option<String>, limit: u32) -> Self {
         // if the result has more items than the limit, we pop the last item, as it
         // is only used to determine if there is a next page
-        let mut items = items;
-
-        if items.len() > limit as usize {
-            items.pop();
+        if data.len() > limit as usize {
+            data.pop();
         }
 
         Self {
-            items,
+            data,
             next_cursor,
             limit,
         }
@@ -175,7 +173,7 @@ mod tests {
             name: item.name.clone(),
         });
 
-        assert_eq!(paginated.items.len(), 3);
+        assert_eq!(paginated.data.len(), 3);
         // limit is 3, and we pass exactly 3 results, so no next cursor. We always query with 1 more than the limit.
         assert!(paginated.next_cursor.is_none());
 
@@ -184,10 +182,10 @@ mod tests {
             name: item.name.clone(),
         });
 
-        assert_eq!(paginated.items.len(), 2);
+        assert_eq!(paginated.data.len(), 2);
         assert!(paginated.next_cursor.is_some());
-        assert_eq!(paginated.items[0], results[0]);
-        assert_eq!(paginated.items[1], results[1]);
+        assert_eq!(paginated.data[0], results[0]);
+        assert_eq!(paginated.data[1], results[1]);
         assert_eq!(paginated.next_cursor, Some(Cursor::encode(&results[1])));
 
         let paginated = format_paginated_response::<TestCursor, _, _>(vec![], 25, |_| TestCursor {
@@ -195,7 +193,7 @@ mod tests {
             name: None,
         });
 
-        assert_eq!(paginated.items.len(), 0);
+        assert_eq!(paginated.data.len(), 0);
         assert!(paginated.next_cursor.is_none());
     }
 }

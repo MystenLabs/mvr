@@ -38,9 +38,9 @@ pub struct NameSearchResponse {
     #[diesel(sql_type = diesel::sql_types::Jsonb)]
     pub metadata: Value,
     #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
-    pub mainnet_id: Option<String>,
+    pub mainnet_package_info_id: Option<String>,
     #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
-    pub testnet_id: Option<String>,
+    pub testnet_package_info_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -103,7 +103,7 @@ impl Names {
         let mut connection = app_state.reader().connect().await?;
 
         let query = diesel::sql_query(
-            "SELECT name, metadata, mainnet_id, testnet_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
+            "SELECT name, metadata, mainnet_id as mainnet_package_info_id, testnet_id as testnet_package_info_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
 FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 
 ORDER BY relevance DESC, name ASC LIMIT $4"
         )
