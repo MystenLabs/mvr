@@ -87,9 +87,13 @@ impl MvrTestCluster {
             .send()
             .await?;
 
-        let res_body = res.json::<serde_json::Value>().await?["resolution"].clone();
-
-        Ok(res_body)
+        if res.status().is_success() {
+            let res_body = res.json::<serde_json::Value>().await?["resolution"].clone();
+            Ok(res_body)
+        } else {
+            let error = res.json::<serde_json::Value>().await?;
+            Err(anyhow::anyhow!("Error: {}", error))
+        }
     }
 
     pub async fn bulk_type_resolution(
