@@ -6,7 +6,8 @@ members = [
     "crates/mvr-indexer",
     "crates/mvr-schema",
     "crates/mvr-types",
-    "crates/mvr-api"
+    "crates/mvr-api", 
+    "crates/ci-tests"
 ]
 
 [workspace.dependencies]

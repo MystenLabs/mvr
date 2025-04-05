@@ -1,0 +1,23 @@
+---
+source: crates/ci-tests/tests/use_case_tester.rs
+expression: cmd_output
+---
+{
+  "name": "@pkg/qwer",
+  "metadata": {},
+  "package_info": {
+    "id": "0x16a0e731eb2a8f698a8682a01237cb9314d338bd46dcc95cb090f93965c4c1a0",
+    "git_table_id": "0x357c89025f9c3a34037570747cb153b2e5db00aba14c56dd2a05e847422cfabe",
+    "default_name": "@pkg/qwer",
+    "metadata": {
+      "default": "@pkg/qwer"
+    }
+  },
+  "git_info": {
+    "repository_url": "https://github.com/MystenLabs/mvr-demo",
+    "path": "mvr_a/",
+    "tag": "19be11331bde43d017f024aab942c6d3db7a9a83"
+  },
+  "version": 1,
+  "package_address": "0xc168b8766e69c07b1b5ed194e3dc2b4a2a0e328ae6a06a2cae40e2ec83a3f94f"
+}
