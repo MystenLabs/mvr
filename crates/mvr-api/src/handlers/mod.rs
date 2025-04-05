@@ -36,7 +36,6 @@ fn into_object_id_map(resolution: &HashMap<String, ResolutionData>) -> HashMap<S
         .collect::<HashMap<_, _>>()
 }
 
-
 fn validate_batch_size<T>(items: &[T], limit: Option<usize>) -> Result<(), ApiError> {
     let limit = limit.unwrap_or(BATCH_SIZE_DEFAULT);
 
