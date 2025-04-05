@@ -16,7 +16,7 @@ use crate::{
     AppState,
 };
 
-use super::into_object_id_map;
+use super::{into_object_id_map, validate_batch_size};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkRequest {
@@ -57,6 +57,8 @@ impl TypeResolution {
         State(state): State<Arc<AppState>>,
         Json(payload): Json<BulkRequest>,
     ) -> Result<Json<BulkResponse>, ApiError> {
+        validate_batch_size(&payload.types, None)?;
+
         let tags = bulk_resolve_types_impl(state, payload.types).await?;
 
         Ok(Json(BulkResponse {

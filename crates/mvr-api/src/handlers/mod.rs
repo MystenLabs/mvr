@@ -11,6 +11,8 @@ use crate::{
     errors::ApiError,
 };
 
+const BATCH_SIZE_DEFAULT: usize = 50;
+
 pub(crate) mod names;
 pub(crate) mod resolution;
 pub(crate) mod reverse_resolution;
@@ -32,4 +34,14 @@ fn into_object_id_map(resolution: &HashMap<String, ResolutionData>) -> HashMap<S
         .iter()
         .map(|(k, v)| (k.clone(), v.id))
         .collect::<HashMap<_, _>>()
+}
+
+fn validate_batch_size<T>(items: &[T], limit: Option<usize>) -> Result<(), ApiError> {
+    let limit = limit.unwrap_or(BATCH_SIZE_DEFAULT);
+
+    if items.len() > limit {
+        Err(ApiError::BatchSizeLimitExceeded(items.len(), limit))
+    } else {
+        Ok(())
+    }
 }

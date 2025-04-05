@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{data::resolution_loader::ResolutionKey, errors::ApiError, AppState};
 
+use super::validate_batch_size;
+
 #[derive(Serialize, Deserialize)]
 pub struct BulkRequest {
     pub names: Vec<String>,
@@ -52,6 +54,7 @@ impl Resolution {
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkRequest>,
     ) -> Result<Json<BulkResponse>, ApiError> {
+        validate_batch_size(&payload.names, None)?;
         let names = payload
             .names
             .iter()
