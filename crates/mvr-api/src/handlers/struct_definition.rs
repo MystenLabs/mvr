@@ -19,7 +19,7 @@ use crate::{
     AppState,
 };
 
-use super::into_object_id_map;
+use super::{into_object_id_map, validate_batch_size};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkRequest {
@@ -62,6 +62,8 @@ impl StructDefinition {
         State(state): State<Arc<AppState>>,
         Json(payload): Json<BulkRequest>,
     ) -> Result<Json<BulkResponse>, ApiError> {
+        validate_batch_size(&payload.types, None)?;
+
         for type_name in payload.types.iter() {
             verify_input(type_name)?;
         }
