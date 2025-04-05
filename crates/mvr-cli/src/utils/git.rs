@@ -40,8 +40,8 @@ pub(crate) fn shallow_clone_repo(
     // We clone the repo, but only with 1 level depth to avoid downloading the entire history.
     let output = Command::new("git")
         .arg("clone")
-        .arg("--depth")
-        .arg("1") // on the initial download, just clone the latest commit.
+        .arg("--filter=blob:none")
+        .arg("--no-checkout")
         .arg(&git_info.repository_url)
         .arg(&repo_dir)
         .output()
@@ -52,39 +52,50 @@ pub(crate) fn shallow_clone_repo(
         clone_error!("Failed to clone repository", &name, &git_info, &stderr);
     }
 
-    // We try to fetch the specified SHA / tag / branch (again, with depth 1)
     let output = Command::new("git")
         .arg("-C")
         .arg(&repo_dir)
-        .arg("fetch")
-        .arg("--depth")
-        .arg("1")
-        .arg("origin")
-        .arg(&git_info.tag)
+        .arg("sparse-checkout")
+        .arg("init")
+        .arg("--cone")
         .output()
-        .context(format!(
-            "Failed to find the specified SHA / Tag / Branch: {} on {}",
-            git_info.tag.red().bold(),
-            git_info.repository_url.red().bold()
-        ))?;
+        .context("Failed to execute git sparse-checkout init command")?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        clone_error!("Failed to fetch commit SHA", &name, &git_info, &stderr);
+        clone_error!(
+            "Failed to initialize sparse checkout",
+            &name,
+            &git_info,
+            &stderr
+        );
     }
 
-    // We checkout to "FETCH_HEAD", which is the latest commit we've downloaded above.
-    let switch_to_sha = Command::new("git")
+    let set_to_path = Command::new("git")
+        .arg("-C")
+        .arg(&repo_dir)
+        .arg("sparse-checkout")
+        .arg("set")
+        .arg(&git_info.path)
+        .output()
+        .context("Failed to execute git sparse-checkout set command")?;
+
+    if !set_to_path.status.success() {
+        let stderr = String::from_utf8_lossy(&set_to_path.stderr);
+        clone_error!("Failed to set sparse checkout", &name, &git_info, &stderr);
+    }
+
+    let checkout_cmd = Command::new("git")
         .arg("-C")
         .arg(&repo_dir)
         .arg("checkout")
-        .arg("FETCH_HEAD")
+        .arg(&git_info.tag)
         .output()
         .context("Failed to execute git checkout command")?;
 
-    if !switch_to_sha.status.success() {
-        let stderr = String::from_utf8_lossy(&switch_to_sha.stderr);
-        clone_error!("Failed SHA checkout", &name, &git_info, &stderr);
+    if !checkout_cmd.status.success() {
+        let stderr = String::from_utf8_lossy(&checkout_cmd.stderr);
+        clone_error!("Failed to checkout tag", &name, &git_info, &stderr);
     }
 
     Ok(repo_dir)
@@ -116,6 +127,14 @@ mod tests {
             repository_url: "https://github.com/MystenLabs/mvr.git".to_string(),
             path: "crates/mvr-cli".to_string(),
             tag: tag.to_string(),
+        }
+    }
+
+    fn get_main_repo_git_info() -> SafeGitInfo {
+        SafeGitInfo {
+            repository_url: "https://github.com/MystenLabs/sui.git".to_string(),
+            path: "crates/sui-framework/packages/sui-framework".to_string(),
+            tag: "framework/mainnet".to_string(),
         }
     }
 
@@ -153,5 +172,22 @@ mod tests {
 
         let sha = get_git_sha(&repo_dir);
         assert_eq!(sha, "188f032f3fd39485d38a8d07966164d895a64b13");
+    }
+
+    #[test]
+    fn shallow_clone_sui_framework() {
+        let temp_dir: TempDir = TempDir::new().unwrap();
+        let git_info = get_main_repo_git_info();
+
+        let versioned = VersionedName::from_str("@sui/framework").unwrap();
+        let repo_dir = shallow_clone_repo(&versioned, &git_info, &temp_dir).unwrap();
+
+        assert!(repo_dir.exists());
+
+        let pkg_path = repo_dir.join(git_info.path);
+
+        assert!(pkg_path.exists());
+        assert!(pkg_path.join("Move.toml").exists());
+        assert!(pkg_path.join("Move.lock").exists());
     }
 }
