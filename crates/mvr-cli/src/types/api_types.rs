@@ -41,6 +41,21 @@ pub struct ResolutionResponse {
     pub package_id: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SearchNamesResponse {
+    pub data: Vec<SinglePackageSearchResult>,
+    pub next_cursor: Option<String>,
+    pub limit: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SinglePackageSearchResult {
+    pub name: String,
+    pub metadata: serde_json::Value,
+    pub mainnet_package_info_id: Option<String>,
+    pub testnet_package_info_id: Option<String>,
+}
+
 impl fmt::Display for PackageRequest {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let output = serde_json::to_string_pretty(self).unwrap();

@@ -11,6 +11,7 @@ use types::api_types::PackageRequest;
 use types::api_types::SafeGitInfo;
 use types::Network;
 use utils::api_data::resolve_name;
+use utils::api_data::search_names;
 use utils::api_data::{query_multiple_dependencies, query_package};
 use utils::git::shallow_clone_repo;
 
@@ -675,12 +676,6 @@ async fn update_mvr_packages(
     Ok(output_msg)
 }
 
-/// List the App Registry
-pub async fn subcommand_list(_: Option<String>) -> Result<CommandOutput> {
-    // TODO: Implement once we have the "search" and "generic" endpoints.
-    Ok(CommandOutput::List(vec![]))
-}
-
 pub async fn subcommand_add_dependency(
     package_name: &str,
     opt_network: Option<Network>,
@@ -711,7 +706,17 @@ pub async fn subcommand_resolve_name(
 ) -> Result<CommandOutput> {
     let package_mainnet = query_package(name, &network.unwrap_or(Network::Mainnet)).await?;
 
-    Ok(CommandOutput::List(vec![package_mainnet.1]))
+    Ok(CommandOutput::Resolve(package_mainnet.1))
+}
+
+pub async fn subcommand_search_names(
+    query: Option<String>,
+    limit: Option<u32>,
+    cursor: Option<String>,
+) -> Result<CommandOutput> {
+    let search_results = search_names(query, limit, cursor).await?;
+
+    Ok(CommandOutput::Search(search_results))
 }
 
 /// Migrates the lockfile to version 3 from older versions, if necessary.
