@@ -193,7 +193,8 @@ async fn test_bulk_lookup_limit_exceeded() -> Result<(), anyhow::Error> {
                 .collect::<Vec<_>>()
                 .as_slice(),
         )
-        .await.unwrap_err();
+        .await
+        .unwrap_err();
 
     assert_snapshot!(err.to_string());
     test_cluster.teardown();
