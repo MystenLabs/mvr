@@ -1,0 +1,19 @@
+---
+source: crates/ci-tests/tests/use_case_tester.rs
+expression: cmd_output
+---
+MVR is a command line tool to interact with the Move Registry for the Sui network.
+
+Usage: mvr [OPTIONS] [COMMAND]
+
+Commands:
+  add      Add a new dependency from the move registry to your Move.toml file
+  resolve  Resolve the app name to a package info
+  search   Search for an app in the move registry
+  help     Print this message or the help of the given subcommand(s)
+
+Options:
+      --resolve-move-dependencies <RESOLVE_MOVE_DEPENDENCIES>  
+      --json                                                   Output the result in JSON format
+  -h, --help                                                   Print help
+  -V, --version                                                Print version

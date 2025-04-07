@@ -1,0 +1,11 @@
+[package]
+name = "ci_tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dev-dependencies]
+insta = "1.42.2"
+tempfile = "3.19"
+anyhow = "1.0.91"
+strip-ansi-escapes = "0.2.1"
