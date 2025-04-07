@@ -90,6 +90,14 @@ pub async fn query_multiple_dependencies(
     Ok(package_requests)
 }
 
+/// Given a search query (and limit, cursor optionally),
+/// returns a paginated list of names that match the query.
+///
+/// # Arguments
+///
+/// * `search` - The search query.
+/// * `limit` - The limit of results to return. Maximum is 50, default is 10.
+/// * `cursor` - The cursor to paginate through the results.
 pub async fn search_names(
     search: Option<String>,
     limit: Option<u32>,
