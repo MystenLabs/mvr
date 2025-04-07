@@ -26,6 +26,9 @@ pub enum ApiError {
 
     #[error("Invalid cursor: {0}")]
     InvalidCursor(String),
+
+    #[error("Batch size limit exceeded: {0} > {1}")]
+    BatchSizeLimitExceeded(usize, usize),
 }
 
 #[derive(Serialize)]
@@ -40,6 +43,10 @@ impl IntoResponse for ApiError {
             ApiError::InternalServerError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             ApiError::InvalidCursor(msg) => (StatusCode::BAD_REQUEST, msg),
+            ApiError::BatchSizeLimitExceeded(actual, limit) => (
+                StatusCode::BAD_REQUEST,
+                format!("Batch size limit exceeded: {} > {}", actual, limit),
+            ),
         };
 
         let body = Json(ErrorResponse { message });

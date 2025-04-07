@@ -179,6 +179,29 @@ async fn basic_search() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+#[tokio::test]
+async fn test_bulk_lookup_limit_exceeded() -> Result<(), anyhow::Error> {
+    let test_cluster = MvrTestCluster::new(None).await?;
+    test_cluster.setup_dummy_data().await?;
+
+    let object_ids = vec![ObjectID::from_single_byte(0xc1).to_string(); 51];
+    let err = test_cluster
+        .bulk_reverse_resolution(
+            object_ids
+                .iter()
+                .map(|id| id.as_str())
+                .collect::<Vec<_>>()
+                .as_slice(),
+        )
+        .await
+        .unwrap_err();
+
+    assert_snapshot!(err.to_string());
+    test_cluster.teardown();
+
+    Ok(())
+}
+
 // A more advanced search that creates specific names, queries them and paginates.
 // Also tests different page limits.
 #[tokio::test]

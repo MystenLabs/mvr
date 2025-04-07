@@ -9,6 +9,8 @@ use sui_sdk_types::ObjectId;
 
 use crate::{data::reverse_resolution_loader::ReverseResolutionKey, errors::ApiError, AppState};
 
+use super::validate_batch_size;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkRequest {
     package_ids: Vec<ObjectId>,
@@ -50,6 +52,7 @@ impl ReverseResolution {
         State(app_state): State<Arc<AppState>>,
         Json(payload): Json<BulkRequest>,
     ) -> Result<Json<BulkResponse>, ApiError> {
+        validate_batch_size(&payload.package_ids, None)?;
         let keys: Vec<_> = payload
             .package_ids
             .iter()
