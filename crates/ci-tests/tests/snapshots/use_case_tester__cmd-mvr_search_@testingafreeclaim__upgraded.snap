@@ -1,0 +1,13 @@
+---
+source: crates/ci-tests/tests/use_case_tester.rs
+expression: cmd_output
+---
+- @testingafreeclaim/upgraded
+# --
+Networks: mainnet
+
+- @testingafreeclaim/upgraded-demo
+# --
+Networks: mainnet
+
+Tip: You can find more information about a package by using: mvr resolve <name>
