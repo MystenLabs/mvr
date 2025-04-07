@@ -116,7 +116,7 @@ pub async fn search_names(
         .map_err(|e| {
             anyhow::anyhow!(
                 "Failed to search names: {}. Error: {}",
-                params.get("search").unwrap_or(&String::default()),
+                params.get("search").map(|s| s.clone()).unwrap_or_default(),
                 e
             )
         })?;
@@ -124,7 +124,7 @@ pub async fn search_names(
     let body = response.json::<SearchNamesResponse>().await.map_err(|e| {
         anyhow::anyhow!(
             "Failed to search names: {}. Error: {}",
-            params.get("search").unwrap_or(&String::default()),
+            params.get("search").map(|s| s.clone()).unwrap_or_default(),
             e
         )
     })?;
