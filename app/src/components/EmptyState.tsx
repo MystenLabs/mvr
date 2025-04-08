@@ -1,55 +1,73 @@
+import { cn } from "@/lib/utils";
 import { Text } from "./ui/Text";
 
 /// EmptyState component sizes setup.
 const SizeSetup = {
   icon: {
-    sm: 'text-[3rem]',
-    md: 'text-[4.5rem]',
-    lg: 'text-[6rem]',
+    sm: "text-[2rem]",
+    md: "text-[3.5rem]",
+    lg: "text-[5.5rem]",
   },
   title: {
-    sm: 'regular/semibold',
-    md: 'heading/semibold',
-    lg: 'display/semibold',
+    sm: "regular/semibold",
+    md: "heading/semibold",
+    lg: "display/semibold",
   },
   description: {
-    sm: 'small/regular',
-    md: 'small/regular',
-    lg: 'regular/regular',
+    sm: "small/regular",
+    md: "small/regular",
+    lg: "regular/regular",
   },
-}
+};
 
 export function EmptyState({
   icon,
   title,
   description,
   children,
-  size = 'lg',
+  size = "lg",
+  useCard = false,
 }: {
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   icon?: string;
   title?: string;
   description?: string;
   children?: React.ReactNode;
+  useCard?: boolean;
 }) {
+  const sizeToTitleSize = {
+    sm: "display-xs",
+    md: "display-small",
+    lg: "display-regular",
+  };
+
+  const sizeToDescriptionSize = {
+    sm: "paragraph-xs",
+    md: "paragraph-small",
+    lg: "paragraph-regular",
+  };
+
   return (
-    <div className={`flex-grow flex items-center justify-center container`}>
-      <div className="text-center">
+    <div className={`container flex flex-grow items-center justify-center`}>
+      <div className={cn("text-center", useCard && "bg-bg-secondary px-2xl py-3xl rounded-xl")}>
         {icon && <h1 className={SizeSetup.icon[size]}>{icon}</h1>}
 
         {title && (
-          // @ts-ignore-next-line
-          <Text variant={SizeSetup.title[size]} className="mx-auto max-w-[700px] text-center" color="secondary">
+          <Text
+            kind="display"
+            // @ts-ignore-next-line
+            size={sizeToTitleSize[size]}
+            className="mx-auto max-w-[700px] text-center text-content-primary"
+          >
             {title}
           </Text>
         )}
         {description && (
           <Text
+            kind="paragraph"
             // @ts-ignore-next-line
-            variant={SizeSetup.description[size]}
-            color="secondary"
-            family="inter"
-            className="mx-auto max-w-[550px] pt-Small text-center"
+            size={sizeToDescriptionSize[size]}
+            className="mx-auto max-w-[550px] pt-sm text-center"
           >
             {description}
           </Text>

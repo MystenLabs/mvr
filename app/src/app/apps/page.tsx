@@ -56,6 +56,8 @@ export default function App() {
         icon={state.icon}
         title={state.title}
         description={state.description}
+        useCard
+        size="md"
       >
         {namesList.length > 0 && (
           <ComboBox
@@ -69,7 +71,7 @@ export default function App() {
           />
         )}
 
-        <Button size="lg" variant="outline" asChild className="mt-Large">
+        <Button variant="linkActive" asChild className="mt-lg">
           <Link href="https://www.suins.io" target="_blank">
             {formatNamesForComboBox(namesList ?? [], <PublicNameLabel />)
               .length > 0 && "or"}{" "}

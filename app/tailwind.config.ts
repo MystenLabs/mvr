@@ -2,7 +2,6 @@ import { type Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
 export default {
-  darkMode: ["class"],
   content: ["./src/**/*.tsx"],
   theme: {
     colors: {
@@ -174,6 +173,7 @@ export default {
         "40": "var(--text-40)",
         "44": "var(--text-44)",
         "48": "var(--text-48)",
+        "52": "var(--text-52)",
         "56": "var(--text-56)",
         "64": "var(--text-64)",
         "72": "var(--text-72)",

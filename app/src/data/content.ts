@@ -43,7 +43,7 @@ export const Content = {
     icon: "🚀",
     title: "Let's get started!",
     description:
-      "Select an org / project to start managing your packages.",
+      "Which organization will you be managing packages for?",
     button: "Visit suins.io to get a name for your org / project",
   },
   package: {
