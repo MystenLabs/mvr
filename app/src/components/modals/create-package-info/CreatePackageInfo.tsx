@@ -90,7 +90,7 @@ export default function CreatePackageInfo({
           />
         )}
 
-        <Text kind="paragraph" size="paragraph-regular" className="text-content-tertiary">
+        <Text kind="paragraph" size="paragraph-small" className="text-content-tertiary">
           Selected Upgrade Cap:{" "}
           <ExplorerLink
             network={selectedNetwork}
