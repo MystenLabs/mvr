@@ -19,7 +19,9 @@ FROM debian:bookworm-slim AS runtime
 
 RUN apt-get update
 RUN apt-get -y --no-install-recommends install wget \
-        iputils-ping procps bind9-host bind9-dnsutils curl iproute2 git ca-certificates libpq-dev
+        iputils-ping procps bind9-host bind9-dnsutils \
+        curl iproute2 git ca-certificates libpq-dev \
+        postgresql
 
 COPY --from=builder /work/target/release/mvr-indexer /opt/mysten/bin/
 COPY --from=builder /work/entry.sh .
