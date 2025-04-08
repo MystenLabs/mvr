@@ -4,7 +4,9 @@ import { Text } from "@/components/ui/Text";
 export default function PrivacyPolicy() {
   return (
     <PlainPageLayout>
-      <Text variant="heading/bold">Privacy Policy would go here!</Text>
+      <Text kind="heading" size="heading-regular">
+        Privacy Policy would go here!
+      </Text>
     </PlainPageLayout>
   );
 }
