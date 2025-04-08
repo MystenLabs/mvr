@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronsUpDown, ChevronUp, XCircleIcon } from "lucide-react";
+import { ChevronDown, ChevronsUpDown, ChevronUp, XCircleIcon, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ export function PackageInfoSelector({
   }, [value]);
 
   return (
-    <div className="flex items-center gap-Small">
+    <div className="flex items-center gap-sm">
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
@@ -99,7 +99,7 @@ export function PackageInfoSelector({
             onChange(null);
           }}
         >
-          <XCircleIcon className="h-4 w-4" />
+          <XIcon className="h-5 w-5" />
         </Button>
       )}
     </div>

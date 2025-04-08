@@ -152,7 +152,7 @@ export default function App() {
           )}
         </div>
 
-        <div className="max-lg:py-lg lg:p-lg block w-full break-words">
+        <div className="max-lg:py-lg block w-full break-words">
           {selectedAppCap && <AppViewer cap={selectedAppCap} />}
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Text } from "../ui/Text";
 
@@ -10,6 +11,7 @@ export function ModalFooter({
   rightBtnType = "submit",
   rightBtnDisabled = false,
   leftBtnDisabled = false,
+  alignLeft,
 }: {
   loading?: boolean;
   leftBtnText?: string;
@@ -19,9 +21,11 @@ export function ModalFooter({
   rightBtnType?: "submit" | "button";
   rightBtnDisabled?: boolean;
   leftBtnDisabled?: boolean;
+  className?: string;
+  alignLeft?: boolean;
 }) {
   return (
-    <div className="grid gap-sm md:grid-cols-2">
+    <div className={alignLeft ? "flex flex-row justify-end flex-grow items-center gap-sm" : "grid gap-sm md:grid-cols-2"}>
       <Button
         type="reset"
         size="auto"

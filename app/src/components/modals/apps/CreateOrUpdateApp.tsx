@@ -3,7 +3,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { ModalFooter } from "../ModalFooter";
-import { useOwnedApps } from "@/hooks/useOwnedApps";
 import { z } from "zod";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -174,11 +173,12 @@ export default function CreateOrUpdateApp({
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
-          <div className="gap-sm grid grid-cols-1">
-            <FormField
-              control={form.control}
-              name="nsName"
-              render={({ field }) => (
+          <div className="gap-md grid grid-cols-1">
+            {!isUpdate && (
+              <FormField
+                control={form.control}
+                name="nsName"
+                render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization / Project</FormLabel>
                   <FormControl>
@@ -186,13 +186,15 @@ export default function CreateOrUpdateApp({
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}
-            />
+                )}
+              />
+            )}
 
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
+            {!isUpdate && (
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
@@ -204,10 +206,11 @@ export default function CreateOrUpdateApp({
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}
-            />
+                )}
+              />
+            )}
 
-            <div className="gap-md grid grid-cols-1">
+            <div className="gap-md mb-md grid grid-cols-1">
               <FormField
                 control={form.control}
                 name="mainnet"
@@ -222,7 +225,7 @@ export default function CreateOrUpdateApp({
                       />
                     </FormControl>
                     {isUpdate && appRecord.mainnet && (
-                      <FormDescription className="flex items-center gap-Small">
+                      <FormDescription className="gap-sm flex items-center">
                         <AlertCircleIcon size={15} />
                         Mainnet metadata has already been assigned and cannot
                         change.
@@ -257,7 +260,7 @@ export default function CreateOrUpdateApp({
                   control={form.control}
                   name="acceptMainnetWarning"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md bg-bg-tertiary p-4">
+                    <FormItem className="bg-bg-tertiary flex flex-row items-start space-x-3 space-y-0 rounded-md p-4">
                       <FormControl>
                         <Checkbox
                           className="mt-1"
@@ -295,7 +298,7 @@ export default function CreateOrUpdateApp({
               rightBtnDisabled={
                 !form.formState.isValid || (!isUpdate && !isNameAvailable)
               }
-              rightBtnText={isUpdate ? "Update" : "Create"}
+              rightBtnText={isUpdate ? "Save Changes" : "Create"}
               rightBtnHandler={async () => {
                 const values = form.getValues();
                 if (values.mainnet && !values.acceptMainnetWarning) {
@@ -306,6 +309,7 @@ export default function CreateOrUpdateApp({
                   return;
                 }
               }}
+              alignLeft={isUpdate}
             />
           </div>
         </form>
