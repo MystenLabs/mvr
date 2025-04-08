@@ -19,9 +19,10 @@ import CreateOrUpdateApp from "@/components/modals/apps/CreateOrUpdateApp";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { PublicNameLabel } from "@/components/ui/public-name-label";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { InfoIcon, Plus } from "lucide-react";
 import PackageSelected from "@/icons/PackageSelected";
 import PackageUnselected from "@/icons/PackageUnselected";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function App() {
   const { names: namesList } = useOrganizationList();
@@ -63,6 +64,20 @@ export default function App() {
         useCard
         size="md"
       >
+        <Alert className="mb-md text-left">
+          <InfoIcon className="h-4 w-4" />
+          <AlertTitle className="text-14">Don’t own a name?</AlertTitle>
+          <AlertDescription className="font-inter text-xs">
+            <Text
+              kind="paragraph"
+              size="paragraph-small"
+              className="text-content-primary"
+            >
+              Select @pkg from the dropdown below to get started quickly
+            </Text>
+          </AlertDescription>
+        </Alert>
+
         {namesList.length > 0 && (
           <ComboBox
             placeholder="Select one..."
