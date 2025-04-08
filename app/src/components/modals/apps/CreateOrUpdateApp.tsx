@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { ModalFooter } from "../ModalFooter";
 import { useOwnedApps } from "@/hooks/useOwnedApps";
@@ -53,12 +53,14 @@ const formSchema = z
 
 export default function CreateOrUpdateApp({
   suins,
-  closeDialog,
   appRecord,
+  closeDialog = () => {},
+  useDialog = true,
 }: {
   appRecord?: AppRecord;
   suins?: SuinsName;
-  closeDialog: () => void;
+  closeDialog?: () => void;
+  useDialog?: boolean;
 }) {
   const { data: mainnetPackageInfos } = useGetPackageInfoObjects("mainnet");
   const { data: testnetPackageInfos } = useGetPackageInfoObjects("testnet");
@@ -165,16 +167,14 @@ export default function CreateOrUpdateApp({
   }
 
   return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>
-          {isUpdate ? "Updating" : "Create"} Package
-          {isUpdate && `: ${appRecord.normalized}`}
-        </DialogTitle>
-      </DialogHeader>
+    <ModalWrapper
+      isUpdate={isUpdate}
+      appRecord={appRecord}
+      useDialog={useDialog}
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
-          <div className="grid grid-cols-1 gap-Small">
+          <div className="gap-sm grid grid-cols-1">
             <FormField
               control={form.control}
               name="nsName"
@@ -207,7 +207,7 @@ export default function CreateOrUpdateApp({
               )}
             />
 
-            <div className="mt-Regular grid grid-cols-1">
+            <div className="gap-md grid grid-cols-1">
               <FormField
                 control={form.control}
                 name="mainnet"
@@ -257,7 +257,7 @@ export default function CreateOrUpdateApp({
                   control={form.control}
                   name="acceptMainnetWarning"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md bg-bg-tertiary p-4">
                       <FormControl>
                         <Checkbox
                           className="mt-1"
@@ -291,6 +291,7 @@ export default function CreateOrUpdateApp({
                 form.reset();
                 closeDialog();
               }}
+              leftBtnDisabled={!useDialog}
               rightBtnDisabled={
                 !form.formState.isValid || (!isUpdate && !isNameAvailable)
               }
@@ -309,6 +310,31 @@ export default function CreateOrUpdateApp({
           </div>
         </form>
       </Form>
-    </DialogContent>
+    </ModalWrapper>
   );
 }
+
+const ModalWrapper = ({
+  children,
+  isUpdate,
+  appRecord,
+  useDialog,
+}: {
+  children: ReactNode;
+  isUpdate: boolean;
+  appRecord?: AppRecord;
+  useDialog: boolean;
+}) =>
+  useDialog ? (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>
+          {isUpdate ? "Updating" : "Create"} Package
+          {isUpdate && `: ${appRecord?.normalized}`}
+        </DialogTitle>
+      </DialogHeader>
+      {children}
+    </DialogContent>
+  ) : (
+    <>{children}</>
+  );

@@ -120,7 +120,7 @@ export function ComboBox({
 
                   <Check
                     className={cn(
-                      "ml-Small h-4 w-4 rounded-full bg-positive p-0.5 text-primary-dark",
+                      "ml-sm h-4 w-4 rounded-full bg-bg-positive text-content-primaryInverse p-0.5",
                       value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />

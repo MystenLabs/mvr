@@ -136,7 +136,7 @@ export function PackageVersions({
 
         {updates.length > 0 && (
           <>
-            <Text variant="xsmall/bold" color="primary" className="uppercase">
+            <Text kind="label" size="label-small" className="uppercase">
               Changes to save
             </Text>
             {updates.map((x) => (

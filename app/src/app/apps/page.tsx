@@ -101,7 +101,7 @@ export default function App() {
   return (
     <main className="container flex-grow">
       <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic py-Regular max-lg:border-b max-lg:py-lg lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r lg:px-Regular">
+        <div className="gap-sm max-lg:py-lg lg:px-sm flex-shrink-0 overflow-y-auto py-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
           <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
             <CreateOrUpdateApp
               suins={appValue.selectedSuinsName}
@@ -137,7 +137,7 @@ export default function App() {
             ))
           ) : (
             <ComboBox
-              title="Select one"
+              title="Select a package"
               value={selectedAppCap?.objectId}
               options={nsMatchingApps.map((app) => ({
                 value: app.objectId,
@@ -152,7 +152,7 @@ export default function App() {
           )}
         </div>
 
-        <div className="block w-full break-words max-lg:py-lg lg:p-lg">
+        <div className="max-lg:py-lg lg:p-lg block w-full break-words">
           {selectedAppCap && <AppViewer cap={selectedAppCap} />}
         </div>
       </div>

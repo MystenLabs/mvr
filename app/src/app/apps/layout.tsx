@@ -65,30 +65,17 @@ export default function AppsLayout({
       <AppContext.Provider
         value={{ value: appValue, setValue: setAndCacheValue }}
       >
-        <div className="gap-md grid flex-grow items-center lg:grid-cols-12">
-          {appValue.selectedSuinsName && (
-            <div className="lg:col-span-4">
-              <div className="container flex items-center gap-Regular pb-Regular">
-                <ComboBox
-                  placeholder="Select a name..."
-                  value={appValue.selectedSuinsName?.nftId}
-                  options={formatNamesForComboBox(
-                    ownedNames,
-                    <PublicNameLabel />,
-                  )}
-                  setValue={selectSuinsName}
-                />
-              </div>
-            </div>
-          )}
-          <div
-            className={cn(
-              appValue.selectedSuinsName ? "lg:col-span-8" : "lg:col-span-12",
-            )}
-          >
-            {children}
+        {appValue.selectedSuinsName && (
+          <div className="container flex items-center gap-Regular pb-Regular">
+            <ComboBox
+              placeholder="Select a name..."
+              value={appValue.selectedSuinsName?.nftId}
+              options={formatNamesForComboBox(ownedNames, <PublicNameLabel />)}
+              setValue={selectSuinsName}
+            />
           </div>
-        </div>
+        )}
+        {children}
       </AppContext.Provider>
     </WalletConnectedContent>
   );
