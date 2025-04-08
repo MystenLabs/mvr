@@ -120,12 +120,16 @@ export default {
       },
     },
     extend: {
+		backgroundImage: {
+        "gradientPurpleBlueOp20":
+          "linear-gradient(139.286deg, rgba(194, 81, 255, 20%) 0%, rgba(76, 162, 255, 20%) 100%)",
+      },
       borderRadius: {
         none: "var(--size-0)",
         xs: "var(--size-1)",
-        s: "var(--size-2)",
-        m: "var(--size-3)",
-        l: "var(--size-4)",
+        sm: "var(--size-2)",
+        md: "var(--size-3)",
+        lg: "var(--size-4)",
         xl: "var(--size-6)",
         "2xl": "var(--size-8)",
         full: "var(--size-20)",

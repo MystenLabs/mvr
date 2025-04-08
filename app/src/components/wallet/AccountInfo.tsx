@@ -19,12 +19,12 @@ function AccountInfo({ address, img, name }: AccountInfoProps) {
                 {img ?? <MvrLogo className="object-contain" width={22} height={22} />}
             </div>
             <div className="flex flex-col gap-1 whitespace-nowrap text-start">
-                <Text variant="regular/bold" color="primary" className="max-w-[200px]" family="inter">
+                <Text kind="label" size="label-regular" className="max-w-[200px]">
                     {name ? name : formatAddress(address)}
                 </Text>
 
                 {name && (
-                    <Text variant="regular/regular" color="secondary" className="!text-[15px] font-inter">
+                    <Text kind="paragraph" size="paragraph-small">
                         {formatAddress(address)}
                     </Text>
                 )}
@@ -36,7 +36,7 @@ function AccountInfo({ address, img, name }: AccountInfoProps) {
 export function ActiveAccountInfo({ label }: { label: string }) {
     return (
         <div className="flex gap-2 items-center">
-            <Text variant="regular/regular" color="primary">
+            <Text kind="label" size="label-regular">
                 {label}
             </Text>
         </div>

@@ -23,7 +23,7 @@ function ConnectSuiWalletButton() {
         <ConnectModal
             open={open}
             trigger={
-                <Button className="flex gap-2 items-center" variant="header" size="header">
+                <Button className="flex gap-2 items-center" variant="gradientPurpleBlueOp20" size="header">
                     <ActiveAccountInfo label="Connect" />
                 </Button>
             }

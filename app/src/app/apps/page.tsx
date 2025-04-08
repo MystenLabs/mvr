@@ -130,7 +130,7 @@ export default function App() {
                 )}
                 onClick={() => setSelectedAppCap(app)}
               >
-                <Text variant="xsmall/regular" className="block max-w-[250px]">
+                <Text kind="paragraph" size="paragraph-xs">
                   {app.normalizedName}
                 </Text>
               </div>

@@ -6,13 +6,15 @@ import { ReloadIcon } from '@radix-ui/react-icons'
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center cursor-pointer justify-center whitespace-nowrap text-sm font-medium transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none hover:opacity-[72%] disabled:opacity-[40%]",
+  "inline-flex items-center cursor-pointer justify-center whitespace-nowrap text-sm font-medium ease-in-out duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none hover:opacity-[72%] disabled:opacity-[40%]",
   {
     variants: {
       variant: {
         primary: "bg-bg-accent text-content-primaryInverse ",
         secondary: "bg-quarternaryBleedthrough text-content-primary",
         tertiary: "bg-transparent text-content-accent",
+
+        gradientPurpleBlueOp20: "bg-gradientPurpleBlueOp20",
 
         outline:
           "border border-border-classic bg-transparent hover:bg-border-classic hover:text-content-primary",
@@ -21,7 +23,6 @@ const buttonVariants = cva(
         linkActive: 'text-content-accent',
 
         header: 'bg-background-secondary text-white border border-border-classic',
-        tertiary: 'bg-background-tertiary text-white hover:bg-secondary-hover',
         'outline-hover': 'border border-transparent hover:bg-secondary-hover',
 
         custom: 'bg-transparent text-content-primary',
@@ -32,10 +33,10 @@ const buttonVariants = cva(
         sm: "h-7 px-3 text-xs",
         lg: "h-9 px-8",
         icon: "h-8 w-9",
-        header: "px-Regular py-XSmall"
+        header: "px-m py-s"
       },
       round: {
-        default: 'rounded-m',
+        default: 'rounded-md',
         md: 'rounded-md',
         lg: 'rounded-lg',
         none: 'rounded-none'
