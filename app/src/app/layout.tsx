@@ -17,7 +17,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={cn(everett.variable, everettMono.variable, inter.variable)}>
-      <body>
+      <body> 
           <Providers>
             <BaseLayout>
               {children}

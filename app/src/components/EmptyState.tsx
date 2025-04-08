@@ -54,7 +54,7 @@ export function EmptyState({
             {description}
           </Text>
         )}
-        <div className="py-Large">{children}</div>
+        <div className="py-lg">{children}</div>
       </div>
     </div>
   );

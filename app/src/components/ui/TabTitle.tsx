@@ -4,11 +4,11 @@ import { Button } from "./button";
 import { cn } from "@/lib/utils";
 
 const styles = cva(
-  ["rounded-none py-Large capitalize duration-300 ease-in-out hover:opacity-100"], {
+  ["rounded-none py-lg capitalize duration-300 border-b-2 ease-in-out hover:opacity-100"], {
   variants: {
     active: {
-        true: "border-b-2 opacity-100",
-        false: "opacity-60",
+        true: "border-bg-accent opacity-100",
+        false: "border-transparent opacity-60",
     },
   },
 

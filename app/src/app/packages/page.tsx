@@ -101,7 +101,7 @@ export default function Packages() {
   return (
     <main className="container flex-grow">
       <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic max-lg:border-b max-lg:py-Large lg:p-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
+        <div className="flex-shrink-0 gap-xs overflow-y-auto border-border-classic max-lg:border-b max-lg:py-lg lg:p-md lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
           <Dialog
             open={showCreationDialog}
             onOpenChange={setShowCreationDialog}

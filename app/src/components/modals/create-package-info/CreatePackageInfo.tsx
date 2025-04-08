@@ -74,7 +74,7 @@ export default function CreatePackageInfo({
       <DialogHeader>
         <DialogTitle>Create Metadata - Step {step}</DialogTitle>
       </DialogHeader>
-      <div className="grid grid-cols-1 gap-Large py-Regular">
+      <div className="grid grid-cols-1 gap-lg py-Regular">
         {step === 1 && (
           <PackageInfoStep1
             selectedPackage={selectedPackage}

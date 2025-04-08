@@ -41,8 +41,8 @@ const Social = [
 export default function Footer() {
   return (
     <footer className="border-stroke-secondary border-t">
-      <div className="gap-m py-xs container items-center md:flex md:justify-between">
-        <div className="gap-m items-center md:flex">
+      <div className="gap-md py-xs container items-center md:flex md:justify-between">
+        <div className="gap-md items-center md:flex">
           {Menu.map(({ name, href }) => (
             <Link
               key={name}
@@ -69,7 +69,7 @@ export default function Footer() {
             Powered By <NsLogo />
           </Text>
         </div>
-        <div className="gap-m flex flex-wrap items-center justify-end max-md:pt-Large">
+        <div className="gap-md flex flex-wrap items-center justify-end max-md:pt-Large">
           <Text
             kind="label"
             size="label-xs"

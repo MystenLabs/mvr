@@ -33,7 +33,7 @@ const buttonVariants = cva(
         sm: "h-7 px-3 text-xs",
         lg: "h-9 px-8",
         icon: "h-8 w-9",
-        header: "px-m py-s"
+        header: "px-md py-sm"
       },
       round: {
         default: 'rounded-md',

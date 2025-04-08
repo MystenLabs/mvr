@@ -30,15 +30,15 @@ export default function PackagesLayout({
   return (
     <WalletConnectedContent>
       <PackagesNetworkContext.Provider value={network}>
-        <div className="border-b border-border-classic">
-          <div className="container flex">
+        <div className="">
+          <div className="container flex ">
             {Object.values(AvailableNetworks).map((net) => (
               <TabTitle
                 key={net}
                 active={net === network}
                 onClick={() => setNetwork(net as Network)}
               >
-                <Text variant="small/regular">{net}</Text>
+                <Text kind="label" size="label-regular">{net}</Text>
               </TabTitle>
             ))}
           </div>

@@ -65,7 +65,7 @@ export default function AppsLayout({
       <AppContext.Provider
         value={{ value: appValue, setValue: setAndCacheValue }}
       >
-        <div className="gap-m grid flex-grow items-center lg:grid-cols-12">
+        <div className="gap-md grid flex-grow items-center lg:grid-cols-12">
           {appValue.selectedSuinsName && (
             <div className="lg:col-span-4">
               <div className="container flex items-center gap-Regular pb-Regular">

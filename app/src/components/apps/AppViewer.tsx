@@ -116,7 +116,7 @@ const SinglePackageView = ({
   return (
     <PackagesNetworkContext.Provider value={network}>
       {!showDetails && (
-        <div className="mx-auto flex max-w-[450px] flex-col gap-Small py-Large text-center">
+        <div className="mx-auto flex max-w-[450px] flex-col gap-sm py-lg text-center">
           <AnimatedCheckmark />
           <Text variant="heading/bold">{ Content.app.connected.title }</Text>
           <Text variant="regular/regular" color="tertiary" family="inter">

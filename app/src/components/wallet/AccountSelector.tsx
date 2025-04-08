@@ -148,7 +148,7 @@ export function AccountContent({
             }}
             transition={{ duration: 0.6, ease: [0.04, 0.62, 0.23, 0.98] }}
           >
-            <div className="px-l py-m relative flex h-full w-full flex-col gap-2 overflow-hidden transition-colors focus:outline-none">
+            <div className="px-lg py-md relative flex h-full w-full flex-col gap-2 overflow-hidden transition-colors focus:outline-none">
               <div className="rounded-6xl relative z-20 mb-2 flex w-full cursor-pointer items-center justify-between focus:outline-none">
                 {ActiveAcctInfo}
                 <ChevronDown className="relative h-4 w-4 text-content-primary" />

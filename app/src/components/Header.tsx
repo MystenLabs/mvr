@@ -34,7 +34,7 @@ export default function Header() {
   return (
     <header>
       <Sheet>
-        <div className="py-m container grid grid-cols-2 items-center justify-between lg:grid-cols-12">
+        <div className="py-md container grid grid-cols-2 items-center justify-between lg:grid-cols-12">
           <Link
             href="/apps"
             className="gap-xs flex w-fit items-center lg:col-span-3"
@@ -44,7 +44,7 @@ export default function Header() {
               MVR
             </Text>
           </Link>
-          <div className="gap-l flex items-center justify-end lg:col-span-9">
+          <div className="gap-lg flex items-center justify-end lg:col-span-9">
             <div className="max-lg:hidden">
               <Menu />
             </div>

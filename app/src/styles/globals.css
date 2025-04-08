@@ -190,7 +190,7 @@ html {
 }
 
 #terms {
-  @apply py-m;
+  @apply py-md;
 }
 
 #terms ol {
@@ -202,11 +202,12 @@ html {
 }
 
 #terms li {
-  @apply mb-s ml-m;
+  @apply mb-sm ml-md;
 }
+
 #terms li > strong {
-  @apply mb-s;
+  @apply mb-sm;
 }
 #terms p {
-  @apply mb-s;
+  @apply mb-sm;
 }
