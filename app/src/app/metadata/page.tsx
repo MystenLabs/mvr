@@ -15,6 +15,7 @@ import LoadingState from "@/components/LoadingState";
 import { PackageInfoData } from "@/utils/types";
 import { PackageInfoSelector } from "@/components/ui/package-info-selector";
 import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
@@ -101,28 +102,35 @@ export default function Packages() {
   return (
     <main className="container flex-grow">
       <div className="gap-md lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-xs overflow-y-auto max-lg:py-lg lg:p-md lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
-          <Dialog
-            open={showCreationDialog}
-            onOpenChange={setShowCreationDialog}
-          >
-            <CreatePackageInfo
-              closeDialog={() => setShowCreationDialog(false)}
-            />
-            <DialogTrigger asChild>
-              <Button variant="outline" className="mb-lg lg:mb-sm w-full">
-                {Content.package.button}
-              </Button>
-            </DialogTrigger>
-          </Dialog>
-
+        <div className="gap-xs max-lg:py-lg lg:p-md flex-shrink-0 overflow-y-auto lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
           <div>
-            <Label className="mb-sm block">Select a package</Label>
+            <div className="flex items-center justify-between mb-sm">
+              <Label className="block">Select a package</Label>
+              {/* TODO: Add + icon instead of the stuff before.. */}
+              <Dialog
+                open={showCreationDialog}
+                onOpenChange={setShowCreationDialog}
+              >
+                <CreatePackageInfo
+                  closeDialog={() => setShowCreationDialog(false)}
+                />
+                <DialogTrigger asChild>
+                  <Button variant="linkActive" size="fit">
+                    <Plus className="w-5 h-5 text-content-accent" />
+                    {/* {Content.package.button} */}
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+            </div>
             <PackageInfoSelector
               disableClear
               value={selectedPackage?.objectId}
               options={packageInfos ?? []}
-              onChange={(id) => setSelectedPackage(packageInfos?.find((x) => x.objectId === id) ?? null)}
+              onChange={(id) =>
+                setSelectedPackage(
+                  packageInfos?.find((x) => x.objectId === id) ?? null,
+                )
+              }
             />
           </div>
         </div>
