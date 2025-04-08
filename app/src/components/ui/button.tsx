@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: "bg-bg-accent text-content-primaryInverse ",
-        secondary: "bg-quarternaryBleedthrough text-content-primary",
+        secondary: "bg-bg-quarternaryBleedthrough text-content-primary",
         tertiary: "bg-transparent text-content-accent",
 
         gradientPurpleBlueOp20: "bg-gradientPurpleBlueOp20",
@@ -29,7 +29,8 @@ const buttonVariants = cva(
       },
       size: {
         fit: 'w-fit',
-        default: "h-8 px-5 py-2",
+        auto: 'px-md py-sm',
+        default: "h-8 px-md py-sm",
         sm: "h-7 px-3 text-xs",
         lg: "h-9 px-8",
         icon: "h-8 w-9",

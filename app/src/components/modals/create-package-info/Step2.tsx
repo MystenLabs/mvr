@@ -14,7 +14,7 @@ export function PackageInfoStep2({
   setDisplay: (display: PackageDisplayType) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-Regular">
+    <div className="flex flex-wrap gap-md">
       <PackageInfoDisplay
         {...display}
         packageAddr={packageAddress}
@@ -23,13 +23,13 @@ export function PackageInfoStep2({
         height={"auto"}
       />
 
-      <div className="grid flex-grow grid-cols-1 gap-Regular max-md:text-left">
+      <div className="grid flex-grow grid-cols-1 gap-md max-md:text-left">
         <div>
           <Text
-            variant="xsmall/regular"
-            color="tertiary"
-            family="inter"
-            className="block pb-XSmall"
+            as="label"
+            kind="label"
+            size="label-small"
+            className="block pb-xs"
           >
             Package Info label
           </Text>
@@ -43,15 +43,15 @@ export function PackageInfoStep2({
 
         <div>
           <Text
-            variant="xsmall/regular"
-            color="tertiary"
-            family="inter"
-            className="block pb-XSmall"
+            as="label"
+            kind="label"
+            size="label-small"
+            className="block pb-xs"
           >
             Select style
           </Text>
 
-          <div className="flex flex-wrap gap-Small">
+          <div className="flex flex-wrap gap-xs">
             <ColorPicker
               value={"#" + display.gradientFrom}
               onChange={(color) => {

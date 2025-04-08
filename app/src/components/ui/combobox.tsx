@@ -52,7 +52,7 @@ export function ComboBox({
         <div>
           {title && <Label className="mb-Small block">{title}</Label>}
           <Button
-            variant="outline"
+            variant="secondary"
             role="combobox"
             aria-expanded={open}
             disabled={options.length === 0}

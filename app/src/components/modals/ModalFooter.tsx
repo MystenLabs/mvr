@@ -19,10 +19,11 @@ export function ModalFooter({
   rightBtnDisabled?: boolean;
 }) {
   return (
-    <div className="grid gap-s pt-m md:grid-cols-2">
+    <div className="grid gap-sm md:grid-cols-2">
       <Button
         type="reset"
-        variant="tertiary"
+        size="auto"
+        variant="secondary"
         onClick={leftBtnHandler}
         className="max-md:order-2"
       >
@@ -33,6 +34,7 @@ export function ModalFooter({
 
       <Button
         type={rightBtnType}
+        size="auto"
         className="max-md:order-1"
         isLoading={loading}
         disabled={rightBtnDisabled}
