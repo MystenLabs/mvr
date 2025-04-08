@@ -5,21 +5,16 @@ import {
   AppContext,
   AppContextType,
 } from "@/components/providers/app-provider";
-import { ComboBox } from "@/components/ui/combobox";
-import { PublicNameLabel } from "@/components/ui/public-name-label";
-import { Text } from "@/components/ui/Text";
 import { LocalStorageKeys } from "@/data/localStorage";
-import {
-  formatNamesForComboBox,
-  useOrganizationList,
-} from "@/hooks/useOrganizationList";
-import { cn } from "@/lib/utils";
+import { useActiveAddress } from "@/hooks/useActiveAddress";
+import { useOrganizationList } from "@/hooks/useOrganizationList";
 import { useEffect, useState } from "react";
 
 export default function AppsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { names: ownedNames } = useOrganizationList();
+  const address = useActiveAddress();
 
   const [appValue, setAppValue] = useState<AppContextType["value"]>({
     selectedSuinsName: null,
@@ -35,13 +30,6 @@ export default function AppsLayout({
       setAppValue({ selectedSuinsName: sessionStorageEntry });
     }
   }, []);
-
-  const selectSuinsName = (nftId: string) => {
-    const selectedSuinsName =
-      ownedNames?.find((x) => x.nftId === nftId) ?? null;
-    if (!selectedSuinsName) return;
-    setAppValue({ selectedSuinsName });
-  };
 
   const setAndCacheValue = (value: AppContextType["value"]) => {
     sessionStorage.setItem(
@@ -60,21 +48,18 @@ export default function AppsLayout({
     }
   }, [ownedNames]);
 
+  // Reset selected SuiNS name if the user switches.
+  useEffect(() => {
+    if (address) {
+      setAppValue({ selectedSuinsName: null });
+    }
+  }, [address]);
+
   return (
     <WalletConnectedContent>
       <AppContext.Provider
         value={{ value: appValue, setValue: setAndCacheValue }}
       >
-        {appValue.selectedSuinsName && (
-          <div className="container flex items-center gap-Regular pb-Regular">
-            <ComboBox
-              placeholder="Select a name..."
-              value={appValue.selectedSuinsName?.nftId}
-              options={formatNamesForComboBox(ownedNames, <PublicNameLabel />)}
-              setValue={selectSuinsName}
-            />
-          </div>
-        )}
         {children}
       </AppContext.Provider>
     </WalletConnectedContent>

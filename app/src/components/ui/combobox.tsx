@@ -50,7 +50,7 @@ export function ComboBox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div>
-          {title && <Label className="mb-Small block">{title}</Label>}
+          {title && <Label className="mb-xs block">{title}</Label>}
           <Button
             variant="secondary"
             role="combobox"

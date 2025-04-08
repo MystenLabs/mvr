@@ -104,9 +104,8 @@ export default function Packages() {
       <div className="gap-md lg:flex lg:flex-grow">
         <div className="gap-xs max-lg:py-lg lg:p-md flex-shrink-0 overflow-y-auto lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
           <div>
-            <div className="flex items-center justify-between mb-sm">
-              <Label className="block">Select a package</Label>
-              {/* TODO: Add + icon instead of the stuff before.. */}
+            <div className="mb-sm flex items-center justify-between">
+              <Label className="block">Select Metadata</Label>
               <Dialog
                 open={showCreationDialog}
                 onOpenChange={setShowCreationDialog}
@@ -116,8 +115,7 @@ export default function Packages() {
                 />
                 <DialogTrigger asChild>
                   <Button variant="linkActive" size="fit">
-                    <Plus className="w-5 h-5 text-content-accent" />
-                    {/* {Content.package.button} */}
+                    <Plus className="text-content-accent h-5 w-5" />
                   </Button>
                 </DialogTrigger>
               </Dialog>

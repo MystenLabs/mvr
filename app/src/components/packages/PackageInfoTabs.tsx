@@ -46,7 +46,7 @@ export function PackageInfoTabs({ packageInfo, disableEdits }: { packageInfo: Pa
             <Text
               kind="paragraph"
               size="paragraph-small"
-              className="flex flex-shrink-0 items-center gap-XSmall"
+              className="flex flex-shrink-0 items-center gap-sm"
             >
               {tab.title}
               {tab.url && <OpenInNewWindowIcon />}

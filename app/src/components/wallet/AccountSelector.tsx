@@ -52,7 +52,7 @@ export function AccountSelector({
         sideOffset={12}
         align={align}
         asChild
-        className="border-stroke-secondary z-50 w-[372px] overflow-hidden rounded-lg border backdrop-blur-huge max-sm:!w-[90vw]"
+        className="border-stroke-secondary z-50 w-[372px] overflow-hidden rounded-lg border backdrop-blur-3xl max-sm:!w-[90vw]"
       >
         <motion.div
           initial={{ opacity: 0, y: -10 }}

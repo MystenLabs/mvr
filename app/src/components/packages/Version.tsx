@@ -16,7 +16,7 @@ export function Version({
         <Text
           kind="heading"
           size="heading-xs"
-          className="uppercase text-content-secondary"
+          className="text-content-secondary"
         >
           {version.action === "add" && "(+)"} Version {version.version}
           {version.action === "update" && " (updated)"}

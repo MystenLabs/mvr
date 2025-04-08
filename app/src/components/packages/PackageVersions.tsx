@@ -98,7 +98,7 @@ export function PackageVersions({
           addUpdate={addUpdate}
         />
         <div className="p-Regular">
-          <EmptyState size="sm" {...Content.emptyStates.versions}>
+          <EmptyState size="md" {...Content.emptyStates.versions}>
             <CreateVersionTrigger
               disableEdits={
                 isLoadingLatestVersion ||
@@ -122,15 +122,19 @@ export function PackageVersions({
         closeDialog={() => setShowCreationDialog(false)}
         addUpdate={addUpdate}
       />
-      <div className="mb-md grid grid-cols-1 gap-md px-sm">
+      <div className="mb-md gap-md px-sm grid grid-cols-1">
         {orderedVersions?.map((x) => (
           <Version
             key={x.version}
             version={x}
-            onUpdate={disableEdits ? undefined :() => {
-              setForUpdate({ ...x });
-              setShowCreationDialog(true);
-            }}
+            onUpdate={
+              disableEdits
+                ? undefined
+                : () => {
+                    setForUpdate({ ...x });
+                    setShowCreationDialog(true);
+                  }
+            }
           />
         ))}
 
