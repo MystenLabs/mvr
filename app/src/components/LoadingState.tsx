@@ -23,10 +23,18 @@ export default function LoadingState() {
             />
           </svg>
           <div className="py-md">
-            <Text kind="heading" size="heading-regular" className="text-content-secondary">
+            <Text
+              kind="heading"
+              size="heading-regular"
+              className="text-content-secondary"
+            >
               {Content.loading.title}
             </Text>
-            <Text kind="paragraph" size="paragraph-regular" className="text-content-secondary">
+            <Text
+              kind="paragraph"
+              size="paragraph-regular"
+              className="text-content-secondary"
+            >
               {Content.loading.description}
             </Text>
           </div>
