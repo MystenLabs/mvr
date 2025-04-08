@@ -24,7 +24,11 @@ export function AppViewer({ cap }: { cap: AppCap }) {
       </Text>
 
       <div className="bg-bg-secondary p-lg rounded-xl">
-        <CreateOrUpdateApp appRecord={app} useDialog={false} />
+        <CreateOrUpdateApp
+          key={app?.objectId}
+          appRecord={app}
+          useDialog={false}
+        />
       </div>
     </div>
   );
