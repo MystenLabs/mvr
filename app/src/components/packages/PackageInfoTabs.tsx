@@ -30,7 +30,7 @@ export function PackageInfoTabs({ packageInfo, disableEdits }: { packageInfo: Pa
 
   return (
     <div>
-      <div className="flex items-center overflow-x-auto">
+      <div className="flex items-center overflow-x-auto gap-md">
         {Tabs.map((tab) => (
           <TabTitle
             key={tab.key}

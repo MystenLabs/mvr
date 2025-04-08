@@ -14,7 +14,7 @@ const buttonVariants = cva(
         secondary: "bg-bg-quarternaryBleedthrough text-content-primary",
         tertiary: "bg-transparent text-content-accent",
 
-        gradientPurpleBlueOp20: "bg-gradientPurpleBlueOp20",
+        primaryBtnGradient: "bg-primaryBtnGradient",
 
         outline:
           "border border-border-classic bg-transparent hover:bg-border-classic hover:text-content-primary",

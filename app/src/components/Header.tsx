@@ -18,6 +18,8 @@ import {
 } from "./ui/sheet";
 import { MenuIcon } from "lucide-react";
 import MvrLogo from "@/icons/MvrLogo";
+import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 const Links = [
   {
@@ -30,9 +32,9 @@ const Links = [
   },
 ];
 
-export default function Header() {
+export default function Header({ children, className }: { children?: ReactNode, className?: string }) {
   return (
-    <header>
+    <header className={cn("bg-header", className)}>
       <Sheet>
         <div className="py-md container grid grid-cols-2 items-center justify-between lg:grid-cols-12">
           <Link
@@ -64,6 +66,8 @@ export default function Header() {
           </SheetHeader>
         </SheetContent>
       </Sheet>
+
+      {children}
     </header>
   );
 }

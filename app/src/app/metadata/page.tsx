@@ -100,7 +100,7 @@ export default function Packages() {
   }
 
   return (
-    <main className="container flex-grow">
+    <main className="pt-xl container flex-grow">
       <div className="gap-md lg:flex lg:flex-grow">
         <div className="gap-xs max-lg:py-lg lg:p-md flex-shrink-0 overflow-y-auto lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
           <div>

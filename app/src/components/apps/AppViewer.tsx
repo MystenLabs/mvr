@@ -15,10 +15,14 @@ export function AppViewer({ cap }: { cap: AppCap }) {
         {app?.normalized}
       </Text>
 
-      <Text kind="heading" size="heading-xs" className="text-content-secondary mt-md">
+      <Text
+        kind="heading"
+        size="heading-xs"
+        className="mt-md mb-md text-content-secondary"
+      >
         Package Details
       </Text>
-      
+
       <div className="bg-bg-secondary p-lg rounded-xl">
         <CreateOrUpdateApp appRecord={app} useDialog={false} />
       </div>

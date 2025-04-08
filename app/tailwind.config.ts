@@ -119,9 +119,9 @@ export default {
       },
     },
     extend: {
-		backgroundImage: {
-        "gradientPurpleBlueOp20":
-          "linear-gradient(139.286deg, rgba(194, 81, 255, 20%) 0%, rgba(76, 162, 255, 20%) 100%)",
+      backgroundImage: {
+        primaryBtnGradient: "var(--primary-btn-gradient)",
+        header: "var(--header-gradient)",
       },
       borderRadius: {
         none: "var(--size-0)",

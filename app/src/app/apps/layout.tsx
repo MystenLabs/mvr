@@ -1,5 +1,6 @@
 "use client";
 
+import Header from "@/components/Header";
 import { WalletConnectedContent } from "@/components/layouts/WalletConnectedContent";
 import {
   AppContext,
@@ -56,12 +57,15 @@ export default function AppsLayout({
   }, [address]);
 
   return (
-    <WalletConnectedContent>
-      <AppContext.Provider
-        value={{ value: appValue, setValue: setAndCacheValue }}
-      >
-        {children}
-      </AppContext.Provider>
-    </WalletConnectedContent>
+    <>
+      <Header />
+      <WalletConnectedContent>
+        <AppContext.Provider
+          value={{ value: appValue, setValue: setAndCacheValue }}
+        >
+          {children}
+        </AppContext.Provider>
+      </WalletConnectedContent>
+    </>
   );
 }

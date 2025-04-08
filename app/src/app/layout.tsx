@@ -16,14 +16,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn(everett.variable, everettMono.variable, inter.variable)}>
-      <body> 
-          <Providers>
-            <BaseLayout>
-              {children}
-            </BaseLayout>
-          </Providers>
-        </body>
+    <html
+      lang="en"
+      className={cn(everett.variable, everettMono.variable, inter.variable)}
+    >
+      <body>
+        <Providers>
+          <BaseLayout>{children}</BaseLayout>
+        </Providers>
+      </body>
     </html>
   );
 }

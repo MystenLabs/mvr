@@ -17,11 +17,6 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
     }),
   });
 
-  const updateMVRSetup = (setup: MVRSetup) => {
-    setMVRSetup(setup);
-    localStorage.setItem(LocalStorageKeys.MVRSetup, JSON.stringify(setup));
-  };
-
   // init multisig setup from local storage.
   useEffect(() => {
     const setup = localStorage.getItem(LocalStorageKeys.MVRSetup);
@@ -34,7 +29,6 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
     <MVRContext.Provider value={mvrSetup}>
       <div className="flex min-h-screen flex-col">
         <Toaster />
-        <Header />
         {children}
         <Footer />
       </div>
