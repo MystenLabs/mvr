@@ -2,61 +2,211 @@
 @tailwind components;
 @tailwind utilities;
 @layer base {
+    /* Primitives */
   :root {
-    --radius: 0.5rem;
-    
-    --primary: 77 162 255;
-    --primary-hover: 25 136 255;
-    --primary-inverted: 3 15 28 1;
-    --primary-dark: 1 7 14;
-
-    --negative: 236 46 80;
-    --positive: 6 171 93;
-    --white: 247 247 248;
-
-    --secondary-hover: 247, 247, 248, 0.16;
-    --border-classic: 247, 247, 248, 0.15;
-
-    --content-primary: 247 247 248;
-    --content-secondary: 171 189 204;
-    --content-tertiary: 145 163 177;
-
-    --background: 3 15 28;
-    --background-dark: 1 7 14;
-    --background-secondary-solid: 6 13 21;
-    --background-secondary: 247, 247, 248, 0.04;
-    --background-tertiary: 247, 247, 248, 0.24;
-
-    --spacing-XXSmall: 0.25rem;
-    --spacing-XSmall: 0.5rem;
-    --spacing-Small: 0.75rem;
-    --spacing-Regular: 1rem;
-    --spacing-Large: 1.5rem;
-    --spacing-XLarge: 2rem;
+    /* px */
+    /* color */
+    --color-accent-green: #4fba7c;
+    --color-accent-green-op12: #4fba7c1f;
+    --color-accent-green-op16: #4fba7c29;
+    --color-accent-green-op32: #4fba7c52;
+    --color-accent-green2: #00ff94;
+    --color-accent-green2-op8: #00ff9414;
+    --color-accent-purple: #9c88ff;
+    --color-accent-purple-op12: #9c88ff1f;
+    --color-accent-purple-op16: #9c88ff29;
+    --color-accent-purple-op32: #9c88ff52;
+    --color-accent-red: #ff0000;
+    --color-accent-red-op8: #ff000014;
+    --color-accent-salmon: #ff88ae;
+    --color-accent-salmon-op12: #ff88ae1f;
+    --color-accent-salmon-op16: #ff88ae29;
+    --color-accent-salmon-op32: #ff88ae52;
+    --color-accent-yellow: #ffad08;
+    --color-accent-yellow-op8: #ffad0814;
+    --color-grey-100: #bbbbc6;
+    --color-grey-200: #808085;
+    --color-grey-300: #535358;
+    --color-grey-300-op32: #53535852;
+    --color-grey-400: #2a2a2f;
+    --color-grey-500: #171719;
+    --color-grey-600: #0e0e12;
+    --color-grey-700: #020203;
+    --color-grey-700-op24: #0202033d;
+    --color-grey-700-op48: #0202037a;
+    --color-grey-700-op80: #020203cc;
+    --color-pastel-blue: #88a4ff;
+    --color-pastel-green: #aeff88;
+    --color-pastel-orange: #ffb288;
+    --color-pastel-pink: #ff88db;
+    --color-pastel-purple: #c088ff;
+    --color-pastel-red: #ff888a;
+    --color-pastel-turquoise: #88fff9;
+    --color-pastel-yellow: #ffdb88;
+    --color-white-100: #ffffff;
+    --color-white-100-op16: #ffffff29;
+    --color-white-100-op48: #ffffff7a;
+    /* number */
+    --size-0: 0px;
+    --size-1: 4px;
+    --size-2: 8px;
+    --size-3: 12px;
+    --size-4: 16px;
+    --size-5: 20px;
+    --size-6: 24px;
+    --size-7: 28px;
+    --size-8: 32px;
+    --size-9: 36px;
+    --size-10: 40px;
+    --size-11: 48px;
+    --size-12: 56px;
+    --size-13: 64px;
+    --size-14: 72px;
+    --size-15: 80px;
+    --size-16: 88px;
+    --size-17: 96px;
+    --size-18: 104px;
+    --size-19: 112px;
+    --size-20: 120px;
   }
+  /* Color-tokens */
+  :root {
+    --bg-org-blue: var(--color-pastel-blue);
+    --bg-org-green: var(--color-pastel-green);
+    --bg-org-orange: var(--color-pastel-orange);
+    --bg-org-pink: var(--color-pastel-pink);
+    --bg-org-purple: var(--color-pastel-purple);
+    --bg-org-red: var(--color-pastel-red);
+    --bg-org-turquoise: var(--color-pastel-turquoise);
+    --bg-org-yellow: var(--color-pastel-yellow);
+    --bg-overlay: var(--color-grey-700-op80);
+    --bg-positive: var(--color-accent-green2);
+    --bg-positive-bleedthrough: var(--color-accent-green2-op8);
+    --bg-primary: var(--color-grey-700);
+    --bg-primary-bleedthrough1: var(--color-grey-700-op80);
+    --bg-primary-bleedthrough2: var(--color-grey-700-op24);
+    --bg-quarternary: var(--color-grey-300);
+    --bg-quarternary-bleedthrough: var(--color-grey-300-op32);
+    --bg-secondary: var(--color-grey-600);
+    --bg-tertiary: var(--color-grey-500);
+    --bg-warning: var(--color-accent-yellow);
+    --bg-warning-bleedthrough: var(--color-accent-yellow-op8);
+
+    --content-negative: var(--color-accent-red);
+    --content-positive: var(--color-accent-green2);
+    --content-primary: var(--color-white-100);
+    --content-primary-bleedthrough1: var(--color-white-100-op48);
+    --content-primary-bleedthrough2: var(--color-white-100-op16);
+    --content-primary-inverse: var(--color-grey-700);
+
+    --content-secondary: var(--color-grey-100);
+    --content-tertiary: var(--color-grey-200);
+    --content-warning: var(--color-accent-yellow);
+
+    --stroke-negative: var(--color-accent-red);
+    --stroke-primary: var(--color-white-100-op48);
+    --stroke-secondary: var(--color-white-100-op16);
+
+    /* Mainnet are the default colors */
+    --bg-accent: var(--color-accent-purple);
+    --bg-accent-bleedthrough1: var(--color-accent-purple-op32);
+    --bg-accent-bleedthrough2: var(--color-accent-purple-op16);
+    --bg-accent-bleedthrough3: var(--color-accent-purple-op12);
+    --bg-negative: var(--color-accent-red);
+    --bg-negative-bleedthrough: var(--color-accent-red-op8);
+    --content-accent: var(--color-accent-purple);
+    --content-accent-bleedthrough1: var(--color-accent-purple-op32);
+    --content-accent-bleedthrough2: var(--color-accent-purple-op16);
+    --content-accent-bleedthrough3: var(--color-accent-purple-op12); 
+    --stroke-accent: var(--color-accent-purple);
+  }
+
+  /* We override the colors for testnet layouts. */
+  .testnet-layout {
+    --bg-accent: var(--color-accent-salmon);
+    --bg-accent-bleedthrough1: var(--color-accent-salmon-op32);
+    --bg-accent-bleedthrough2: var(--color-accent-salmon-op16);
+    --bg-accent-bleedthrough3: var(--color-accent-salmon-op12);
+    --bg-negative: var(--color-accent-red);
+    --bg-negative-bleedthrough: var(--color-accent-red-op8);
+    --content-accent: var(--color-accent-salmon);
+    --content-accent-bleedthrough1: var(--color-accent-salmon-op32);
+    --content-accent-bleedthrough2: var(--color-accent-salmon-op16);
+    --content-accent-bleedthrough3: var(--color-accent-salmon-op12);
+    --stroke-accent: var(--color-accent-salmon);
+  }
+
+  /* Font Styles */
+  :root {
+    --text-12: 12px;
+    --text-14: 14px;
+    --text-16: 16px;
+    --text-18: 18px;
+    --text-20: 20px;
+    --text-24: 24px;
+    --text-28: 28px;
+    --text-32: 32px;
+    --text-36: 36px;
+    --text-40: 40px;
+    --text-44: 44px;
+    --text-48: 48px;
+    --text-56: 56px;
+    --text-64: 64px;
+    --text-72: 72px;
+    --text-80: 80px;
+    --text-88: 88px;
+    --text-96: 96px;
+
+    --lh-12: 12px;
+    --lh-14: 14px;
+    --lh-16: 16px;
+    --lh-18: 18px;
+    --lh-20: 20px;
+    --lh-24: 24px;
+    --lh-28: 28px;
+    --lh-32: 32px;
+    --lh-36: 36px;
+    --lh-40: 40px;
+    --lh-44: 44px;
+    --lh-48: 48px;
+    --lh-56: 56px;
+    --lh-64: 64px;
+    --lh-72: 72px;
+    --lh-80: 80px;
+    --lh-88: 88px;
+    --lh-96: 96px;
+    --lh-112: 112px;
+    --lh-120: 120px;
+
+    --tracking-05: 5%;
+    --tracking-03: 3%;
+  }
+
 }
 
+
 html {
-  @apply bg-background-dark text-content-primary;
+  @apply bg-bg-primary text-content-primary;
 }
 
 #terms {
-  @apply py-Regular;
+  @apply py-m;
 }
 
 #terms ol {
   @apply list-decimal;
 }
+
 #terms ol ol {
   @apply list-disc
 }
 
 #terms li {
-  @apply mb-Small ml-Regular;
+  @apply mb-s ml-m;
 }
 #terms li > strong {
-  @apply mb-Small;
+  @apply mb-s;
 }
 #terms p {
-  @apply mb-Small;
+  @apply mb-s;
 }

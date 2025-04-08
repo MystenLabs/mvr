@@ -188,7 +188,7 @@ const CreateVersionTrigger = ({
 
   return (
     <DialogTrigger asChild onClick={reset}>
-      <Button variant="default">Create version</Button>
+      <Button>Create version</Button>
     </DialogTrigger>
   );
 };

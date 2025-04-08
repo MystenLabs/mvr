@@ -207,7 +207,7 @@ export default function CreateOrUpdateApp({
               )}
             />
 
-            <div className="mt-Regular grid grid-cols-1 gap-Regular rounded-2xl border border-border-classic p-Regular">
+            <div className="mt-Regular grid grid-cols-1">
               <FormField
                 control={form.control}
                 name="mainnet"

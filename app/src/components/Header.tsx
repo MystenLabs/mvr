@@ -6,9 +6,6 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
-import { useMVRContext } from "./providers/mvr-provider";
-import { Input } from "./ui/input";
-import { Content } from "@/data/content";
 import { Text } from "./ui/Text";
 import { SuiConnectPill } from "./wallet/SuiConnectPill";
 import {
@@ -17,7 +14,6 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
 import { MenuIcon } from "lucide-react";
@@ -34,36 +30,25 @@ const Links = [
   },
 ];
 
-export default function Header({
-  updateUserCustomAddress,
-  updateCustomAddress,
-}: {
-  updateUserCustomAddress: (val: boolean) => void;
-  updateCustomAddress: (val: string) => void;
-}) {
-  const mvrContext = useMVRContext();
-
+export default function Header() {
   return (
     <header>
       <Sheet>
-        <div className="container grid grid-cols-2 items-center justify-between py-Regular lg:grid-cols-12">
+        <div className="py-m container grid grid-cols-2 items-center justify-between lg:grid-cols-12">
           <Link
             href="/apps"
-            className="flex w-fit items-center gap-Small lg:col-span-3"
+            className="gap-xs flex w-fit items-center lg:col-span-3"
           >
             <MvrLogo />
-            <Text variant="heading/regular">mvr</Text>
+            <Text kind="display" className="text-[24px] font-extrabold">
+              MVR
+            </Text>
           </Link>
-          <div className="flex items-center justify-end gap-Small lg:col-span-9">
+          <div className="gap-l flex items-center justify-end lg:col-span-9">
             <div className="max-lg:hidden">
               <Menu />
             </div>
-            {!mvrContext.isCustom && <SuiConnectPill />}
-
-            <CustomAddressSetup
-              {...{ updateUserCustomAddress, updateCustomAddress }}
-              className="flex items-center gap-Small max-lg:hidden"
-            />
+            <SuiConnectPill />
             <SheetTrigger className="lg:hidden">
               <MenuIcon />
             </SheetTrigger>
@@ -75,11 +60,6 @@ export default function Header({
               <div className="text-left">
                 <Menu />
               </div>
-
-              <CustomAddressSetup
-                {...{ updateUserCustomAddress, updateCustomAddress }}
-                className="gap-Regular"
-              />
             </SheetDescription>
           </SheetHeader>
         </SheetContent>
@@ -87,43 +67,6 @@ export default function Header({
     </header>
   );
 }
-
-interface CustomAddressSetupInterface
-  extends React.HTMLAttributes<HTMLDivElement> {
-  updateUserCustomAddress: (val: boolean) => void;
-  updateCustomAddress: (val: string) => void;
-}
-
-const CustomAddressSetup = ({
-  updateUserCustomAddress,
-  updateCustomAddress,
-  ...rest
-}: CustomAddressSetupInterface) => {
-  const mvrContext = useMVRContext();
-  return (
-    <div {...rest}>
-      {mvrContext.isCustom && (
-        <Input
-          value={mvrContext.customAddress}
-          placeholder={Content.addressPlaceholder}
-          onChange={(e) => updateCustomAddress(e.target.value)}
-          className="max-lg:w-full lg:min-w-[400px]"
-        />
-      )}
-
-      {/* <div className="flex items-center gap-Small rounded-full border border-border-classic bg-background-secondary px-Small py-XSmall max-lg:mt-Regular max-lg:justify-between">
-        <Text variant="small/regular" color="secondary">
-          Custom
-        </Text>
-
-        <Switch
-          checked={mvrContext.isCustom}
-          onCheckedChange={(checked) => updateUserCustomAddress(checked)}
-        />
-      </div> */}
-    </div>
-  );
-};
 
 const Menu = () => {
   const path = usePathname();
@@ -134,8 +77,9 @@ const Menu = () => {
           <Button
             asChild
             key={name}
-            variant={path === href ? "default" : "link"}
-            className="max-lg:w-full"
+            size="fit"
+            variant={path === href ? "linkActive" : "link"}
+            className="px-xs max-lg:w-full"
           >
             <Link href={href}>{name}</Link>
           </Button>

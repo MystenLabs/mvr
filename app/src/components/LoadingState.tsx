@@ -23,10 +23,10 @@ export default function LoadingState() {
             />
           </svg>
           <div className="py-Regular">
-            <Text variant="heading/regular" color="tertiary" className="">
+            <Text kind="heading" size="heading-regular" className="text-content-tertiary">
               {Content.loading.title}
             </Text>
-            <Text variant="small/regular" color="tertiary" family="inter">
+            <Text kind="paragraph" size="paragraph-regular" className="text-content-tertiary">
               {Content.loading.description}
             </Text>
           </div>

@@ -87,7 +87,7 @@ export default function Packages() {
             onOpenChange={setShowCreationDialog}
           >
             <DialogTrigger>
-              <Button variant="default">{Content.package.button}</Button>
+              <Button>{Content.package.button}</Button>
             </DialogTrigger>
             <CreatePackageInfo
               closeDialog={() => setShowCreationDialog(false)}

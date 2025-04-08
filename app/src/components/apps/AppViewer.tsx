@@ -106,7 +106,7 @@ const SinglePackageView = ({
     return (
       <EmptyState size="md" {...Content.noPackageConnected}>
         <DialogTrigger>
-          <Button variant="default">{Content.noPackageConnected.button}</Button>
+          <Button variant="primary">{Content.noPackageConnected.button}</Button>
         </DialogTrigger>
       </EmptyState>
     );
