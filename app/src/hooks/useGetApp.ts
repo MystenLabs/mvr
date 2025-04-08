@@ -13,16 +13,16 @@ export type AppInfo = {
 };
 
 export type AppRecord = {
-    objectId: string;
-    mainnet?: AppInfo | null;
-    testnet?: AppInfo | null;
-    appCapId: string;
-    metadata: any;
-    nsNftId: string;
-    appName: string;
-    orgName: string;
-    normalized: string;
-}
+  objectId: string;
+  mainnet?: AppInfo | null;
+  testnet?: AppInfo | null;
+  appCapId: string;
+  metadata: Record<string, string>;
+  nsNftId: string;
+  appName: string;
+  orgName: string;
+  normalized: string;
+};
 
 const parseAppInfo = (field: any): AppInfo => {
   return {
@@ -32,11 +32,13 @@ const parseAppInfo = (field: any): AppInfo => {
   };
 };
 
-const format = (response: SuiObjectResponse & {
+const format = (
+  response: SuiObjectResponse & {
     appName: string;
     orgName: string;
     normalized: string;
-}) => {
+  },
+) => {
   if (response.data?.content?.dataType !== "moveObject")
     throw new Error("Invalid object type");
 
@@ -60,7 +62,13 @@ const format = (response: SuiObjectResponse & {
     mainnet: mainnetData,
     testnet,
     appCapId: data.app_cap_id,
-    metadata: data.metadata.fields.contents,
+    metadata: data.metadata.fields.contents.reduce(
+      (acc: Record<string, string>, x: any) => {
+        acc[x.fields.key] = x.fields.value;
+        return acc;
+      },
+      {},
+    ),
     nsNftId: data.ns_nft_id,
     appName: response.appName,
     orgName: response.orgName,
@@ -79,7 +87,12 @@ export function useGetAppFromCap(cap: AppCap) {
         name: cap.dfName,
       });
 
-      return {...data, appName: cap.appName, orgName: cap.orgName, normalized: cap.normalizedName };
+      return {
+        ...data,
+        appName: cap.appName,
+        orgName: cap.orgName,
+        normalized: cap.normalizedName,
+      };
     },
     select: (data) => {
       return format(data);

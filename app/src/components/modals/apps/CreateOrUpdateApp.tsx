@@ -30,6 +30,7 @@ import { AlertCircleIcon } from "lucide-react";
 import { SuinsName } from "@/hooks/useOrganizationList";
 import { useIsNameAvailable } from "@/hooks/useIsNameAvailable";
 import { useDebounce } from "@/hooks/useDebounce";
+import { METADATA_KEYS } from "@/data/on-chain-app";
 
 const formSchema = z
   .object({
@@ -38,6 +39,11 @@ const formSchema = z
     mainnet: z.string().nullable().optional(),
     testnet: z.string().nullable().optional(),
     acceptMainnetWarning: z.boolean().optional(),
+    description: z.string().optional(),
+    icon_url: z.string().optional(),
+    documentation_url: z.string().optional(),
+    homepage_url: z.string().optional(),
+    contact: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.mainnet && !data.acceptMainnetWarning) {
@@ -49,6 +55,16 @@ const formSchema = z
       });
     }
   });
+
+const formToMetadata = (form: z.infer<typeof formSchema>) => {
+  const metadata: Record<string, string> = {};
+  for (const key of Object.keys(form)) {
+    if (METADATA_KEYS.includes(key)) {
+      metadata[key] = form[key as keyof typeof form] as string;
+    }
+  }
+  return metadata;
+};
 
 export default function CreateOrUpdateApp({
   suins,
@@ -97,6 +113,13 @@ export default function CreateOrUpdateApp({
     form.setValue("testnet", appRecord.testnet?.packageInfoId);
     form.setValue("nsName", appRecord.orgName);
 
+    // TODO: set metadata from appRecord's metadaa.
+    for (const [key, value] of Object.entries(appRecord.metadata)) {
+      if (METADATA_KEYS.includes(key)) {
+        form.setValue(key as keyof z.infer<typeof formSchema>, value);
+      }
+    }
+
     // by default, if we've already set this, we should accept the warning
     if (appRecord.mainnet) {
       form.setValue("acceptMainnetWarning", true);
@@ -144,6 +167,7 @@ export default function CreateOrUpdateApp({
         testnetPackageInfo: values.testnet
           ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
           : undefined,
+        metadata: formToMetadata(values),
       });
 
       isSuccess = !!execution;
@@ -158,6 +182,7 @@ export default function CreateOrUpdateApp({
         testnetPackageInfo: values.testnet
           ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
           : undefined,
+        metadata: formToMetadata(values),
       });
       isSuccess = !!execution;
     }
@@ -179,13 +204,13 @@ export default function CreateOrUpdateApp({
                 control={form.control}
                 name="nsName"
                 render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Organization / Project</FormLabel>
-                  <FormControl>
-                    <Input {...field} disabled={true} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  <FormItem>
+                    <FormLabel>Organization / Project</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled={true} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
             )}
@@ -195,20 +220,62 @@ export default function CreateOrUpdateApp({
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Type your application name"
-                      {...field}
-                      disabled={isUpdate || field.disabled}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Type your application name"
+                        {...field}
+                        disabled={isUpdate || field.disabled}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
             )}
+
+            {/* Metadata */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="icon_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon URL</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="documentation_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Documentation URL</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="gap-md mb-md grid grid-cols-1">
               <FormField

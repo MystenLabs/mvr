@@ -3,7 +3,9 @@ import {
   assignMainnetPackage,
   registerApp,
   registerPublicNameApp,
+  removeMetadata,
   setExternalNetwork,
+  setMetadata,
   unsetExternalNetwork,
 } from "@/data/on-chain-app";
 import { useChainIdentifier } from "@/hooks/useChainIdentifier";
@@ -30,11 +32,13 @@ export function useCreateAppMutation() {
       suins,
       mainnetPackageInfo,
       testnetPackageInfo,
+      metadata,
     }: {
       name: string;
       suins: SuinsName;
       mainnetPackageInfo?: PackageInfoData;
       testnetPackageInfo?: PackageInfoData;
+      metadata: Record<string, string>;
     }) => {
       const tx = new Transaction();
 
@@ -81,6 +85,15 @@ export function useCreateAppMutation() {
         });
       }
 
+      for (const [key, value] of Object.entries(metadata)) {
+        setMetadata({
+          tx,
+          appCap,
+          key,
+          value,
+        });
+      }
+
       if (nsObject && promise) {
         kioskTx?.return({
           itemType: suins.objectType!,
@@ -110,10 +123,12 @@ export function useUpdateAppMutation() {
       record,
       mainnetPackageInfo,
       testnetPackageInfo,
+      metadata,
     }: {
       record: AppRecord;
       mainnetPackageInfo?: PackageInfoData;
       testnetPackageInfo?: PackageInfoData;
+      metadata: Record<string, string>;
     }) => {
       const tx = new Transaction();
       let updates = 0;
@@ -167,6 +182,32 @@ export function useUpdateAppMutation() {
           tx,
           appCap: record.appCapId,
           chainId: testnetChainIdentifier!,
+        });
+        updates++;
+      }
+
+      for (const [key, value] of Object.entries(metadata)) {
+        const preExistingKey = Object.hasOwn(record.metadata, key);
+        // if the value is the same as the pre-existing value, or the value is not set, skip.
+        if (
+          (preExistingKey && record.metadata[key] === value) ||
+          (!preExistingKey && !value)
+        )
+          continue;
+
+        if (preExistingKey) {
+          removeMetadata({
+            tx,
+            appCap: record.appCapId,
+            key,
+          });
+        }
+
+        setMetadata({
+          tx,
+          appCap: record.appCapId,
+          key,
+          value,
         });
         updates++;
       }
