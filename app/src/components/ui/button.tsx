@@ -14,6 +14,8 @@ const buttonVariants = cva(
         secondary: "bg-bg-quarternaryBleedthrough text-content-primary",
         tertiary: "bg-transparent text-content-accent",
 
+        // accent: "bg-b",
+
         primaryBtnGradient: "bg-primaryBtnGradient",
 
         outline:

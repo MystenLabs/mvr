@@ -8,7 +8,7 @@ import { TabTitle } from "@/components/ui/TabTitle";
 import { Text } from "@/components/ui/Text";
 import { useActiveAddress } from "@/hooks/useActiveAddress";
 import { useWalletNetwork } from "@/hooks/useWalletNetwork";
-import { cn } from "@/lib/utils";
+import { cn, switchGlobalAccent } from "@/lib/utils";
 import { AvailableNetworks, Network } from "@/utils/types";
 import { useEffect, useState } from "react";
 
@@ -31,12 +31,19 @@ export default function PackagesLayout({
     setNetwork(walletNetwork);
   }, [isCustom, walletNetwork]);
 
+  // We're switching the accent color globally, to make sure modals
+  // also inherit the different palette.
+  useEffect(() => {
+    switchGlobalAccent(network === "testnet");
+    return () => switchGlobalAccent(false);
+  }, [network]);
+
   return (
     <>
-      <Header className={cn(network === "testnet" && "testnet-layout")}>
+      <Header>
         {!!activeAddress && (
           <div className="">
-            <div className="container flex min-h-[75px] items-end gap-lg">
+            <div className="gap-lg container flex min-h-[75px] items-end">
               {Object.values(AvailableNetworks).map((net) => (
                 <TabTitle
                   key={net}
