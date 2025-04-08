@@ -68,7 +68,7 @@ export const Content = {
     icon: "📦",
     title: "No active connection.",
     description:
-      "No package ID connected. This package does not have a mainnet ID connected. Add an ID so MVR resoution gets enabled.",
+      "No package ID connected. This package does not have a mainnet ID connected. Add an ID so MVR resolution gets enabled.",
     button: "Select a metadata object",
   },
 
