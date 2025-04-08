@@ -26,7 +26,7 @@ const Links = [
   },
   {
     name: "Metadata",
-    href: "/packages",
+    href: "/metadata",
   },
 ];
 

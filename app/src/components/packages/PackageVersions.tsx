@@ -122,7 +122,7 @@ export function PackageVersions({
         closeDialog={() => setShowCreationDialog(false)}
         addUpdate={addUpdate}
       />
-      <div className="mb-Regular grid grid-cols-1 gap-Regular px-Small">
+      <div className="mb-md grid grid-cols-1 gap-md px-sm">
         {orderedVersions?.map((x) => (
           <Version
             key={x.version}

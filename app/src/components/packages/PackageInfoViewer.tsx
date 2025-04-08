@@ -14,17 +14,19 @@ export function PackageInfoViewer({
   return (
     <div>
       {!disableEdits && (
-        <Text
-          variant="heading/bold"
-          color="secondary"
-          className="max-w-[750px]"
-        >
+        <Text kind="heading" size="heading-large" className="max-w-[750px]">
           {packageInfo.display.name}
         </Text>
       )}
 
-      <div className="grid grid-cols-1 gap-Regular pt-Regular md:grid-cols-12">
-        <div className="py-Small pb-Large md:col-span-3">
+      <div className="grid grid-cols-1 gap-md pt-md md:grid-cols-12">
+        <div className="md:col-span-9">
+          <PackageInfoTabs
+            packageInfo={packageInfo}
+            disableEdits={disableEdits}
+          />
+        </div>
+        <div className="py-sm pb-lg md:col-span-3">
           {packageInfo.suiDisplay?.imageUrl && (
             <img src={packageInfo.suiDisplay.imageUrl} />
           )}
@@ -34,9 +36,6 @@ export function PackageInfoViewer({
               Edit NFT
             </Button>
           )} */}
-        </div>
-        <div className="md:col-span-9">
-          <PackageInfoTabs packageInfo={packageInfo} disableEdits={disableEdits} />
         </div>
       </div>
     </div>

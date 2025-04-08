@@ -100,8 +100,8 @@ export default function Packages() {
 
   return (
     <main className="container flex-grow">
-      <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-xs overflow-y-auto border-border-classic max-lg:border-b max-lg:py-lg lg:p-md lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
+      <div className="gap-md lg:flex lg:flex-grow">
+        <div className="flex-shrink-0 gap-xs overflow-y-auto max-lg:py-lg lg:p-md lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
           <Dialog
             open={showCreationDialog}
             onOpenChange={setShowCreationDialog}
@@ -110,14 +110,14 @@ export default function Packages() {
               closeDialog={() => setShowCreationDialog(false)}
             />
             <DialogTrigger asChild>
-              <Button variant="outline" className="mb-Large lg:mb-Small w-full">
+              <Button variant="outline" className="mb-lg lg:mb-sm w-full">
                 {Content.package.button}
               </Button>
             </DialogTrigger>
           </Dialog>
 
           <div>
-            <Label className="mb-Small block">Select a package</Label>
+            <Label className="mb-sm block">Select a package</Label>
             <PackageInfoSelector
               disableClear
               value={selectedPackage?.objectId}
