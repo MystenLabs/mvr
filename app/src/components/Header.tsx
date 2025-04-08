@@ -6,8 +6,6 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
-import SuiLogo from "@/icons/SuiLogo";
-import { Switch } from "./ui/switch";
 import { useMVRContext } from "./providers/mvr-provider";
 import { Input } from "./ui/input";
 import { Content } from "@/data/content";
@@ -23,6 +21,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { MenuIcon } from "lucide-react";
+import MvrLogo from "@/icons/MvrLogo";
 
 const Links = [
   {
@@ -50,15 +49,15 @@ export default function Header({
         <div className="container grid grid-cols-2 items-center justify-between py-Regular lg:grid-cols-12">
           <Link
             href="/apps"
-            className="flex items-center gap-Small lg:col-span-3 w-fit"
+            className="flex w-fit items-center gap-Small lg:col-span-3"
           >
-            <SuiLogo />
+            <MvrLogo />
             <Text variant="heading/regular">mvr</Text>
           </Link>
-          <div className="text-center max-lg:hidden lg:col-span-4">
-            <Menu />
-          </div>
-          <div className="flex items-center justify-end gap-Small lg:col-span-5">
+          <div className="flex items-center justify-end gap-Small lg:col-span-9">
+            <div className="max-lg:hidden">
+              <Menu />
+            </div>
             {!mvrContext.isCustom && <SuiConnectPill />}
 
             <CustomAddressSetup

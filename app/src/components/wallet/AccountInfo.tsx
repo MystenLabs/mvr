@@ -2,9 +2,9 @@ import { formatAddress } from '@mysten/sui/utils';
 import { useResolveSuiNSName } from '@mysten/dapp-kit';
 import { normalizeSuiNSName } from "@mysten/sui/utils"
 
-import SuiLogo from '@/icons/SuiLogo';
 import { Text } from '../ui/Text';
 import { ReactNode } from 'react';
+import MvrLogo from '@/icons/MvrLogo';
 
 type AccountInfoProps = {
     address: string;
@@ -16,7 +16,7 @@ function AccountInfo({ address, img, name }: AccountInfoProps) {
     return (
         <div className="relative flex items-center justify-start gap-3">
             <div className="relative h-[43px] w-[43px] rounded-full border border-border-classic flex items-center justify-center">
-                {img ?? <SuiLogo className="object-contain" width={22} height={22} />}
+                {img ?? <MvrLogo className="object-contain" width={22} height={22} />}
             </div>
             <div className="flex flex-col gap-1 whitespace-nowrap text-start">
                 <Text variant="regular/bold" color="primary" className="max-w-[200px]" family="inter">
@@ -48,6 +48,7 @@ export function SuiActiveAccountInfo({ address }: { address: string }) {
     // const { data } = useGetNameAvatar(name);
     return <ActiveAccountInfo label={name ? normalizeSuiNSName(name) : formatAddress(address)} />
 }
+
 export function SuiAccountInfo({ address }: { address: string }) {
     const { data: name } = useResolveSuiNSName(address);
     // const { data } = useGetNameAvatar(name);
