@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { ModalFooter } from "../ModalFooter";
 import { z } from "zod";
@@ -32,6 +32,7 @@ import { useIsNameAvailable } from "@/hooks/useIsNameAvailable";
 import { useDebounce } from "@/hooks/useDebounce";
 import { METADATA_KEYS } from "@/data/on-chain-app";
 import { TextArea } from "@/components/ui/textarea";
+import { Text } from "@/components/ui/Text";
 
 const formSchema = z
   .object({
@@ -242,7 +243,7 @@ export default function CreateOrUpdateApp({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormOptionalLabel title="Description" />
                   <FormControl>
                     <TextArea
                       {...field}
@@ -259,7 +260,7 @@ export default function CreateOrUpdateApp({
               name="icon_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Icon URL</FormLabel>
+                  <FormOptionalLabel title="Icon URL" />
                   <FormControl>
                     <Input
                       {...field}
@@ -276,7 +277,7 @@ export default function CreateOrUpdateApp({
               name="homepage_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Homepage URL</FormLabel>
+                  <FormOptionalLabel title="Homepage URL" />
                   <FormControl>
                     <Input
                       {...field}
@@ -293,7 +294,7 @@ export default function CreateOrUpdateApp({
               name="documentation_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Documentation URL</FormLabel>
+                  <FormOptionalLabel title="Documentation URL" />
                   <FormControl>
                     <Input
                       {...field}
@@ -311,7 +312,7 @@ export default function CreateOrUpdateApp({
                 name="mainnet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mainnet metadata (optional)</FormLabel>
+                    <FormOptionalLabel title="Mainnet metadata" />
                     <FormControl>
                       <PackageInfoSelector
                         disabled={isUpdate && !!appRecord.mainnet}
@@ -336,7 +337,7 @@ export default function CreateOrUpdateApp({
                 name="testnet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Testnet metadata (optional)</FormLabel>
+                    <FormOptionalLabel title="Testnet metadata" />
                     <FormControl>
                       <PackageInfoSelector
                         options={testnetPackageInfos ?? []}
@@ -437,3 +438,18 @@ const ModalWrapper = ({
   ) : (
     <>{children}</>
   );
+
+const FormOptionalLabel = ({ title }: { title: ReactNode }) => {
+  return (
+    <FormLabel className="gap-xs flex items-center">
+      {title}
+      <Text
+        kind="paragraph"
+        size="paragraph-small"
+        className="!font-light text-content-secondary"
+      >
+        (Optional)
+      </Text>
+    </FormLabel>
+  );
+};
