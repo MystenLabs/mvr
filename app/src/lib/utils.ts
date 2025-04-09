@@ -22,3 +22,14 @@ export const switchGlobalAccent = (isTestnet: boolean) => {
     document.body.classList.remove("testnet-layout");
   }
 };
+
+
+/// A helper to check if value A and B are different.
+/// In the case where "null" becomes "undefined" or "undefined" becomes "null",
+/// we do not treat it as a change for forms!
+export const nullishValueChanged = (a: any, b: any) => {
+  if (a === null && b === null || a === undefined && b === undefined) return false;
+  // in this case, we treat it as a change for forms!
+  if (a === null && b === undefined || a === undefined && b === null) return false;
+  return a !== b;
+}

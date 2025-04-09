@@ -33,6 +33,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { METADATA_KEYS } from "@/data/on-chain-app";
 import { TextArea } from "@/components/ui/textarea";
 import { Text } from "@/components/ui/Text";
+import equal from "fast-deep-equal/es6/react";
+import { nullishValueChanged } from "@/lib/utils";
 
 const formSchema = z
   .object({
@@ -62,7 +64,9 @@ const formToMetadata = (form: z.infer<typeof formSchema>) => {
   const metadata: Record<string, string> = {};
   for (const key of Object.keys(form)) {
     if (METADATA_KEYS.includes(key)) {
-      metadata[key] = form[key as keyof typeof form] as string;
+      const value = form[key as keyof typeof form];
+      if (value === undefined) continue;
+      metadata[key] = value as string;
     }
   }
   return metadata;
@@ -107,9 +111,8 @@ export default function CreateOrUpdateApp({
     form.setValue("nsName", suins.domainName);
   }, [suins]);
 
-  useEffect(() => {
-    if (!isUpdate) return;
-    if (!appRecord) return;
+
+  const initFormFromAppRecord = (appRecord: AppRecord) => {
     form.setValue("name", appRecord.appName);
     form.setValue("mainnet", appRecord.mainnet?.packageInfoId);
     form.setValue("testnet", appRecord.testnet?.packageInfoId);
@@ -121,11 +124,26 @@ export default function CreateOrUpdateApp({
         form.setValue(key as keyof z.infer<typeof formSchema>, value);
       }
     }
-
+  
     // by default, if we've already set this, we should accept the warning
     if (appRecord.mainnet) {
       form.setValue("acceptMainnetWarning", true);
     }
+  }
+
+  const resetForm = () => {
+    if (!isUpdate){
+      form.reset();
+      return;
+    }
+
+    initFormFromAppRecord(appRecord);
+  }
+
+  useEffect(() => {
+    if (!isUpdate) return;
+    if (!appRecord) return;
+    initFormFromAppRecord(appRecord);
   }, [appRecord]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -141,6 +159,29 @@ export default function CreateOrUpdateApp({
       `${suins?.domainName}/${debouncedName}`,
       !!debouncedName && !!suins?.domainName,
     );
+
+  // A deep comparison of the form values, to enable / disable the 
+  // "Save Changes" button.
+  const values = form.watch();
+  const formChanged = useMemo(() => {
+    // do not block creations for any case.
+    if (!isUpdate) return true;
+
+    const metadata = formToMetadata(values);
+
+    const metadataChanged = !equal(metadata, appRecord?.metadata);
+
+    const mainnetChanged = nullishValueChanged(
+      values.mainnet,
+      appRecord?.mainnet?.packageInfoId,
+    );
+    const testnetChanged = nullishValueChanged(
+      values.testnet,
+      appRecord?.testnet?.packageInfoId,
+    );
+
+    return metadataChanged || mainnetChanged || testnetChanged;
+  }, [values, appRecord]);
 
   // handle name availability state.
   useEffect(() => {
@@ -387,12 +428,14 @@ export default function CreateOrUpdateApp({
             <ModalFooter
               loading={isPending || isUpdatePending}
               leftBtnHandler={() => {
-                form.reset();
+                resetForm();
                 if (useDialog) closeDialog();
               }}
-              leftBtnDisabled={!useDialog}
+              leftBtnDisabled={!useDialog && !formChanged}
               rightBtnDisabled={
-                !form.formState.isValid || (!isUpdate && !isNameAvailable)
+                !form.formState.isValid ||
+                (!isUpdate && !isNameAvailable) ||
+                !formChanged
               }
               rightBtnText={isUpdate ? "Save Changes" : "Create"}
               rightBtnHandler={async () => {
