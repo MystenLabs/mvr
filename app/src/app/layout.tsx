@@ -19,6 +19,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(everett.variable, everettMono.variable, inter.variable)}
+      suppressHydrationWarning
     >
       <body>
         <Providers>

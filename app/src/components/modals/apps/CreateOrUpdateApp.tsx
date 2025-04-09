@@ -65,7 +65,7 @@ const formToMetadata = (form: z.infer<typeof formSchema>) => {
   for (const key of Object.keys(form)) {
     if (METADATA_KEYS.includes(key)) {
       const value = form[key as keyof typeof form];
-      if (value === undefined) continue;
+      if (value === undefined || value === null) continue;
       metadata[key] = value as string;
     }
   }
@@ -111,12 +111,16 @@ export default function CreateOrUpdateApp({
     form.setValue("nsName", suins.domainName);
   }, [suins]);
 
-
   const initFormFromAppRecord = (appRecord: AppRecord) => {
     form.setValue("name", appRecord.appName);
     form.setValue("mainnet", appRecord.mainnet?.packageInfoId);
     form.setValue("testnet", appRecord.testnet?.packageInfoId);
     form.setValue("nsName", appRecord.orgName);
+
+    // initialize everything as "null" here.
+    for (const key of METADATA_KEYS) {
+      form.setValue(key as keyof z.infer<typeof formSchema>, null);
+    }
 
     // TODO: set metadata from appRecord's metadaa.
     for (const [key, value] of Object.entries(appRecord.metadata)) {
@@ -124,21 +128,21 @@ export default function CreateOrUpdateApp({
         form.setValue(key as keyof z.infer<typeof formSchema>, value);
       }
     }
-  
+
     // by default, if we've already set this, we should accept the warning
     if (appRecord.mainnet) {
       form.setValue("acceptMainnetWarning", true);
     }
-  }
+  };
 
   const resetForm = () => {
-    if (!isUpdate){
+    if (!isUpdate) {
       form.reset();
       return;
     }
 
     initFormFromAppRecord(appRecord);
-  }
+  };
 
   useEffect(() => {
     if (!isUpdate) return;
@@ -160,7 +164,7 @@ export default function CreateOrUpdateApp({
       !!debouncedName && !!suins?.domainName,
     );
 
-  // A deep comparison of the form values, to enable / disable the 
+  // A deep comparison of the form values, to enable / disable the
   // "Save Changes" button.
   const values = form.watch();
   const formChanged = useMemo(() => {
@@ -347,6 +351,23 @@ export default function CreateOrUpdateApp({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="contact"
+              render={({ field }) => (
+                <FormItem>
+                  <FormOptionalLabel title="Contact" />
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Any contact information that users can use to reach you (e.g. email, telegram etc)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="gap-md mb-md grid grid-cols-1">
               <FormField
                 control={form.control}
@@ -469,7 +490,7 @@ const ModalWrapper = ({
   useDialog: boolean;
 }) =>
   useDialog ? (
-    <DialogContent>
+    <DialogContent className="max-h-[95%] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>
           {isUpdate ? "Updating" : "Create"} Package
