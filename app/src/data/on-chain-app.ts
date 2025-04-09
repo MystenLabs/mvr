@@ -154,7 +154,6 @@ export const setMetadata = async ({
   key: string;
   value: string;
 }) => {
-  console.log("setting metadata", key, value);
   tx.moveCall({
     target: `@mvr/core::move_registry::set_metadata`,
     arguments: [

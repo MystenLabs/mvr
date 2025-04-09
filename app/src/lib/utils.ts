@@ -31,5 +31,10 @@ export const nullishValueChanged = (a: any, b: any) => {
   if (a === null && b === null || a === undefined && b === undefined) return false;
   // in this case, we treat it as a change for forms!
   if (a === null && b === undefined || a === undefined && b === null) return false;
+
+  // in this case, we do not treat it as a change for forms!
+  if (a === "" && b === undefined || a === undefined && b === "") return false;
+  if (a === "" && b === null || a === null && b === "") return false;
+
   return a !== b;
 }

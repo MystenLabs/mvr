@@ -65,7 +65,7 @@ const formToMetadata = (form: z.infer<typeof formSchema>) => {
   for (const key of Object.keys(form)) {
     if (METADATA_KEYS.includes(key)) {
       const value = form[key as keyof typeof form];
-      if (value === undefined || value === null) continue;
+      if (value === undefined) continue;
       metadata[key] = value as string;
     }
   }
@@ -112,42 +112,37 @@ export default function CreateOrUpdateApp({
   }, [suins]);
 
   const initFormFromAppRecord = (appRecord: AppRecord) => {
-    form.setValue("name", appRecord.appName);
-    form.setValue("mainnet", appRecord.mainnet?.packageInfoId);
-    form.setValue("testnet", appRecord.testnet?.packageInfoId);
-    form.setValue("nsName", appRecord.orgName);
+    const values: Record<keyof z.infer<typeof formSchema>, any> = {
+      name: appRecord.appName,
+      mainnet: appRecord.mainnet?.packageInfoId,
+      testnet: appRecord.testnet?.packageInfoId,
+      nsName: appRecord.orgName,
+      description: appRecord.metadata.description || "",
+      icon_url: appRecord.metadata.icon_url || "",
+      documentation_url: appRecord.metadata.documentation_url || "",
+      homepage_url: appRecord.metadata.homepage_url || "",
+      contact: appRecord.metadata.contact || "",
+      acceptMainnetWarning: appRecord.mainnet ? true : false,
+    };
 
-    // initialize everything as "null" here.
-    for (const key of METADATA_KEYS) {
-      form.setValue(key as keyof z.infer<typeof formSchema>, null);
+    for (const [key, value] of Object.entries(values)) {
+      if (value === undefined) continue;
+      values[key as keyof z.infer<typeof formSchema>] = value;
     }
 
-    // TODO: set metadata from appRecord's metadaa.
-    for (const [key, value] of Object.entries(appRecord.metadata)) {
-      if (METADATA_KEYS.includes(key)) {
-        form.setValue(key as keyof z.infer<typeof formSchema>, value);
-      }
-    }
-
-    // by default, if we've already set this, we should accept the warning
-    if (appRecord.mainnet) {
-      form.setValue("acceptMainnetWarning", true);
-    }
+    return values;
   };
 
   const resetForm = () => {
-    if (!isUpdate) {
-      form.reset();
-      return;
-    }
-
-    initFormFromAppRecord(appRecord);
+    form.reset(isUpdate ? initFormFromAppRecord(appRecord) : undefined, {
+      keepErrors: false,
+    });
   };
 
   useEffect(() => {
     if (!isUpdate) return;
     if (!appRecord) return;
-    initFormFromAppRecord(appRecord);
+    resetForm();
   }, [appRecord]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -170,10 +165,17 @@ export default function CreateOrUpdateApp({
   const formChanged = useMemo(() => {
     // do not block creations for any case.
     if (!isUpdate) return true;
+    if (!appRecord) return true;
 
     const metadata = formToMetadata(values);
 
-    const metadataChanged = !equal(metadata, appRecord?.metadata);
+    let metadataChanged = false;
+
+    for (const key of METADATA_KEYS) {
+      metadataChanged =
+        metadataChanged ||
+        nullishValueChanged(metadata[key], appRecord?.metadata[key]);
+    }
 
     const mainnetChanged = nullishValueChanged(
       values.mainnet,
@@ -282,7 +284,6 @@ export default function CreateOrUpdateApp({
               />
             )}
 
-            {/* Metadata */}
             <FormField
               control={form.control}
               name="description"
