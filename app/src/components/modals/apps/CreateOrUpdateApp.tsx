@@ -31,6 +31,7 @@ import { SuinsName } from "@/hooks/useOrganizationList";
 import { useIsNameAvailable } from "@/hooks/useIsNameAvailable";
 import { useDebounce } from "@/hooks/useDebounce";
 import { METADATA_KEYS } from "@/data/on-chain-app";
+import { TextArea } from "@/components/ui/textarea";
 
 const formSchema = z
   .object({
@@ -243,7 +244,11 @@ export default function CreateOrUpdateApp({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <TextArea
+                      {...field}
+                      placeholder="A short description to help users understand & search for your package"
+                      rows={3}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -256,7 +261,27 @@ export default function CreateOrUpdateApp({
                 <FormItem>
                   <FormLabel>Icon URL</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      {...field}
+                      placeholder="Your app's icon URL (e.g. https://docs.suins.io/logo.svg)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="homepage_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Homepage URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Your app's homepage URL (e.g. https://suins.io)"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -270,7 +295,10 @@ export default function CreateOrUpdateApp({
                 <FormItem>
                   <FormLabel>Documentation URL</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      {...field}
+                      placeholder="Your documentation link e.g. https://docs.suins.io/move-registry"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -359,7 +387,7 @@ export default function CreateOrUpdateApp({
               loading={isPending || isUpdatePending}
               leftBtnHandler={() => {
                 form.reset();
-                closeDialog();
+                if (useDialog) closeDialog();
               }}
               leftBtnDisabled={!useDialog}
               rightBtnDisabled={
