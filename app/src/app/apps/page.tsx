@@ -104,6 +104,7 @@ export default function App() {
     <main className="px-md lg:py-xl container flex-grow">
       <div className="gap-2xl lg:flex lg:flex-grow">
         <div className="gap-xs max-lg:py-lg lg:px-sm py-sm flex-shrink-0 overflow-y-auto lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
+          <Label className="block pb-2xs">Organization</Label>
           {namesList.length > 0 && (
             <ComboBox
               placeholder="Select one..."

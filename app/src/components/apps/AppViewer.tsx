@@ -23,7 +23,7 @@ export function AppViewer({ cap }: { cap: AppCap }) {
         Package Details
       </Text>
 
-      <div className="bg-bg-secondary p-lg rounded-xl">
+      <div className="bg-bg-secondary p-sm lg:p-lg rounded-xl">
         <CreateOrUpdateApp
           key={app?.objectId}
           appRecord={app}
