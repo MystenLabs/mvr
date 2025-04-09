@@ -19,7 +19,7 @@ export function PackageInfoViewer({
         </Text>
       )}
 
-      <div className="grid grid-cols-1 gap-md pt-md md:grid-cols-12">
+      <div className="gap-md pt-md grid grid-cols-1 md:grid-cols-12">
         <div className="md:col-span-9">
           <PackageInfoTabs
             packageInfo={packageInfo}
@@ -28,7 +28,10 @@ export function PackageInfoViewer({
         </div>
         <div className="py-sm pb-lg md:col-span-3">
           {packageInfo.suiDisplay?.imageUrl && (
-            <img src={packageInfo.suiDisplay.imageUrl} />
+            <img
+              src={packageInfo.suiDisplay.imageUrl}
+              className="mx-auto max-md:max-w-[80%]"
+            />
           )}
 
           {/* {!disableEdits && (

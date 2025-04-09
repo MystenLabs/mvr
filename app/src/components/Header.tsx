@@ -46,12 +46,12 @@ export default function Header({ children, className }: { children?: ReactNode, 
               MVR
             </Text>
           </Link>
-          <div className="gap-lg flex items-center justify-end lg:col-span-9">
+          <div className="gap-xs lg:gap-lg flex items-center justify-end lg:col-span-9">
             <div className="max-lg:hidden">
               <Menu />
             </div>
             <SuiConnectPill />
-            <SheetTrigger className="lg:hidden">
+            <SheetTrigger className="lg:hidden bg-bg-secondary rounded-xs p-xs">
               <MenuIcon />
             </SheetTrigger>
           </div>

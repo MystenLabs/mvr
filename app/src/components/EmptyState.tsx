@@ -49,7 +49,7 @@ export function EmptyState({
 
   return (
     <div className={`container flex flex-grow items-center justify-center overflow-hidden`}>
-      <div className={cn("text-center", useCard && "bg-bg-secondary px-2xl py-3xl rounded-xl")}>
+      <div className={cn("text-center", useCard && "bg-bg-secondary px-lg py-2xl lg:px-2xl lg:py-3xl rounded-xl")}>
         {icon && <h1 className={SizeSetup.icon[size]}>{icon}</h1>}
 
         {title && (
