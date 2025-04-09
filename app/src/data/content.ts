@@ -37,8 +37,13 @@ export const Content = {
       title: "Onwards.",
       description:
         "Create your first package by clicking the button below.",
-      button: "Add a package by clicking the button below",
+      button: "Add package",
     },
+
+    noPackageSelected: {
+      title: "Select a package",
+      description: "Select a package from the navigation to view its details."
+    }
   },
   suinsNames: {
     icon: "🚀",

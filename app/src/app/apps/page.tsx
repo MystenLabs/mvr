@@ -100,25 +100,6 @@ export default function App() {
       </EmptyState>
     );
 
-  if (!nsMatchingApps.length) {
-    return (
-      <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
-        <CreateOrUpdateApp
-          suins={appValue.selectedSuinsName}
-          closeDialog={() => setShowCreateApp(false)}
-        />
-        <EmptyState
-          icon={Content.emptyStates.apps.icon}
-          title={Content.emptyStates.apps.title}
-          description={Content.emptyStates.apps.description}
-        >
-          <DialogTrigger asChild>
-            <Button size="lg">{Content.emptyStates.apps.button}</Button>
-          </DialogTrigger>
-        </EmptyState>
-      </Dialog>
-    );
-  }
   return (
     <main className="px-md lg:py-xl container flex-grow">
       <div className="gap-2xl lg:flex lg:flex-grow">
@@ -197,9 +178,33 @@ export default function App() {
           </div>
         </div>
 
-        <div className="max-lg:py-lg block w-full break-words">
-          {selectedAppCap && <AppViewer cap={selectedAppCap} />}
-        </div>
+        {!nsMatchingApps.length && (
+          <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
+            <CreateOrUpdateApp
+              suins={appValue.selectedSuinsName}
+              closeDialog={() => setShowCreateApp(false)}
+            />
+            <EmptyState
+              icon={Content.emptyStates.apps.icon}
+              title={Content.emptyStates.apps.title}
+              description={Content.emptyStates.apps.description}
+            >
+              <DialogTrigger asChild>
+                <Button size="lg">{Content.emptyStates.apps.button}</Button>
+              </DialogTrigger>
+            </EmptyState>
+          </Dialog>
+        )}
+
+        {!!nsMatchingApps.length && (
+          <div className="max-lg:py-lg block w-full break-words">
+            {selectedAppCap ? (
+              <AppViewer cap={selectedAppCap!} />
+            ) : (
+              <EmptyState {...Content.emptyStates.noPackageSelected} />
+            )}
+          </div>
+        )}
       </div>
     </main>
   );
