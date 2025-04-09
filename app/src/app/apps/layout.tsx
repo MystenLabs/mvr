@@ -47,14 +47,7 @@ export default function AppsLayout({
     ) {
       setAppValue({ selectedSuinsName: null });
     }
-  }, [ownedNames]);
-
-  // Reset selected SuiNS name if the user switches.
-  useEffect(() => {
-    if (address) {
-      setAppValue({ selectedSuinsName: null });
-    }
-  }, [address]);
+  }, [ownedNames, address]);
 
   return (
     <>
