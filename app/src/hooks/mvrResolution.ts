@@ -3,13 +3,15 @@ import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "./useDebounce";
 
+export type SearchResultItem = {
+  name: string;
+  metadata: Record<string, string>;
+  mainnet_package_info_id: string | null;
+  testnet_package_info_id: string | null;
+};  
+
 export type SearchResult = {
-  data: {
-    name: string;
-    metadata: Record<string, string>;
-    mainnet_package_info_id: string | null;
-    testnet_package_info_id: string | null;
-  }[];
+  data: SearchResultItem[];
   next_cursor: string | null;
   limit: number;
 };

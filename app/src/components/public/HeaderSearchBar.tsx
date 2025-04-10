@@ -11,11 +11,19 @@ import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
 
 export function HeaderSearchBar() {
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  const handleFocus = () => setIsInputFocused(true);
+  const handleBlur = () => {
+    // Timeout needed to allow dropdown click before it disappears
+    setTimeout(() => setIsInputFocused(false), 100);
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
   const { data: searchResults, isLoading } = useSearchMvrNames(searchQuery);
 
   return (
-    <div className="bg-bg-quarternaryBleedthrough py-xs px-sm ml-xs md:ml-md relative flex w-[220px] rounded-sm text-content-secondary xl:w-[300px]">
+    <div className="bg-bg-quarternaryBleedthrough py-xs px-sm ml-xs md:ml-md relative flex w-[220px] rounded-sm text-content-secondary xl:w-[500px]">
       {isLoading ? (
         <Loader2 className="mr-2 h-4 w-4 shrink-0 opacity-50" />
       ) : (
@@ -23,6 +31,8 @@ export function HeaderSearchBar() {
       )}
       <Input
         value={searchQuery}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         onChange={(e) => setSearchQuery(e.target.value)}
         className={cn(
           "flex h-full w-full rounded-none !border-none bg-transparent !p-0 text-sm !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
@@ -32,6 +42,7 @@ export function HeaderSearchBar() {
 
       <SearchResults
         results={searchResults || { data: [], next_cursor: null, limit: 0 }}
+        hidden={!isInputFocused}
       />
     </div>
   );
