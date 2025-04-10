@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,9 +50,9 @@ export function ComboBox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div>
-          {title && <Label className="mb-Small block">{title}</Label>}
+          {title && <Label className="mb-xs block">{title}</Label>}
           <Button
-            variant="outline"
+            variant="secondary"
             role="combobox"
             aria-expanded={open}
             disabled={options.length === 0}
@@ -66,7 +66,11 @@ export function ComboBox({
               {options.find((framework) => framework.value === value)?.children}
             </span>
 
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            {open ? (
+              <ChevronUp className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            ) : (
+              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            )}
           </Button>
         </div>
       </PopoverTrigger>
@@ -116,7 +120,7 @@ export function ComboBox({
 
                   <Check
                     className={cn(
-                      "ml-Small h-4 w-4 rounded-full bg-positive p-0.5 text-primary-dark",
+                      "ml-sm h-4 w-4 rounded-full bg-bg-positive text-content-primaryInverse p-0.5",
                       value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />

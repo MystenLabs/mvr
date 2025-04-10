@@ -74,7 +74,7 @@ export default function CreatePackageInfo({
       <DialogHeader>
         <DialogTitle>Create Metadata - Step {step}</DialogTitle>
       </DialogHeader>
-      <div className="grid grid-cols-1 gap-Large py-Regular">
+      <div className="grid grid-cols-1 gap-lg py-Regular">
         {step === 1 && (
           <PackageInfoStep1
             selectedPackage={selectedPackage}
@@ -90,7 +90,7 @@ export default function CreatePackageInfo({
           />
         )}
 
-        <Text variant="small/regular" family="inter" color="tertiary">
+        <Text kind="paragraph" size="paragraph-small" className="text-content-tertiary">
           Selected Upgrade Cap:{" "}
           <ExplorerLink
             network={selectedNetwork}

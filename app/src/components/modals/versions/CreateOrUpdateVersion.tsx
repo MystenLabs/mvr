@@ -42,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import CodeIcon from "@/icons/CodeIcon";
 
 const formSchema = z.object({
   version: z.coerce.number().positive(),
@@ -238,7 +239,7 @@ export default function CreateOrUpdateVersion({
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
-          <div className="grid grid-cols-1 gap-Small">
+          <div className="grid grid-cols-1 gap-md">
             <FormField
               control={form.control}
               name="version"
@@ -332,7 +333,7 @@ export default function CreateOrUpdateVersion({
               <>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="linkActive"
                   className="w-fit"
                   isLoading={isValidatingConfig}
                   onClick={() => validateConfig()}
@@ -342,15 +343,15 @@ export default function CreateOrUpdateVersion({
                 </Button>
 
                 <Alert>
-                  <Terminal className="h-4 w-4" />
+                  <CodeIcon className="h-4 w-4" />
                   <AlertTitle className="font-inter">
                     Validation works only on open source repositories
                   </AlertTitle>
                   <AlertDescription className="pt-XSmall font-inter text-xs">
                     <Text
-                      variant="xsmall/regular"
-                      color="tertiary"
-                      family="inter"
+                      kind="paragraph"
+                      size="paragraph-small"
+                      className="text-content-primary"
                     >
                       Validation tries to download your `Move.lock` file from
                       the specified repository, and checks if the version there
@@ -372,9 +373,9 @@ export default function CreateOrUpdateVersion({
                   <AlertTitle>Failed to validate configuration</AlertTitle>
                   <AlertDescription>
                     <Text
-                      variant="xsmall/regular"
-                      color="tertiary"
-                      family="inter"
+                      kind="paragraph"
+                      size="paragraph-small"
+                      className="text-content-negative"
                     >
                       {configError}
                     </Text>

@@ -19,10 +19,10 @@ export function PackageInfoStep1({
       <div>
         <label>
           <Text
-            variant="xsmall/medium"
-            family="inter"
-            color="tertiary"
-            className="pb-XSmall uppercase"
+            as="div"
+            kind="label"
+            size="label-small"
+            className="pb-xs"
           >
             Select Upgrade Cap
           </Text>
@@ -38,7 +38,7 @@ export function PackageInfoStep1({
 
       <div
         className={cn(
-          "h-32 overflow-y-auto rounded-xl border border-border-classic p-Small",
+          "h-32 overflow-y-auto rounded-md border border-stroke-secondary p-sm mt-sm",
           !packageModules && "flex items-center justify-center",
         )}
       >
@@ -46,23 +46,22 @@ export function PackageInfoStep1({
           <>
             <label>
               <Text
-                variant="xsmall/medium"
-                family="inter"
-                color="tertiary"
-                className="pb-XSmall uppercase"
+                kind="heading"
+                size="heading-headline"
+                className="uppercase text-content-tertiary"
               >
                 SELECTED PACKAGE MODULES
               </Text>
             </label>
 
             {packageModules.map((module) => (
-              <Text key={module} variant="small/regular">
+              <Text as="p" key={module} kind="paragraph" size="paragraph-regular">
                 {module}
               </Text>
             ))}
           </>
         ) : (
-          <Text variant="small/regular" family="inter" color="tertiary">
+          <Text kind="paragraph" size="paragraph-regular" className="text-content-tertiary">
             Modules from your selected upgrade cap will be shown here.
           </Text>
         )}

@@ -4,8 +4,13 @@ import SocialYoutube from "@/icons/SocialYoutube";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Text } from "./ui/Text";
+import NsLogo from "@/icons/NsLogo";
 
 const Menu = [
+  {
+    name: "Docs",
+    href: "https://docs.suins.io/move-registry",
+  },
   {
     name: "FAQ",
     href: "/faq",
@@ -13,10 +18,6 @@ const Menu = [
   {
     name: "Terms of Use",
     href: "/terms",
-  },
-  {
-    name: "Documentation",
-    href: "https://docs.suins.io/move-registry",
   },
 ];
 const Social = [
@@ -39,9 +40,9 @@ const Social = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border-classic">
-      <div className="container items-center gap-Small py-Regular md:flex md:justify-between">
-        <div className="items-center gap-Large md:flex">
+    <footer className="border-stroke-secondary border-t">
+      <div className="gap-md py-xs container items-center md:flex md:justify-between">
+        <div className="gap-md items-center md:flex">
           {Menu.map(({ name, href }) => (
             <Link
               key={name}
@@ -50,28 +51,33 @@ export default function Footer() {
             >
               {
                 <Text
-                  variant="small/regular"
-                  family="mono"
-                  color="tertiary"
-                  className="uppercase hover:underline"
+                  kind="label"
+                  size="label-xs"
+                  className="text-content-secondary hover:underline"
                 >
                   {name}
                 </Text>
               }
             </Link>
           ))}
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-Small max-md:pt-Large">
           <Text
-            variant="xsmall/regular"
-            mono
-            color="tertiary"
-            family="mono"
-            className="pr-Small uppercase max-md:text-right"
+            as="div"
+            kind="paragraph"
+            size="paragraph-xs"
+            className="flex items-center gap-2 text-content-tertiary"
+          >
+            Powered By <NsLogo />
+          </Text>
+        </div>
+        <div className="gap-md flex flex-wrap items-center justify-end max-md:pt-Large">
+          <Text
+            kind="label"
+            size="label-xs"
+            className="text-content-secondary max-md:text-right"
           >
             © 2024 Sui foundation. All rights reserved
           </Text>
-          <div className="flex items-center justify-end gap-Small">
+          <div className="gap-xs flex items-center justify-end">
             {Social.map(({ name, url, icon }) => (
               <Link
                 key={name}

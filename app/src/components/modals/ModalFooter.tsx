@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Text } from "../ui/Text";
 
@@ -8,7 +9,9 @@ export function ModalFooter({
   leftBtnHandler,
   rightBtnHandler,
   rightBtnType = "submit",
-  rightBtnDisabled = false
+  rightBtnDisabled = false,
+  leftBtnDisabled = false,
+  alignLeft,
 }: {
   loading?: boolean;
   leftBtnText?: string;
@@ -17,29 +20,34 @@ export function ModalFooter({
   rightBtnHandler?: (...args: any[]) => void;
   rightBtnType?: "submit" | "button";
   rightBtnDisabled?: boolean;
+  leftBtnDisabled?: boolean;
+  className?: string;
+  alignLeft?: boolean;
 }) {
   return (
-    <div className="grid gap-Small pt-Regular md:grid-cols-2">
+    <div className={alignLeft ? "flex flex-row justify-end flex-grow items-center gap-sm" : "grid gap-sm md:grid-cols-2"}>
       <Button
         type="reset"
-        variant="tertiary"
+        size="auto"
+        variant="secondary"
         onClick={leftBtnHandler}
         className="max-md:order-2"
+        disabled={leftBtnDisabled}
       >
-        <Text variant="small/regular" family="inter">
+        <Text kind="label" size="label-regular">
           {leftBtnText}
         </Text>
       </Button>
 
       <Button
         type={rightBtnType}
-        variant="default"
+        size="auto"
         className="max-md:order-1"
         isLoading={loading}
         disabled={rightBtnDisabled}
         onClick={rightBtnHandler}
       >
-        <Text variant="small/regular" family="inter">
+        <Text kind="label" size="label-regular">
           {rightBtnText}
         </Text>
       </Button>

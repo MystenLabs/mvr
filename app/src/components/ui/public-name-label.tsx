@@ -1,6 +1,6 @@
 export function PublicNameLabel() {
   return (
-    <span className="ml-2 rounded-full bg-positive px-2 py-0.5 text-[10px] text-white">
+    <span className="py-2xs px-xs bg-bg-accentBleedthrough1 ml-xs rounded-full bg-positive text-[10px] text-content-primary">
       Public Name
     </span>
   );

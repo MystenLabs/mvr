@@ -30,7 +30,7 @@ export function PackageInfoTabs({ packageInfo, disableEdits }: { packageInfo: Pa
 
   return (
     <div>
-      <div className="border-b border-border-classic flex items-center overflow-x-auto">
+      <div className="flex items-center overflow-x-auto gap-md">
         {Tabs.map((tab) => (
           <TabTitle
             key={tab.key}
@@ -44,8 +44,9 @@ export function PackageInfoTabs({ packageInfo, disableEdits }: { packageInfo: Pa
             }}
           >
             <Text
-              variant="small/regular"
-              className="flex flex-shrink-0 items-center gap-XSmall"
+              kind="paragraph"
+              size="paragraph-small"
+              className="flex flex-shrink-0 items-center gap-sm"
             >
               {tab.title}
               {tab.url && <OpenInNewWindowIcon />}
@@ -53,7 +54,7 @@ export function PackageInfoTabs({ packageInfo, disableEdits }: { packageInfo: Pa
           </TabTitle>
         ))}
       </div>
-      <div className="py-Regular">
+      <div className="py-md">
         { activeTab === 'source-code' && <PackageVersions packageInfo={packageInfo} disableEdits={disableEdits} />}
       </div>
     </div>

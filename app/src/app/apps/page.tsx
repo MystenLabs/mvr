@@ -18,6 +18,11 @@ import { AppViewer } from "@/components/apps/AppViewer";
 import CreateOrUpdateApp from "@/components/modals/apps/CreateOrUpdateApp";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { PublicNameLabel } from "@/components/ui/public-name-label";
+import { Label } from "@/components/ui/label";
+import { InfoIcon, Plus } from "lucide-react";
+import PackageSelected from "@/icons/PackageSelected";
+import PackageUnselected from "@/icons/PackageUnselected";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function App() {
   const { names: namesList } = useOrganizationList();
@@ -56,7 +61,23 @@ export default function App() {
         icon={state.icon}
         title={state.title}
         description={state.description}
+        useCard
+        size="md"
       >
+        <Alert className="mb-md text-left">
+          <InfoIcon className="h-4 w-4" />
+          <AlertTitle className="text-14">Don’t own a name?</AlertTitle>
+          <AlertDescription className="font-inter text-xs">
+            <Text
+              kind="paragraph"
+              size="paragraph-small"
+              className="text-content-primary"
+            >
+              Select @pkg from the dropdown below to get started quickly
+            </Text>
+          </AlertDescription>
+        </Alert>
+
         {namesList.length > 0 && (
           <ComboBox
             placeholder="Select one..."
@@ -69,7 +90,7 @@ export default function App() {
           />
         )}
 
-        <Button size="lg" variant="outline" asChild className="mt-Large">
+        <Button variant="linkActive" asChild className="mt-lg">
           <Link href="https://www.suins.io" target="_blank">
             {formatNamesForComboBox(namesList ?? [], <PublicNameLabel />)
               .length > 0 && "or"}{" "}
@@ -79,82 +100,112 @@ export default function App() {
       </EmptyState>
     );
 
-  if (!nsMatchingApps.length) {
-    return (
-      <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
-        <CreateOrUpdateApp
-          suins={appValue.selectedSuinsName}
-          closeDialog={() => setShowCreateApp(false)}
-        />
-        <EmptyState
-          icon={Content.emptyStates.apps.icon}
-          title={Content.emptyStates.apps.title}
-          description={Content.emptyStates.apps.description}
-        >
-          <DialogTrigger asChild>
-            <Button size="lg">{Content.emptyStates.apps.button}</Button>
-          </DialogTrigger>
-        </EmptyState>
-      </Dialog>
-    );
-  }
   return (
-    <main className="container flex-grow">
-      <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic py-Regular max-lg:border-b max-lg:py-Large lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r lg:px-Regular">
+    <main className="px-md lg:py-xl container flex-grow">
+      <div className="gap-2xl lg:flex lg:flex-grow">
+        <div className="gap-xs max-lg:py-lg lg:px-sm py-sm flex-shrink-0 overflow-y-auto lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
+          <Label className="block pb-2xs">Organization</Label>
+          {namesList.length > 0 && (
+            <ComboBox
+              placeholder="Select one..."
+              value={appValue.selectedSuinsName?.nftId}
+              options={formatNamesForComboBox(
+                namesList ?? [],
+                <PublicNameLabel />,
+              )}
+              setValue={selectSuinsName}
+            />
+          )}
+
+          <div className="my-md flex items-center justify-between">
+            <Label className="block">Packages</Label>
+            <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
+              <CreateOrUpdateApp
+                suins={appValue.selectedSuinsName}
+                closeDialog={() => setShowCreateApp(false)}
+              />
+              {!appValue.selectedSuinsName?.isCapabilityOnly && (
+                <DialogTrigger asChild>
+                  <Button variant="linkActive" size="fit">
+                    <Plus className="text-content-accent h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+              )}
+            </Dialog>
+          </div>
+
+          <div className="gap-2xs grid grid-cols-1">
+            {isTabletOrAbove && nsMatchingApps.length < 5 ? (
+              nsMatchingApps.map((app) => (
+                <div
+                  key={app.objectId}
+                  className={cn(
+                    "px-md py-sm hover:bg-bg-accentBleedthrough2 gap-sm flex cursor-pointer items-center rounded-sm text-content-tertiary ease-in-out",
+                    selectedAppCap?.objectId === app.objectId &&
+                      "bg-bg-accentBleedthrough2",
+                  )}
+                  onClick={() => setSelectedAppCap(app)}
+                >
+                  {selectedAppCap?.objectId === app.objectId ? (
+                    <PackageSelected className="fill-content-accent" />
+                  ) : (
+                    <PackageUnselected className="text-content-primary" />
+                  )}
+                  <Text
+                    kind="label"
+                    size="label-small"
+                    className="text-content-primary"
+                  >
+                    {app.appName}
+                  </Text>
+                </div>
+              ))
+            ) : (
+              <ComboBox
+                title="Select a package"
+                value={selectedAppCap?.objectId}
+                options={nsMatchingApps.map((app) => ({
+                  value: app.objectId,
+                  label: app.normalizedName,
+                }))}
+                setValue={(value) =>
+                  setSelectedAppCap(
+                    nsMatchingApps.find((app) => app.objectId === value) ??
+                      null,
+                  )
+                }
+              />
+            )}
+          </div>
+        </div>
+
+        {!nsMatchingApps.length && (
           <Dialog open={showCreateApp} onOpenChange={setShowCreateApp}>
             <CreateOrUpdateApp
               suins={appValue.selectedSuinsName}
               closeDialog={() => setShowCreateApp(false)}
             />
-            {!appValue.selectedSuinsName?.isCapabilityOnly && (
+            <EmptyState
+              icon={Content.emptyStates.apps.icon}
+              title={Content.emptyStates.apps.title}
+              description={Content.emptyStates.apps.description}
+            >
               <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="mb-Large w-full lg:mb-Small"
-                  disabled={appValue.selectedSuinsName?.isCapabilityOnly}
-                >
-                  {Content.app.button}
-                </Button>
+                <Button size="lg">{Content.emptyStates.apps.button}</Button>
               </DialogTrigger>
-            )}
+            </EmptyState>
           </Dialog>
-          {isTabletOrAbove && nsMatchingApps.length < 5 ? (
-            nsMatchingApps.map((app) => (
-              <div
-                key={app.objectId}
-                className={cn(
-                  "cursor-pointer px-Small py-XSmall text-content-tertiary",
-                  selectedAppCap?.objectId === app.objectId &&
-                    "rounded-md bg-primary",
-                )}
-                onClick={() => setSelectedAppCap(app)}
-              >
-                <Text variant="xsmall/regular" className="block max-w-[250px]">
-                  {app.normalizedName}
-                </Text>
-              </div>
-            ))
-          ) : (
-            <ComboBox
-              title="Select one"
-              value={selectedAppCap?.objectId}
-              options={nsMatchingApps.map((app) => ({
-                value: app.objectId,
-                label: app.normalizedName,
-              }))}
-              setValue={(value) =>
-                setSelectedAppCap(
-                  nsMatchingApps.find((app) => app.objectId === value) ?? null,
-                )
-              }
-            />
-          )}
-        </div>
+        )}
 
-        <div className="block w-full break-words max-lg:py-Large lg:p-Large">
-          {selectedAppCap && <AppViewer cap={selectedAppCap} />}
-        </div>
+        {!!nsMatchingApps.length && (
+          <div className="max-lg:py-lg block w-full break-words">
+            {selectedAppCap ? (
+              <AppViewer cap={selectedAppCap!} />
+            ) : (
+              <EmptyState {...Content.emptyStates.noPackageSelected} />
+            )}
+          </div>
+        )}
       </div>
     </main>
   );

@@ -15,6 +15,7 @@ import LoadingState from "@/components/LoadingState";
 import { PackageInfoData } from "@/utils/types";
 import { PackageInfoSelector } from "@/components/ui/package-info-selector";
 import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
@@ -87,7 +88,7 @@ export default function Packages() {
             onOpenChange={setShowCreationDialog}
           >
             <DialogTrigger>
-              <Button variant="default">{Content.package.button}</Button>
+              <Button>{Content.package.button}</Button>
             </DialogTrigger>
             <CreatePackageInfo
               closeDialog={() => setShowCreationDialog(false)}
@@ -99,30 +100,35 @@ export default function Packages() {
   }
 
   return (
-    <main className="container flex-grow">
-      <div className="gap-Regular lg:flex lg:flex-grow">
-        <div className="flex-shrink-0 gap-XSmall overflow-y-auto border-border-classic max-lg:border-b max-lg:py-Large lg:p-Regular lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:border-r">
-          <Dialog
-            open={showCreationDialog}
-            onOpenChange={setShowCreationDialog}
-          >
-            <CreatePackageInfo
-              closeDialog={() => setShowCreationDialog(false)}
-            />
-            <DialogTrigger asChild>
-              <Button variant="outline" className="mb-Large lg:mb-Small w-full">
-                {Content.package.button}
-              </Button>
-            </DialogTrigger>
-          </Dialog>
-
+    <main className="pt-xl container flex-grow">
+      <div className="gap-md lg:flex lg:flex-grow">
+        <div className="gap-xs max-lg:py-lg lg:p-md flex-shrink-0 overflow-y-auto lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
           <div>
-            <Label className="mb-Small block">Select a package</Label>
+            <div className="mb-sm flex items-center justify-between">
+              <Label className="block">Select Metadata</Label>
+              <Dialog
+                open={showCreationDialog}
+                onOpenChange={setShowCreationDialog}
+              >
+                <CreatePackageInfo
+                  closeDialog={() => setShowCreationDialog(false)}
+                />
+                <DialogTrigger asChild>
+                  <Button variant="linkActive" size="fit">
+                    <Plus className="text-content-accent h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+            </div>
             <PackageInfoSelector
               disableClear
               value={selectedPackage?.objectId}
               options={packageInfos ?? []}
-              onChange={(id) => setSelectedPackage(packageInfos?.find((x) => x.objectId === id) ?? null)}
+              onChange={(id) =>
+                setSelectedPackage(
+                  packageInfos?.find((x) => x.objectId === id) ?? null,
+                )
+              }
             />
           </div>
         </div>

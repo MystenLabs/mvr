@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, XCircleIcon } from "lucide-react";
+import { ChevronDown, ChevronsUpDown, ChevronUp, XCircleIcon, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,34 +35,39 @@ export function PackageInfoSelector({
   }, [value]);
 
   return (
-    <div className="flex items-center gap-Small">
+    <div className="flex items-center gap-sm">
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
+            variant="secondary"
             role="combobox"
             aria-expanded={open}
             disabled={disabled || options.length === 0}
             className="h-[45px] w-full justify-between overflow-hidden rounded-sm pr-2 text-sm font-normal"
           >
-            <div className="flex items-center gap-Small overflow-ellipsis max-w-[85%]">
+            <div className="flex items-center gap-sm overflow-ellipsis max-w-[85%]">
               {selectedValue && (
                 <img
                   src={selectedValue?.suiDisplay?.imageUrl}
                   className="h-8 w-8 rounded-sm"
                 />
               )}
-              <p className=" text-ellipsis overflow-hidden"> {selectedValue?.display.name || placeholder}</p>
+              <p className="text-ellipsis overflow-hidden"> {selectedValue?.display.name || placeholder}</p>
             </div>
 
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+            {open ? (
+              <ChevronUp className="h-4 w-4 shrink-0 opacity-50" />
+            ) : (
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+            )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="max-h-[350px] w-full max-w-[80vw] overflow-y-auto p-Small max-md:mx-auto md:max-w-[550px]">
-          <div className="grid grid-cols-2 gap-XSmall md:grid-cols-3">
+        <PopoverContent className="max-h-[350px] w-full max-w-[80vw] overflow-y-auto p-sm max-md:mx-auto md:max-w-[550px]">
+          <div className="grid grid-cols-2 gap-xs md:grid-cols-3">
             <Text
-              variant="small/semibold"
-              className="col-span-2 mb-XSmall border-b border-border-classic pb-Small md:col-span-3"
+              kind="heading"
+              size="heading-headline"
+              className="col-span-2 mb-xs pb-sm md:col-span-3"
             >
               Select a metadata object
             </Text>
@@ -70,7 +75,7 @@ export function PackageInfoSelector({
               <div
                 key={option.objectId}
                 className={cn(
-                  "cursor-pointer rounded-lg border-4 border-border-classic duration-300 ease-in-out hover:border-primary hover:border-opacity-100",
+                  "cursor-pointer rounded-lg duration-300 ease-in-out hover:border-primary hover:border-opacity-100",
                   option.objectId === selectedValue?.objectId &&
                     "border-primary",
                 )}
@@ -94,7 +99,7 @@ export function PackageInfoSelector({
             onChange(null);
           }}
         >
-          <XCircleIcon className="h-4 w-4" />
+          <XIcon className="h-5 w-5" />
         </Button>
       )}
     </div>

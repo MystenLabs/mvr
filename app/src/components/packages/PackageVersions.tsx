@@ -98,7 +98,7 @@ export function PackageVersions({
           addUpdate={addUpdate}
         />
         <div className="p-Regular">
-          <EmptyState size="sm" {...Content.emptyStates.versions}>
+          <EmptyState size="md" {...Content.emptyStates.versions}>
             <CreateVersionTrigger
               disableEdits={
                 isLoadingLatestVersion ||
@@ -122,21 +122,25 @@ export function PackageVersions({
         closeDialog={() => setShowCreationDialog(false)}
         addUpdate={addUpdate}
       />
-      <div className="mb-Regular grid grid-cols-1 gap-Regular px-Small">
+      <div className="mb-md gap-md px-sm grid grid-cols-1">
         {orderedVersions?.map((x) => (
           <Version
             key={x.version}
             version={x}
-            onUpdate={disableEdits ? undefined :() => {
-              setForUpdate({ ...x });
-              setShowCreationDialog(true);
-            }}
+            onUpdate={
+              disableEdits
+                ? undefined
+                : () => {
+                    setForUpdate({ ...x });
+                    setShowCreationDialog(true);
+                  }
+            }
           />
         ))}
 
         {updates.length > 0 && (
           <>
-            <Text variant="xsmall/bold" color="primary" className="uppercase">
+            <Text kind="label" size="label-small" className="uppercase">
               Changes to save
             </Text>
             {updates.map((x) => (
@@ -188,7 +192,7 @@ const CreateVersionTrigger = ({
 
   return (
     <DialogTrigger asChild onClick={reset}>
-      <Button variant="default">Create version</Button>
+      <Button>Create version</Button>
     </DialogTrigger>
   );
 };

@@ -26,6 +26,7 @@ export const Content = {
       button: "Visit suins.io to get a name for your org / project",
     },
     versions: {
+      icon: "🔍",
       title: "No versions found",
       description:
         "It seems like you have no versions. Create a new version by clicking the button below.",
@@ -36,14 +37,19 @@ export const Content = {
       title: "Onwards.",
       description:
         "Create your first package by clicking the button below.",
-      button: "Add a package by clicking the button below",
+      button: "Add package",
     },
+
+    noPackageSelected: {
+      title: "Select a package",
+      description: "Select a package from the navigation to view its details."
+    }
   },
   suinsNames: {
     icon: "🚀",
     title: "Let's get started!",
     description:
-      "Select an org / project to start managing your packages.",
+      "Which organization will you be managing packages for?",
     button: "Visit suins.io to get a name for your org / project",
   },
   package: {

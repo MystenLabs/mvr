@@ -5,6 +5,14 @@ import {
   TransactionObjectArgument,
 } from "@mysten/sui/transactions";
 
+export const METADATA_KEYS = [
+  "description",
+  "icon_url",
+  "documentation_url",
+  "homepage_url",
+  "contact",
+];
+
 export const registerPublicNameApp = ({
   tx,
   name,
@@ -131,6 +139,47 @@ export const setExternalNetwork = async ({
       tx.object(appCap),
       tx.pure.string(chainId),
       appInfo,
+    ],
+  });
+};
+
+export const setMetadata = async ({
+  tx,
+  appCap,
+  key,
+  value,
+}: {
+  tx: Transaction;
+  appCap: TransactionObjectArgument | string;
+  key: string;
+  value: string;
+}) => {
+  tx.moveCall({
+    target: `@mvr/core::move_registry::set_metadata`,
+    arguments: [
+      tx.object(Constants.appsRegistryId),
+      tx.object(appCap),
+      tx.pure.string(key),
+      tx.pure.string(value),
+    ],
+  });
+};
+
+export const removeMetadata = async ({
+  tx,
+  appCap,
+  key,
+}: {
+  tx: Transaction;
+  appCap: TransactionObjectArgument | string;
+  key: string;
+}) => {
+  tx.moveCall({
+    target: `@mvr/core::move_registry::unset_metadata`,
+    arguments: [
+      tx.object(Constants.appsRegistryId),
+      tx.object(appCap),
+      tx.pure.string(key),
     ],
   });
 };

@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { ModalFooter } from "../ModalFooter";
-import { useOwnedApps } from "@/hooks/useOwnedApps";
 import { z } from "zod";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +30,11 @@ import { AlertCircleIcon } from "lucide-react";
 import { SuinsName } from "@/hooks/useOrganizationList";
 import { useIsNameAvailable } from "@/hooks/useIsNameAvailable";
 import { useDebounce } from "@/hooks/useDebounce";
+import { METADATA_KEYS } from "@/data/on-chain-app";
+import { TextArea } from "@/components/ui/textarea";
+import { Text } from "@/components/ui/Text";
+import equal from "fast-deep-equal/es6/react";
+import { nullishValueChanged } from "@/lib/utils";
 
 const formSchema = z
   .object({
@@ -39,6 +43,11 @@ const formSchema = z
     mainnet: z.string().nullable().optional(),
     testnet: z.string().nullable().optional(),
     acceptMainnetWarning: z.boolean().optional(),
+    description: z.string().optional(),
+    icon_url: z.string().optional(),
+    documentation_url: z.string().optional(),
+    homepage_url: z.string().optional(),
+    contact: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.mainnet && !data.acceptMainnetWarning) {
@@ -51,14 +60,28 @@ const formSchema = z
     }
   });
 
+const formToMetadata = (form: z.infer<typeof formSchema>) => {
+  const metadata: Record<string, string> = {};
+  for (const key of Object.keys(form)) {
+    if (METADATA_KEYS.includes(key)) {
+      const value = form[key as keyof typeof form];
+      if (value === undefined) continue;
+      metadata[key] = value as string;
+    }
+  }
+  return metadata;
+};
+
 export default function CreateOrUpdateApp({
   suins,
-  closeDialog,
   appRecord,
+  closeDialog = () => {},
+  useDialog = true,
 }: {
   appRecord?: AppRecord;
   suins?: SuinsName;
-  closeDialog: () => void;
+  closeDialog?: () => void;
+  useDialog?: boolean;
 }) {
   const { data: mainnetPackageInfos } = useGetPackageInfoObjects("mainnet");
   const { data: testnetPackageInfos } = useGetPackageInfoObjects("testnet");
@@ -88,18 +111,38 @@ export default function CreateOrUpdateApp({
     form.setValue("nsName", suins.domainName);
   }, [suins]);
 
+  const initFormFromAppRecord = (appRecord: AppRecord) => {
+    const values: Record<keyof z.infer<typeof formSchema>, any> = {
+      name: appRecord.appName,
+      mainnet: appRecord.mainnet?.packageInfoId,
+      testnet: appRecord.testnet?.packageInfoId,
+      nsName: appRecord.orgName,
+      description: appRecord.metadata.description || "",
+      icon_url: appRecord.metadata.icon_url || "",
+      documentation_url: appRecord.metadata.documentation_url || "",
+      homepage_url: appRecord.metadata.homepage_url || "",
+      contact: appRecord.metadata.contact || "",
+      acceptMainnetWarning: appRecord.mainnet ? true : false,
+    };
+
+    for (const [key, value] of Object.entries(values)) {
+      if (value === undefined) continue;
+      values[key as keyof z.infer<typeof formSchema>] = value;
+    }
+
+    return values;
+  };
+
+  const resetForm = () => {
+    form.reset(isUpdate ? initFormFromAppRecord(appRecord) : undefined, {
+      keepErrors: false,
+    });
+  };
+
   useEffect(() => {
     if (!isUpdate) return;
     if (!appRecord) return;
-    form.setValue("name", appRecord.appName);
-    form.setValue("mainnet", appRecord.mainnet?.packageInfoId);
-    form.setValue("testnet", appRecord.testnet?.packageInfoId);
-    form.setValue("nsName", appRecord.orgName);
-
-    // by default, if we've already set this, we should accept the warning
-    if (appRecord.mainnet) {
-      form.setValue("acceptMainnetWarning", true);
-    }
+    resetForm();
   }, [appRecord]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -115,6 +158,36 @@ export default function CreateOrUpdateApp({
       `${suins?.domainName}/${debouncedName}`,
       !!debouncedName && !!suins?.domainName,
     );
+
+  // A deep comparison of the form values, to enable / disable the
+  // "Save Changes" button.
+  const values = form.watch();
+  const formChanged = useMemo(() => {
+    // do not block creations for any case.
+    if (!isUpdate) return true;
+    if (!appRecord) return true;
+
+    const metadata = formToMetadata(values);
+
+    let metadataChanged = false;
+
+    for (const key of METADATA_KEYS) {
+      metadataChanged =
+        metadataChanged ||
+        nullishValueChanged(metadata[key], appRecord?.metadata[key]);
+    }
+
+    const mainnetChanged = nullishValueChanged(
+      values.mainnet,
+      appRecord?.mainnet?.packageInfoId,
+    );
+    const testnetChanged = nullishValueChanged(
+      values.testnet,
+      appRecord?.testnet?.packageInfoId,
+    );
+
+    return metadataChanged || mainnetChanged || testnetChanged;
+  }, [values, appRecord]);
 
   // handle name availability state.
   useEffect(() => {
@@ -143,6 +216,7 @@ export default function CreateOrUpdateApp({
         testnetPackageInfo: values.testnet
           ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
           : undefined,
+        metadata: formToMetadata(values),
       });
 
       isSuccess = !!execution;
@@ -157,6 +231,7 @@ export default function CreateOrUpdateApp({
         testnetPackageInfo: values.testnet
           ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
           : undefined,
+        metadata: formToMetadata(values),
       });
       isSuccess = !!execution;
     }
@@ -165,41 +240,77 @@ export default function CreateOrUpdateApp({
   }
 
   return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>
-          {isUpdate ? "Updating" : "Create"} Package
-          {isUpdate && `: ${appRecord.normalized}`}
-        </DialogTitle>
-      </DialogHeader>
+    <ModalWrapper
+      isUpdate={isUpdate}
+      appRecord={appRecord}
+      useDialog={useDialog}
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
-          <div className="grid grid-cols-1 gap-Small">
+          <div className="gap-md grid grid-cols-1">
+            {!isUpdate && (
+              <FormField
+                control={form.control}
+                name="nsName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organization / Project</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled={true} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {!isUpdate && (
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Type your application name"
+                        {...field}
+                        disabled={isUpdate || field.disabled}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
-              name="nsName"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Organization / Project</FormLabel>
+                  <FormOptionalLabel title="Description" />
                   <FormControl>
-                    <Input {...field} disabled={true} />
+                    <TextArea
+                      {...field}
+                      placeholder="A short description to help users understand & search for your package"
+                      rows={3}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
-              name="name"
+              name="icon_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormOptionalLabel title="Icon URL" />
                   <FormControl>
                     <Input
-                      placeholder="Type your application name"
                       {...field}
-                      disabled={isUpdate || field.disabled}
+                      placeholder="Your app's icon URL (e.g. https://docs.suins.io/logo.svg)"
                     />
                   </FormControl>
                   <FormMessage />
@@ -207,13 +318,64 @@ export default function CreateOrUpdateApp({
               )}
             />
 
-            <div className="mt-Regular grid grid-cols-1 gap-Regular rounded-2xl border border-border-classic p-Regular">
+            <FormField
+              control={form.control}
+              name="homepage_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormOptionalLabel title="Homepage URL" />
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Your app's homepage URL (e.g. https://suins.io)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="documentation_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormOptionalLabel title="Documentation URL" />
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Your documentation link e.g. https://docs.suins.io/move-registry"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="contact"
+              render={({ field }) => (
+                <FormItem>
+                  <FormOptionalLabel title="Contact" />
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Any contact information that users can use to reach you (e.g. email, telegram etc)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="gap-md mb-md grid grid-cols-1">
               <FormField
                 control={form.control}
                 name="mainnet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mainnet metadata (optional)</FormLabel>
+                    <FormOptionalLabel title="Mainnet metadata" />
                     <FormControl>
                       <PackageInfoSelector
                         disabled={isUpdate && !!appRecord.mainnet}
@@ -222,7 +384,7 @@ export default function CreateOrUpdateApp({
                       />
                     </FormControl>
                     {isUpdate && appRecord.mainnet && (
-                      <FormDescription className="flex items-center gap-Small">
+                      <FormDescription className="gap-sm flex items-center">
                         <AlertCircleIcon size={15} />
                         Mainnet metadata has already been assigned and cannot
                         change.
@@ -238,7 +400,7 @@ export default function CreateOrUpdateApp({
                 name="testnet"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Testnet metadata (optional)</FormLabel>
+                    <FormOptionalLabel title="Testnet metadata" />
                     <FormControl>
                       <PackageInfoSelector
                         options={testnetPackageInfos ?? []}
@@ -257,7 +419,7 @@ export default function CreateOrUpdateApp({
                   control={form.control}
                   name="acceptMainnetWarning"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-border-classic p-4">
+                    <FormItem className="bg-bg-tertiary flex flex-row items-start space-x-3 space-y-0 rounded-md p-4">
                       <FormControl>
                         <Checkbox
                           className="mt-1"
@@ -288,13 +450,16 @@ export default function CreateOrUpdateApp({
             <ModalFooter
               loading={isPending || isUpdatePending}
               leftBtnHandler={() => {
-                form.reset();
-                closeDialog();
+                resetForm();
+                if (useDialog) closeDialog();
               }}
+              leftBtnDisabled={!useDialog && !formChanged}
               rightBtnDisabled={
-                !form.formState.isValid || (!isUpdate && !isNameAvailable)
+                !form.formState.isValid ||
+                (!isUpdate && !isNameAvailable) ||
+                !formChanged
               }
-              rightBtnText={isUpdate ? "Update" : "Create"}
+              rightBtnText={isUpdate ? "Save Changes" : "Create"}
               rightBtnHandler={async () => {
                 const values = form.getValues();
                 if (values.mainnet && !values.acceptMainnetWarning) {
@@ -305,10 +470,51 @@ export default function CreateOrUpdateApp({
                   return;
                 }
               }}
+              alignLeft={isUpdate}
             />
           </div>
         </form>
       </Form>
-    </DialogContent>
+    </ModalWrapper>
   );
 }
+
+const ModalWrapper = ({
+  children,
+  isUpdate,
+  appRecord,
+  useDialog,
+}: {
+  children: ReactNode;
+  isUpdate: boolean;
+  appRecord?: AppRecord;
+  useDialog: boolean;
+}) =>
+  useDialog ? (
+    <DialogContent className="max-h-[95%] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>
+          {isUpdate ? "Updating" : "Create"} Package
+          {isUpdate && `: ${appRecord?.normalized}`}
+        </DialogTitle>
+      </DialogHeader>
+      {children}
+    </DialogContent>
+  ) : (
+    <>{children}</>
+  );
+
+const FormOptionalLabel = ({ title }: { title: ReactNode }) => {
+  return (
+    <FormLabel className="gap-xs flex items-center">
+      {title}
+      <Text
+        kind="paragraph"
+        size="paragraph-small"
+        className="!font-light text-content-secondary"
+      >
+        (Optional)
+      </Text>
+    </FormLabel>
+  );
+};

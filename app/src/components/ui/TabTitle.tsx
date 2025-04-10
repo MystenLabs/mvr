@@ -4,18 +4,22 @@ import { Button } from "./button";
 import { cn } from "@/lib/utils";
 
 const styles = cva(
-  ["rounded-none py-Large capitalize duration-300 ease-in-out hover:opacity-100"], {
-  variants: {
-    active: {
-        true: "border-b-2 opacity-100",
-        false: "opacity-60",
+  [
+    "rounded-none py-lg pb-lg !px-0 capitalize duration-300 border-b-2 ease-in-out hover:opacity-100 text-20 leading-28 font-bold",
+  ],
+  {
+    variants: {
+      active: {
+        true: "border-bg-accent opacity-100",
+        false: "border-transparent opacity-60",
+      },
+    },
+
+    defaultVariants: {
+      active: false,
     },
   },
-
-  defaultVariants: {
-    active: false,
-  },
-});
+);
 
 type TabStyleProps = VariantProps<typeof styles>;
 
@@ -31,8 +35,12 @@ export function TabTitle({
   ...styleProps
 }: TabTitleProps & React.HTMLAttributes<HTMLButtonElement>) {
   return (
-    <Button className={cn(styles(styleProps), className)} {...styleProps} variant="custom">
-        {children}
+    <Button
+      className={cn(styles(styleProps), className, "px-0")}
+      {...styleProps}
+      variant="custom"
+    >
+      {children}
     </Button>
   );
 }

@@ -1,9 +1,13 @@
 import { ReactNode } from "react";
+import Header from "@/components/Header";
 
 export function PlainPageLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex-grow border-t border-border-classic">
-      <div className="container py-Regular">{children}</div>
-    </div>
+    <>
+      <Header />
+      <div className="flex-grow">
+        <div className="py-md container">{children}</div>
+      </div>
+    </>
   );
 }
