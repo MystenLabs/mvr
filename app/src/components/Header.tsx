@@ -20,6 +20,7 @@ import { MenuIcon } from "lucide-react";
 import MvrLogo from "@/icons/MvrLogo";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { HeaderSearchBar } from "./public/HeaderSearchBar";
 
 const Links = [
   {
@@ -32,26 +33,32 @@ const Links = [
   },
 ];
 
-export default function Header({ children, className }: { children?: ReactNode, className?: string }) {
+export default function Header({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
   return (
     <header className={cn("bg-header", className)}>
       <Sheet>
-        <div className="py-md container grid grid-cols-2 items-center justify-between lg:grid-cols-12">
-          <Link
-            href="/apps"
-            className="gap-xs flex w-fit items-center lg:col-span-3"
-          >
-            <MvrLogo />
-            <Text kind="display" className="text-[24px] font-extrabold">
-              MVR
-            </Text>
-          </Link>
+        <div className="py-md container flex items-center justify-between">
+          <div className="flex items-center gap-xs">
+            <Link href="/apps" className="gap-xs flex w-fit items-center">
+              <MvrLogo className="flex-shrink-0" />
+              <Text kind="display" className="text-[24px] font-extrabold">
+                MVR
+              </Text>
+            </Link>
+            <HeaderSearchBar />
+          </div>
           <div className="gap-xs lg:gap-lg flex items-center justify-end lg:col-span-9">
             <div className="max-lg:hidden">
               <Menu />
             </div>
             <SuiConnectPill />
-            <SheetTrigger className="lg:hidden bg-bg-secondary rounded-xs p-xs">
+            <SheetTrigger className="bg-bg-secondary rounded-xs p-xs lg:hidden">
               <MenuIcon />
             </SheetTrigger>
           </div>

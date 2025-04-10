@@ -24,6 +24,10 @@ export type Clients = {
     mainnet: TransactionPlugin;
     testnet: TransactionPlugin;
   };
+  mvrEndpoints: {
+    mainnet: string;
+    testnet: string;
+  };
 };
 
 const mainnet = new SuiClient({ url: "https://suins-rpc.mainnet.sui.io:443", network: 'mainnet' });
@@ -59,6 +63,10 @@ export const DefaultClients: Clients = {
     mainnet: mainnetNamedPackagesPlugin,
     testnet: testnetNamedPackagesPlugin,
   },
+  mvrEndpoints: {
+    mainnet: "https://mainnet.mvr.mystenlabs.com",
+    testnet: "https://testnet.mvr.mystenlabs.com",
+  }
 };
 
 export const SuiClientContext = createContext<Clients>(DefaultClients);

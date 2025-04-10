@@ -43,6 +43,13 @@ export const Content = {
     noPackageSelected: {
       title: "Select a package",
       description: "Select a package from the navigation to view its details."
+    },
+
+    packageNotFound: {
+      icon: "📦",
+      title: "Package not found",
+      description: "The package you are looking for does not exist, or it does not metadata connected neither on mainnet nor testnet.",
+      button: "Go back to the packages page",
     }
   },
   suinsNames: {
