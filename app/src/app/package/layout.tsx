@@ -56,6 +56,13 @@ export default function PackagesLayout({
     return () => switchGlobalAccent(false);
   }, [network]);
 
+  useEffect(() => {
+    if (isMainnetLoading || isTestnetLoading) return;
+    if (mainnetData && testnetData) return;
+    if (network === "mainnet" && !mainnetData) setNetwork("testnet");
+    if (network === "testnet" && !testnetData) setNetwork("mainnet");
+  }, [mainnetData, testnetData, network, isMainnetLoading, isTestnetLoading]);
+
   if (isMainnetLoading || isTestnetLoading) {
     return (
       <>
