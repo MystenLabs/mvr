@@ -1,7 +1,6 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "./useDebounce";
 
 export type SearchResultItem = {
   name: string;
@@ -70,14 +69,12 @@ export function useResolveMvrName(
 export function useSearchMvrNames(query: string) {
   const mvrEndpoint = useSuiClientsContext().mvrEndpoints.mainnet;
 
-  const searchQuery = useDebounce(query, 400);
-
   return useQuery({
-    queryKey: [AppQueryKeys.SEARCH_MVR_NAMES, searchQuery],
+    queryKey: [AppQueryKeys.SEARCH_MVR_NAMES, query],
     queryFn: async () => {
         console.log("Querying...");
       const response = await fetch(
-        `${mvrEndpoint}/v1/names?search=${searchQuery}&limit=20`,
+        `${mvrEndpoint}/v1/names?search=${query}&limit=20`,
       );
 
       if (!response.ok) {
@@ -86,6 +83,6 @@ export function useSearchMvrNames(query: string) {
 
       return response.json() as Promise<SearchResult>;
     },
-    enabled: !!searchQuery,
+    enabled: !!query,
   });
 }

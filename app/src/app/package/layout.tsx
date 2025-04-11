@@ -59,8 +59,8 @@ export default function PackagesLayout({
   useEffect(() => {
     if (isMainnetLoading || isTestnetLoading) return;
     if (mainnetData && testnetData) return;
-    if (network === "mainnet" && !mainnetData) setNetwork("testnet");
-    if (network === "testnet" && !testnetData) setNetwork("mainnet");
+    if (network === "mainnet" && !mainnetData && testnetData) setNetwork("testnet");
+    if (network === "testnet" && !testnetData && mainnetData) setNetwork("mainnet");
   }, [mainnetData, testnetData, network, isMainnetLoading, isTestnetLoading]);
 
   if (isMainnetLoading || isTestnetLoading) {

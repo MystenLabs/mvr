@@ -3,6 +3,7 @@
 import { SearchResult, type SearchResultItem } from "@/hooks/mvrResolution";
 import Link from "next/link";
 import { Text } from "../ui/Text";
+import ImageWithFallback from "../ui/image-with-fallback";
 
 export function SearchResults({
   results,
@@ -26,8 +27,15 @@ export function SearchResultItem({ item }: { item: SearchResultItem }) {
   return (
     <Link
       href={`/package/${item.name}`}
-      className="hover:bg-bg-accentBleedthrough3 py-sm px-md border-stroke-secondary flex items-center border-b"
+      className="hover:bg-bg-accentBleedthrough3 py-sm px-md border-stroke-secondary gap-sm flex items-center border-b"
     >
+      <div className="flex-shrink-0">
+        <ImageWithFallback
+          src={item.metadata.icon_url}
+          className="h-8 w-8 rounded-sm"
+          fallback={`/default-icon.svg`}
+        />
+      </div>
       <div>
         <Text
           kind="heading"
@@ -39,7 +47,7 @@ export function SearchResultItem({ item }: { item: SearchResultItem }) {
         <Text
           kind="paragraph"
           size="paragraph-xs"
-          className="text-content-secondary"
+          className="max-w-sm truncate text-content-secondary"
         >
           {item.metadata.description}
         </Text>
