@@ -183,6 +183,19 @@ transaction.moveCall({
       },
       cli: {
         tabTitle: "Sui CLI",
+        before: {
+          title: "Before MVR",
+          code: `#mainnet
+sui client ptb --move-call 0xe177697e191327901637f8d2c5ffbbde8b1aaac27ec1024c4b62d1ebd1cd7430::accessories::equip [arguments]
+
+#testnet
+sui client ptb --move-call 0x54800ebb4606fd0c03b4554976264373b3374eeb3fd63e7ff69f31cac786ba8c::accessories::equip [arguments]`,
+        },
+        after: {
+          title: "After MVR",
+          code: `# works on both mainnet and testnet
+sui client ptb --move-call @suifrens/accessories::accessories::equip [arguments]`,
+        },
       },
     },
   },

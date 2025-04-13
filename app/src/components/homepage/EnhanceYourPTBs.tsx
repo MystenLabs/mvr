@@ -4,6 +4,7 @@ import { TabTitle } from "../ui/TabTitle";
 import { useState } from "react";
 import CodeRenderer, { Language } from "./CodeRenderer";
 import { cn } from "@/lib/utils";
+import { Switch } from "../ui/switch";
 
 const Tabs = [
   {
@@ -56,7 +57,21 @@ export function EnhanceYourPTBs() {
             </TabTitle>
           ))}
         </div>
-        <div className="flex gap-md" onClick={() => setToggleMvr(!toggleMvr)}>Toggle MVR</div>
+        <Switch
+          className="data-[state=checked]:bg-purpleBlue h-[28px] w-[70px] bg-bg-quarternaryBleedthrough"
+          thumbClassName="h-[26px] w-[26px] data-[state=checked]:translate-x-11"
+          childrenClassName={cn(
+            toggleMvr &&
+              "text-content-primaryInverse justify-start left-0 right-auto ml-xs",
+            !toggleMvr && "opacity-0",
+          )}
+          checked={toggleMvr}
+          onCheckedChange={() => setToggleMvr(!toggleMvr)}
+        >
+          <Text as="p" kind="label" size="label-small">
+            MVR
+          </Text>
+        </Switch>
       </div>
 
       <div className="grid grid-cols-1 gap-xl pt-2xl">
@@ -66,18 +81,28 @@ export function EnhanceYourPTBs() {
               {...Content.homepage.ptbs.typescript.setup}
               language="typescript"
               lowOpacity={!toggleMvr}
+              enableCopy={toggleMvr}
             />
             <RenderCodeBlock
-              {...(toggleMvr ? Content.homepage.ptbs.typescript.withMvr : Content.homepage.ptbs.typescript.withoutMvr)}
+              {...(toggleMvr
+                ? Content.homepage.ptbs.typescript.withMvr
+                : Content.homepage.ptbs.typescript.withoutMvr)}
               language="typescript"
+              enableCopy={toggleMvr}
             />
           </>
         )}
 
         {activeTab === "cli" && (
-          <div>
-            <pre>{JSON.stringify(Content.homepage.ptbs.cli, null, 2)}</pre>
-          </div>
+          <>
+            <RenderCodeBlock
+              {...(toggleMvr
+                ? Content.homepage.ptbs.cli.after
+                : Content.homepage.ptbs.cli.before)}
+              language="bash"
+              enableCopy={toggleMvr}
+            />
+          </>
         )}
       </div>
     </div>
@@ -90,12 +115,14 @@ function RenderCodeBlock({
   code,
   language,
   lowOpacity,
+  enableCopy,
 }: {
   title: string;
   subtitle?: string;
   code: string;
   language: Language;
   lowOpacity?: boolean;
+  enableCopy?: boolean;
 }) {
   return (
     <div
@@ -104,7 +131,7 @@ function RenderCodeBlock({
         lowOpacity && "opacity-20",
       )}
     >
-      <div className="col-span-12 md:col-span-4">
+      <div className="col-span-12 md:col-span-4 lg:col-span-3">
         <Text as="h3" kind="heading" size="heading-xs">
           {title}
         </Text>
@@ -114,8 +141,13 @@ function RenderCodeBlock({
           </Text>
         )}
       </div>
-      <div className="col-span-12 md:col-span-8">
-        <CodeRenderer code={code} language={language} />
+      <div className="col-span-12 md:col-span-8 lg:col-span-9">
+        <CodeRenderer
+          code={code}
+          language={language}
+          enableCopy={enableCopy}
+          className="bg-bluePurpleOp9"
+        />
       </div>
     </div>
   );

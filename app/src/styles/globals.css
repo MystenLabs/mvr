@@ -126,6 +126,8 @@
 
     --home-page-cards: linear-gradient(135deg, rgba(194, 81, 255, 0.12) 0%, rgba(76, 162, 255, 0.12) 100%);
     --purple-salmon-op12: linear-gradient(139.286deg, rgba(139, 81, 255, 12%) 0%, rgba(250, 128, 114, 12%) 100%);
+    --blue-purple-op9: linear-gradient(135deg, rgba(194, 81, 255, 0.09) 0%, rgba(76, 162, 255, 0.09) 100%);
+    --purple-blue: linear-gradient(135deg, #C251FF 0%, #4CA2FF 100%);
   }
 
   /* Font Styles */

@@ -126,6 +126,8 @@ export default {
         mainnetSearch: "var(--mainnet-search-gradient)",
         homepageCard: "var(--home-page-cards)",
         purpleSalmonOp12: "var(--purple-salmon-op12)",
+        bluePurpleOp9: "var(--blue-purple-op9)",
+        purpleBlue: "var(--purple-blue)",
       },
       borderRadius: {
         none: "var(--size-0)",
