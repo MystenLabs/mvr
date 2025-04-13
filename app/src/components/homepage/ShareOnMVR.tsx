@@ -1,6 +1,7 @@
 import { Content } from "@/data/content";
 import { Text } from "../ui/Text";
 import CodeRenderer from "./CodeRenderer";
+import { MarkdownRenderer } from "../ui/markdown-renderer";
 
 export function ShareOnMVR() {
   return (
@@ -42,9 +43,7 @@ const Step = ({
         <Text as="h3" kind="heading" size="heading-xs">
           {title}
         </Text>
-        <Text as="p" kind="paragraph" size="paragraph-regular" className="text-content-secondary">
-          {description}
-        </Text>
+        <MarkdownRenderer markdown={description} />
       </div>
       <div className="w-full">
         <CodeRenderer code={code} language="bash" />

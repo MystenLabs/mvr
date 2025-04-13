@@ -14,7 +14,7 @@ In the future, MVR will add features to surface other trust signals to make pack
 Detailed documentation is available here: [https://docs.suins.io/move-registry](https://docs.suins.io/move-registry)
 
 # MVR Web App
-Use the Web App to register your package: [https://www.moveregistry.com/apps](https://www.moveregistry.com/apps)
+Use the Web App to find packages & manage your deployments: [https://www.moveregistry.com](https://www.moveregistry.com)
 
 # Using MVR
 
