@@ -34,7 +34,7 @@ export function PackageInfoTabs({ packageInfo, disableEdits }: { packageInfo: Pa
         {Tabs.map((tab) => (
           <TabTitle
             key={tab.key}
-            disabled={activeTab !== tab.key}
+            active={activeTab === tab.key}
             onClick={() => {
               if (tab.url) {
                 window.open(tab.url(packageInfo.objectId, network), "_blank");

@@ -100,7 +100,7 @@ export default function PackagesLayout({
                 .map((net) => (
                   <TabTitle
                     key={net}
-                    disabled={net !== network}
+                    active={net === network}
                     onClick={() => setNetwork(net as Network)}
                   >
                     <Text kind="label" size="label-regular">

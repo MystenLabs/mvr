@@ -9,14 +9,14 @@ const styles = cva(
   ],
   {
     variants: {
-      disabled: {
-        false: "border-bg-accent opacity-100",
-        true: "border-transparent opacity-60",
+      active: {
+        true: "border-bg-accent opacity-100",
+        false: "border-transparent opacity-60",
       },
     },
 
     defaultVariants: {
-      disabled: false,
+      active: false,
     },
   },
 );
@@ -25,18 +25,19 @@ type TabStyleProps = VariantProps<typeof styles>;
 
 export interface TabTitleProps extends TabStyleProps {
   children: ReactNode;
-  disabled?: boolean;
+  active?: boolean;
   className?: string;
 }
 
 export function TabTitle({
   children,
   className,
+  active,
   ...styleProps
 }: TabTitleProps & React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <Button
-      className={cn(styles(styleProps), className, "px-0")}
+      className={cn(styles({ active }), className, "px-0")}
       {...styleProps}
       variant="custom"
     >
