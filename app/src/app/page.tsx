@@ -40,7 +40,7 @@ export default function HomePage() {
           <GlowTopPart className="absolute left-0 top-0 h-full w-full" />
           <GlowBottomPart className="absolute bottom-0 left-0 h-full w-full" />
         </div>
-        <div className="container relative grid grid-cols-1 gap-4xl pb-4xl">
+        <div className="container relative grid grid-cols-1 gap-4xl py-4xl">
           <HomeSearchSection isInputFocused={isInputFocused}>
             <HomeSearchBar
               isDebouncing={isDebouncing}
