@@ -7,6 +7,7 @@ import { useSearchMvrNames } from "@/hooks/mvrResolution";
 import { Loader2 } from "lucide-react";
 import { SearchResults } from "./SearchResults";
 import { useDebounce } from "@/hooks/useDebounce";
+import { Content } from "@/data/content";
 
 export function HeaderSearchBar() {
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -41,7 +42,7 @@ export function HeaderSearchBar() {
         className={cn(
           "flex h-full w-full rounded-none !border-none bg-transparent !p-0 text-sm !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
         )}
-        placeholder="Search by package name..."
+        placeholder={Content.searchPackage}
       />
 
       <SearchResults

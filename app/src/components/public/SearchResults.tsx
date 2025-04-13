@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Text } from "../ui/Text";
 import ImageWithFallback from "../ui/image-with-fallback";
 import { cn } from "@/lib/utils";
+import { Content } from "@/data/content";
 
 export function SearchResults({
   results,
@@ -43,7 +44,7 @@ export function SearchResultItem({
         !isLast && "border-b border-stroke-secondary",
       )}
     >
-      <div className="flex-shrink-0 max-w-[10%]">
+      <div className="max-w-[10%] flex-shrink-0">
         <ImageWithFallback
           src={item.metadata.icon_url}
           className="h-8 w-8 rounded-sm"
@@ -62,15 +63,31 @@ export function SearchResultItem({
         <Text
           kind="paragraph"
           size="paragraph-xs"
-          className=" line-clamp-2 text-content-secondary"
+          className="line-clamp-2 text-content-secondary"
         >
           {item.metadata.description}
         </Text>
       </div>
 
-      <div className="ml-auto flex items-center flex-wrap gap-sm max-w-[30%]">
-        {item.mainnet_package_info_id && <Text kind="label" size="label-xs" className="bg-mainnetSearch rounded-full px-xs text-content-primary">Mainnet</Text>}
-        {item.testnet_package_info_id && <Text kind="label" size="label-xs" className="bg-testnetSearch rounded-full px-xs text-content-primary">Testnet</Text>}
+      <div className="ml-auto flex max-w-[30%] flex-wrap items-center gap-sm">
+        {item.mainnet_package_info_id && (
+          <Text
+            kind="label"
+            size="label-xs"
+            className="rounded-full bg-mainnetSearch px-xs text-content-primary"
+          >
+            {Content.mainnet}
+          </Text>
+        )}
+        {item.testnet_package_info_id && (
+          <Text
+            kind="label"
+            size="label-xs"
+            className="rounded-full bg-testnetSearch px-xs text-content-primary"
+          >
+            {Content.testnet}
+          </Text>
+        )}
       </div>
     </Link>
   );

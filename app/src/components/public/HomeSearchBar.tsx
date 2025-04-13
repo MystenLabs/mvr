@@ -1,11 +1,10 @@
 import { cn } from "@/lib/utils";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
-import { CommandInput } from "../ui/command";
 import { Input } from "../ui/input";
-import { useEffect, useRef, useState } from "react";
-import { SearchResult, useSearchMvrNames } from "@/hooks/mvrResolution";
+import { SearchResult } from "@/hooks/mvrResolution";
 import { Loader2 } from "lucide-react";
 import { SearchResults } from "./SearchResults";
+import { Content } from "@/data/content";
 
 type HomeSearchBarProps = {
   isDebouncing: boolean;
@@ -59,7 +58,7 @@ export function HomeSearchBar({
           className={cn(
             "flex h-full w-full rounded-none !border-none bg-transparent !px-0 !py-md text-sm !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
           )}
-          placeholder="Search by package name..."
+          placeholder={Content.searchPackage}
         />
       </div>
       <SearchResults

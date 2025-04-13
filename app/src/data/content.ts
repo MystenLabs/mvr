@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export const Content = {
+  searchPackage: "Search package...",
+  mainnet: "Mainnet",
+  testnet: "Testnet",
   emptyStates: {
     package: {
       icon: "📦",
