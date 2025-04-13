@@ -47,7 +47,7 @@ export const Content = {
       icon: "📦",
       title: "Package not found",
       description:
-        "The package you are looking for does not exist, or it does not metadata connected neither on mainnet nor testnet.",
+        "The package you are looking for does not exist, or it does not have metadata connected neither on mainnet nor testnet.",
       button: "Go back to the packages page",
     },
   },
