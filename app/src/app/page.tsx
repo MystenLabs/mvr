@@ -11,6 +11,7 @@ import { HomeSearchBar } from "@/components/public/HomeSearchBar";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchMvrNames } from "@/hooks/mvrResolution";
+import { FadeInUpDiv } from "@/components/animations/FadeInUpDiv";
 
 export default function HomePage() {
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -58,7 +59,9 @@ export default function HomePage() {
 
           <ShareOnMVR />
 
-          <hr className="border-stroke-secondary" />
+          <FadeInUpDiv>
+            <hr className="border-stroke-secondary" />
+          </FadeInUpDiv>
 
           <EnhanceYourPTBs />
         </div>
