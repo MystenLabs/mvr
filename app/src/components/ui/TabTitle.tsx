@@ -9,14 +9,14 @@ const styles = cva(
   ],
   {
     variants: {
-      active: {
-        true: "border-bg-accent opacity-100",
-        false: "border-transparent opacity-60",
+      disabled: {
+        false: "border-bg-accent opacity-100",
+        true: "border-transparent opacity-60",
       },
     },
 
     defaultVariants: {
-      active: false,
+      disabled: false,
     },
   },
 );
@@ -25,7 +25,7 @@ type TabStyleProps = VariantProps<typeof styles>;
 
 export interface TabTitleProps extends TabStyleProps {
   children: ReactNode;
-  active?: boolean;
+  disabled?: boolean;
   className?: string;
 }
 

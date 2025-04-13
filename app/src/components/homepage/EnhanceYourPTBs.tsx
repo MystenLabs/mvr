@@ -42,7 +42,7 @@ export function EnhanceYourPTBs() {
           {Tabs.map((tab) => (
             <TabTitle
               key={tab.key}
-              active={activeTab === tab.key}
+              disabled={activeTab !== tab.key}
               onClick={() => {
                 setActiveTab(tab.key);
               }}

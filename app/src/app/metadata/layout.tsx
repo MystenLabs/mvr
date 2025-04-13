@@ -43,11 +43,11 @@ export default function PackagesLayout({
       <Header>
         {!!activeAddress && (
           <div className="">
-            <div className="gap-lg container flex min-h-[75px] items-end">
+            <div className="container flex min-h-[75px] items-end gap-lg">
               {Object.values(AvailableNetworks).map((net) => (
                 <TabTitle
                   key={net}
-                  active={net === network}
+                  disabled={net !== network}
                   onClick={() => setNetwork(net as Network)}
                 >
                   <Text kind="label" size="label-regular">

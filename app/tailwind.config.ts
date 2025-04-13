@@ -128,6 +128,7 @@ export default {
         purpleSalmonOp12: "var(--purple-salmon-op12)",
         bluePurpleOp9: "var(--blue-purple-op9)",
         purpleBlue: "var(--purple-blue)",
+        purpleBlueOp40: "var(--purple-blue-op40)",
       },
       borderRadius: {
         none: "var(--size-0)",

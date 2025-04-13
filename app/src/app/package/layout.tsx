@@ -59,8 +59,10 @@ export default function PackagesLayout({
   useEffect(() => {
     if (isMainnetLoading || isTestnetLoading) return;
     if (mainnetData && testnetData) return;
-    if (network === "mainnet" && !mainnetData && testnetData) setNetwork("testnet");
-    if (network === "testnet" && !testnetData && mainnetData) setNetwork("mainnet");
+    if (network === "mainnet" && !mainnetData && testnetData)
+      setNetwork("testnet");
+    if (network === "testnet" && !testnetData && mainnetData)
+      setNetwork("mainnet");
   }, [mainnetData, testnetData, network, isMainnetLoading, isTestnetLoading]);
 
   if (isMainnetLoading || isTestnetLoading) {
@@ -86,7 +88,7 @@ export default function PackagesLayout({
       <Header>
         {!!activeAddress && (
           <div className="">
-            <div className="gap-lg container flex min-h-[75px] items-end">
+            <div className="container flex min-h-[75px] items-end gap-lg">
               {Object.values(AvailableNetworks)
                 .filter((net) => {
                   if (net === "mainnet") {
@@ -100,7 +102,7 @@ export default function PackagesLayout({
                 .map((net) => (
                   <TabTitle
                     key={net}
-                    active={net === network}
+                    disabled={net !== network}
                     onClick={() => setNetwork(net as Network)}
                   >
                     <Text kind="label" size="label-regular">

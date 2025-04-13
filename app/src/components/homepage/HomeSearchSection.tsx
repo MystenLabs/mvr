@@ -1,12 +1,24 @@
 import MvrLogo from "@/icons/MvrLogo";
 import { Text } from "../ui/Text";
 import { Content } from "@/data/content";
+import { cn } from "@/lib/utils";
 
-export function HomeSearchSection({ children }: { children?: React.ReactNode }) {
+export function HomeSearchSection({
+  children,
+  isInputFocused,
+}: {
+  children?: React.ReactNode;
+  isInputFocused: boolean;
+}) {
   return (
     <div className="container mx-auto grid grid-cols-1 gap-sm lg:max-w-[800px]">
       <MvrLogo className="mx-auto" width={54} height={66} />
-      <Text as="h1" kind="display" size="display-regular" className="text-center">
+      <Text
+        as="h1"
+        kind="display"
+        size="display-regular"
+        className="text-center"
+      >
         {Content.homepage.title}
       </Text>
       <Text
@@ -19,6 +31,13 @@ export function HomeSearchSection({ children }: { children?: React.ReactNode }) 
       </Text>
 
       {children}
+
+      <div
+        className={cn(
+          "absolute inset-0 z-10 bg-[#000] bg-opacity-50 opacity-0 duration-300 ease-in",
+          isInputFocused && "opacity-100",
+        )}
+      ></div>
     </div>
   );
 }
