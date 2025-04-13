@@ -168,7 +168,10 @@ export default {
         "5xl": "var(--size-19)",
       },
       fontSize: {
+        "10": "var(--text-10)",
+        "11": "var(--text-11)",
         "12": "var(--text-12)",
+        "13": "var(--text-13)",
         "14": "var(--text-14)",
         "16": "var(--text-16)",
         "18": "var(--text-18)",

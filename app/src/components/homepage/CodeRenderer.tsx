@@ -19,11 +19,13 @@ const CodeRenderer = ({
   language,
   enableCopy = true,
   className,
+  codeTagClassName,
 }: {
   code: string;
   language: Language;
   enableCopy?: boolean;
   className?: string;
+  codeTagClassName?: string;
 }) => {
   const { copied, copy } = useCopy(code);
 
@@ -40,7 +42,7 @@ const CodeRenderer = ({
         style={dark}
         wrapLines
         wrapLongLines
-        codeTagProps={{ className: "!font-sans" }}
+        codeTagProps={{ className: cn("!font-sans", codeTagClassName) }}
       >
         {code}
       </SyntaxHighlighter>

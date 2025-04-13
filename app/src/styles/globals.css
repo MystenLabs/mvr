@@ -134,7 +134,11 @@
 
   /* Font Styles */
   :root {
+    /* px */
+    --text-10: 10px;
+    --text-11: 11px;
     --text-12: 12px;
+    --text-13: 13px;
     --text-14: 14px;
     --text-16: 16px;
     --text-18: 18px;
