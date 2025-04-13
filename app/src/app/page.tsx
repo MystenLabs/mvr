@@ -6,6 +6,7 @@ import GlowBottomPart from "@/icons/GlowBottomPart";
 import GlowTopPart from "@/icons/GlowTopPart";
 import { HomeSearchSection } from "@/components/homepage/HomeSearchSection";
 import { ShareOnMVR } from "@/components/homepage/ShareOnMVR";
+import { EnhanceYourPTBs } from "@/components/homepage/EnhanceYourPTBs";
 
 export default function HomePage() {
   return (
@@ -18,7 +19,7 @@ export default function HomePage() {
           <GlowBottomPart className="absolute bottom-0 left-0 h-full w-full" />
         </div>
 
-        <div className="relative grid grid-cols-1 gap-4xl container">
+        <div className="container relative grid grid-cols-1 gap-4xl">
           <HomeSearchSection>
             <>{/* Search bar goes here! */}</>
           </HomeSearchSection>
@@ -28,6 +29,8 @@ export default function HomePage() {
           <ShareOnMVR />
 
           <hr className="border-stroke-secondary" />
+
+          <EnhanceYourPTBs />
         </div>
       </div>
     </>

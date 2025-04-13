@@ -10,7 +10,7 @@ import { useCopy } from "@/hooks/useCopy";
 SyntaxHighlighter.registerLanguage("bash", bash);
 SyntaxHighlighter.registerLanguage("typescript", typescript);
 
-type Language = "bash" | "typescript";
+export type Language = "bash" | "typescript";
 
 const CodeRenderer = ({
   code,

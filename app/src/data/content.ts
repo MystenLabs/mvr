@@ -107,7 +107,7 @@ export const Content = {
       register: "Register your app",
       viewDocs: "View MVR Docs",
       docsUrl: "https://docs.suins.io/move-registry",
-      registerUrl: "/apps"
+      registerUrl: "/apps",
     },
     share: {
       title: "Share your package on MVR",
@@ -134,7 +134,56 @@ export const Content = {
     ptbs: {
       title: "Power up your PTB Dev Experience",
       subtitle: "MVR speeds up your development process.",
-      typescript: {},
+      typescript: {
+        tabTitle: "Typescript",
+        setup: {
+          title: "Before MVR",
+          code: `import { namedPackagesPlugin, Transaction } from "@mysten/sui/transactions"; 
+
+Transaction.registerGlobalSerializationPlugin(
+     'namedPackagesPlugin', 
+     namedPackagesPlugin({ url: '<endpoint based on network>' })
+);`,
+        },
+
+        withMvr: {
+          title: "After MVR",
+          code: `const transaction = new Transaction();
+
+transaction.moveCall({   
+     target: '@suifrens/accessories::accessories::equip',    
+     arguments: [..],    
+     typeArguments: [        
+          '@suifrens/core::suifren::SuiFren<@suifrens/core::bullshark::Bullshark>'    
+     ]
+})`,
+        },
+
+        withoutMvr: {
+          title: "Without MVR",
+          code: `const transaction = new Transaction();
+          
+// Mainnet version
+transaction.moveCall({
+     target: '0xe177697e191327901637f8d2c5ffbbde8b1aaac27ec1024c4b62d1ebd1cd7430::accessories::equip',
+     arguments: [..],
+     typeArguments: [     '0x80d7de9c4a56194087e0ba0bf59492aa8e6a5ee881606226930827085ddf2332::suifren::SuiFren<0x297d8afb6ede450529d347cf9254caeea2b685c8baef67b084122291ebaefb38::bullshark::Bullshark>'
+     ]
+});
+
+// Testnet version
+transaction.moveCall({
+     target: '0x54800ebb4606fd0c03b4554976264373b3374eeb3fd63e7ff69f31cac786ba8c::accessories::equip',
+     arguments: [..],
+     typeArguments: [
+          '0xee496a0cc04d06a345982ba6697c90c619020de9e274408c7819f787ff66e1a1::suifren::SuiFren<0x8894fa02fc6f36cbc485ae9145d05f247a78e220814fb8419ab261bd81f08f32::bullshark::Bullshark>'
+     ]
+});`,
+        },
+      },
+      cli: {
+        tabTitle: "Sui CLI",
+      },
     },
   },
 };

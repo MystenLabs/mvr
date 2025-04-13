@@ -1,0 +1,122 @@
+import { Content } from "@/data/content";
+import { Text } from "../ui/Text";
+import { TabTitle } from "../ui/TabTitle";
+import { useState } from "react";
+import CodeRenderer, { Language } from "./CodeRenderer";
+import { cn } from "@/lib/utils";
+
+const Tabs = [
+  {
+    title: Content.homepage.ptbs.typescript.tabTitle,
+    key: "typescript",
+  },
+  {
+    title: Content.homepage.ptbs.cli.tabTitle,
+    key: "cli",
+  },
+];
+
+export function EnhanceYourPTBs() {
+  const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
+  const [toggleMvr, setToggleMvr] = useState(true);
+
+  return (
+    <div>
+      <div className="pb-xl max-md:text-center">
+        <Text
+          as="h2"
+          kind="heading"
+          size="heading-small"
+          className="text-content-accent"
+        >
+          {Content.homepage.ptbs.title}
+        </Text>
+        <Text as="p" kind="paragraph" size="paragraph-regular">
+          {Content.homepage.ptbs.subtitle}
+        </Text>
+      </div>
+
+      <div className="flex items-center justify-between gap-md">
+        <div className="flex gap-md">
+          {Tabs.map((tab) => (
+            <TabTitle
+              key={tab.key}
+              active={activeTab === tab.key}
+              onClick={() => {
+                setActiveTab(tab.key);
+              }}
+            >
+              <Text
+                kind="paragraph"
+                size="paragraph-large"
+                className="flex flex-shrink-0 items-center gap-sm"
+              >
+                {tab.title}
+              </Text>
+            </TabTitle>
+          ))}
+        </div>
+        <div className="flex gap-md" onClick={() => setToggleMvr(!toggleMvr)}>Toggle MVR</div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-xl pt-2xl">
+        {activeTab === "typescript" && (
+          <>
+            <RenderCodeBlock
+              {...Content.homepage.ptbs.typescript.setup}
+              language="typescript"
+              lowOpacity={!toggleMvr}
+            />
+            <RenderCodeBlock
+              {...(toggleMvr ? Content.homepage.ptbs.typescript.withMvr : Content.homepage.ptbs.typescript.withoutMvr)}
+              language="typescript"
+            />
+          </>
+        )}
+
+        {activeTab === "cli" && (
+          <div>
+            <pre>{JSON.stringify(Content.homepage.ptbs.cli, null, 2)}</pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RenderCodeBlock({
+  title,
+  subtitle,
+  code,
+  language,
+  lowOpacity,
+}: {
+  title: string;
+  subtitle?: string;
+  code: string;
+  language: Language;
+  lowOpacity?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-sm md:grid-cols-12",
+        lowOpacity && "opacity-20",
+      )}
+    >
+      <div className="col-span-12 md:col-span-4">
+        <Text as="h3" kind="heading" size="heading-xs">
+          {title}
+        </Text>
+        {subtitle && (
+          <Text as="p" kind="paragraph" size="paragraph-regular">
+            {subtitle}
+          </Text>
+        )}
+      </div>
+      <div className="col-span-12 md:col-span-8">
+        <CodeRenderer code={code} language={language} />
+      </div>
+    </div>
+  );
+}
