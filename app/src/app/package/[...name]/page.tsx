@@ -17,7 +17,12 @@ export default function PackagePage() {
   return (
     <div className="flex-grow">
       <div className="py-lg overflow-hidden">
-        <SinglePackage name={packageInfo!} network={network as "mainnet" | "testnet"} />
+        {packageInfo && (
+          <SinglePackage
+            name={packageInfo!}
+            network={network as "mainnet" | "testnet"}
+          />
+        )}
       </div>
     </div>
   );

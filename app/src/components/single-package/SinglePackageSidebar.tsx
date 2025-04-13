@@ -10,7 +10,7 @@ export function SinglePackageSidebar({
   network: "mainnet" | "testnet";
 }) {
   return (
-    <div className="grid grid-cols-1 gap-lg rounded-md bg-bg-secondary p-xl">
+    <div className="grid grid-cols-1 gap-lg rounded-md bg-bg-secondary px-lg py-lg">
       <SinglePackageContent>
         <SinglePackageSidebarTitle>Install</SinglePackageSidebarTitle>
         <Text kind="paragraph" size="paragraph-small">
@@ -24,15 +24,15 @@ export function SinglePackageSidebar({
         />
       </SinglePackageContent>
       <SinglePackageContent>
-        <SinglePackageSidebarTitle>Description</SinglePackageSidebarTitle>
-        <Text kind="paragraph" size="paragraph-small">
-          {name.metadata?.description || "No description provided"}
-        </Text>
-      </SinglePackageContent>
-      <SinglePackageContent>
         <SinglePackageSidebarTitle>Version</SinglePackageSidebarTitle>
         <Text kind="paragraph" size="paragraph-small">
           {name.version}
+        </Text>
+      </SinglePackageContent>
+      <SinglePackageContent>
+        <SinglePackageSidebarTitle>Description</SinglePackageSidebarTitle>
+        <Text kind="paragraph" size="paragraph-small">
+          {name.metadata?.description || "No description provided"}
         </Text>
       </SinglePackageContent>
     </div>
