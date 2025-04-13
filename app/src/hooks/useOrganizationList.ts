@@ -80,7 +80,9 @@ export function useOwnedSuinsNames() {
     enabled: !!activeAddress,
 
     select: (data) => {
-      return data.map(parse) as SuinsName[];
+      return (data.map(parse) as SuinsName[]).filter(
+        (x) => +x.expirationTimestampMs > Date.now(),
+      );
     },
   });
 }
@@ -104,7 +106,9 @@ export function useOwnedSuinsSubnames() {
     },
 
     select: (data) => {
-      return data.map(parse) as SuinsName[];
+      return (data.map(parse) as SuinsName[]).filter(
+        (x) => +x.expirationTimestampMs > Date.now(),
+      );
     },
   });
 }
