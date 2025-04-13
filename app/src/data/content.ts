@@ -127,7 +127,7 @@ export const Content = {
         {
           title: "Add Dependencies",
           description: `Unlock seamless dependency management with just one simple command!`,
-          code: "mvr add @deepbook/core --network mainnet",
+          code: "mvr add @deepbook/core --network mainnet",
         },
       ],
     },

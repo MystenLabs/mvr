@@ -19,7 +19,7 @@ const buttonVariants = cva(
         primaryBtnGradient: "bg-primaryBtnGradient",
 
         outline:
-          "border border-border-classic bg-transparent hover:bg-border-classic hover:text-content-primary",
+          "border border-stroke-secondary bg-transparent hover:bg-bg-primaryBleedthrough hover:text-content-secondary",
 
         link: "text-content-secondary underline-offset-4 hover:text-content-accent",
         linkActive: 'text-content-accent',
