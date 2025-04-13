@@ -34,9 +34,9 @@ export function HomeSearchSection({
 
       <div
         className={cn(
-          "absolute inset-0 bg-[#000] bg-opacity-50 opacity-0 duration-300 ease-in",
+          "absolute inset-0 bg-bg-primary bg-opacity-50 opacity-0 duration-300 ease-in",
           !isInputFocused && "-z-10",
-          isInputFocused && "opacity-100 z-20",
+          isInputFocused && "opacity-50 z-20",
         )}
       ></div>
     </div>

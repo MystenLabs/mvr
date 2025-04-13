@@ -84,33 +84,31 @@ export default function PackagesLayout({
   return (
     <>
       <Header>
-        {!!activeAddress && (
-          <div className="">
-            <div className="container flex min-h-[75px] items-end gap-lg">
-              {Object.values(AvailableNetworks)
-                .filter((net) => {
-                  if (net === "mainnet") {
-                    return !!mainnetData;
-                  }
-                  if (net === "testnet") {
-                    return !!testnetData;
-                  }
-                  return false;
-                })
-                .map((net) => (
-                  <TabTitle
-                    key={net}
-                    active={net === network}
-                    onClick={() => setNetwork(net as Network)}
-                  >
-                    <Text kind="label" size="label-regular">
-                      {net}
-                    </Text>
-                  </TabTitle>
-                ))}
-            </div>
+        <div className="">
+          <div className="container flex min-h-[75px] items-end gap-lg">
+            {Object.values(AvailableNetworks)
+              .filter((net) => {
+                if (net === "mainnet") {
+                  return !!mainnetData;
+                }
+                if (net === "testnet") {
+                  return !!testnetData;
+                }
+                return false;
+              })
+              .map((net) => (
+                <TabTitle
+                  key={net}
+                  active={net === network}
+                  onClick={() => setNetwork(net as Network)}
+                >
+                  <Text kind="label" size="label-regular">
+                    {net}
+                  </Text>
+                </TabTitle>
+              ))}
           </div>
-        )}
+        </div>
       </Header>
       <PackagesNetworkContext.Provider value={network}>
         {children}
