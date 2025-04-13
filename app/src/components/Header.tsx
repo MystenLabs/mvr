@@ -36,22 +36,24 @@ const Links = [
 export default function Header({
   children,
   className,
+  showSearch = true,
 }: {
   children?: ReactNode;
   className?: string;
+  showSearch?: boolean;
 }) {
   return (
     <header className={cn("bg-header", className)}>
       <Sheet>
         <div className="py-md container flex items-center justify-between">
           <div className="flex items-center gap-xs">
-            <Link href="/apps" className="gap-xs flex w-fit items-center">
+            <Link href="/" className="gap-xs flex w-fit items-center">
               <MvrLogo className="flex-shrink-0" />
               <Text kind="display" className="text-[24px] font-extrabold">
                 MVR
               </Text>
             </Link>
-            <HeaderSearchBar />
+            {showSearch && <HeaderSearchBar />}
           </div>
           <div className="gap-xs lg:gap-lg flex items-center justify-end lg:col-span-9">
             <div className="max-lg:hidden">

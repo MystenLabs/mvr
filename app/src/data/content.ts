@@ -14,8 +14,7 @@ export const Content = {
     wallet: {
       icon: "👋🏽",
       title: "Connect your wallet",
-      description:
-        "To get started, connect your wallet.",
+      description: "To get started, connect your wallet.",
       button: "Read our FAQ",
     },
     suinsNames: {
@@ -35,28 +34,27 @@ export const Content = {
     apps: {
       icon: "🧑‍💻",
       title: "Onwards.",
-      description:
-        "Create your first package by clicking the button below.",
+      description: "Create your first package by clicking the button below.",
       button: "Add package",
     },
 
     noPackageSelected: {
       title: "Select a package",
-      description: "Select a package from the navigation to view its details."
+      description: "Select a package from the navigation to view its details.",
     },
 
     packageNotFound: {
       icon: "📦",
       title: "Package not found",
-      description: "The package you are looking for does not exist, or it does not metadata connected neither on mainnet nor testnet.",
+      description:
+        "The package you are looking for does not exist, or it does not metadata connected neither on mainnet nor testnet.",
       button: "Go back to the packages page",
-    }
+    },
   },
   suinsNames: {
     icon: "🚀",
     title: "Let's get started!",
-    description:
-      "Which organization will you be managing packages for?",
+    description: "Which organization will you be managing packages for?",
     button: "Visit suins.io to get a name for your org / project",
   },
   package: {
@@ -88,17 +86,57 @@ export const Content = {
   app: {
     button: "Create another Package",
     connected: {
-      title: 'There is an active connection',
-      description: 'This package is connected on',
-      button: 'View Details',
-  
-    }
+      title: "There is an active connection",
+      description: "This package is connected on",
+      button: "View Details",
+    },
   },
 
   addressPlaceholder: "Enter your custom address (e.g. 0xdee)",
 
   networkMissmatch: (network: string) =>
     `The active wallet\'s network does not match the network of the application (${network}). Switch your wallet's network to avoid unexpected failures.`,
+
+  homepage: {
+    title: "Move Package Registry",
+    content:
+      "MVR is the central hub for discovering, sharing, and managing Move packages on the Sui blockchain. Build secure, scalable, and innovative decentralized applications with the power of Move.",
+    docs: {
+      title: "Move onto MVR",
+      paragraph: "Bring your package to the future of Move.",
+      register: "Register your app",
+      viewDocs: "View MVR Docs",
+      docsUrl: "https://docs.suins.io/move-registry",
+      registerUrl: "/apps"
+    },
+    share: {
+      title: "Share your package on MVR",
+      subtitle:
+        "Ready to dive in? Follow these steps to start building on MVR today.",
+      steps: [
+        {
+          title: "Set up MVR CLI",
+          description: `Install the [MVR command line](#link) tool to interact with MVR.`,
+          code: "cargo install --locked --git https://github.com/mystenlabs/mvr --branch release mvr",
+        },
+        {
+          title: "Resolve packages",
+          description: `Verify your configuration to ensure that your packages are resolving properly.`,
+          code: "mvr resolve @deepbook/core --network mainnet",
+        },
+        {
+          title: "Add Dependencies",
+          description: `Unlock seamless dependency management with just one simple command!`,
+          code: "mvr add @deepbook/core --network mainnet",
+        },
+      ],
+    },
+    ptbs: {
+      title: "Power up your PTB Dev Experience",
+      subtitle: "MVR speeds up your development process.",
+      typescript: {},
+    },
+  },
 };
 
 export const FAQContent = {
@@ -141,19 +179,20 @@ export const FAQContent = {
     },
     {
       title: "What are the performance characteristics of using MVR?",
-      content: `Using MVR in a PTB will incur one lookup request to the MVR indexer or another GraphQL endpoint, per address, per session. Addresses are cached during sessions, and are cleared on page refresh.`
+      content: `Using MVR in a PTB will incur one lookup request to the MVR indexer or another GraphQL endpoint, per address, per session. Addresses are cached during sessions, and are cleared on page refresh.`,
     },
     {
       title: "How much does a MVR name cost?",
       content: `MVR records are free. You just need a SuiNS name for them to live under.`,
     },
-  {
-    title: "How can I get support for MVR?",
-    content: `See <a href="https://sui.io/developers#support" target="_blank">https://sui.io/developers#support</a>. Quick questions should be asked in Discord or Telegram. To get unblocked on larger issues, consider signing up for Sui Engineering Office Hours.`,
-  },
-  {
-    title: "What happens if the SuiNS name I registered my MVR package with expires?",
-    content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package on Mainnet. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
-  }
+    {
+      title: "How can I get support for MVR?",
+      content: `See <a href="https://sui.io/developers#support" target="_blank">https://sui.io/developers#support</a>. Quick questions should be asked in Discord or Telegram. To get unblocked on larger issues, consider signing up for Sui Engineering Office Hours.`,
+    },
+    {
+      title:
+        "What happens if the SuiNS name I registered my MVR package with expires?",
+      content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package on Mainnet. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
+    },
   ],
 };

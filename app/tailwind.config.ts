@@ -122,6 +122,10 @@ export default {
       backgroundImage: {
         primaryBtnGradient: "var(--primary-btn-gradient)",
         header: "var(--header-gradient)",
+        testnetSearch: "var(--testnet-search-gradient)",
+        mainnetSearch: "var(--mainnet-search-gradient)",
+        homepageCard: "var(--home-page-cards)",
+        purpleSalmonOp12: "var(--purple-salmon-op12)",
       },
       borderRadius: {
         none: "var(--size-0)",
