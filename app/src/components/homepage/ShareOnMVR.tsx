@@ -6,7 +6,7 @@ import { FadeInUpDiv } from "../animations/FadeInUpDiv";
 
 export function ShareOnMVR() {
   return (
-    <FadeInUpDiv className="grid grid-cols-1 gap-2xl rounded-xl bg-homepageCard px-xl py-2xl">
+    <FadeInUpDiv className="container grid grid-cols-1 gap-2xl rounded-xl bg-homepageCard px-xl py-2xl">
       <div className="text-center">
         <Text
           as="h2"

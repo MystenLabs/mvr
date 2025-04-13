@@ -7,7 +7,7 @@ export function DocsCTA() {
   const router = useRouter();
 
   return (
-    <div className="relative overflow-hidden rounded-xl px-2xl py-2xl">
+    <div className="container relative overflow-hidden rounded-xl px-2xl py-2xl">
       <img
         src="/mvr-docs-bg.webp"
         alt="MVR Docs"

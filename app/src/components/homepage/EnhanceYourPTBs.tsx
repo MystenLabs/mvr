@@ -23,7 +23,7 @@ export function EnhanceYourPTBs() {
   const [toggleMvr, setToggleMvr] = useState(true);
 
   return (
-    <FadeInUpDiv>
+    <FadeInUpDiv className="container">
       <div className="pb-xl max-md:text-center">
         <Text
           as="h2"
