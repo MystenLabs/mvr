@@ -36,7 +36,7 @@ export default function HomePage() {
       <Header showSearch={false} />
 
       <div className="relative flex-grow">
-        <div className="container relative grid grid-cols-1 gap-4xl py-4xl">
+        <div className="container relative grid grid-cols-1 gap-4xl pb-4xl">
           <div className="z-0 opacity-50">
             <GlowTopPart className="absolute left-0 top-0 h-full w-full" />
             <GlowBottomPart className="absolute bottom-0 left-0 h-full w-full" />
