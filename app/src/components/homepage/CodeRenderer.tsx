@@ -20,12 +20,18 @@ const CodeRenderer = ({
   enableCopy = true,
   className,
   codeTagClassName,
+  highlighterClassName,
+  wrapLines = true,
+  wrapLongLines = true,
 }: {
   code: string;
   language: Language;
   enableCopy?: boolean;
   className?: string;
   codeTagClassName?: string;
+  highlighterClassName?: string;
+  wrapLines?: boolean;
+  wrapLongLines?: boolean;
 }) => {
   const { copied, copy } = useCopy(code);
 
@@ -37,11 +43,14 @@ const CodeRenderer = ({
       )}
     >
       <SyntaxHighlighter
-        className="synta w-full !bg-transparent !font-mono"
+        className={cn(
+          "w-full !bg-transparent !font-mono",
+          highlighterClassName,
+        )}
         language={language}
         style={dark}
-        wrapLines
-        wrapLongLines
+        wrapLines={wrapLines}
+        wrapLongLines={wrapLongLines}
         codeTagProps={{ className: cn("!font-sans", codeTagClassName) }}
       >
         {code}

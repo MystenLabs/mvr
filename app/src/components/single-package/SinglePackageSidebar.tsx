@@ -19,8 +19,10 @@ export function SinglePackageSidebar({
         <CodeRenderer
           code={`mvr add ${name.name} --network ${network}`}
           language="bash"
-          className="bg-bg-quarternaryBleedthrough"
-          codeTagClassName="max-sm:text-12 text-13"
+          wrapLines={false}
+          wrapLongLines={false}
+          className="bg-bg-quarternaryBleedthrough px-0.5 py-2xs"
+          codeTagClassName="max-sm:text-11 text-12 "
         />
       </SinglePackageContent>
       <SinglePackageContent>
