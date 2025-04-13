@@ -195,8 +195,7 @@ sui client ptb --move-call 0x54800ebb4606fd0c03b4554976264373b3374eeb3fd63e7ff69
         },
         after: {
           title: "After MVR",
-          code: `# works on both mainnet and testnet
-sui client ptb --move-call @suifrens/accessories::accessories::equip [arguments]`,
+          code: `sui client ptb --move-call @suifrens/accessories::accessories::equip [arguments]`,
         },
       },
     },
