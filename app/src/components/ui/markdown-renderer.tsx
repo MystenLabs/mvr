@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 
 export function MarkdownRenderer({ markdown }: { markdown: string }) {
@@ -10,12 +11,18 @@ export function MarkdownRenderer({ markdown }: { markdown: string }) {
             {...props}
           />
         ),
-        a: ({ node, ...props }) => (
-          <a
-            className="text-content-accent underline underline-offset-4 hover:opacity-80"
-            {...props}
-          />
-        ),
+        a: ({ node, ...props }) => {
+          const isExternal = props.href?.startsWith("http");
+          return (
+            <a
+              className={cn(
+                "text-content-accent underline underline-offset-4 hover:opacity-80",
+              )}
+              target={isExternal ? "_blank" : undefined}
+              {...props}
+            />
+          );
+        },
       }}
     >
       {markdown}

@@ -116,7 +116,7 @@ export const Content = {
       steps: [
         {
           title: "Set up MVR CLI",
-          description: `Install the [MVR command line](#link) tool to interact with MVR.`,
+          description: `Install the [MVR command line](https://docs.suins.io/move-registry/tooling/mvr-cli) tool to interact with MVR.`,
           code: "cargo install --locked --git https://github.com/mystenlabs/mvr --branch release mvr",
         },
         {
