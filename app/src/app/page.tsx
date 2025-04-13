@@ -11,7 +11,6 @@ import { HomeSearchBar } from "@/components/public/HomeSearchBar";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchMvrNames } from "@/hooks/mvrResolution";
-import { cn } from "@/lib/utils";
 
 export default function HomePage() {
   const [isInputFocused, setIsInputFocused] = useState(false);
