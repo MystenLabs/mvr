@@ -137,12 +137,14 @@ export const Content = {
       typescript: {
         tabTitle: "Typescript",
         setup: {
-          title: "Before MVR",
+          title: "Setup the plugin",
           code: `import { namedPackagesPlugin, Transaction } from "@mysten/sui/transactions"; 
 
 Transaction.registerGlobalSerializationPlugin(
      'namedPackagesPlugin', 
-     namedPackagesPlugin({ url: '<endpoint based on network>' })
+     namedPackagesPlugin({ 
+          url: 'https://mainnet.mvr.mystenlabs.com' // or https://testnet.mvr.mystenlabs.com for testnet. 
+     })
 );`,
         },
 
