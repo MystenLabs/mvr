@@ -22,7 +22,7 @@ export function FadeInUpDiv({
       initial={{ opacity: 0, y: initialY ?? 300, x: initialX ?? 0 }}
       whileInView={{ opacity: 1, y: 0, x: 0 }}
       transition={{ duration: duration || 1, delay, type: "easeInOut" }}
-      viewport={{ once: true }}
+      viewport={{ once: true, amount: 0.3 }}
       {...props}
     >
       {children}
