@@ -2,16 +2,11 @@ import { Content } from "@/data/content";
 import { Text } from "../ui/Text";
 import CodeRenderer from "./CodeRenderer";
 import { MarkdownRenderer } from "../ui/markdown-renderer";
-import { motion } from "framer-motion";
+import { FadeInUpDiv } from "../animations/FadeInUpDiv";
 
 export function ShareOnMVR() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1 }}
-      className="grid grid-cols-1 gap-2xl rounded-xl bg-homepageCard px-xl py-2xl"
-    >
+    <FadeInUpDiv className="grid grid-cols-1 gap-2xl rounded-xl bg-homepageCard px-xl py-2xl">
       <div className="text-center">
         <Text
           as="h2"
@@ -27,10 +22,10 @@ export function ShareOnMVR() {
       </div>
       <hr className="border-stroke-secondary" />
 
-      {Content.homepage.share.steps.map((step, index) => (
-        <Step key={step.title} {...step} index={index} />
+      {Content.homepage.share.steps.map((step) => (
+        <Step key={step.title} {...step} />
       ))}
-    </motion.div>
+    </FadeInUpDiv>
   );
 }
 
@@ -38,19 +33,14 @@ const Step = ({
   title,
   description,
   code,
-  index,
 }: {
   title: string;
   description: string;
   code: string;
-  index: number;
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, delay: index * 0.1 }}
-      className="grid grid-cols-1 gap-sm items-center md:grid-cols-2"
+    <FadeInUpDiv
+      className="grid grid-cols-1 items-center gap-lg md:grid-cols-2"
     >
       <div>
         <Text as="h3" kind="heading" size="heading-xs">
@@ -61,6 +51,6 @@ const Step = ({
       <div className="w-full">
         <CodeRenderer code={code} language="bash" />
       </div>
-    </motion.div>
+    </FadeInUpDiv>
   );
 };

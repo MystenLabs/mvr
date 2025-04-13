@@ -5,6 +5,7 @@ import { useState } from "react";
 import CodeRenderer, { Language } from "./CodeRenderer";
 import { cn } from "@/lib/utils";
 import { Switch } from "../ui/switch";
+import { FadeInUpDiv } from "../animations/FadeInUpDiv";
 
 const Tabs = [
   {
@@ -22,7 +23,7 @@ export function EnhanceYourPTBs() {
   const [toggleMvr, setToggleMvr] = useState(true);
 
   return (
-    <div>
+    <FadeInUpDiv>
       <div className="pb-xl max-md:text-center">
         <Text
           as="h2"
@@ -83,13 +84,22 @@ export function EnhanceYourPTBs() {
               lowOpacity={!toggleMvr}
               enableCopy={toggleMvr}
             />
-            <RenderCodeBlock
-              {...(toggleMvr
-                ? Content.homepage.ptbs.typescript.withMvr
-                : Content.homepage.ptbs.typescript.withoutMvr)}
-              language="typescript"
-              enableCopy={toggleMvr}
-            />
+
+            {toggleMvr && (
+              <RenderCodeBlock
+                {...Content.homepage.ptbs.typescript.withMvr}
+                language="typescript"
+                enableCopy
+              />
+            )}
+
+            {!toggleMvr && (
+              <RenderCodeBlock
+                {...Content.homepage.ptbs.typescript.withoutMvr}
+                language="typescript"
+                enableCopy
+              />
+            )}
           </>
         )}
 
@@ -105,7 +115,7 @@ export function EnhanceYourPTBs() {
           </>
         )}
       </div>
-    </div>
+    </FadeInUpDiv>
   );
 }
 
@@ -127,8 +137,8 @@ function RenderCodeBlock({
   return (
     <div
       className={cn(
-        "grid grid-cols-1 gap-sm md:grid-cols-12",
-        lowOpacity && "opacity-20",
+        "grid grid-cols-1 gap-sm duration-150 ease-in-out md:grid-cols-12",
+        lowOpacity && "!opacity-20",
       )}
     >
       <div className="col-span-12 md:col-span-4 lg:col-span-3">
