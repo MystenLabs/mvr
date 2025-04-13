@@ -1,7 +1,6 @@
 "use client";
 
 import Header from "@/components/Header";
-import { WalletConnectedContent } from "@/components/layouts/WalletConnectedContent";
 import { useMVRContext } from "@/components/providers/mvr-provider";
 import { PackagesNetworkContext } from "@/components/providers/packages-provider";
 import { TabTitle } from "@/components/ui/TabTitle";
@@ -13,7 +12,6 @@ import { useWalletNetwork } from "@/hooks/useWalletNetwork";
 import { switchGlobalAccent } from "@/lib/utils";
 import { AvailableNetworks, Network } from "@/utils/types";
 import { useEffect, useState } from "react";
-import { notFound } from "next/navigation";
 import LoadingState from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
 import { Content } from "@/data/content";
@@ -114,11 +112,9 @@ export default function PackagesLayout({
           </div>
         )}
       </Header>
-      <WalletConnectedContent>
-        <PackagesNetworkContext.Provider value={network}>
-          {children}
-        </PackagesNetworkContext.Provider>
-      </WalletConnectedContent>
+      <PackagesNetworkContext.Provider value={network}>
+        {children}
+      </PackagesNetworkContext.Provider>
     </>
   );
 }
