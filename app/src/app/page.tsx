@@ -51,7 +51,7 @@ export default function HomePage() {
               setSearchQuery={setSearchQuery}
               searchResults={searchResults}
               isInputFocused={isInputFocused}
-              className="z-20"
+              className="z-30"
             />
           </HomeSearchSection>
 
