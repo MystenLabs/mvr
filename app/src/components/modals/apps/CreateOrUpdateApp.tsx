@@ -33,8 +33,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { METADATA_KEYS } from "@/data/on-chain-app";
 import { TextArea } from "@/components/ui/textarea";
 import { Text } from "@/components/ui/Text";
-import equal from "fast-deep-equal/es6/react";
 import { nullishValueChanged } from "@/lib/utils";
+import { isValidNamedPackage } from "@mysten/sui/utils";
 
 const formSchema = z
   .object({
@@ -55,6 +55,15 @@ const formSchema = z
         path: ["acceptMainnetWarning"],
         message:
           "You've set a mainnet package so you need to accept the warning before proceeding.",
+        code: z.ZodIssueCode.custom,
+      });
+    }
+    console.log(isValidNamedPackage(`${data.nsName}/${data.name}`));
+    if (data.name && !isValidNamedPackage(`${data.nsName}/${data.name}`)) {
+      ctx.addIssue({
+        path: ["name"],
+        message:
+          "A package name can only contain lower case characters, numbers and -",
         code: z.ZodIssueCode.custom,
       });
     }
@@ -200,6 +209,8 @@ export default function CreateOrUpdateApp({
       });
     } else {
       form.clearErrors("name");
+      // trigger a check for other validations.
+      form.trigger("name");
     }
   }, [isNameAvailable, debouncedName]);
 
@@ -247,7 +258,7 @@ export default function CreateOrUpdateApp({
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="py-Regular">
-          <div className="gap-md grid grid-cols-1">
+          <div className="grid grid-cols-1 gap-md">
             {!isUpdate && (
               <FormField
                 control={form.control}
@@ -369,7 +380,7 @@ export default function CreateOrUpdateApp({
               )}
             />
 
-            <div className="gap-md mb-md grid grid-cols-1">
+            <div className="mb-md grid grid-cols-1 gap-md">
               <FormField
                 control={form.control}
                 name="mainnet"
@@ -384,7 +395,7 @@ export default function CreateOrUpdateApp({
                       />
                     </FormControl>
                     {isUpdate && appRecord.mainnet && (
-                      <FormDescription className="gap-sm flex items-center">
+                      <FormDescription className="flex items-center gap-sm">
                         <AlertCircleIcon size={15} />
                         Mainnet metadata has already been assigned and cannot
                         change.
@@ -419,7 +430,7 @@ export default function CreateOrUpdateApp({
                   control={form.control}
                   name="acceptMainnetWarning"
                   render={({ field }) => (
-                    <FormItem className="bg-bg-tertiary flex flex-row items-start space-x-3 space-y-0 rounded-md p-4">
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md bg-bg-tertiary p-4">
                       <FormControl>
                         <Checkbox
                           className="mt-1"
@@ -506,7 +517,7 @@ const ModalWrapper = ({
 
 const FormOptionalLabel = ({ title }: { title: ReactNode }) => {
   return (
-    <FormLabel className="gap-xs flex items-center">
+    <FormLabel className="flex items-center gap-xs">
       {title}
       <Text
         kind="paragraph"
