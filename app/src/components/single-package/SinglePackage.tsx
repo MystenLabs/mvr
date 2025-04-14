@@ -5,6 +5,7 @@ import { SinglePackageTabs, Tabs } from "./SinglePackageTabs";
 import { SinglePackageSidebar } from "./SinglePackageSidebar";
 import { useGetSourceFromGit } from "@/hooks/useGetSourceFromGit";
 import { MarkdownRenderer } from "../ui/markdown-renderer";
+import { ReadMeRenderer } from "./ReadMeRenderer";
 
 export function SinglePackage({
   name,
@@ -17,15 +18,6 @@ export function SinglePackage({
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
-
-  const { data: readme } = useGetSourceFromGit({
-    url: name.git_info?.repository_url?.endsWith(".git")
-      ? name.git_info?.repository_url?.slice(0, -4)
-      : name.git_info?.repository_url,
-    subPath: name.git_info?.path,
-    tagOrHash: name.git_info?.tag,
-    file: "README.md",
-  });
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -46,18 +38,16 @@ export function SinglePackage({
   return (
     <div className="flex-grow">
       <div className="container">
-        <div className="grid grid-cols-12 gap-2xl md:grid-cols-2 lg:grid-cols-12">
+        <div className="grid grid-cols-1 lg:grid-cols-24 gap-2xl">
           <SinglePackageTabs
             setActiveTab={updateTab}
             isActiveTab={isActiveTab}
-            className="col-span-12 gap-sm max-md:flex max-md:overflow-x-auto md:col-span-2"
+            className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-4"
           />
-          <div className="col-span-12 md:col-span-7">
-            {isActiveTab("readme") && (
-              <MarkdownRenderer markdown={readme ?? ""} />
-            )}
+          <div className="col-span-1 lg:col-span-13">
+            {isActiveTab("readme") && <ReadMeRenderer name={name} />}
           </div>
-          <div className="col-span-12 md:col-span-3">
+          <div className="col-span-1 lg:col-span-7">
             <SinglePackageSidebar name={name} network={network} />
           </div>
         </div>

@@ -1,6 +1,8 @@
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { Text } from "@/components/ui/Text";
 import CodeRenderer from "../homepage/CodeRenderer";
+import { LinkIcon } from "lucide-react";
+import { Button } from "../ui/button";
 
 export function SinglePackageSidebar({
   name,
@@ -9,6 +11,21 @@ export function SinglePackageSidebar({
   name: ResolvedName;
   network: "mainnet" | "testnet";
 }) {
+  const links = [
+    {
+      title: "Source Code",
+      href: name.git_info?.repository_url ?? "",
+    },
+    {
+      title: "Documentation",
+      href: name.metadata?.documentation_url ?? "",
+    },
+    {
+      title: "Homepage",
+      href: name.metadata?.homepage_url ?? "",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 gap-lg rounded-md bg-bg-secondary px-lg py-lg">
       <SinglePackageContent>
@@ -26,18 +43,38 @@ export function SinglePackageSidebar({
         />
       </SinglePackageContent>
       <SinglePackageContent>
-        <SinglePackageSidebarTitle>Version</SinglePackageSidebarTitle>
-        <Text kind="paragraph" size="paragraph-small">
-          {name.version}
-        </Text>
-      </SinglePackageContent>
-      <SinglePackageContent>
         <SinglePackageSidebarTitle>Description</SinglePackageSidebarTitle>
         <Text kind="paragraph" size="paragraph-small">
           {name.metadata?.description || "No description provided"}
         </Text>
       </SinglePackageContent>
+
+      {links.map((link) => (
+        <SinglePackageSidebarLink key={link.title} {...link} />
+      ))}
     </div>
+  );
+}
+
+function SinglePackageSidebarLink({
+  title,
+  href,
+}: {
+  title: string;
+  href: string;
+}) {
+  return (
+    <SinglePackageContent>
+      <SinglePackageSidebarTitle>{title}</SinglePackageSidebarTitle>
+      <Button
+        variant="linkActive"
+        className="justify-start !break-all whitespace-break-spaces !px-0 !text-12 flex items-center gap-2xs text-left"
+        onClick={() => window.open(href, "_blank")}
+      >
+        <LinkIcon className="mr-2xs h-4 w-4 flex-shrink-0" />
+        {href}
+      </Button>
+    </SinglePackageContent>
   );
 }
 
@@ -50,7 +87,7 @@ function SinglePackageSidebarTitle({
     <Text
       kind="heading"
       size="heading-headline"
-      className="mb-xxs uppercase text-content-secondary"
+      className="mb-xxs flex flex-wrap items-center gap-2xs uppercase text-content-secondary"
     >
       {children}
     </Text>

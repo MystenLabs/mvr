@@ -57,7 +57,7 @@ export function SinglePackageTabs({
         <div
           key={tab.title}
           className={cn(
-            "flex flex-shrink-0 cursor-pointer items-center gap-sm rounded-sm px-md py-sm hover:bg-bg-accentBleedthrough3 md:w-full",
+            "flex flex-shrink-0 cursor-pointer items-center gap-sm rounded-sm px-md py-sm hover:bg-bg-accentBleedthrough3 lg:w-full",
             isActiveTab(tab.key) && "bg-bg-accentBleedthrough2",
           )}
           onClick={() => setActiveTab(tab.key)}

@@ -1,14 +1,28 @@
 import { Content } from "@/data/content";
 import { Text } from "./ui/Text";
+import { cn } from "@/lib/utils";
 
-export default function LoadingState() {
+export default function LoadingState({
+  title,
+  description,
+  size = "md",
+}: {
+  title?: string;
+  description?: string;
+  size?: "sm" | "md" | "lg";
+}) {
   return (
     <div className="flex flex-grow items-center justify-center p-Regular">
       <div className="text-center">
         <div role="status" className="text-center">
           <svg
             aria-hidden="true"
-            className="mx-auto h-12 w-12 animate-spin fill-primary text-secondary-hover"
+            className={cn(
+              "mx-auto animate-spin fill-primary text-secondary-hover",
+              size === "sm" && "h-8 w-8",
+              size === "md" && "h-12 w-12",
+              size === "lg" && "h-16 w-16",
+            )}
             viewBox="0 0 100 101"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -28,14 +42,14 @@ export default function LoadingState() {
               size="heading-regular"
               className="text-content-secondary"
             >
-              {Content.loading.title}
+              {title ?? Content.loading.title}
             </Text>
             <Text
               kind="paragraph"
               size="paragraph-regular"
               className="text-content-secondary"
             >
-              {Content.loading.description}
+              {description ?? Content.loading.description}
             </Text>
           </div>
         </div>

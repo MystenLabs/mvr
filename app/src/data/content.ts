@@ -53,6 +53,13 @@ export const Content = {
         "The package you are looking for does not exist, or it does not have metadata connected neither on mainnet nor testnet.",
       button: "Go back to the packages page",
     },
+
+    noReadMe: {
+      icon: "📖",
+      title: "No README found",
+      description:
+        "README file not found. This either means the package does not have a README file in the path of the Move Package, or the README file is not publicly accessible.",
+    },
   },
   suinsNames: {
     icon: "🚀",
