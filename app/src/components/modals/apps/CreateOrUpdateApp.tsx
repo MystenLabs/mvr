@@ -58,7 +58,7 @@ const formSchema = z
         code: z.ZodIssueCode.custom,
       });
     }
-    console.log(isValidNamedPackage(`${data.nsName}/${data.name}`));
+
     if (data.name && !isValidNamedPackage(`${data.nsName}/${data.name}`)) {
       ctx.addIssue({
         path: ["name"],
