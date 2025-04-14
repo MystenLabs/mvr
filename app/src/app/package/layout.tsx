@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import LoadingState from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
 import { Content } from "@/data/content";
+import { SinglePackageHeader } from "@/components/single-package/SinglePackageHeader";
 
 export default function PackagesLayout({
   children,
@@ -84,6 +85,12 @@ export default function PackagesLayout({
   return (
     <>
       <Header>
+        {network === "mainnet" && mainnetData && (
+          <SinglePackageHeader name={mainnetData} network={network} />
+        )}
+        {network === "testnet" && testnetData && (
+          <SinglePackageHeader name={testnetData} network={network} />
+        )}
         <div className="">
           <div className="container flex min-h-[75px] items-end gap-lg">
             {Object.values(AvailableNetworks)

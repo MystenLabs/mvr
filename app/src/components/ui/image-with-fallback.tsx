@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 
 type ImageWithFallbackProps = React.ImgHTMLAttributes<HTMLImageElement> & {
-  fallback: string;
+  fallback?: string;
 };
 
 const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
-  fallback,
+  fallback = "/default-icon.svg",
   alt,
   ...props
 }) => {
