@@ -27,31 +27,36 @@ export function SinglePackageSidebar({
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-lg rounded-md bg-bg-secondary px-lg py-lg">
-      <SinglePackageContent>
-        <SinglePackageSidebarTitle>Install</SinglePackageSidebarTitle>
-        <Text kind="paragraph" size="paragraph-small">
-          You can install this package in your Move project by calling
-        </Text>
-        <CodeRenderer
-          code={`mvr add ${name.name} --network ${network}`}
-          language="bash"
-          wrapLines={false}
-          wrapLongLines={false}
-          className="bg-bg-quarternaryBleedthrough px-0.5 py-2xs"
-          codeTagClassName="max-sm:text-11 text-12 "
-        />
-      </SinglePackageContent>
-      <SinglePackageContent>
-        <SinglePackageSidebarTitle>Description</SinglePackageSidebarTitle>
-        <Text kind="paragraph" size="paragraph-small">
-          {name.metadata?.description || "No description provided"}
-        </Text>
-      </SinglePackageContent>
+    <div className="sticky">
+      <div className="grid grid-cols-1 gap-lg rounded-md bg-bg-secondary px-lg py-lg">
+        <SinglePackageContent>
+          <SinglePackageSidebarTitle>Install</SinglePackageSidebarTitle>
+          <Text kind="paragraph" size="paragraph-small">
+            You can install this package in your Move project by calling
+          </Text>
+          <CodeRenderer
+            code={`mvr add ${name.name} --network ${network}`}
+            language="bash"
+            wrapLines={false}
+            wrapLongLines={false}
+            className="bg-bg-quarternaryBleedthrough px-0.5 py-2xs"
+            codeTagClassName="max-sm:text-11 text-12 "
+          />
+        </SinglePackageContent>
+        <SinglePackageContent>
+          <SinglePackageSidebarTitle>Description</SinglePackageSidebarTitle>
+          <Text kind="paragraph" size="paragraph-small">
+            {name.metadata?.description || "No description provided"}
+          </Text>
+        </SinglePackageContent>
 
-      {links.map((link) => (
-        <SinglePackageSidebarLink key={link.title} {...link} />
-      ))}
+        {links.map(
+          (link) =>
+            link.href && (
+              <SinglePackageSidebarLink key={link.title} {...link} />
+            ),
+        )}
+      </div>
     </div>
   );
 }
@@ -68,7 +73,7 @@ function SinglePackageSidebarLink({
       <SinglePackageSidebarTitle>{title}</SinglePackageSidebarTitle>
       <Button
         variant="linkActive"
-        className="justify-start !break-all whitespace-break-spaces !px-0 !text-12 flex items-center gap-2xs text-left"
+        className="flex items-center justify-start gap-2xs whitespace-break-spaces !break-all !px-0 text-left !text-12"
         onClick={() => window.open(href, "_blank")}
       >
         <LinkIcon className="mr-2xs h-4 w-4 flex-shrink-0" />

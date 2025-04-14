@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SinglePackageTabs, Tabs } from "./SinglePackageTabs";
 import { SinglePackageSidebar } from "./SinglePackageSidebar";
-import { useGetSourceFromGit } from "@/hooks/useGetSourceFromGit";
-import { MarkdownRenderer } from "../ui/markdown-renderer";
 import { ReadMeRenderer } from "./ReadMeRenderer";
 
 export function SinglePackage({
@@ -47,7 +45,7 @@ export function SinglePackage({
           <div className="col-span-1 lg:col-span-13">
             {isActiveTab("readme") && <ReadMeRenderer name={name} />}
           </div>
-          <div className="col-span-1 lg:col-span-7">
+          <div className="col-span-1 lg:col-span-7 relative">
             <SinglePackageSidebar name={name} network={network} />
           </div>
         </div>
