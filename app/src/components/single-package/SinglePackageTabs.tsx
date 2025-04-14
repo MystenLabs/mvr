@@ -15,28 +15,24 @@ export const Tabs = [
     title: "Readme",
     selectedIcon: <ReadMeIconSelected />,
     unselectedIcon: <ReadMeIconUnselected />,
-    component: <></>,
   },
   {
     key: "versions",
     title: "Versions",
     selectedIcon: <VersionsIconSelected />,
     unselectedIcon: <VersionsIconUnselected />,
-    component: <></>,
   },
   {
     key: "dependencies",
     title: "Dependencies",
     selectedIcon: <DependenciesIconSelected />,
     unselectedIcon: <DependenciesIconUnselected />,
-    component: <></>,
   },
   {
     key: "dependends",
     title: "Dependends",
     selectedIcon: <DependendsIconSelected />,
     unselectedIcon: <DependendsIconUnselected />,
-    component: <></>,
   },
 ];
 
