@@ -135,6 +135,8 @@
   /* Font Styles */
   :root {
     /* px */
+    --text-8: 8px;
+    --text-9: 9px;
     --text-10: 10px;
     --text-11: 11px;
     --text-12: 12px;

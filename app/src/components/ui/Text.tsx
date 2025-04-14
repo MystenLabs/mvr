@@ -17,7 +17,7 @@ const textStyles = cva(["break-words"], {
       "paragraph-regular": "text-14 leading-20 lg:text-16 lg:leading-24",
       "paragraph-large": "text-16 leading-24 lg:text-18 lg:leading-28",
       "paragraph-small": "text-12 leading-16 lg:text-14 lg:leading-20",
-      "paragraph-xs": "text-8 leading-12 lg:text-12 lg:leading-16",
+      "paragraph-xs": "text-10 leading-12 lg:text-12 lg:leading-16",
       "paragraph-xl": "text-18 leading-24 lg:text-24 lg:leading-32",
 
       "label-regular": "text-14 leading-16 lg:text-16 lg:leading-20",

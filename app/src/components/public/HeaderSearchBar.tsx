@@ -9,7 +9,7 @@ import { SearchResults } from "./SearchResults";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Content } from "@/data/content";
 
-export function HeaderSearchBar() {
+export function HeaderSearchBar({ className }: { className?: string }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   const handleFocus = () => setIsInputFocused(true);
@@ -28,9 +28,14 @@ export function HeaderSearchBar() {
   const { data: searchResults, isLoading } = useSearchMvrNames(debouncedSearch);
 
   return (
-    <div className="bg-bg-quarternaryBleedthrough py-xs px-sm ml-xs md:ml-md relative flex items-center w-[220px] rounded-sm text-content-secondary xl:w-[500px]">
+    <div
+      className={cn(
+        "relative ml-xs flex w-[450px] items-center rounded-sm bg-bg-quarternaryBleedthrough px-sm py-xs text-content-secondary md:ml-md xl:w-[500px]",
+        className,
+      )}
+    >
       {(isDebouncing || isLoading) && !!searchQuery ? (
-        <Loader2 className="mr-2 h-4 w-4 shrink-0 opacity-50 animate-spin" />
+        <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin opacity-50" />
       ) : (
         <MagnifyingGlassIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
       )}

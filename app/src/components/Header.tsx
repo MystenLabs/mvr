@@ -45,29 +45,42 @@ export default function Header({
   return (
     <header className={cn("bg-header", className)}>
       <Sheet>
-        <div className="py-md container flex items-center justify-between">
-          <div className="flex items-center gap-xs">
-            <Link href="/" className="gap-xs flex w-fit items-center">
-              <MvrLogo className="flex-shrink-0" />
-              <Text kind="display" className="text-[24px] font-extrabold">
-                MVR
-              </Text>
-            </Link>
-            {showSearch && <HeaderSearchBar />}
-          </div>
-          <div className="gap-xs lg:gap-lg flex items-center justify-end lg:col-span-9">
-            <div className="max-lg:hidden">
-              <Menu />
+        <>
+          <div className="container flex items-center justify-between py-md">
+            <div className="flex items-center gap-xs">
+              <Link href="/" className="flex w-fit items-center gap-xs">
+                <MvrLogo className="flex-shrink-0" />
+                <Text kind="display" className="text-[24px] font-extrabold">
+                  MVR
+                </Text>
+              </Link>
+              {showSearch && (
+                <div className="max-lg:hidden">
+                  {" "}
+                  <HeaderSearchBar />{" "}
+                </div>
+              )}
             </div>
-            <SuiConnectPill />
-            <SheetTrigger className="bg-bg-secondary rounded-xs p-xs lg:hidden">
-              <MenuIcon />
-            </SheetTrigger>
+            <div className="flex items-center justify-end gap-xs lg:col-span-9 lg:gap-lg">
+              <div className="max-lg:hidden">
+                <Menu />
+              </div>
+              <SuiConnectPill />
+              <SheetTrigger className="rounded-xs bg-bg-secondary p-xs lg:hidden">
+                <MenuIcon />
+              </SheetTrigger>
+            </div>
           </div>
-        </div>
+          {showSearch && (
+            <div className="container px-sm pb-sm lg:hidden">
+              <HeaderSearchBar className="!mx-0 w-full" />
+            </div>
+          )}
+        </>
+
         <SheetContent>
           <SheetHeader>
-            <SheetDescription className="grid grid-cols-1 gap-Regular pt-XLarge">
+            <SheetDescription className="gap-Regular pt-XLarge grid grid-cols-1">
               <div className="text-left">
                 <Menu />
               </div>
