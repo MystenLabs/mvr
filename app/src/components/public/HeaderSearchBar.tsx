@@ -15,7 +15,7 @@ export function HeaderSearchBar({ className }: { className?: string }) {
   const handleFocus = () => setIsInputFocused(true);
   const handleBlur = () => {
     // Timeout needed to allow dropdown click before it disappears
-    setTimeout(() => setIsInputFocused(false), 100);
+    setTimeout(() => setIsInputFocused(false), 250);
   };
 
   const [searchQuery, setSearchQuery] = useState("");
