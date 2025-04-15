@@ -55,6 +55,19 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    package_analytics (call_date, package_id) {
+        call_date -> Date,
+        package_id -> Varchar,
+        direct_calls -> BigInt,
+        aggregated_direct_calls -> BigInt,
+        propagated_calls -> BigInt,
+        aggregated_propagated_calls -> BigInt,
+        total_calls -> BigInt,
+        aggregated_total_calls -> BigInt,
+    }
+}
+
 diesel::allow_tables_to_appear_in_same_query!(
     git_infos,
     name_records,

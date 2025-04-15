@@ -6,7 +6,7 @@ use crate::errors::ApiError;
 pub(crate) const DEFAULT_PAGE_LIMIT: u32 = 20;
 pub(crate) const MAX_PAGE_LIMIT: u32 = 50;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
 pub struct PaginationLimit(u32);
 
 impl Default for PaginationLimit {
