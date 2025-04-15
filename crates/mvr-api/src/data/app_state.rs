@@ -4,8 +4,10 @@ use crate::data::package_resolver::PackageResolver;
 use crate::data::reader::Reader;
 use crate::metrics::RpcMetrics;
 use async_graphql::dataloader::DataLoader;
+use async_graphql::dataloader::LruCache;
 use prometheus::Registry;
 use std::sync::Arc;
+use std::time::Duration;
 use sui_package_resolver::{PackageStoreWithLruCache, Resolver};
 use sui_pg_db as db;
 use url::Url;
@@ -14,6 +16,7 @@ use url::Url;
 pub struct AppState {
     reader: Reader,
     loader: Arc<DataLoader<Reader>>,
+    cached_loader: Arc<DataLoader<Reader, LruCache>>,
     package_resolver: PackageResolver,
     metrics: Arc<RpcMetrics>,
 }
@@ -33,6 +36,7 @@ impl AppState {
         let _ = reader.connect().await?;
 
         let loader = Arc::new(reader.as_data_loader());
+        let cached_loader = Arc::new(reader.as_cached_data_loader(Duration::from_millis(50)));
         let api_pkg_resolver = ApiPackageStore::new(loader.clone());
         let package_cache = PackageStoreWithLruCache::new(api_pkg_resolver);
         let package_resolver = Arc::new(Resolver::new(package_cache));
@@ -40,6 +44,7 @@ impl AppState {
         Ok(Self {
             reader,
             loader,
+            cached_loader,
             package_resolver,
             metrics,
         })
@@ -51,6 +56,10 @@ impl AppState {
 
     pub(crate) fn loader(&self) -> &Arc<DataLoader<Reader>> {
         &self.loader
+    }
+
+    pub(crate) fn cached_loader(&self) -> &Arc<DataLoader<Reader, LruCache>> {
+        &self.cached_loader
     }
 
     pub(crate) fn package_resolver(&self) -> &PackageResolver {
