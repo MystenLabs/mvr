@@ -8,15 +8,10 @@ import { Loader2 } from "lucide-react";
 import { SearchResults } from "./SearchResults";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Content } from "@/data/content";
+import { useIsFocused } from "@/hooks/useIsFocused";
 
 export function HeaderSearchBar({ className }: { className?: string }) {
-  const [isInputFocused, setIsInputFocused] = useState(false);
-
-  const handleFocus = () => setIsInputFocused(true);
-  const handleBlur = () => {
-    // Timeout needed to allow dropdown click before it disappears
-    setTimeout(() => setIsInputFocused(false), 250);
-  };
+  const { isFocused, handleFocus, handleBlur } = useIsFocused();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -52,7 +47,7 @@ export function HeaderSearchBar({ className }: { className?: string }) {
 
       <SearchResults
         results={searchResults || { data: [], next_cursor: null, limit: 0 }}
-        hidden={!isInputFocused}
+        hidden={!isFocused}
       />
     </div>
   );

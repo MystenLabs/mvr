@@ -6,6 +6,7 @@ import { Text } from "../ui/Text";
 import ImageWithFallback from "../ui/image-with-fallback";
 import { cn } from "@/lib/utils";
 import { Content } from "@/data/content";
+import { useIsFocused } from "@/hooks/useIsFocused";
 
 export function SearchResults({
   results,
@@ -14,10 +15,15 @@ export function SearchResults({
   hidden?: boolean;
   results: SearchResult;
 }) {
-  if (!results?.data.length || hidden) return null;
+  const { isFocused, handleFocus, handleBlur } = useIsFocused();
+  if (!results?.data.length || (hidden && !isFocused)) return null;
 
   return (
-    <div className="absolute left-0 top-full z-50 mt-xs max-h-[300px] w-full overflow-y-auto rounded-md border border-stroke-secondary bg-bg-quarternaryBleedthrough shadow-lg backdrop-blur-lg">
+    <div
+      className="absolute left-0 top-full z-50 mt-xs max-h-[300px] w-full overflow-y-auto rounded-md border border-stroke-secondary bg-bg-quarternaryBleedthrough shadow-lg backdrop-blur-lg"
+      onMouseEnter={handleFocus}
+      onMouseLeave={handleBlur}
+    >
       {results.data.map((item, index) => (
         <SearchResultItem
           key={index}
@@ -37,7 +43,7 @@ export function SearchResultItem({
   isLast: boolean;
 }) {
   return (
-    <Link
+    <a
       href={`/package/${item.name}`}
       className={cn(
         "flex items-center gap-sm px-md py-sm hover:bg-bg-accentBleedthrough3",
@@ -74,7 +80,7 @@ export function SearchResultItem({
           <Text
             kind="label"
             size="label-xs"
-            className="rounded-full bg-mainnetSearch px-xs text-content-primary"
+            className="bg-mainnetSearch rounded-full px-xs text-content-primary"
           >
             {Content.mainnet}
           </Text>
@@ -83,12 +89,12 @@ export function SearchResultItem({
           <Text
             kind="label"
             size="label-xs"
-            className="rounded-full bg-testnetSearch px-xs text-content-primary"
+            className="bg-testnetSearch rounded-full px-xs text-content-primary"
           >
             {Content.testnet}
           </Text>
         )}
       </div>
-    </Link>
+    </a>
   );
 }
