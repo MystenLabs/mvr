@@ -43,7 +43,7 @@ export function SearchResultItem({
   isLast: boolean;
 }) {
   return (
-    <a
+    <Link
       href={`/package/${item.name}`}
       className={cn(
         "flex items-center gap-sm px-md py-sm hover:bg-bg-accentBleedthrough3",
@@ -95,6 +95,6 @@ export function SearchResultItem({
           </Text>
         )}
       </div>
-    </a>
+    </Link>
   );
 }
