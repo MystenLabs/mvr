@@ -7,7 +7,7 @@ export function useIsFocused() {
 
   const handleBlur = () => {
     // Timeout needed to allow dropdown click before it disappears
-    setTimeout(() => setIsFocused(false), 250);
+    setTimeout(() => setIsFocused(false), 100);
   };
 
   return { isFocused, handleFocus, handleBlur };

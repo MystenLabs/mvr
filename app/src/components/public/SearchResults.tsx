@@ -29,6 +29,7 @@ export function SearchResults({
           key={index}
           item={item}
           isLast={index === results.data.length - 1}
+          handleBlur={handleBlur}
         />
       ))}
     </div>
@@ -38,9 +39,11 @@ export function SearchResults({
 export function SearchResultItem({
   item,
   isLast,
+  handleBlur,
 }: {
   item: SearchResultItem;
   isLast: boolean;
+  handleBlur?: () => void;
 }) {
   return (
     <Link
@@ -49,6 +52,9 @@ export function SearchResultItem({
         "flex items-center gap-sm px-md py-sm hover:bg-bg-accentBleedthrough3",
         !isLast && "border-b border-stroke-secondary",
       )}
+      onClick={() => {
+        handleBlur?.();
+      }}
     >
       <div className="max-w-[10%] flex-shrink-0">
         <ImageWithFallback
