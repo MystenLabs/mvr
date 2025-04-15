@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use crate::metrics::RpcMetrics;
-use async_graphql::dataloader::DataLoader;
+use async_graphql::dataloader::{DataLoader, LruCache};
 use diesel::pg::Pg;
 use diesel::query_builder::QueryFragment;
 use diesel::result::Error as DieselError;
@@ -71,6 +72,10 @@ impl Reader {
     /// Create a data loader backed by this reader.
     pub(crate) fn as_data_loader(&self) -> DataLoader<Self> {
         DataLoader::new(self.clone(), tokio::spawn)
+    }
+
+    pub(crate) fn as_cached_data_loader(&self, delay: Duration) -> DataLoader<Self, LruCache> {
+        DataLoader::with_cache(self.clone(), tokio::spawn, LruCache::new(10_000)).delay(delay)
     }
 
     pub(crate) async fn connect(&self) -> Result<Connection<'_>, ReadError> {

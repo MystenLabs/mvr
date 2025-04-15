@@ -6,8 +6,9 @@ use std::sync::Arc;
 use crate::{
     data::app_state::AppState,
     handlers::{
-        health_check, names::Names, resolution::Resolution, reverse_resolution::ReverseResolution,
-        struct_definition::StructDefinition, type_resolution::TypeResolution,
+        health_check, names::Names, package_address::PackageAddress, resolution::Resolution,
+        reverse_resolution::ReverseResolution, struct_definition::StructDefinition,
+        type_resolution::TypeResolution,
     },
     metrics::middleware::track_metrics,
 };
@@ -48,7 +49,11 @@ pub fn create_router(app: Arc<AppState>) -> Router {
             // Queries all names (paginated & can supply search query)
             get(Names::search_names),
         )
-        .route("/names/{*name}", get(Names::get_by_name));
+        .route("/names/{*name}", get(Names::get_by_name))
+        .route(
+            "/package-address/{package_address}/dependencies",
+            get(PackageAddress::dependencies),
+        );
 
     Router::new()
         .route("/health", get(health_check))

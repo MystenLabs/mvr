@@ -14,6 +14,7 @@ use crate::{
 const BATCH_SIZE_DEFAULT: usize = 50;
 
 pub(crate) mod names;
+pub(crate) mod package_address;
 pub(crate) mod resolution;
 pub(crate) mod reverse_resolution;
 pub(crate) mod struct_definition;
