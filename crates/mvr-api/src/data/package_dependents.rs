@@ -56,15 +56,7 @@ impl Loader<PackageDependentsKey> for Reader {
         // In this particular scenario, we use `try_join_all` to parallelize our db queries,
         // because there is no easy way to parallelize the db queries in the SQL layer,
         // because of our cursor-based pagination.
-        let result = try_join_all(requests).await?.iter().fold(
-            HashMap::new(),
-            |mut acc, (key, dependents)| {
-                acc.insert(key.clone(), dependents.clone());
-                acc
-            },
-        );
-
-        Ok(result)
+        Ok(try_join_all(requests).await?.into_iter().collect())
     }
 }
 
