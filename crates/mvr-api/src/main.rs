@@ -4,7 +4,7 @@
 use std::net::SocketAddr;
 
 use clap::Parser;
-use mvr_api::{run_server, Network};
+use mvr_api::{run_migrations, run_server, Network};
 use sui_pg_db::DbArgs;
 use tokio_util::sync::CancellationToken;
 use url::Url;
@@ -41,6 +41,8 @@ async fn main() -> Result<(), anyhow::Error> {
         metrics_address,
         database_url,
     } = Args::parse();
+
+    run_migrations(database_url.clone(), db_args.clone()).await?;
 
     let cancel = CancellationToken::new();
 

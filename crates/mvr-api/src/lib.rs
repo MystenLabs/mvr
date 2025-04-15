@@ -13,9 +13,10 @@ use axum::http::{
 };
 use clap::ValueEnum;
 use data::app_state::AppState;
+use mvr_schema::MIGRATIONS;
 use prometheus::Registry;
 use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
-use sui_pg_db::DbArgs;
+use sui_pg_db::{Db, DbArgs};
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::{Any, CorsLayer};
 use url::Url;
@@ -76,6 +77,12 @@ pub async fn run_server(
 pub enum Network {
     Mainnet,
     Testnet,
+}
+
+pub async fn run_migrations(url: Url, args: DbArgs) -> Result<(), anyhow::Error> {
+    let db = Db::for_write(url, args).await?;
+    db.run_migrations(MIGRATIONS).await?;
+    Ok(())
 }
 
 impl std::fmt::Display for Network {
