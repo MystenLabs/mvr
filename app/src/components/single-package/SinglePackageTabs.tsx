@@ -138,9 +138,10 @@ function DependentsCountLabel({
   hasMore: boolean;
 }) {
   return (
-    <div className="bg-bg-quarternaryBleedthrough rounded-full px-xs py-2xs">
+    <div className="rounded-full bg-bg-quarternaryBleedthrough px-xs py-2xs">
       <Text kind="label" size="label-2xs">
-        {count}{hasMore ? "+" : ""}
+        {count}
+        {hasMore ? "+" : ""}
       </Text>
     </div>
   );

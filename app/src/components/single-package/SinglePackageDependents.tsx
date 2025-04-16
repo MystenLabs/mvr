@@ -43,6 +43,7 @@ export function SinglePackageDependents({ name }: { name: ResolvedName }) {
   return (
     <>
       <Text
+        as="div"
         kind="heading"
         size="heading-regular"
         className="flex items-center gap-sm"
