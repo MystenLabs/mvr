@@ -8,7 +8,7 @@ use std::str::FromStr;
 use crate::errors::NameServiceError;
 
 const DEFAULT_TLD: &str = "sui";
-const ACCEPTED_SEPARATORS: [char; 2] = ['.', '*'];
+const ACCEPTED_SEPARATORS: [char; 1] = ['.'];
 const SUI_NEW_FORMAT_SEPARATOR: char = '@';
 
 /// Two different view options for a domain.

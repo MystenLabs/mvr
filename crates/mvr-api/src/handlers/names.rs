@@ -23,6 +23,8 @@ use crate::{
     utils::pagination::{format_paginated_response, Cursor, PaginatedResponse, PaginationLimit},
 };
 
+use super::validate_search_query;
+
 #[derive(Serialize, Deserialize)]
 pub struct PackageByNameResponse {
     #[serde(flatten)]
@@ -48,6 +50,7 @@ pub struct NameSearchQueryParams {
     pub search: Option<String>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
+    pub is_linked: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -97,15 +100,17 @@ impl Names {
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<PaginatedResponse<NameSearchResponse>>, ApiError> {
         let search = params.search.unwrap_or_default();
+        validate_search_query(&search)?;
+
         let limit = PaginationLimit::new(params.limit)?;
         let cursor = Cursor::decode_or_default::<NameCursor>(&params.cursor)?;
 
         let mut connection = app_state.reader().connect().await?;
 
         let query = diesel::sql_query(
-            "SELECT name, metadata, mainnet_id as mainnet_package_info_id, testnet_id as testnet_package_info_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
-FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 
-ORDER BY relevance DESC, name ASC LIMIT $4"
+            format!("SELECT name, metadata, mainnet_id as mainnet_package_info_id, testnet_id as testnet_package_info_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
+FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 {} 
+ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false) { "AND (mainnet_id IS NOT NULL OR testnet_id IS NOT NULL) " } else { "" })
         )
         .bind::<VarChar, _>(format!("%{}%", search))
         .bind::<VarChar, _>(search)
