@@ -195,6 +195,8 @@ export default {
         "112": "var(--text-112)",
       },
       leading: {
+        10: "var(--lh-10)",
+        11: "var(--lh-11)",
         12: "var(--lh-12)",
         14: "var(--lh-14)",
         16: "var(--lh-16)",

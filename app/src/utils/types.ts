@@ -55,4 +55,6 @@ export enum AppQueryKeys {
     IS_NAME_AVAILABLE = 'is-name-available',
     RESOLVE_MVR_NAME = 'resolve-mvr-name',
     SEARCH_MVR_NAMES = 'search-mvr-names',
+    MVR_DEPENDENCIES = 'mvr-dependencies',
+    MVR_DEPENDENTS = 'mvr-dependents',
 }

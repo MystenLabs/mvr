@@ -8,6 +8,12 @@ import { VersionsIconUnselected } from "@/icons/single-package/VersionsIcon";
 import { VersionsIconSelected } from "@/icons/single-package/VersionsIcon";
 import { cn } from "@/lib/utils";
 import { Text } from "@/components/ui/Text";
+import {
+  useGetMvrDependencies,
+  useGetMvrDependents,
+} from "@/hooks/useMvrDependencies";
+import { ResolvedName } from "@/hooks/mvrResolution";
+import { usePackagesNetwork } from "../providers/packages-provider";
 
 export const Tabs = [
   {
@@ -15,6 +21,7 @@ export const Tabs = [
     title: "Readme",
     selectedIcon: <ReadMeIconSelected />,
     unselectedIcon: <ReadMeIconUnselected />,
+    label: null,
   },
   {
     key: "versions",
@@ -27,26 +34,43 @@ export const Tabs = [
     title: "Dependencies",
     selectedIcon: <DependenciesIconSelected />,
     unselectedIcon: <DependenciesIconUnselected />,
+    label: (name: ResolvedName, network: "mainnet" | "testnet") => (
+      <DependencyCount name={name} network={network} />
+    ),
   },
   {
-    key: "dependends",
-    title: "Dependends",
+    key: "dependents",
+    title: "Dependents",
     selectedIcon: <DependendsIconSelected />,
     unselectedIcon: <DependendsIconUnselected />,
+    label: (name: ResolvedName, network: "mainnet" | "testnet") => (
+      <DependentsCount name={name} network={network} />
+    ),
   },
 ];
 
 export type SinglePackageTab = (typeof Tabs)[number];
 
 export function SinglePackageTabs({
+  name,
   setActiveTab,
   isActiveTab,
   className,
 }: {
+  name: ResolvedName;
   setActiveTab: (tab: string) => void;
   isActiveTab: (tab: string) => boolean;
   className?: string;
 }) {
+  const network = usePackagesNetwork() as "mainnet" | "testnet";
+
+  const { data: dependencies } = useGetMvrDependencies(
+    name.package_address,
+    network,
+  );
+
+  console.log(dependencies);
+
   return (
     <div className={className}>
       {Tabs.map((tab) => (
@@ -64,8 +88,62 @@ export function SinglePackageTabs({
           <Text kind="label" size="label-small">
             {tab.title}
           </Text>
+          {tab.label && tab.label(name, network)}
         </div>
       ))}
+    </div>
+  );
+}
+
+export function DependencyCount({
+  name,
+  network,
+}: {
+  name: ResolvedName;
+  network: "mainnet" | "testnet";
+}) {
+  const { data: dependencies } = useGetMvrDependencies(
+    name.package_address,
+    network,
+  );
+
+  return (
+    <DependentsCountLabel count={dependencies?.length ?? 0} hasMore={false} />
+  );
+}
+
+export function DependentsCount({
+  name,
+  network,
+}: {
+  name: ResolvedName;
+  network: "mainnet" | "testnet";
+}) {
+  const { data: dependents } = useGetMvrDependents(
+    name.package_address,
+    network,
+  );
+
+  return (
+    <DependentsCountLabel
+      count={dependents?.packages.length ?? 0}
+      hasMore={dependents?.hasMore ?? false}
+    />
+  );
+}
+
+function DependentsCountLabel({
+  count,
+  hasMore,
+}: {
+  count: number;
+  hasMore: boolean;
+}) {
+  return (
+    <div className="bg-bg-quarternaryBleedthrough rounded-full px-xs py-2xs">
+      <Text kind="label" size="label-2xs">
+        {count}{hasMore ? "+" : ""}
+      </Text>
     </div>
   );
 }

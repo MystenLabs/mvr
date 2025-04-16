@@ -6,7 +6,10 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { KioskClient, Network } from "@mysten/kiosk";
 import { createContext, useContext } from "react";
 import { SuiGraphQLClient } from "@mysten/sui/graphql";
-import { namedPackagesPlugin, TransactionPlugin } from "@mysten/sui/transactions";
+import {
+  namedPackagesPlugin,
+  TransactionPlugin,
+} from "@mysten/sui/transactions";
 
 export type Clients = {
   mainnet: SuiClient;
@@ -28,23 +31,36 @@ export type Clients = {
     mainnet: string;
     testnet: string;
   };
+  mvrExperimentalEndpoints: {
+    mainnet: string;
+    testnet: string;
+  };
 };
 
-const mainnet = new SuiClient({ url: "https://suins-rpc.mainnet.sui.io:443", network: 'mainnet' });
+const mainnet = new SuiClient({
+  url: "https://suins-rpc.mainnet.sui.io:443",
+  network: "mainnet",
+});
 
 const testnetNamedPackagesPlugin = namedPackagesPlugin({
-  url: 'https://testnet.mvr.mystenlabs.com'
+  url: "https://testnet.mvr.mystenlabs.com",
 });
 
 const mainnetNamedPackagesPlugin = namedPackagesPlugin({
-  url: 'https://mainnet.mvr.mystenlabs.com',
+  url: "https://mainnet.mvr.mystenlabs.com",
 });
 
 export const DefaultClients: Clients = {
   mainnet,
-  testnet: new SuiClient({ url: "https://suins-rpc.testnet.sui.io:443", network: 'testnet' }),
-  devnet: new SuiClient({ url: getFullnodeUrl("devnet"), network: 'devnet' }),
-  localnet: new SuiClient({ url: getFullnodeUrl("localnet"), network: 'localnet' }),
+  testnet: new SuiClient({
+    url: "https://suins-rpc.testnet.sui.io:443",
+    network: "testnet",
+  }),
+  devnet: new SuiClient({ url: getFullnodeUrl("devnet"), network: "devnet" }),
+  localnet: new SuiClient({
+    url: getFullnodeUrl("localnet"),
+    network: "localnet",
+  }),
   kiosk: {
     mainnet: new KioskClient({
       client: mainnet,
@@ -66,7 +82,11 @@ export const DefaultClients: Clients = {
   mvrEndpoints: {
     mainnet: "https://mainnet.mvr.mystenlabs.com",
     testnet: "https://testnet.mvr.mystenlabs.com",
-  }
+  },
+  mvrExperimentalEndpoints: {
+    mainnet: "https://qa.mainnet.mvr.mystenlabs.com",
+    testnet: "https://qa.testnet.mvr.mystenlabs.com",
+  },
 };
 
 export const SuiClientContext = createContext<Clients>(DefaultClients);

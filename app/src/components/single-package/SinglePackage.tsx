@@ -38,6 +38,7 @@ export function SinglePackage({
       <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-24 gap-2xl">
           <SinglePackageTabs
+            name={name}
             setActiveTab={updateTab}
             isActiveTab={isActiveTab}
             className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-4"

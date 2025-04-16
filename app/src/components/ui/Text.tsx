@@ -24,6 +24,7 @@ const textStyles = cva(["break-words"], {
       "label-large": "text-16 leading-18 lg:text-18 lg:leading-24",
       "label-small": "text-12 leading-14 lg:text-14 lg:leading-16",
       "label-xs": "text-10 leading-12 lg:text-12 lg:leading-14",
+      "label-2xs": "text-9 leading-11 lg:text-10 lg:leading-12",
 
       "heading-regular": "text-20 leading-28 lg:text-28 lg:leading-36",
       "heading-large": "text-24 leading-32 lg:text-32 lg:leading-40",
