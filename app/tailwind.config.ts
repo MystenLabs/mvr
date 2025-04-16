@@ -50,6 +50,7 @@ export default {
         tertiary: "var(--bg-tertiary)",
         quarternary: "var(--bg-quarternary)",
         quarternaryBleedthrough: "var(--bg-quarternary-bleedthrough)",
+        quarternaryBleedthrough2: "var(--bg-quarternary-bleedthrough2)",
         warning: "var(--bg-warning)",
         warningBleedthrough: "var(--bg-warning-bleedthrough)",
         accent: "var(--bg-accent)",

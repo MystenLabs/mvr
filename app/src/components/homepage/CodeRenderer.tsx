@@ -3,14 +3,13 @@ import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import typescript from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
 import { dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { useCopy } from "@/hooks/useCopy";
 import { cn } from "@/lib/utils";
 import { CopyBtn } from "../ui/CopyBtn";
 
 SyntaxHighlighter.registerLanguage("bash", bash);
 SyntaxHighlighter.registerLanguage("typescript", typescript);
 
-export type Language = "bash" | "typescript";
+export type Language = "bash" | "typescript" | "move";
 
 const CodeRenderer = ({
   code,
@@ -31,8 +30,6 @@ const CodeRenderer = ({
   wrapLines?: boolean;
   wrapLongLines?: boolean;
 }) => {
-  const { copied, copy } = useCopy(code);
-
   return (
     <div
       className={cn(
@@ -42,14 +39,20 @@ const CodeRenderer = ({
     >
       <SyntaxHighlighter
         className={cn(
-          "w-full !bg-transparent !font-mono",
+          "w-full !bg-transparent",
           highlighterClassName,
         )}
         language={language}
         style={dark}
         wrapLines={wrapLines}
         wrapLongLines={wrapLongLines}
-        codeTagProps={{ className: cn("!font-sans", codeTagClassName) }}
+        codeTagProps={{
+          className: codeTagClassName,
+          style: {
+            fontFamily:
+              "SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace",
+          },
+        }}
       >
         {code}
       </SyntaxHighlighter>

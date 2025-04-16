@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import CodeRenderer, { Language } from "../homepage/CodeRenderer";
+import remarkGfm from "remark-gfm";
 
 export function MarkdownRenderer({
   markdown,
@@ -11,6 +13,7 @@ export function MarkdownRenderer({
   return (
     <div className={cn({ "flex flex-col gap-sm": addGaps })}>
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ node, ...props }) => (
             <h1
@@ -55,23 +58,39 @@ export function MarkdownRenderer({
             />
           ),
           pre: ({ node, ...props }) => (
-            <pre
-              className="text-13 my-sm overflow-x-auto rounded-md bg-bg-secondary p-md !font-inter text-content-secondary"
-              {...props}
-            />
+            <div className="my-xl">{props.children}</div>
           ),
-          code: ({ node, ...props }) => (
-            <code className="bg-bg-secondary px-1 py-0.5 font-inter" {...props} />
-          ),
+          code: ({ node, ...props }) => {
+            const isInline = !props.className;
+
+            if (isInline) {
+              return (
+                <code
+                  className="rounded-xs bg-bg-accentBleedthrough3 px-1 py-0.5 font-inter text-content-primary"
+                  {...props}
+                />
+              );
+            }
+
+            const language = props.className?.replace("language-", "");
+
+            return (
+              <CodeRenderer
+                code={props.children as string}
+                language={language as Language}
+                className="bg-bg-quarternaryBleedthrough2 lg:text-15 my-sm text-14"
+              />
+            );
+          },
           ul: ({ node, ...props }) => (
             <ul
-              className="list-inside list-disc text-14 text-content-secondary"
+              className="list-inside list-disc text-14 text-content-secondary lg:text-16"
               {...props}
             />
           ),
           ol: ({ node, ...props }) => (
             <ol
-              className="list-inside list-decimal text-14 text-content-secondary"
+              className="list-inside list-decimal text-14 text-content-secondary lg:text-16"
               {...props}
             />
           ),
@@ -85,6 +104,40 @@ export function MarkdownRenderer({
                 target={isExternal ? "_blank" : undefined}
                 {...props}
               />
+            );
+          },
+          // remark plugins
+          table({ children }) {
+            return (
+              <table className="my-sm w-full table-auto border border-stroke-secondary text-14 lg:text-16">
+                {children}
+              </table>
+            );
+          },
+          thead({ children }) {
+            return (
+              <thead className="bg-bg-quarternaryBleedthrough">
+                {children}
+              </thead>
+            );
+          },
+          tr({ children }) {
+            return (
+              <tr className="border-b border-stroke-secondary">{children}</tr>
+            );
+          },
+          th({ children }) {
+            return (
+              <th className="border border-stroke-secondary px-sm py-xs text-left font-medium">
+                {children}
+              </th>
+            );
+          },
+          td({ children }) {
+            return (
+              <td className="border border-stroke-secondary px-sm py-xs">
+                {children}
+              </td>
             );
           },
         }}

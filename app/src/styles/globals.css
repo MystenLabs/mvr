@@ -28,6 +28,7 @@
     --color-grey-200: #808085;
     --color-grey-300: #535358;
     --color-grey-300-op32: #53535852;
+    --color-grey-300-op24: #5353583d;
     --color-grey-400: #2a2a2f;
     --color-grey-500: #171719;
     --color-grey-600: #0e0e12;
@@ -87,6 +88,7 @@
     --bg-primary-bleedthrough2: var(--color-grey-700-op24);
     --bg-quarternary: var(--color-grey-300);
     --bg-quarternary-bleedthrough: var(--color-grey-300-op32);
+    --bg-quarternary-bleedthrough2: var(--color-grey-300-op24);
     --bg-secondary: var(--color-grey-600);
     --bg-tertiary: var(--color-grey-500);
     --bg-warning: var(--color-accent-yellow);
