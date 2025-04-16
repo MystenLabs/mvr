@@ -53,8 +53,9 @@ export function SinglePackageDependents({ name }: { name: ResolvedName }) {
         <LoadingState size="sm" title="" description="Loading..." />
       )}
       <div className="mt-md flex flex-wrap gap-xs">
-        {dependents?.packages.map((dependency) => (
+        {dependents?.packages.map((dependency, index) => (
           <DependencyLabel
+            key={index}
             dependency={
               hasResolvedName(dependency.package_id)
                 ? getDependencyName(dependency.package_id)

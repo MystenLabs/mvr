@@ -45,6 +45,7 @@ export function SinglePackageDependencies({ name }: { name: ResolvedName }) {
       <div className="mt-md flex flex-wrap gap-xs">
         {dependencies?.map((dependency) => (
           <DependencyLabel
+            key={dependency}
             dependency={
               hasResolvedName(dependency)
                 ? getDependencyName(dependency)
