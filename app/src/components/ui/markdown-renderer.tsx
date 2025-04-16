@@ -53,7 +53,7 @@ export function MarkdownRenderer({
           ),
           p: ({ node, ...props }) => (
             <p
-              className="leading-20 lg:leading-24 my-md font-sans text-14 text-content-secondary lg:text-16"
+              className="leading-20 lg:leading-24 my-md font-sans text-14 text-content-secondary lg:text-16 break-words"
               {...props}
             />
           ),
