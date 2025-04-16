@@ -12,6 +12,7 @@ use crate::{
 };
 
 const BATCH_SIZE_DEFAULT: usize = 50;
+const MAX_SEARCH_QUERY_LENGTH: usize = 255;
 
 pub(crate) mod names;
 pub(crate) mod package_address;
@@ -45,4 +46,34 @@ fn validate_batch_size<T>(items: &[T], limit: Option<usize>) -> Result<(), ApiEr
     } else {
         Ok(())
     }
+}
+
+/// Given a search query, validate that it only contains alphanumeric, spaces,
+/// and special characters that are valid in a domain name.
+///
+/// Also, validate that the query is not too long (we accept max of 255 characters, being the max domain name length).
+fn validate_search_query(query: &str) -> Result<(), ApiError> {
+    if query.len() > MAX_SEARCH_QUERY_LENGTH {
+        return Err(ApiError::BadRequest(format!(
+            "Search query is too long: {}",
+            query
+        )));
+    }
+    //  only accept alphanumeric, spaces, and special characters that are valid in a domain name.
+    if !query.chars().all(|c| {
+        c.is_alphanumeric()
+            || c.is_whitespace()
+            || c == '-'
+            || c == '_'
+            || c == '@'
+            || c == '.'
+            || c == '/'
+    }) {
+        return Err(ApiError::BadRequest(format!(
+            "Invalid search query: {}",
+            query
+        )));
+    }
+
+    Ok(())
 }

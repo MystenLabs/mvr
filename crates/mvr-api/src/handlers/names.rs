@@ -23,6 +23,8 @@ use crate::{
     utils::pagination::{format_paginated_response, Cursor, PaginatedResponse, PaginationLimit},
 };
 
+use super::validate_search_query;
+
 #[derive(Serialize, Deserialize)]
 pub struct PackageByNameResponse {
     #[serde(flatten)]
@@ -98,6 +100,8 @@ impl Names {
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<PaginatedResponse<NameSearchResponse>>, ApiError> {
         let search = params.search.unwrap_or_default();
+        validate_search_query(&search)?;
+
         let limit = PaginationLimit::new(params.limit)?;
         let cursor = Cursor::decode_or_default::<NameCursor>(&params.cursor)?;
 
