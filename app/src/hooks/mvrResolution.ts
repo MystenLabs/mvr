@@ -72,7 +72,6 @@ export function useSearchMvrNames(query: string) {
   return useQuery({
     queryKey: [AppQueryKeys.SEARCH_MVR_NAMES, query],
     queryFn: async () => {
-        console.log("Querying...");
       const response = await fetch(
         `${mvrEndpoint}/v1/names?search=${query}&limit=20`,
       );

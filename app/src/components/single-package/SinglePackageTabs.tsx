@@ -69,8 +69,6 @@ export function SinglePackageTabs({
     network,
   );
 
-  console.log(dependencies);
-
   return (
     <div className={className}>
       {Tabs.map((tab) => (
