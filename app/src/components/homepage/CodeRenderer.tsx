@@ -1,13 +1,11 @@
-// CodeRenderer.tsx
-import { CheckIcon, CopyIcon } from "lucide-react";
-import React, { useState } from "react";
+import React from "react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import typescript from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
 import { dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { Button } from "../ui/button";
 import { useCopy } from "@/hooks/useCopy";
 import { cn } from "@/lib/utils";
+import { CopyBtn } from "../ui/CopyBtn";
 
 SyntaxHighlighter.registerLanguage("bash", bash);
 SyntaxHighlighter.registerLanguage("typescript", typescript);
@@ -56,15 +54,7 @@ const CodeRenderer = ({
         {code}
       </SyntaxHighlighter>
 
-      {enableCopy && (
-        <Button variant="link" size="icon" onClick={copy}>
-          {copied ? (
-            <CheckIcon className="h-3 w-3" />
-          ) : (
-            <CopyIcon className="h-3 w-3" />
-          )}
-        </Button>
-      )}
+      {enableCopy && <CopyBtn text={code} />}
     </div>
   );
 };
