@@ -32,7 +32,7 @@ export function useGetMvrDependencies(
     },
 
     select: (data) => {
-      return data.dependencies;
+      return data.dependencies as string[];
     },
     ...NoRefetching,
   });
@@ -58,7 +58,7 @@ export function useGetMvrDependents(
       const endpoint = clients.mvrExperimentalEndpoints[network];
 
       const response = await fetch(
-        `${endpoint}/v1/package-address/${packageId}/dependents${pageParam ? `?cursor=${pageParam}` : ""}`,
+        `${endpoint}/v1/package-address/${packageId}/dependents?limit=50${pageParam ? `&cursor=${pageParam}` : ""}`,
       );
 
       if (!response.ok) {

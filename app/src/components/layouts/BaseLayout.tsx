@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { MVRContext, MVRSetup } from "../providers/mvr-provider";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import Header from "../Header";
 import Footer from "../Footer";
 import { LocalStorageKeys } from "@/data/localStorage";
 import { Toaster } from "sonner";
@@ -28,7 +27,7 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
   return (
     <MVRContext.Provider value={mvrSetup}>
       <div className="flex min-h-screen flex-col">
-        <Toaster />
+        <Toaster theme="dark" />
         {children}
         <Footer />
       </div>

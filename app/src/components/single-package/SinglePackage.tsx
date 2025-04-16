@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SinglePackageTabs, Tabs } from "./SinglePackageTabs";
 import { SinglePackageSidebar } from "./SinglePackageSidebar";
 import { ReadMeRenderer } from "./ReadMeRenderer";
+import { SinglePackageDependencies } from "./SinglePackageDependencies";
 
 export function SinglePackage({
   name,
@@ -36,17 +37,20 @@ export function SinglePackage({
   return (
     <div className="flex-grow">
       <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-24 gap-2xl">
+        <div className="lg:grid-cols-24 grid grid-cols-1 gap-2xl">
           <SinglePackageTabs
             name={name}
             setActiveTab={updateTab}
             isActiveTab={isActiveTab}
-            className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-4"
+            className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-5 2xl:col-span-4"
           />
-          <div className="col-span-1 lg:col-span-13">
+          <div className="lg:col-span-12 2xl:col-span-13 col-span-1">
             {isActiveTab("readme") && <ReadMeRenderer name={name} />}
+            {isActiveTab("dependencies") && (
+              <SinglePackageDependencies name={name} />
+            )}
           </div>
-          <div className="col-span-1 lg:col-span-7 relative">
+          <div className="relative col-span-1 lg:col-span-7">
             <SinglePackageSidebar name={name} network={network} />
           </div>
         </div>

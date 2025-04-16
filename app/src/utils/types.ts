@@ -57,4 +57,6 @@ export enum AppQueryKeys {
     SEARCH_MVR_NAMES = 'search-mvr-names',
     MVR_DEPENDENCIES = 'mvr-dependencies',
     MVR_DEPENDENTS = 'mvr-dependents',
+    MVR_REVERSE_RESOLUTION = 'mvr-reverse-resolution',
+    MVR_REVERSE_RESOLUTION_BULK = 'mvr-reverse-resolution-bulk',
 }
