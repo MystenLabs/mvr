@@ -48,6 +48,7 @@ pub struct NameSearchQueryParams {
     pub search: Option<String>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
+    pub is_linked: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -103,9 +104,9 @@ impl Names {
         let mut connection = app_state.reader().connect().await?;
 
         let query = diesel::sql_query(
-            "SELECT name, metadata, mainnet_id as mainnet_package_info_id, testnet_id as testnet_package_info_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
-FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 
-ORDER BY relevance DESC, name ASC LIMIT $4"
+            format!("SELECT name, metadata, mainnet_id as mainnet_package_info_id, testnet_id as testnet_package_info_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
+FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 {} 
+ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false) { "AND (mainnet_id IS NOT NULL OR testnet_id IS NOT NULL) " } else { "" })
         )
         .bind::<VarChar, _>(format!("%{}%", search))
         .bind::<VarChar, _>(search)
