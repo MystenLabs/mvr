@@ -1,12 +1,8 @@
-import { CopyIcon } from "@radix-ui/react-icons";
-
 import { beautifySuiAddress } from "@/lib/utils";
-
 import { useCopy } from "@/hooks/useCopy";
 import Link from "next/link";
-import { CheckIcon } from "lucide-react";
 import { Text } from "./Text";
-import { Button } from "./button";
+import { CopyBtn } from "./CopyBtn";
 
 export function DependencyLabel({
   dependency,
@@ -15,8 +11,6 @@ export function DependencyLabel({
   dependency: string;
   isResolved: boolean;
 }) {
-  const { copied, copy } = useCopy(dependency);
-
   if (isResolved) {
     return (
       <Link href={`/package/${dependency}`}>
@@ -34,13 +28,7 @@ export function DependencyLabel({
       <Text kind="label" size="label-small">
         {beautifySuiAddress(dependency)}
       </Text>
-      <Button variant="link" size="fit" onClick={copy} className="px-0 py-0">
-        {copied ? (
-          <CheckIcon className="h-3 w-3" />
-        ) : (
-          <CopyIcon className="h-3 w-3" />
-        )}
-      </Button>
+      <CopyBtn text={dependency} />
     </div>
   );
 }

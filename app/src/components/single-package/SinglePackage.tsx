@@ -5,6 +5,7 @@ import { SinglePackageTabs, Tabs } from "./SinglePackageTabs";
 import { SinglePackageSidebar } from "./SinglePackageSidebar";
 import { ReadMeRenderer } from "./ReadMeRenderer";
 import { SinglePackageDependencies } from "./SinglePackageDependencies";
+import { SinglePackageDependents } from "./SinglePackageDependents";
 
 export function SinglePackage({
   name,
@@ -48,6 +49,9 @@ export function SinglePackage({
             {isActiveTab("readme") && <ReadMeRenderer name={name} />}
             {isActiveTab("dependencies") && (
               <SinglePackageDependencies name={name} />
+            )}
+            {isActiveTab("dependents") && (
+              <SinglePackageDependents name={name} />
             )}
           </div>
           <div className="relative col-span-1 lg:col-span-7">

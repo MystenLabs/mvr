@@ -1,6 +1,8 @@
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { Text } from "../ui/Text";
 import ImageWithFallback from "../ui/image-with-fallback";
+import { beautifySuiAddress } from "@/lib/utils";
+import { CopyBtn } from "../ui/CopyBtn";
 
 export function SinglePackageHeader({
   name,
@@ -23,10 +25,12 @@ export function SinglePackageHeader({
           <Text
             kind="paragraph"
             size="paragraph-xs"
-            className="text-content-secondary"
+            className="flex items-center gap-2xs text-content-secondary"
           >
             Version {name.version} -{" "}
-            <span className="capitalize">{network}</span>
+            <span className="capitalize">{network}</span> -{" "}
+            {beautifySuiAddress(name.package_address)}
+            <CopyBtn text={name.package_address} className="ml-2xs" />
           </Text>
         </div>
       </div>
