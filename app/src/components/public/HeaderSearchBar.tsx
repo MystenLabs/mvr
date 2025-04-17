@@ -43,6 +43,7 @@ export function HeaderSearchBar({ className }: { className?: string }) {
           "flex h-full w-full rounded-none !border-none bg-transparent !p-0 !text-16 !leading-16 !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
         )}
         placeholder={Content.searchPackage}
+        autoCapitalize="off"
       />
 
       <SearchResults
