@@ -41,7 +41,8 @@ export function SinglePackageDependencies({ name }: { name: ResolvedName }) {
         size="heading-regular"
         className="flex items-center gap-sm"
       >
-        Dependencies <DependencyCount name={name} network={network} />
+        Dependencies{" "}
+        <DependencyCount address={name.package_address} network={network} />
       </Text>
       <div className="mt-md flex flex-wrap gap-xs">
         {dependencies?.map((dependency) => (

@@ -80,9 +80,14 @@ export const querySource = async ({
 
   if (!provider || !repo || !owner) throw new Error("Invalid URL");
 
-  const gitUrl = GithubUrl({ owner, repository: repo, tagOrHash, subPath, file, provider });
-
-  console.log("gitUrl", gitUrl);
+  const gitUrl = GithubUrl({
+    owner,
+    repository: repo,
+    tagOrHash,
+    subPath,
+    file,
+    provider,
+  });
 
   const response = await fetch(gitUrl);
 

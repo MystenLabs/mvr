@@ -1,11 +1,63 @@
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SinglePackageTabs, Tabs } from "./SinglePackageTabs";
+import { DependencyCount, DependentsCountLabel, SinglePackageTabs } from "./SinglePackageTabs";
 import { SinglePackageSidebar } from "./SinglePackageSidebar";
 import { ReadMeRenderer } from "./ReadMeRenderer";
 import { SinglePackageDependencies } from "./SinglePackageDependencies";
 import { SinglePackageDependents } from "./SinglePackageDependents";
+import { SinglePackageVersions } from "./SinglePackageVersions";
+import { DependenciesIconSelected } from "@/icons/single-package/DependenciesIcon";
+import { DependendsIconSelected } from "@/icons/single-package/DependendsIcon";
+import { DependenciesIconUnselected } from "@/icons/single-package/DependenciesIcon";
+import { DependendsIconUnselected } from "@/icons/single-package/DependendsIcon";
+import { VersionsIconUnselected } from "@/icons/single-package/VersionsIcon";
+import { VersionsIconSelected } from "@/icons/single-package/VersionsIcon";
+import { ReadMeIconSelected } from "@/icons/single-package/ReadMeIcon";
+import { ReadMeIconUnselected } from "@/icons/single-package/ReadMeIcon";
+import { SinglePackageTab } from "@/utils/types";
+
+export const Tabs: SinglePackageTab[] = [
+  {
+    key: "readme",
+    title: "Readme",
+    selectedIcon: <ReadMeIconSelected />,
+    unselectedIcon: <ReadMeIconUnselected />,
+    component: (name: ResolvedName) => <ReadMeRenderer name={name} />,
+  },
+  {
+    key: "versions",
+    title: "Versions",
+    label: (address: string, network: "mainnet" | "testnet", name?: ResolvedName) => (
+      <DependentsCountLabel count={name?.version ?? 0} hasMore={false} />
+    ),
+    selectedIcon: <VersionsIconSelected />,
+    unselectedIcon: <VersionsIconUnselected />,
+    component: (name: ResolvedName) => <SinglePackageVersions name={name} />,
+  },
+  {
+    key: "dependencies",
+    title: "Dependencies",
+    selectedIcon: <DependenciesIconSelected />,
+    unselectedIcon: <DependenciesIconUnselected />,
+    label: (address: string, network: "mainnet" | "testnet") => (
+      <DependencyCount address={address} network={network} />
+    ),
+    component: (name: ResolvedName) => (
+      <SinglePackageDependencies name={name} />
+    ),
+  },
+  {
+    key: "dependents",
+    title: "Dependents",
+    selectedIcon: <DependendsIconSelected />,
+    unselectedIcon: <DependendsIconUnselected />,
+    // label: (address: string, network: "mainnet" | "testnet") => (
+    //   <DependentsCount address={address} network={network} />
+    // ),
+    component: (name: ResolvedName) => <SinglePackageDependents name={name} />,
+  },
+];
 
 export function SinglePackage({
   name,
@@ -40,19 +92,14 @@ export function SinglePackage({
       <div className="container">
         <div className="lg:grid-cols-24 grid grid-cols-1 gap-2xl">
           <SinglePackageTabs
+            tabs={Tabs}
             name={name}
             setActiveTab={updateTab}
             isActiveTab={isActiveTab}
             className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-5 2xl:col-span-4"
           />
-          <div className="lg:col-span-12 2xl:col-span-13 col-span-1">
-            {isActiveTab("readme") && <ReadMeRenderer name={name} />}
-            {isActiveTab("dependencies") && (
-              <SinglePackageDependencies name={name} />
-            )}
-            {isActiveTab("dependents") && (
-              <SinglePackageDependents name={name} />
-            )}
+          <div className="2xl:col-span-13 col-span-1 lg:col-span-12">
+            {Tabs.find((t) => t.key === activeTab)?.component(name)}
           </div>
           <div className="relative col-span-1 lg:col-span-7">
             <SinglePackageSidebar name={name} network={network} />

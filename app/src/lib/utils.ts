@@ -55,7 +55,7 @@ const SYSTEM_ADDRESSES = [
   "0xdee",
 ];
 
-export const beautifySuiAddress = (address: string) => {
+export const beautifySuiAddress = (address: string, digits = 6) => {
   const normalized = normalizeSuiAddress(address);
 
   for (const systemAddress of SYSTEM_ADDRESSES) {
@@ -67,6 +67,6 @@ export const beautifySuiAddress = (address: string) => {
   return (
     normalized.substring(0, 4) +
     "..." +
-    normalized.substring(normalized.length - 6)
+    normalized.substring(normalized.length - digits)
   );
 };

@@ -82,7 +82,7 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
                             let deps = p
                                 .linkage_table()
                                 .iter()
-                                .map(|(id, _)| id.to_hex_uncompressed())
+                                .map(|(id, i)| id.to_hex_uncompressed())
                                 .dedup()
                                 .collect();
                             results.push(Package {
