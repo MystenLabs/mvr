@@ -26,7 +26,7 @@ export function SearchResults({
     >
       {results.data.map((item, index) => (
         <SearchResultItem
-          key={index}
+          key={item.name}
           item={item}
           isLast={index === results.data.length - 1}
           handleBlur={handleBlur}
@@ -58,6 +58,7 @@ export function SearchResultItem({
     >
       <div className="max-w-[10%] flex-shrink-0">
         <ImageWithFallback
+          key={item.metadata.icon_url}
           src={item.metadata.icon_url}
           className="h-8 w-8 rounded-sm"
           fallback={`/default-icon.svg`}
