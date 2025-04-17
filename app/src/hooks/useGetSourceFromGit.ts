@@ -80,9 +80,11 @@ export const querySource = async ({
 
   if (!provider || !repo || !owner) throw new Error("Invalid URL");
 
-  const response = await fetch(
-    GithubUrl({ owner, repository: repo, tagOrHash, subPath, file, provider }),
-  );
+  const gitUrl = GithubUrl({ owner, repository: repo, tagOrHash, subPath, file, provider });
+
+  console.log("gitUrl", gitUrl);
+
+  const response = await fetch(gitUrl);
 
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -105,11 +107,11 @@ export function useGetSourceFromGit({
   return useQuery({
     queryKey: [AppQueryKeys.GIT_SOURCE, url, subPath, tagOrHash, file],
     queryFn: async () => {
-      if (!url || !tagOrHash || !subPath) throw new Error("Invalid URL");
-      return querySource({ url, subPath, tagOrHash, file });
+      if (!url || !tagOrHash) throw new Error("Invalid URL");
+      return querySource({ url, subPath: subPath || "", tagOrHash, file });
     },
 
-    enabled: !!url && !!tagOrHash && !!subPath,
+    enabled: !!url && !!tagOrHash,
     // aggressive caching since the source code is not expected to change
     refetchOnMount: false,
     refetchOnWindowFocus: false,

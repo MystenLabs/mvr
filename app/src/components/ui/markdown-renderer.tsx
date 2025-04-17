@@ -53,7 +53,7 @@ export function MarkdownRenderer({
           ),
           p: ({ node, ...props }) => (
             <p
-              className="leading-20 lg:leading-24 my-md font-sans text-14 text-content-secondary lg:text-16 break-words"
+              className="leading-20 lg:leading-24 my-md break-words font-sans text-14 text-content-secondary lg:text-16"
               {...props}
             />
           ),
@@ -61,9 +61,15 @@ export function MarkdownRenderer({
             <div className="my-xl">{props.children}</div>
           ),
           code: ({ node, ...props }) => {
-            const isInline = !props.className;
+            // We consider this a codeblock if:
+            // 1. It has a class name (it'llbe the language)
+            // 2. It has a newline in it.
+            const isCodeBlock =
+              props.className ||
+              (typeof props.children === "string" &&
+                props.children.includes("\n"));
 
-            if (isInline) {
+            if (!isCodeBlock) {
               return (
                 <code
                   className="rounded-xs bg-bg-accentBleedthrough3 px-1 py-0.5 font-inter text-content-primary"
