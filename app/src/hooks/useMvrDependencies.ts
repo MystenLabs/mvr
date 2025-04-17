@@ -1,13 +1,7 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
+import { NoRefetching } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-
-const NoRefetching = {
-  staleTime: Infinity,
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
-  refetchOnReconnect: false,
-};
 
 export function useGetMvrDependencies(
   packageId: string,

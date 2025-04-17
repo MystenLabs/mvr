@@ -1,4 +1,5 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
+import { NoRefetching } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 
@@ -56,5 +57,6 @@ export function useGetMvrVersionAddresses(
       return versions;
     },
     enabled: !!name && !!version && !!network,
+    ...NoRefetching,
   });
 }

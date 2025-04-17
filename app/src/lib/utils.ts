@@ -70,3 +70,12 @@ export const beautifySuiAddress = (address: string, digits = 6) => {
     normalized.substring(normalized.length - digits)
   );
 };
+
+
+// A tanstack configuration for no refetching.
+export const NoRefetching = {
+  staleTime: Infinity,
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+};
