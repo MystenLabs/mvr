@@ -16,6 +16,8 @@ import { VersionsIconSelected } from "@/icons/single-package/VersionsIcon";
 import { ReadMeIconSelected } from "@/icons/single-package/ReadMeIcon";
 import { ReadMeIconUnselected } from "@/icons/single-package/ReadMeIcon";
 import { SinglePackageTab } from "@/utils/types";
+import { AnalyticsIconUnselected } from "@/icons/single-package/AnalyticsIcon";
+import { AnalyticsIconSelected } from "@/icons/single-package/AnalyticsIcon";
 
 export const Tabs: SinglePackageTab[] = [
   {
@@ -56,6 +58,17 @@ export const Tabs: SinglePackageTab[] = [
     //   <DependentsCount address={address} network={network} />
     // ),
     component: (name: ResolvedName) => <SinglePackageDependents name={name} />,
+    disabled: true,
+    comingSoon: true,
+  },
+  {
+    key: "analytics",
+    title: "Analytics",
+    selectedIcon: <AnalyticsIconSelected />,
+    unselectedIcon: <AnalyticsIconUnselected />,
+    component: (name: ResolvedName) => null,
+    disabled: true,
+    comingSoon: true,
   },
 ];
 

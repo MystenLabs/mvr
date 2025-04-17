@@ -31,8 +31,12 @@ export function SinglePackageTabs({
           className={cn(
             "flex flex-shrink-0 cursor-pointer items-center gap-sm rounded-sm px-md py-sm hover:bg-bg-accentBleedthrough3 lg:w-full",
             isActiveTab(tab.key) && "bg-bg-accentBleedthrough2",
+            tab.disabled && "opacity-50 hover:bg-transparent",
           )}
-          onClick={() => setActiveTab(tab.key)}
+          onClick={() => {
+            if (tab.disabled) return;
+            setActiveTab(tab.key);
+          }}
         >
           <div className="flex h-[14px] w-[14px] items-center justify-center">
             {isActiveTab(tab.key) ? tab.selectedIcon : tab.unselectedIcon}
@@ -40,6 +44,15 @@ export function SinglePackageTabs({
           <Text kind="label" size="label-small">
             {tab.title}
           </Text>
+          {tab.comingSoon && (
+            <Text
+              kind="label"
+              size="label-2xs"
+              className="ml-auto rounded-sm text-content-accent"
+            >
+              On the way
+            </Text>
+          )}
           {tab.label && tab.label(name.package_address, network, name)}
         </div>
       ))}

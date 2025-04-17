@@ -29,6 +29,8 @@ export type SinglePackageTab = {
   unselectedIcon: React.ReactNode;
   label?: ((address: string, network: 'mainnet' | 'testnet', name?: ResolvedName) => React.ReactNode);
   component: (name: ResolvedName) => React.ReactNode;
+  disabled?: boolean;
+  comingSoon?: boolean;
 };
 
 export const Networks = {
