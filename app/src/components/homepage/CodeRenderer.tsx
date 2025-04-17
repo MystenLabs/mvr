@@ -47,14 +47,14 @@ const CodeRenderer = ({
   return (
     <div
       className={cn(
-        "relative flex w-full items-center gap-xs rounded-sm bg-bg-primaryBleedthrough2 px-sm py-xs",
+        "relative flex w-full items-stretch gap-xs rounded-sm bg-bg-primaryBleedthrough2 py-xs",
         className,
         language,
       )}
     >
       <PrismLightHighlighter
         className={cn(
-          "w-full border-none !bg-transparent shadow-none",
+          "w-full border-none !bg-transparent px-sm shadow-none",
           highlighterClassName,
         )}
         language={language}
@@ -83,7 +83,7 @@ const CodeRenderer = ({
         {code}
       </PrismLightHighlighter>
 
-      {enableCopy && <CopyBtn text={code} className="h-full" />}
+      {enableCopy && <CopyBtn text={code} className="h-auto px-sm" />}
     </div>
   );
 };
