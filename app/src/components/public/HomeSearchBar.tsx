@@ -56,7 +56,7 @@ export function HomeSearchBar({
           onBlur={handleBlur}
           onChange={(e) => setSearchQuery(e.target.value)}
           className={cn(
-            "flex h-full w-full rounded-none !border-none bg-transparent !px-0 !py-md text-sm !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-full w-full rounded-none !border-none bg-transparent !px-0 !py-md !text-16 !leading-16 !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
           )}
           placeholder={Content.searchPackage}
         />

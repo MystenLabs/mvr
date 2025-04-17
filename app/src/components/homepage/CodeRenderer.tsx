@@ -83,7 +83,7 @@ const CodeRenderer = ({
         {code}
       </PrismLightHighlighter>
 
-      {enableCopy && <CopyBtn text={code} />}
+      {enableCopy && <CopyBtn text={code} className="h-full" />}
     </div>
   );
 };

@@ -30,9 +30,9 @@ export function HeaderSearchBar({ className }: { className?: string }) {
       )}
     >
       {(isDebouncing || isLoading) && !!searchQuery ? (
-        <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin opacity-50" />
+        <Loader2 className="mr-2 h-5 w-5 shrink-0 animate-spin opacity-50" />
       ) : (
-        <MagnifyingGlassIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+        <MagnifyingGlassIcon className="mr-2 h-5 w-5 shrink-0 opacity-50" />
       )}
       <Input
         value={searchQuery}
@@ -40,7 +40,7 @@ export function HeaderSearchBar({ className }: { className?: string }) {
         onBlur={handleBlur}
         onChange={(e) => setSearchQuery(e.target.value)}
         className={cn(
-          "flex h-full w-full rounded-none !border-none bg-transparent !p-0 text-sm !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-full w-full rounded-none !border-none bg-transparent !p-0 !text-16 !leading-16 !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
         )}
         placeholder={Content.searchPackage}
       />
