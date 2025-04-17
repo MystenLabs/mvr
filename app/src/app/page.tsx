@@ -12,15 +12,10 @@ import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchMvrNames } from "@/hooks/mvrResolution";
 import { FadeInUpDiv } from "@/components/animations/FadeInUpDiv";
+import { useIsFocused } from "@/hooks/useIsFocused";
 
 export default function HomePage() {
-  const [isInputFocused, setIsInputFocused] = useState(false);
-
-  const handleFocus = () => setIsInputFocused(true);
-  const handleBlur = () => {
-    // Timeout needed to allow dropdown click before it disappears
-    setTimeout(() => setIsInputFocused(false), 100);
-  };
+  const { isFocused, handleFocus, handleBlur } = useIsFocused();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -41,7 +36,7 @@ export default function HomePage() {
           <GlowBottomPart className="absolute bottom-0 left-0 h-full w-full" />
         </div>
         <div className="relative grid grid-cols-1 gap-4xl py-4xl max-sm:px-sm">
-          <HomeSearchSection isInputFocused={isInputFocused}>
+          <HomeSearchSection isInputFocused={isFocused}>
             <HomeSearchBar
               isDebouncing={isDebouncing}
               isLoading={isLoading}
@@ -50,7 +45,7 @@ export default function HomePage() {
               handleBlur={handleBlur}
               setSearchQuery={setSearchQuery}
               searchResults={searchResults}
-              isInputFocused={isInputFocused}
+              isInputFocused={isFocused}
               className="z-30"
             />
           </HomeSearchSection>

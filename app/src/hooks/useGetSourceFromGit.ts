@@ -1,3 +1,4 @@
+import { NoRefetching } from "@/lib/utils";
 import { AppQueryKeys, Network } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import { parse } from "smol-toml";
@@ -65,6 +66,12 @@ const parseGitUrl = (url: string) => {
   throw new Error("Invalid Git Provider");
 };
 
+// Remove `.git` from the URL, to make the raw URLs valid.
+const formatGitUrl = (url: string) => {
+  if (url.endsWith(".git")) return url.slice(0, -4);
+  return url;
+};
+
 export const querySource = async ({
   url,
   subPath,
@@ -76,7 +83,7 @@ export const querySource = async ({
   tagOrHash: string;
   file?: string;
 }) => {
-  const { provider, repo, owner } = parseGitUrl(url);
+  const { provider, repo, owner } = parseGitUrl(formatGitUrl(url));
 
   if (!provider || !repo || !owner) throw new Error("Invalid URL");
 
@@ -113,15 +120,17 @@ export function useGetSourceFromGit({
     queryKey: [AppQueryKeys.GIT_SOURCE, url, subPath, tagOrHash, file],
     queryFn: async () => {
       if (!url || !tagOrHash) throw new Error("Invalid URL");
-      return querySource({ url, subPath: subPath || "", tagOrHash, file });
+
+      return querySource({
+        url: formatGitUrl(url),
+        subPath: subPath || "",
+        tagOrHash,
+        file,
+      });
     },
 
     enabled: !!url && !!tagOrHash,
-    // aggressive caching since the source code is not expected to change
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    staleTime: Infinity,
+    ...NoRefetching,
     gcTime: Infinity,
     retry: false,
   });

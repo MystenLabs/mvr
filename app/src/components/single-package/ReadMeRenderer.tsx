@@ -7,9 +7,7 @@ import { Content } from "@/data/content";
 
 export function ReadMeRenderer({ name }: { name: ResolvedName }) {
   const { data: readme, isLoading } = useGetSourceFromGit({
-    url: name.git_info?.repository_url?.endsWith(".git")
-      ? name.git_info?.repository_url?.slice(0, -4)
-      : name.git_info?.repository_url,
+    url: name.git_info?.repository_url,
     subPath: name.git_info?.path,
     tagOrHash: name.git_info?.tag,
     file: "README.md",
