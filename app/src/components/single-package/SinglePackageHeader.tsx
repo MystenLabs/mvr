@@ -31,7 +31,7 @@ export function SinglePackageHeader({
             Version {name.version} -{" "}
             <span className="capitalize">{network}</span> -{" "}
             {beautifySuiAddress(name.package_address)}
-            <CopyBtn text={name.package_address} className="ml-2xs" />
+            <CopyBtn text={name.package_address} className="ml-2xs" size="sm" />
           </Text>
         </div>
       </div>
