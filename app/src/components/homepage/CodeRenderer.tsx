@@ -1,15 +1,29 @@
 import React from "react";
-import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
-import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import typescript from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
-import { dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
+
+import { vscDarkPlus as dark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { PrismLight as PrismLightHighlighter } from "react-syntax-highlighter";
 import { cn } from "@/lib/utils";
 import { CopyBtn } from "../ui/CopyBtn";
 
-SyntaxHighlighter.registerLanguage("bash", bash);
-SyntaxHighlighter.registerLanguage("typescript", typescript);
+import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash";
+import typescript from "react-syntax-highlighter/dist/esm/languages/prism/typescript";
+import toml from "react-syntax-highlighter/dist/esm/languages/prism/toml";
+import move from "@/lib/prism-move";
+import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
 
-export type Language = "bash" | "typescript" | "move";
+PrismLightHighlighter.registerLanguage("bash", bash);
+PrismLightHighlighter.registerLanguage("typescript", typescript);
+PrismLightHighlighter.registerLanguage("toml", toml);
+PrismLightHighlighter.registerLanguage("move", move);
+PrismLightHighlighter.registerLanguage("json", json);
+
+export type Language = "bash" | "typescript" | "move" | "toml";
+export const KnownLanguages = [
+  "bash",
+  "typescript",
+  "move",
+  "toml",
+] as Language[];
 
 const CodeRenderer = ({
   code,
@@ -35,17 +49,29 @@ const CodeRenderer = ({
       className={cn(
         "relative flex w-full items-center gap-xs rounded-sm bg-bg-primaryBleedthrough2 px-sm py-xs",
         className,
+        language,
       )}
     >
-      <SyntaxHighlighter
+      <PrismLightHighlighter
         className={cn(
-          "w-full !bg-transparent",
+          "w-full border-none !bg-transparent shadow-none",
           highlighterClassName,
         )}
         language={language}
         style={dark}
         wrapLines={wrapLines}
         wrapLongLines={wrapLongLines}
+        PreTag={({ children, className, props }) => (
+          <pre
+            className={cn(
+              "w-full overflow-x-auto border-none !bg-transparent shadow-none",
+              className,
+            )}
+            {...props}
+          >
+            {children}
+          </pre>
+        )}
         codeTagProps={{
           className: codeTagClassName,
           style: {
@@ -55,7 +81,7 @@ const CodeRenderer = ({
         }}
       >
         {code}
-      </SyntaxHighlighter>
+      </PrismLightHighlighter>
 
       {enableCopy && <CopyBtn text={code} />}
     </div>

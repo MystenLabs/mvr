@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
-import CodeRenderer, { Language } from "../homepage/CodeRenderer";
+import CodeRenderer, { KnownLanguages, Language } from "../homepage/CodeRenderer";
 import remarkGfm from "remark-gfm";
 
 export function MarkdownRenderer({
@@ -83,7 +83,7 @@ export function MarkdownRenderer({
             return (
               <CodeRenderer
                 code={props.children as string}
-                language={language as Language}
+                language={KnownLanguages.includes(language as Language) ? (language as Language) : "move"}
                 className="bg-bg-quarternaryBleedthrough2 lg:text-15 my-sm text-14"
               />
             );
