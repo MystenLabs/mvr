@@ -58,8 +58,6 @@ export const Tabs: SinglePackageTab[] = [
     //   <DependentsCount address={address} network={network} />
     // ),
     component: (name: ResolvedName) => <SinglePackageDependents name={name} />,
-    disabled: true,
-    comingSoon: true,
   },
   {
     key: "analytics",
