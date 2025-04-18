@@ -72,7 +72,6 @@ export function SearchResultItem({
         >
           {item.name}
         </Text>
-        {/* todo: figure out how to do 2nd-line cutoff instead */}
         <Text
           kind="paragraph"
           size="paragraph-xs"

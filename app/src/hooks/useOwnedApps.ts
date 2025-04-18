@@ -49,7 +49,6 @@ const parseName = (response: SuiObjectResponse) => {
 
 // we default these to mainnet, as we don't have cross-network support
 // for apps registration
-// TODO: Add support for KIOSK-held app caps.
 export function useOwnedApps() {
   const activeAddress = useActiveAddress();
   const client = useSuiClientsContext().mainnet;
