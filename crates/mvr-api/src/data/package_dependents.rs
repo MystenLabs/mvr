@@ -104,6 +104,7 @@ SELECT
 	COALESCE(la.aggregated_total_calls, 0) AS aggregated_total_calls
 FROM dependents d
 LEFT JOIN latest_activity la ON d.package_id = la.package_id
-WHERE (aggregated_total_calls < $3) OR (aggregated_total_calls = $3 AND d.package_id > $2)
+WHERE (COALESCE(la.aggregated_total_calls, 0) < $3)
+   OR (COALESCE(la.aggregated_total_calls, 0) = $3 AND d.package_id > $2)
 ORDER BY aggregated_total_calls DESC, d.package_id ASC
 LIMIT $4";
