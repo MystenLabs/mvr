@@ -21,14 +21,15 @@ import MvrLogo from "@/icons/MvrLogo";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { HeaderSearchBar } from "./public/HeaderSearchBar";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 const Links = [
   {
-    name: "Packages",
+    name: "My Packages",
     href: "/apps",
   },
   {
-    name: "Metadata",
+    name: "My Metadata",
     href: "/metadata",
   },
 ];
@@ -42,6 +43,8 @@ export default function Header({
   className?: string;
   showSearch?: boolean;
 }) {
+  const isLoggedIn = useCurrentAccount();
+
   return (
     <header className={cn("bg-header", className)}>
       <Sheet>
@@ -66,9 +69,11 @@ export default function Header({
                 <Menu />
               </div>
               <SuiConnectPill />
-              <SheetTrigger className="rounded-xs bg-bg-secondary p-xs lg:hidden">
-                <MenuIcon />
-              </SheetTrigger>
+              {isLoggedIn && (
+                <SheetTrigger className="rounded-xs bg-bg-secondary p-xs lg:hidden">
+                  <MenuIcon />
+                </SheetTrigger>
+              )}
             </div>
           </div>
           {showSearch && (
@@ -96,6 +101,10 @@ export default function Header({
 
 const Menu = () => {
   const path = usePathname();
+
+  const isLoggedIn = useCurrentAccount();
+
+  if (!isLoggedIn) return null;
   return (
     <>
       {Links.map(({ name, href }) => (
