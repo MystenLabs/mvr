@@ -75,32 +75,25 @@ impl Loader<NameAnalyticsKey> for Reader {
 
         let result: Vec<AnalyticsQueryResponse> = connection.results(query).await?;
 
-        let addr_name_mapping = keys.iter().map(|k| (k.1, k)).collect::<HashMap<_, _>>();
-
-        let mut aggregated_values: HashMap<_, _> = keys
-            .iter()
-            .map(|k| {
-                (
-                    k.clone(),
-                    AnalyticsAggregatedValues {
-                        analytics: Vec::new(),
-                    },
-                )
-            })
-            .collect();
+        let (addr_name_mapping, mut aggregated_values) = keys.iter().fold(
+            (HashMap::new(), HashMap::new()),
+            |(mut addr_name_mapping, mut aggregated_values), k| {
+                addr_name_mapping.insert(k.1, k.clone());
+                aggregated_values
+                    .insert(k.clone(), AnalyticsAggregatedValues { analytics: vec![] });
+                (addr_name_mapping, aggregated_values)
+            },
+        );
 
         for res in result.into_iter() {
             // SAFETY: We should never have a malformed package id in the database.
             let obj_id = ObjectId::from_str(&res.package_id).unwrap();
 
-            let Some(key) = addr_name_mapping.get(&obj_id) else {
-                continue;
+            if let Some(key) = addr_name_mapping.get(&obj_id) {
+                if let Some(v) = aggregated_values.get_mut(key) {
+                    v.analytics.push(res.into());
+                };
             };
-
-            aggregated_values.get_mut(key).and_then(|v| {
-                v.analytics.push(res.into());
-                Some(v)
-            });
         }
 
         Ok(aggregated_values)
@@ -162,5 +155,4 @@ SELECT
     SUM(total_calls)::BIGINT AS total
 FROM analytics_with_interval
 GROUP BY input_package_id, interval_group
-ORDER BY date_from;
-";
+ORDER BY date_from;";
