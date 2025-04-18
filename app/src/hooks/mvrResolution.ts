@@ -73,7 +73,7 @@ export function useSearchMvrNames(query: string) {
     queryKey: [AppQueryKeys.SEARCH_MVR_NAMES, query],
     queryFn: async () => {
       const response = await fetch(
-        `${mvrEndpoint}/v1/names?search=${query}&limit=20`,
+        `${mvrEndpoint}/v1/names?search=${query}&limit=20&is_linked=true`,
       );
 
       if (!response.ok) {
