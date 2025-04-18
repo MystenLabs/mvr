@@ -37,7 +37,7 @@ export function SinglePackageDependents({ name }: { name: ResolvedName }) {
       >
         <p>Dependents</p>
         <TooltipWrapper
-          tooltipText="Packages are listed in order of number of calls, from highest to lowest."
+          tooltipText="Packages (on mainnet) are listed in order of number of calls, from highest to lowest."
           tooltipPlace="top"
         >
           <Button variant="link" size="fit">
