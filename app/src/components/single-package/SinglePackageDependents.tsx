@@ -15,6 +15,8 @@ import {
   AccordionContent,
 } from "../ui/accordion";
 import { useGetMvrVersionAddresses } from "@/hooks/useGetMvrVersionAddresses";
+import { InfoIcon } from "lucide-react";
+import { TooltipWrapper } from "../ui/tooltip";
 
 export function SinglePackageDependents({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
@@ -33,8 +35,15 @@ export function SinglePackageDependents({ name }: { name: ResolvedName }) {
         size="heading-regular"
         className="flex items-center gap-sm"
       >
-        Dependents{" "}
-        <DependentsCount address={name.package_address} network={network} />
+        <p>Dependents</p>
+        <TooltipWrapper
+          tooltipText="Packages are listed in order of number of calls, from highest to lowest."
+          tooltipPlace="top"
+        >
+          <Button variant="link" size="fit">
+            <InfoIcon className="h-4 w-4" />
+          </Button>
+        </TooltipWrapper>
       </Text>
       {isLoading && (
         <LoadingState size="sm" title="" description="Loading..." />
@@ -129,6 +138,7 @@ export function SinglePackageDependendAccordion({
                   : dependency.package_id
               }
               isResolved={hasResolvedName(dependency.package_id)}
+              calls={dependency.aggregated_total_calls}
             />
           ))}
         </div>
