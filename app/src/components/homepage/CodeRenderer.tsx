@@ -64,7 +64,7 @@ const CodeRenderer = ({
         PreTag={({ children, className, props }) => (
           <pre
             className={cn(
-              "w-full overflow-x-auto border-none !bg-transparent shadow-none",
+              "w-full overflow-x-auto border-none !bg-transparent shadow-none py-xs",
               className,
             )}
             {...props}
