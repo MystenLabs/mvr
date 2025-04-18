@@ -4,6 +4,7 @@ use axum::{
     extract::{Path, Query, State},
     Json,
 };
+use chrono::Local;
 use diesel::{
     prelude::QueryableByName,
     sql_types::{Integer, VarChar},
@@ -16,6 +17,7 @@ use sui_sdk_types::ObjectId;
 use crate::{
     data::{
         app_state::AppState,
+        name_analytics::{AnalyticsAggregatedValues, NameAnalyticsKey},
         package_by_name_loader::{PackageByNameBaseData, PackageByNameKey},
         resolution_loader::ResolutionKey,
     },
@@ -126,5 +128,32 @@ ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false
                 name: Some(item.name.clone()),
             },
         )))
+    }
+
+    /// Aggregated analytics by package name.
+    pub async fn get_analytics(
+        Path(name): Path<String>,
+        State(app_state): State<Arc<AppState>>,
+    ) -> Result<Json<AnalyticsAggregatedValues>, ApiError> {
+        let name = VersionedName::from_str(&name)?;
+
+        let Some(resolution) = app_state
+            .loader()
+            .load_one(ResolutionKey(name.clone()))
+            .await?
+        else {
+            return Err(ApiError::NotFound(format!("Package {} not found", name)));
+        };
+
+        let analytics = app_state
+            .cached_loader()
+            .load_one(NameAnalyticsKey(
+                name.name,
+                resolution.id,
+                Local::now().date_naive(),
+            ))
+            .await?;
+
+        Ok(Json(analytics.unwrap_or_default()))
     }
 }

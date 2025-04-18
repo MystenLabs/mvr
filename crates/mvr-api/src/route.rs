@@ -49,6 +49,7 @@ pub fn create_router(app: Arc<AppState>) -> Router {
             // Queries all names (paginated & can supply search query)
             get(Names::search_names),
         )
+        .route("/names/analytics/{*name}", get(Names::get_analytics))
         .route("/names/{*name}", get(Names::get_by_name))
         .route(
             "/package-address/{package_address}/dependencies",
