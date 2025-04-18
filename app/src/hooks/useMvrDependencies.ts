@@ -49,7 +49,7 @@ export function useGetMvrDependents(
   return useInfiniteQuery({
     queryKey: [AppQueryKeys.MVR_DEPENDENTS, network, packageId],
     queryFn: async ({ pageParam }) => {
-      const endpoint = clients.mvrEndpoints[network];
+      const endpoint = clients.mvrExperimentalEndpoints[network];
 
       const response = await fetch(
         `${endpoint}/v1/package-address/${packageId}/dependents?limit=50${pageParam ? `&cursor=${pageParam}` : ""}`,
