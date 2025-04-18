@@ -1,6 +1,9 @@
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
-import CodeRenderer, { KnownLanguages, Language } from "../homepage/CodeRenderer";
+import CodeRenderer, {
+  KnownLanguages,
+  Language,
+} from "../homepage/CodeRenderer";
 import remarkGfm from "remark-gfm";
 
 export function MarkdownRenderer({
@@ -83,7 +86,11 @@ export function MarkdownRenderer({
             return (
               <CodeRenderer
                 code={props.children as string}
-                language={KnownLanguages.includes(language as Language) ? (language as Language) : "move"}
+                language={
+                  KnownLanguages.includes(language as Language)
+                    ? (language as Language)
+                    : "move"
+                }
                 className="bg-bg-quarternaryBleedthrough2 lg:text-15 my-sm text-14"
               />
             );
@@ -100,6 +107,7 @@ export function MarkdownRenderer({
               {...props}
             />
           ),
+          img: ({ node }) => <span className="my-lg block" />,
           a: ({ node, ...props }) => {
             const isExternal = props.href?.startsWith("http");
             return (
