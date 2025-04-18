@@ -57,7 +57,7 @@ export default function Header({
                   MVR
                 </Text>
               </Link>
-              {showSearch && (
+            {showSearch && (
                 <div className="max-lg:hidden">
                   {" "}
                   <HeaderSearchBar />{" "}
