@@ -50,7 +50,7 @@ export function SinglePackageDependents({ name }: { name: ResolvedName }) {
       {isLoading && (
         <LoadingState size="sm" title="" description="Loading..." />
       )}
-      <Accordion type="multiple">
+      <Accordion type="multiple" defaultValue={[name.package_address]}>
         {versionAddresses &&
           versionAddresses.map((version) => (
             <SinglePackageDependendAccordion
