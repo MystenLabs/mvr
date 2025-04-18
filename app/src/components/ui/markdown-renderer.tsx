@@ -91,6 +91,8 @@ export function MarkdownRenderer({
                     ? (language as Language)
                     : "move"
                 }
+                wrapLines={false}
+                wrapLongLines={false}
                 className="bg-bg-quarternaryBleedthrough2 lg:text-15 my-sm text-14"
               />
             );

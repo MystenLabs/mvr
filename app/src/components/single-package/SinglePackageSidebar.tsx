@@ -56,6 +56,17 @@ export function SinglePackageSidebar({
               <SinglePackageSidebarLink key={link.title} {...link} />
             ),
         )}
+
+        {name.metadata?.contact && (
+          <SinglePackageContent>
+            <SinglePackageSidebarTitle>
+              Contact
+            </SinglePackageSidebarTitle>
+            <Text kind="paragraph" size="paragraph-small">
+              {name.metadata?.contact}
+            </Text>
+          </SinglePackageContent>
+        )}
       </div>
     </div>
   );
