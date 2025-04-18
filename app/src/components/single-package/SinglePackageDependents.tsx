@@ -17,15 +17,17 @@ import {
 import { useGetMvrVersionAddresses } from "@/hooks/useGetMvrVersionAddresses";
 import { InfoIcon } from "lucide-react";
 import { TooltipWrapper } from "../ui/tooltip";
+import { LoadMore } from "../ui/load-more";
 
 export function SinglePackageDependents({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
 
-  const { data: versionAddresses, isLoading } = useGetMvrVersionAddresses(
-    name.name,
-    name.version,
-    network,
-  );
+  const {
+    data: versionAddresses,
+    isLoading,
+    fetchNextPage,
+    hasNextPage
+  } = useGetMvrVersionAddresses(name.name, name.version, network);
 
   return (
     <>
@@ -50,7 +52,6 @@ export function SinglePackageDependents({ name }: { name: ResolvedName }) {
       )}
       <Accordion type="multiple">
         {versionAddresses &&
-          versionAddresses.length > 0 &&
           versionAddresses.map((version) => (
             <SinglePackageDependendAccordion
               key={version.version}
@@ -59,6 +60,12 @@ export function SinglePackageDependents({ name }: { name: ResolvedName }) {
               isLatestVersion={version.version === name.version}
             />
           ))}
+
+        <LoadMore
+          hasNextPage={hasNextPage}
+          fetchNextPage={fetchNextPage}
+          isLoading={isLoading}
+        />
       </Accordion>
     </>
   );
@@ -142,19 +149,12 @@ export function SinglePackageDependendAccordion({
             />
           ))}
         </div>
-        {hasNextPage && (
-          <div className="mt-md flex justify-center">
-            <Button
-              onClick={() => fetchNextPage()}
-              variant="linkActive"
-              size="fit"
-              className="mx-auto mt-md"
-              disabled={isLoading}
-            >
-              Load more
-            </Button>
-          </div>
-        )}
+
+        <LoadMore
+          hasNextPage={hasNextPage}
+          fetchNextPage={fetchNextPage}
+          isLoading={isLoading}
+        />
       </AccordionContent>
     </AccordionItem>
   );

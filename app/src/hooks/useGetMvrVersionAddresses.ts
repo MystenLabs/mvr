@@ -1,9 +1,13 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { NoRefetching } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
-// TODO: Make this infinite query instead (to support more than 10 versions in the FE).
+type ResolutionResponse = Record<string, { package_id: string } | null>;
+type ResolutionVersion = { version: number; address: string };
+
+const MAX_PER_PAGE = 5;
+
 export function useGetMvrVersionAddresses(
   name: string,
   version: number,
@@ -11,12 +15,13 @@ export function useGetMvrVersionAddresses(
 ) {
   const clients = useSuiClientsContext();
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [AppQueryKeys.MVR_VERSION_ADDRESSES, name, network],
-    queryFn: async () => {
+    initialPageParam: version,
+    queryFn: async ({ pageParam }): Promise<ResolutionVersion[]> => {
       const versionsToQuery = Array.from(
-        { length: 10 },
-        (_, i) => version - i,
+        { length: MAX_PER_PAGE },
+        (_, i) => pageParam - i,
       ).filter((v) => v > 0);
 
       const mvrEndpoint = clients.mvrEndpoints[network];
@@ -30,15 +35,12 @@ export function useGetMvrVersionAddresses(
           names: versionsToQuery.map((v) => `${name}/${v}`),
         }),
       });
-      return response.json();
-    },
-    select: (data) => {
-      const resolution = data.resolution as Record<
-        string,
-        { package_id: string } | undefined
-      >;
 
-      const versions: { version: number; address: string }[] = [];
+      const jsonRes = await response.json();
+
+      const resolution = jsonRes.resolution as ResolutionResponse;
+
+      const versions: ResolutionVersion[] = [];
 
       for (const [name, address] of Object.entries(resolution)) {
         const version = name.split("/").pop();
@@ -55,6 +57,13 @@ export function useGetMvrVersionAddresses(
       versions.sort((a, b) => b.version - a.version);
 
       return versions;
+    },
+    select: (data) => {
+      return data.pages.flat();
+    },
+    getNextPageParam: (lastPage) => {
+      const lastPageVersion = lastPage[lastPage.length - 1]?.version || 1;
+      return lastPageVersion - 1 > 0 ? lastPageVersion - 1 : undefined;
     },
     enabled: !!name && !!version && !!network,
     ...NoRefetching,

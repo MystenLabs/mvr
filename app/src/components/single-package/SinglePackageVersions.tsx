@@ -6,11 +6,12 @@ import { Text } from "../ui/Text";
 import { CopyBtn } from "../ui/CopyBtn";
 import LoadingState from "../LoadingState";
 import { DependentsCountLabel } from "./SinglePackageTabs";
+import { LoadMore } from "../ui/load-more";
 
 export function SinglePackageVersions({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
 
-  const { data: versions, isLoading } = useGetMvrVersionAddresses(
+  const { data: versions, isLoading, hasNextPage, fetchNextPage } = useGetMvrVersionAddresses(
     name.name,
     name.version,
     network,
@@ -49,34 +50,39 @@ export function SinglePackageVersions({ name }: { name: ResolvedName }) {
           {versions?.map((version) => (
             <tr
               key={version.version}
-              className="border-b border-stroke-secondary text-content-secondary"
-            >
-              <td className="py-sm">
-                <Text as="span" size="label-small" kind="label">
-                  {version.version}
-                </Text>
-
-                {version.version === name.version && (
-                  <Text
-                    as="span"
-                    size="label-xs"
-                    kind="label"
-                    className="ml-md rounded-md bg-bg-accentBleedthrough3 px-sm py-xs"
-                  >
-                    Latest
+                className="border-b border-stroke-secondary text-content-secondary"
+              >
+                <td className="py-sm">
+                  <Text as="span" size="label-small" kind="label">
+                    {version.version}
                   </Text>
-                )}
-              </td>
-              <td className="flex items-center gap-sm py-sm">
-                <Text as="div" size="label-small" kind="label">
-                  {beautifySuiAddress(version.address, 10)}
-                </Text>
-                <CopyBtn text={version.address} />
-              </td>
+
+                  {version.version === name.version && (
+                    <Text
+                      as="span"
+                      size="label-xs"
+                      kind="label"
+                      className="ml-md rounded-md bg-bg-accentBleedthrough3 px-sm py-xs"
+                    >
+                      Latest
+                    </Text>
+                  )}
+                </td>
+                <td className="flex items-center gap-sm py-sm">
+                  <Text as="div" size="label-small" kind="label">
+                    {beautifySuiAddress(version.address, 10)}
+                  </Text>
+                  <CopyBtn text={version.address} />
+                </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <LoadMore
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+        isLoading={isLoading}
+      />
     </>
   );
 }
