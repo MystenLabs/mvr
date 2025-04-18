@@ -20,45 +20,72 @@ import { MenuIcon } from "lucide-react";
 import MvrLogo from "@/icons/MvrLogo";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { HeaderSearchBar } from "./public/HeaderSearchBar";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 const Links = [
   {
-    name: "Packages",
+    name: "My Packages",
     href: "/apps",
   },
   {
-    name: "Metadata",
+    name: "My Metadata",
     href: "/metadata",
   },
 ];
 
-export default function Header({ children, className }: { children?: ReactNode, className?: string }) {
+export default function Header({
+  children,
+  className,
+  showSearch = true,
+}: {
+  children?: ReactNode;
+  className?: string;
+  showSearch?: boolean;
+}) {
+  const isLoggedIn = useCurrentAccount();
+
   return (
     <header className={cn("bg-header", className)}>
       <Sheet>
-        <div className="py-md container grid grid-cols-2 items-center justify-between lg:grid-cols-12">
-          <Link
-            href="/apps"
-            className="gap-xs flex w-fit items-center lg:col-span-3"
-          >
-            <MvrLogo />
-            <Text kind="display" className="text-[24px] font-extrabold">
-              MVR
-            </Text>
-          </Link>
-          <div className="gap-xs lg:gap-lg flex items-center justify-end lg:col-span-9">
-            <div className="max-lg:hidden">
-              <Menu />
+        <>
+          <div className="container flex items-center justify-between py-md">
+            <div className="flex items-center gap-xs">
+              <Link href="/" className="flex w-fit items-center gap-xs">
+                <MvrLogo className="flex-shrink-0" />
+                <Text kind="display" className="text-[24px] font-extrabold">
+                  MVR
+                </Text>
+              </Link>
+            {showSearch && (
+                <div className="max-lg:hidden">
+                  {" "}
+                  <HeaderSearchBar />{" "}
+                </div>
+              )}
             </div>
-            <SuiConnectPill />
-            <SheetTrigger className="lg:hidden bg-bg-secondary rounded-xs p-xs">
-              <MenuIcon />
-            </SheetTrigger>
+            <div className="flex items-center justify-end gap-xs lg:col-span-9 lg:gap-lg">
+              <div className="max-lg:hidden">
+                <Menu />
+              </div>
+              <SuiConnectPill />
+              {isLoggedIn && (
+                <SheetTrigger className="rounded-xs bg-bg-secondary p-xs lg:hidden">
+                  <MenuIcon />
+                </SheetTrigger>
+              )}
+            </div>
           </div>
-        </div>
+          {showSearch && (
+            <div className="container px-sm pb-sm lg:hidden">
+              <HeaderSearchBar className="!mx-0 w-full" />
+            </div>
+          )}
+        </>
+
         <SheetContent>
           <SheetHeader>
-            <SheetDescription className="grid grid-cols-1 gap-Regular pt-XLarge">
+            <SheetDescription className="gap-Regular pt-XLarge grid grid-cols-1">
               <div className="text-left">
                 <Menu />
               </div>
@@ -74,6 +101,10 @@ export default function Header({ children, className }: { children?: ReactNode, 
 
 const Menu = () => {
   const path = usePathname();
+
+  const isLoggedIn = useCurrentAccount();
+
+  if (!isLoggedIn) return null;
   return (
     <>
       {Links.map(({ name, href }) => (

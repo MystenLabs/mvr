@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export const Content = {
+  searchPackage: "Search package...",
+  mainnet: "Mainnet",
+  testnet: "Testnet",
   emptyStates: {
     package: {
       icon: "📦",
@@ -14,8 +17,7 @@ export const Content = {
     wallet: {
       icon: "👋🏽",
       title: "Connect your wallet",
-      description:
-        "To get started, connect your wallet.",
+      description: "To get started, connect your wallet.",
       button: "Read our FAQ",
     },
     suinsNames: {
@@ -35,21 +37,34 @@ export const Content = {
     apps: {
       icon: "🧑‍💻",
       title: "Onwards.",
-      description:
-        "Create your first package by clicking the button below.",
+      description: "Create your first package by clicking the button below.",
       button: "Add package",
     },
 
     noPackageSelected: {
       title: "Select a package",
-      description: "Select a package from the navigation to view its details."
-    }
+      description: "Select a package from the navigation to view its details.",
+    },
+
+    packageNotFound: {
+      icon: "📦",
+      title: "Package not found",
+      description:
+        "The package you are looking for does not exist, or it does not have metadata connected neither on mainnet nor testnet.",
+      button: "Go back to the packages page",
+    },
+
+    noReadMe: {
+      icon: "📖",
+      title: "No README found",
+      description:
+        "README file not found. This either means the package does not have a README file in the path of the Move Package, or the README file is not publicly accessible.",
+    },
   },
   suinsNames: {
     icon: "🚀",
     title: "Let's get started!",
-    description:
-      "Which organization will you be managing packages for?",
+    description: "Which organization will you be managing packages for?",
     button: "Visit suins.io to get a name for your org / project",
   },
   package: {
@@ -81,17 +96,120 @@ export const Content = {
   app: {
     button: "Create another Package",
     connected: {
-      title: 'There is an active connection',
-      description: 'This package is connected on',
-      button: 'View Details',
-  
-    }
+      title: "There is an active connection",
+      description: "This package is connected on",
+      button: "View Details",
+    },
   },
 
   addressPlaceholder: "Enter your custom address (e.g. 0xdee)",
 
   networkMissmatch: (network: string) =>
     `The active wallet\'s network does not match the network of the application (${network}). Switch your wallet's network to avoid unexpected failures.`,
+
+  homepage: {
+    title: "Move Package Registry",
+    content:
+      "MVR is the central hub for discovering, sharing, and managing Move packages on the Sui blockchain. Build secure, scalable, and innovative decentralized applications with the power of Move.",
+    docs: {
+      title: "Move onto MVR",
+      paragraph: "Bring your package to the future of Move.",
+      register: "Register your app",
+      viewDocs: "View MVR Docs",
+      docsUrl: "https://docs.suins.io/move-registry",
+      registerUrl: "/apps",
+    },
+    share: {
+      title: "Share your package on MVR",
+      subtitle:
+        "Ready to dive in? Follow these steps to start building on MVR today.",
+      steps: [
+        {
+          title: "Set up MVR CLI",
+          description: `Install the [MVR command line](https://docs.suins.io/move-registry/tooling/mvr-cli) tool to interact with MVR.`,
+          code: "cargo install --locked --git https://github.com/mystenlabs/mvr --branch release mvr",
+        },
+        {
+          title: "Resolve packages",
+          description: `Verify your configuration to ensure that your packages are resolving properly.`,
+          code: "mvr resolve @deepbook/core --network mainnet",
+        },
+        {
+          title: "Add Dependencies",
+          description: `Unlock seamless dependency management with just one simple command!`,
+          code: "mvr add @deepbook/core --network mainnet",
+        },
+      ],
+    },
+    ptbs: {
+      title: "Power up your PTB Dev Experience",
+      subtitle: "MVR speeds up your development process.",
+      typescript: {
+        tabTitle: "Typescript",
+        setup: {
+          title: "Setup the plugin",
+          code: `import { namedPackagesPlugin, Transaction } from "@mysten/sui/transactions"; 
+
+Transaction.registerGlobalSerializationPlugin(
+     'namedPackagesPlugin', 
+     namedPackagesPlugin({ 
+          url: 'https://mainnet.mvr.mystenlabs.com' // or https://testnet.mvr.mystenlabs.com for testnet. 
+     })
+);`,
+        },
+
+        withMvr: {
+          title: "After MVR",
+          code: `const transaction = new Transaction();
+
+transaction.moveCall({   
+     target: '@suifrens/accessories::accessories::equip',    
+     arguments: [..],    
+     typeArguments: [        
+          '@suifrens/core::suifren::SuiFren<@suifrens/core::bullshark::Bullshark>'    
+     ]
+})`,
+        },
+
+        withoutMvr: {
+          title: "Without MVR",
+          code: `const transaction = new Transaction();
+          
+// Mainnet version
+transaction.moveCall({
+     target: '0xe177697e191327901637f8d2c5ffbbde8b1aaac27ec1024c4b62d1ebd1cd7430::accessories::equip',
+     arguments: [..],
+     typeArguments: [     '0x80d7de9c4a56194087e0ba0bf59492aa8e6a5ee881606226930827085ddf2332::suifren::SuiFren<0x297d8afb6ede450529d347cf9254caeea2b685c8baef67b084122291ebaefb38::bullshark::Bullshark>'
+     ]
+});
+
+// Testnet version
+transaction.moveCall({
+     target: '0x54800ebb4606fd0c03b4554976264373b3374eeb3fd63e7ff69f31cac786ba8c::accessories::equip',
+     arguments: [..],
+     typeArguments: [
+          '0xee496a0cc04d06a345982ba6697c90c619020de9e274408c7819f787ff66e1a1::suifren::SuiFren<0x8894fa02fc6f36cbc485ae9145d05f247a78e220814fb8419ab261bd81f08f32::bullshark::Bullshark>'
+     ]
+});`,
+        },
+      },
+      cli: {
+        tabTitle: "Sui CLI",
+        before: {
+          title: "Before MVR",
+          code: `#mainnet
+sui client ptb --move-call 0xe177697e191327901637f8d2c5ffbbde8b1aaac27ec1024c4b62d1ebd1cd7430::accessories::equip [arguments]
+
+#testnet
+sui client ptb --move-call 0x54800ebb4606fd0c03b4554976264373b3374eeb3fd63e7ff69f31cac786ba8c::accessories::equip [arguments]`,
+        },
+        after: {
+          title: "After MVR",
+          code: `sui client ptb --move-call @suifrens/accessories::accessories::equip [arguments]`,
+        },
+      },
+    },
+  },
 };
 
 export const FAQContent = {
@@ -134,19 +252,20 @@ export const FAQContent = {
     },
     {
       title: "What are the performance characteristics of using MVR?",
-      content: `Using MVR in a PTB will incur one lookup request to the MVR indexer or another GraphQL endpoint, per address, per session. Addresses are cached during sessions, and are cleared on page refresh.`
+      content: `Using MVR in a PTB will incur one lookup request to the MVR indexer or another GraphQL endpoint, per address, per session. Addresses are cached during sessions, and are cleared on page refresh.`,
     },
     {
       title: "How much does a MVR name cost?",
       content: `MVR records are free. You just need a SuiNS name for them to live under.`,
     },
-  {
-    title: "How can I get support for MVR?",
-    content: `See <a href="https://sui.io/developers#support" target="_blank">https://sui.io/developers#support</a>. Quick questions should be asked in Discord or Telegram. To get unblocked on larger issues, consider signing up for Sui Engineering Office Hours.`,
-  },
-  {
-    title: "What happens if the SuiNS name I registered my MVR package with expires?",
-    content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package on Mainnet. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
-  }
+    {
+      title: "How can I get support for MVR?",
+      content: `See <a href="https://sui.io/developers#support" target="_blank">https://sui.io/developers#support</a>. Quick questions should be asked in Discord or Telegram. To get unblocked on larger issues, consider signing up for Sui Engineering Office Hours.`,
+    },
+    {
+      title:
+        "What happens if the SuiNS name I registered my MVR package with expires?",
+      content: `Your MVR name will not be impacted as long as it has been made immutable by registering a package on Mainnet. If you have not registered a package, the new SuiNS name owner can re-register your MVR name.`,
+    },
   ],
 };

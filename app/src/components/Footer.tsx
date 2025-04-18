@@ -75,7 +75,7 @@ export default function Footer() {
             size="label-xs"
             className="text-content-secondary max-md:text-right"
           >
-            © 2024 Sui foundation. All rights reserved
+            © {new Date().getFullYear()} Sui foundation. All rights reserved
           </Text>
           <div className="gap-xs flex items-center justify-end">
             {Social.map(({ name, url, icon }) => (

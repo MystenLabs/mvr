@@ -4,7 +4,7 @@ import { Text } from "./ui/Text";
 /// EmptyState component sizes setup.
 const SizeSetup = {
   icon: {
-    sm: "text-[2rem]",
+    sm: "text-[3rem]",
     md: "text-[3.5rem]",
     lg: "text-[5.5rem]",
   },

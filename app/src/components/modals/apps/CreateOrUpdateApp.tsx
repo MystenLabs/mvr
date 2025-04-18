@@ -160,7 +160,7 @@ export default function CreateOrUpdateApp({
   });
 
   const name = useWatch({ control: form.control, name: "name" });
-  const debouncedName = useDebounce(name, 300);
+  const {value: debouncedName } = useDebounce(name, 300);
 
   const { data: isNameAvailable, isLoading: isNameAvailableLoading } =
     useIsNameAvailable(

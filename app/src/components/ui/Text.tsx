@@ -6,7 +6,7 @@ import { parseVariant, type SizeAndWeightVariant } from "./utils/sizeAndWeight";
 const textStyles = cva(["break-words"], {
   variants: {
     kind: {
-      default: "font-inter",
+      default: "font-inter font-normal",
       paragraph: "font-inter",
       label: "font-inter font-medium",
       heading: "font-inter font-bold",
@@ -17,12 +17,14 @@ const textStyles = cva(["break-words"], {
       "paragraph-regular": "text-14 leading-20 lg:text-16 lg:leading-24",
       "paragraph-large": "text-16 leading-24 lg:text-18 lg:leading-28",
       "paragraph-small": "text-12 leading-16 lg:text-14 lg:leading-20",
-      "paragraph-xs": "text-10 leading-14 lg:text-12 lg:leading-16",
+      "paragraph-xs": "text-10 leading-12 lg:text-12 lg:leading-16",
+      "paragraph-xl": "text-18 leading-24 lg:text-24 lg:leading-32",
 
       "label-regular": "text-14 leading-16 lg:text-16 lg:leading-20",
       "label-large": "text-16 leading-18 lg:text-18 lg:leading-24",
       "label-small": "text-12 leading-14 lg:text-14 lg:leading-16",
       "label-xs": "text-10 leading-12 lg:text-12 lg:leading-14",
+      "label-2xs": "text-9 leading-11 lg:text-10 lg:leading-12",
 
       "heading-regular": "text-20 leading-28 lg:text-28 lg:leading-36",
       "heading-large": "text-24 leading-32 lg:text-32 lg:leading-40",
@@ -31,6 +33,7 @@ const textStyles = cva(["break-words"], {
       "heading-small": "text-20 leading-28 lg:text-24 lg:leading-32",
       "heading-xs": "text-16 leading-24 lg:text-20 lg:leading-28",
       "heading-xxs": "text-12 leading-16 lg:text-16 lg:leading-24",
+      "heading-xxxs": "text-11 leading-13 lg:text-14 lg:leading-20",
       "heading-headline": "text-10 leading-14 tracking-five lg:text-12 lg:leading-16 lg:tracking-five",
 
       "display-xxs": "text-30 leading-36 -tracking-three",

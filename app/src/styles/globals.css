@@ -28,6 +28,7 @@
     --color-grey-200: #808085;
     --color-grey-300: #535358;
     --color-grey-300-op32: #53535852;
+    --color-grey-300-op24: #5353583d;
     --color-grey-400: #2a2a2f;
     --color-grey-500: #171719;
     --color-grey-600: #0e0e12;
@@ -87,6 +88,7 @@
     --bg-primary-bleedthrough2: var(--color-grey-700-op24);
     --bg-quarternary: var(--color-grey-300);
     --bg-quarternary-bleedthrough: var(--color-grey-300-op32);
+    --bg-quarternary-bleedthrough2: var(--color-grey-300-op24);
     --bg-secondary: var(--color-grey-600);
     --bg-tertiary: var(--color-grey-500);
     --bg-warning: var(--color-accent-yellow);
@@ -121,11 +123,26 @@
     --stroke-accent: var(--color-accent-purple);
     --header-gradient: linear-gradient(0deg, rgba(2, 2, 3, 0%) 0%, rgba(2, 2, 3, 88%) 100%), linear-gradient(113.516deg, rgba(185, 57, 255, 10%) 0%, rgba(0, 123, 255, 10%) 100%);
     --primary-btn-gradient: linear-gradient(139.286deg, rgba(194, 81, 255, 20%) 0%, rgba(76, 162, 255, 20%) 100%);
+    --testnet-search-gradient: linear-gradient(116.144deg, rgba(255, 82, 186, 40%) 0%, rgba(255, 213, 77, 40%) 100%);
+    --mainnet-search-gradient: linear-gradient(139.286deg, rgba(194, 81, 255, 40%) 0%, rgba(76, 162, 255, 40%) 100%);
+
+    --home-page-cards: linear-gradient(135deg, rgba(194, 81, 255, 0.12) 0%, rgba(76, 162, 255, 0.12) 100%);
+    --purple-salmon-op12: linear-gradient(139.286deg, rgba(139, 81, 255, 12%) 0%, rgba(250, 128, 114, 12%) 100%);
+    --blue-purple-op9: linear-gradient(135deg, rgba(194, 81, 255, 0.09) 0%, rgba(76, 162, 255, 0.09) 100%);
+    --purple-blue: linear-gradient(135deg, #C251FF 0%, #4CA2FF 100%);
+    --purple-blue-op40: linear-gradient(135deg, rgba(194, 81, 255, 0.4) 0%, rgba(76, 162, 255, 0.4) 100%);
+    
   }
 
   /* Font Styles */
   :root {
+    /* px */
+    --text-8: 8px;
+    --text-9: 9px;
+    --text-10: 10px;
+    --text-11: 11px;
     --text-12: 12px;
+    --text-13: 13px;
     --text-14: 14px;
     --text-16: 16px;
     --text-18: 18px;
@@ -145,6 +162,8 @@
     --text-88: 88px;
     --text-96: 96px;
 
+    --lh-10: 10px;
+    --lh-11: 11px;
     --lh-12: 12px;
     --lh-14: 14px;
     --lh-16: 16px;

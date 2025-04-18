@@ -7,9 +7,10 @@ import Providers from "@/components/providers/Providers";
 import { BaseLayout } from "@/components/layouts/BaseLayout";
 
 export const metadata: Metadata = {
-  title: "Move Registry",
-  description: "Move Registry (mvr) is the on-chain package registry on Sui!",
-  icons: [{ rel: "icon", url: "/favicon.png" }],
+  title: "Move Package Registry",
+  description:
+    "MVR is the central hub for discovering, sharing, and managing Move packages on the Sui blockchain. Build secure, scalable, and innovative decentralized applications with the power of Move.",
+  icons: [{ rel: "icon", url: "/default-icon.svg" }],
 };
 
 export default function RootLayout({

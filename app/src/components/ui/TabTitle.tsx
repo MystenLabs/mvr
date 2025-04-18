@@ -32,11 +32,12 @@ export interface TabTitleProps extends TabStyleProps {
 export function TabTitle({
   children,
   className,
+  active,
   ...styleProps
 }: TabTitleProps & React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <Button
-      className={cn(styles(styleProps), className, "px-0")}
+      className={cn(styles({ active }), className, "px-0")}
       {...styleProps}
       variant="custom"
     >

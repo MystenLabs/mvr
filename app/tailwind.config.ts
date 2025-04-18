@@ -50,6 +50,7 @@ export default {
         tertiary: "var(--bg-tertiary)",
         quarternary: "var(--bg-quarternary)",
         quarternaryBleedthrough: "var(--bg-quarternary-bleedthrough)",
+        quarternaryBleedthrough2: "var(--bg-quarternary-bleedthrough2)",
         warning: "var(--bg-warning)",
         warningBleedthrough: "var(--bg-warning-bleedthrough)",
         accent: "var(--bg-accent)",
@@ -122,6 +123,13 @@ export default {
       backgroundImage: {
         primaryBtnGradient: "var(--primary-btn-gradient)",
         header: "var(--header-gradient)",
+        testnetSearch: "var(--testnet-search-gradient)",
+        mainnetSearch: "var(--mainnet-search-gradient)",
+        homepageCard: "var(--home-page-cards)",
+        purpleSalmonOp12: "var(--purple-salmon-op12)",
+        bluePurpleOp9: "var(--blue-purple-op9)",
+        purpleBlue: "var(--purple-blue)",
+        purpleBlueOp40: "var(--purple-blue-op40)",
       },
       borderRadius: {
         none: "var(--size-0)",
@@ -161,7 +169,12 @@ export default {
         "5xl": "var(--size-19)",
       },
       fontSize: {
+        "8": "var(--text-8)",
+        "9": "var(--text-9)",
+        "10": "var(--text-10)",
+        "11": "var(--text-11)",
         "12": "var(--text-12)",
+        "13": "var(--text-13)",
         "14": "var(--text-14)",
         "16": "var(--text-16)",
         "18": "var(--text-18)",
@@ -183,6 +196,8 @@ export default {
         "112": "var(--text-112)",
       },
       leading: {
+        10: "var(--lh-10)",
+        11: "var(--lh-11)",
         12: "var(--lh-12)",
         14: "var(--lh-14)",
         16: "var(--lh-16)",
@@ -203,6 +218,27 @@ export default {
         96: "var(--lh-96)",
         112: "var(--lh-112)",
         120: "var(--lh-120)",
+      },
+
+      gridTemplateColumns: {
+        "14": "repeat(14, minmax(0, 1fr))",
+        "16": "repeat(16, minmax(0, 1fr))",
+        "20": "repeat(20, minmax(0, 1fr))",
+        "24": "repeat(24, minmax(0, 1fr))",
+      },
+      gridColumn: {
+        "span-13": "span 13 / span 13",
+        "span-14": "span 14 / span 14",
+        "span-15": "span 15 / span 15",
+        "span-16": "span 16 / span 16",
+        "span-17": "span 17 / span 17",
+        "span-18": "span 18 / span 18",
+        "span-19": "span 19 / span 19",
+        "span-20": "span 20 / span 20",
+        "span-21": "span 21 / span 21",
+        "span-22": "span 22 / span 22",
+        "span-23": "span 23 / span 23",
+        "span-24": "span 24 / span 24",
       },
 
       tracking: {

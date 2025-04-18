@@ -160,9 +160,7 @@ export default function CreateOrUpdateVersion({
         queryKey: [AppQueryKeys.GIT_SOURCE, values],
         queryFn: async () => {
           return querySource({
-            url: values.repository.endsWith(".git")
-              ? values.repository.slice(0, -4)
-              : values.repository,
+            url: values.repository,
             subPath: values.path ?? "",
             tagOrHash: values.tag,
           });
