@@ -8,7 +8,8 @@ pub(crate) mod utils;
 use std::{net::SocketAddr, str::FromStr, sync::Arc};
 
 use axum::http::{
-    header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE}, HeaderName, Method
+    header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
+    HeaderName, Method,
 };
 use clap::ValueEnum;
 use data::app_state::AppState;
