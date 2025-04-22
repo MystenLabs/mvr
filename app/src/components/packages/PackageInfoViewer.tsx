@@ -4,6 +4,8 @@ import { type PackageInfoData } from "@/utils/types";
 import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import { PackageEditor } from "./PackageEditor";
+import { TransferMetadataDialog } from "./TransferMetadataDialog";
+import { useState } from "react";
 
 export function PackageInfoViewer({
   packageInfo,
@@ -13,6 +15,7 @@ export function PackageInfoViewer({
   disableEdits?: boolean;
 }) {
   const network = usePackagesNetwork();
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
   return (
     <div>
       {!disableEdits && (
@@ -35,6 +38,12 @@ export function PackageInfoViewer({
               className="mx-auto max-md:max-w-[80%]"
             />
           )}
+
+          <TransferMetadataDialog
+            packageInfo={packageInfo}
+            showDialog={showTransferDialog}
+            setShowDialog={setShowTransferDialog}
+          />
 
           <Button
             variant="secondary"

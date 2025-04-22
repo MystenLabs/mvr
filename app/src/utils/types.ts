@@ -27,7 +27,11 @@ export type SinglePackageTab = {
   title: string;
   selectedIcon: React.ReactNode;
   unselectedIcon: React.ReactNode;
-  label?: ((address: string, network: 'mainnet' | 'testnet', name?: ResolvedName) => React.ReactNode);
+  label?: (
+    address: string,
+    network: "mainnet" | "testnet",
+    name?: ResolvedName,
+  ) => React.ReactNode;
   component: (name: ResolvedName) => React.ReactNode;
   disabled?: boolean;
   comingSoon?: boolean;
@@ -72,4 +76,5 @@ export enum AppQueryKeys {
   MVR_REVERSE_RESOLUTION = "mvr-reverse-resolution",
   MVR_REVERSE_RESOLUTION_BULK = "mvr-reverse-resolution-bulk",
   MVR_VERSION_ADDRESSES = "mvr-version-addresses",
+  SUINS_NAME_RESOLUTION = "suins-name-resolution",
 }

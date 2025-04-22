@@ -37,7 +37,7 @@ export function useCreatePackageInfoMutation(network: Network) {
         display.textColor,
       );
 
-      packageInfo.tranfer({
+      packageInfo.transfer({
         selfTransfer: true,
       });
 
