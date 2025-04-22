@@ -25,8 +25,9 @@ pub(crate) async fn track_metrics(
     let source_header = req
         .headers()
         .get(MVR_SOURCE_HEADER)
-        .map(|h| h.to_str().unwrap_or("unknown_origin").to_string())
-        .unwrap_or("unknown_origin".to_string());
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("unknown_origin")
+        .to_string();
 
     // Add the `network` as part of the route. That way both API instances can report
     // metrics for the same route name.
