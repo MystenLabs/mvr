@@ -56,13 +56,7 @@ export default function Packages() {
     setSelectedPackageId(packageInfos?.[0]?.objectId);
   }, [selectedNetwork]);
 
-  if (
-    capsLoading ||
-    packageInfosLoading ||
-    isPackageInfoLoading ||
-    isPackageInfoPending
-  )
-    return <LoadingState />;
+  if (capsLoading || packageInfosLoading) return <LoadingState />;
 
   if (
     (!upgradeCaps || !upgradeCaps.length) &&
@@ -146,9 +140,11 @@ export default function Packages() {
           </div>
         </div>
         <div className="max-lg:py-Large lg:p-Large block w-full break-words">
-          {selectedPackage && (
-            <PackageInfoViewer packageInfo={selectedPackage} />
-          )}
+          {selectedPackage &&
+            !isPackageInfoPending &&
+            !isPackageInfoLoading && (
+              <PackageInfoViewer packageInfo={selectedPackage} />
+            )}
         </div>
       </div>
     </main>

@@ -315,7 +315,7 @@ const SaveOrCancel = ({
 }) => {
   if (!hasUpdates) return null;
   return (
-    <div className="gap-Small px-Small flex flex-wrap">
+    <div className="gap-Small px-Small flex flex-wrap mt-sm">
       <>
         <Button isLoading={isLoading} onClick={save} disabled={!canUpdate}>
           Save Changes
