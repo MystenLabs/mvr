@@ -31,6 +31,8 @@ import { CopyBtn } from "../ui/CopyBtn";
 import { useEffect, useMemo } from "react";
 import { PackageInfo } from "@/data/package-info";
 import { Transaction } from "@mysten/sui/transactions";
+import { useTransactionExecution } from "@/hooks/useTransactionExecution";
+import { toast } from "sonner";
 
 const isSuiNSLike = (address: string) => {
   return address?.includes(".") || address?.includes("@");
@@ -58,12 +60,18 @@ export function TransferMetadataDialog({
   packageInfo,
   showDialog,
   setShowDialog,
+  onTransfer,
 }: {
   packageInfo: PackageInfoData;
   showDialog: boolean;
   setShowDialog: (showDialog: boolean) => void;
+  onTransfer: () => void;
 }) {
   const network = usePackagesNetwork();
+
+  const { executeTransaction } = useTransactionExecution(
+    network as "mainnet" | "testnet",
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "onChange",
@@ -118,14 +126,26 @@ export function TransferMetadataDialog({
 
   const transfer = async () => {
     if (!isValidRecipient) throw new Error("Invalid recipient");
+    const transaction = new Transaction();
 
-    const pkgInfo = new PackageInfo(new Transaction(), packageInfo.objectId);
+    const pkgInfo = new PackageInfo(transaction, packageInfo.objectId);
 
-    const recipient = isSuiNSLike(debouncedRecipient) ? address : debouncedRecipient;
+    const recipient = isSuiNSLike(debouncedRecipient)
+      ? address
+      : debouncedRecipient;
+
+    if (!recipient) throw new Error("Invalid recipient");
 
     pkgInfo.transfer({
-        to: recipient,
-    })
+      to: transaction.pure.address(recipient),
+    });
+
+    const res = await executeTransaction(transaction);
+
+    if (!res || res.effects?.status?.status !== "success") return;
+
+    toast.success("Metadata transferred successfully");
+    onTransfer();
   };
 
   return (
@@ -181,7 +201,9 @@ export function TransferMetadataDialog({
                 <Button
                   type="submit"
                   disabled={!isValidRecipient || isDebouncing || isLoading}
-                  isLoading={isDebouncing || isLoading}
+                  isLoading={
+                    isDebouncing || isLoading || form.formState.isSubmitting
+                  }
                   size="lg"
                 >
                   Transfer Metadata
