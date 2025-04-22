@@ -55,7 +55,7 @@ impl RpcMetrics {
             request_latency: register_histogram_vec_with_registry!(
                 "mvr_api_request_latency",
                 "Time taken to respond to MVR API requests, by method",
-                &["method"],
+                &["method", "source"],
                 LATENCY_SEC_BUCKETS.to_vec(),
                 registry
             )
@@ -64,7 +64,7 @@ impl RpcMetrics {
             requests_received: register_int_counter_vec_with_registry!(
                 "mvr_api_requests_received",
                 "Number of requests initiated for each MVR API method",
-                &["method"],
+                &["method", "source"],
                 registry
             )
             .unwrap(),
@@ -72,7 +72,7 @@ impl RpcMetrics {
             requests_succeeded: register_int_counter_vec_with_registry!(
                 "mvr_api_requests_succeeded",
                 "Number of requests that completed successfully for each MVR API method",
-                &["method"],
+                &["method", "source"],
                 registry
             )
             .unwrap(),
@@ -80,7 +80,7 @@ impl RpcMetrics {
             requests_failed: register_int_counter_vec_with_registry!(
                 "mvr_api_requests_failed",
                 "Number of requests that completed with an error for each MVR API method, by error code",
-                &["method", "code"],
+                &["method", "source", "code"],
                 registry
             )
             .unwrap(),
