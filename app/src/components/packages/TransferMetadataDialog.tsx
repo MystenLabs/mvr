@@ -7,7 +7,7 @@ import {
 } from "../ui/dialog";
 import { DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { PackageInfoData } from "@/utils/types";
+import { AppQueryKeys, PackageInfoData } from "@/utils/types";
 import { z } from "zod";
 import { isValidSuiAddress, isValidSuiNSName } from "@mysten/sui/utils";
 import { useForm, useWatch } from "react-hook-form";
@@ -33,6 +33,7 @@ import { PackageInfo } from "@/data/package-info";
 import { Transaction } from "@mysten/sui/transactions";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const isSuiNSLike = (address: string) => {
   return address?.includes(".") || address?.includes("@");
@@ -60,13 +61,12 @@ export function TransferMetadataDialog({
   packageInfo,
   showDialog,
   setShowDialog,
-  onTransfer,
 }: {
   packageInfo: PackageInfoData;
   showDialog: boolean;
   setShowDialog: (showDialog: boolean) => void;
-  onTransfer: () => void;
 }) {
+  const queryClient = useQueryClient();
   const network = usePackagesNetwork();
 
   const { executeTransaction } = useTransactionExecution(
@@ -145,7 +145,12 @@ export function TransferMetadataDialog({
     if (!res || res.effects?.status?.status !== "success") return;
 
     toast.success("Metadata transferred successfully");
-    onTransfer();
+
+    queryClient.invalidateQueries({
+      queryKey: [AppQueryKeys.OWNED_PACKAGE_INFOS],
+    });
+
+    setShowDialog(false);
   };
 
   return (

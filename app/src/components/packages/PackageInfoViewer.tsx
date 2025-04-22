@@ -6,7 +6,6 @@ import { usePackagesNetwork } from "../providers/packages-provider";
 import { PackageEditor } from "./PackageEditor";
 import { TransferMetadataDialog } from "./TransferMetadataDialog";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 export function PackageInfoViewer({
   packageInfo,
@@ -15,7 +14,6 @@ export function PackageInfoViewer({
   packageInfo: PackageInfoData;
   disableEdits?: boolean;
 }) {
-  const queryClient = useQueryClient();
   const network = usePackagesNetwork();
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   return (
@@ -45,11 +43,6 @@ export function PackageInfoViewer({
             packageInfo={packageInfo}
             showDialog={showTransferDialog}
             setShowDialog={setShowTransferDialog}
-            onTransfer={() => {
-              queryClient.invalidateQueries({
-                queryKey: [AppQueryKeys.OWNED_PACKAGE_INFOS],
-              });
-            }}
           />
 
           <Button
