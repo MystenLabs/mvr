@@ -127,33 +127,6 @@ export function PackageEditor({
 
   if (isLoading) return <LoadingState />;
 
-  if (
-    !orderedVersions ||
-    (orderedVersions.length === 0 && updates.length === 0)
-  )
-    return (
-      <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
-        <CreateOrUpdateVersion
-          packageAddress={packageInfo.packageAddress}
-          maxVersion={latestVersion}
-          closeDialog={() => setShowCreationDialog(false)}
-          addUpdate={addUpdate}
-        />
-        <div className="p-Regular">
-          <EmptyState size="md" {...Content.emptyStates.versions}>
-            <CreateVersionTrigger
-              disableEdits={
-                isLoadingLatestVersion ||
-                takenVersions.length >= latestVersion ||
-                disableEdits
-              }
-              reset={() => setForUpdate(null)}
-            />
-          </EmptyState>
-        </div>
-      </Dialog>
-    );
-
   return (
     <Dialog open={showCreationDialog} onOpenChange={setShowCreationDialog}>
       <CreateOrUpdateVersion
@@ -195,43 +168,56 @@ export function PackageEditor({
         )}
       </div>
 
-      <Accordion defaultValue={["versions"]} type="multiple">
-        <AccordionItem
-          value="versions"
-          className="border-b border-stroke-secondary"
-        >
-          <AccordionTrigger>Versions</AccordionTrigger>
-          <AccordionContent className="mb-md grid grid-cols-1 gap-md">
-            {orderedVersions?.map((x) => (
-              <Version
-                key={x.version}
-                version={x}
-                onUpdate={
-                  disableEdits
-                    ? undefined
-                    : () => {
-                        setForUpdate({ ...x });
-                        setShowCreationDialog(true);
-                      }
-                }
-              />
-            ))}
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      {!!orderedVersions?.length && (
+        <Accordion defaultValue={["versions"]} type="multiple">
+          <AccordionItem
+            value="versions"
+            className="border-b border-stroke-secondary"
+          >
+            <AccordionTrigger>Versions</AccordionTrigger>
+            <AccordionContent className="mb-md grid grid-cols-1 gap-md">
+              {orderedVersions?.map((x) => (
+                <Version
+                  key={x.version}
+                  version={x}
+                  onUpdate={
+                    disableEdits
+                      ? undefined
+                      : () => {
+                          setForUpdate({ ...x });
+                          setShowCreationDialog(true);
+                        }
+                  }
+                />
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
+
+      {!orderedVersions?.length && !updates.length && (
+        <EmptyState size="md" {...Content.emptyStates.versions}>
+          <CreateVersionTrigger
+            disableEdits={disableEdits}
+            reset={() => setForUpdate(null)}
+          />
+        </EmptyState>
+      )}
 
       {/* List the changes that are about to be committed. */}
       <ListedUpdates updates={updates} hasNameChanged={hasNameChanged} />
 
       <div className="gap-Small px-Small flex flex-wrap">
-        <CreateVersionTrigger
-          disableEdits={
-            isLoadingLatestVersion ||
-            disableEdits ||
-            takenVersions.length >= latestVersion
-          }
-          reset={() => setForUpdate(null)}
-        />
+        {!!orderedVersions?.length && (
+          <CreateVersionTrigger
+            disableEdits={
+              isLoadingLatestVersion ||
+              disableEdits ||
+              takenVersions.length >= latestVersion
+            }
+            reset={() => setForUpdate(null)}
+          />
+        )}
 
         <SaveOrCancel
           hasUpdates={updates.length > 0 || hasNameChanged}
@@ -315,7 +301,7 @@ const SaveOrCancel = ({
 }) => {
   if (!hasUpdates) return null;
   return (
-    <div className="gap-Small px-Small flex flex-wrap mt-sm">
+    <div className="gap-Small px-Small mt-sm flex flex-wrap">
       <>
         <Button isLoading={isLoading} onClick={save} disabled={!canUpdate}>
           Save Changes
