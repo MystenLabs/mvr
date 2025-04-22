@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::data::app_state::AppState;
+use crate::{data::app_state::AppState, MVR_SOURCE_HEADER};
 use axum::{
     body::Body,
     extract::{MatchedPath, State},
@@ -22,10 +22,17 @@ pub(crate) async fn track_metrics(
         .unwrap_or("/UNSUPPORTED")
         .to_string();
 
+    let source_header = req
+        .headers()
+        .get(MVR_SOURCE_HEADER)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("unknown_origin")
+        .to_string();
+
     // Add the `network` as part of the route. That way both API instances can report
     // metrics for the same route name.
     let route = format!("{}{}", app.network(), axum_route);
-    let route_labels = [route.as_str()];
+    let route_labels = [route.as_str(), source_header.as_str()];
 
     // check timers too.
     let _guard = app
@@ -51,7 +58,7 @@ pub(crate) async fn track_metrics(
     } else {
         app.metrics()
             .requests_failed
-            .with_label_values(&[route.as_str(), status.as_str()])
+            .with_label_values(&[route.as_str(), source_header.as_str(), status.as_str()])
             .inc();
     }
 

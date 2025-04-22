@@ -5,11 +5,11 @@ pub(crate) mod metrics;
 pub(crate) mod route;
 pub(crate) mod utils;
 
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, str::FromStr, sync::Arc};
 
 use axum::http::{
     header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
-    Method,
+    HeaderName, Method,
 };
 use clap::ValueEnum;
 use data::app_state::AppState;
@@ -20,6 +20,8 @@ use sui_pg_db::{Db, DbArgs};
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::{Any, CorsLayer};
 use url::Url;
+
+const MVR_SOURCE_HEADER: &str = "Mvr-Source";
 
 pub async fn run_server(
     database_url: Url,
@@ -38,10 +40,12 @@ pub async fn run_server(
         cancellation_token.clone(),
     );
 
+    let mvr_source_header = HeaderName::from_str(MVR_SOURCE_HEADER)?;
+
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods([Method::GET, Method::POST])
-        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+        .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE, mvr_source_header]);
 
     let app_state = AppState::new(
         database_url,
