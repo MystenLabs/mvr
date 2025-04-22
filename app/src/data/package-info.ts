@@ -18,6 +18,7 @@ export type GithubPackageInfo = {
 };
 
 export class PackageInfo {
+  #edited = false;
   transaction: Transaction;
   info: TransactionObjectArgument | string | undefined;
 
@@ -33,6 +34,7 @@ export class PackageInfo {
 
   new(upgradeCap: TransactionObjectArgument | string) {
     if (this.info) throw new Error("PackageInfo already initialized");
+    this.#edited = true;
 
     this.info = this.transaction.moveCall({
       target: `@mvr/metadata::package_info::new`,
@@ -49,6 +51,7 @@ export class PackageInfo {
     textColor: string,
   ) {
     this.#checkInitialized();
+    this.#edited = true;
 
     const display = this.transaction.moveCall({
       target: `@mvr/metadata::display::new`,
@@ -70,6 +73,7 @@ export class PackageInfo {
 
   unsetGitVersioning(version: number) {
     this.#checkInitialized();
+    this.#edited = true;
 
     this.transaction.moveCall({
       target: `@mvr/metadata::package_info::unset_git_versioning`,
@@ -84,6 +88,7 @@ export class PackageInfo {
 
   setGitVersioning(version: number, gitInfo: GithubPackageInfo) {
     this.#checkInitialized();
+    this.#edited = true;
 
     const git = this.transaction.moveCall({
       target: `@mvr/metadata::git::new`,
@@ -106,6 +111,32 @@ export class PackageInfo {
     return this;
   }
 
+  setMetadata(key: string, value: string) {
+    this.#checkInitialized();
+    this.#edited = true;
+
+    this.transaction.moveCall({
+      target: `@mvr/metadata::package_info::set_metadata`,
+      arguments: [
+        this.transaction.object(this.info!),
+        this.transaction.pure.string(key),
+        this.transaction.pure.string(value),
+      ],
+    });
+  }
+
+  unsetMetadata(key: string) {
+    this.#checkInitialized();
+    this.#edited = true;
+    this.transaction.moveCall({
+      target: `@mvr/metadata::package_info::unset_metadata`,
+      arguments: [
+        this.transaction.object(this.info!),
+        this.transaction.pure.string(key),
+      ],
+    });
+  }
+
   tranfer({
     to,
     selfTransfer,
@@ -114,6 +145,8 @@ export class PackageInfo {
     selfTransfer?: boolean;
   }) {
     this.#checkInitialized();
+    this.#edited = true;
+
     this.transaction.moveCall({
       target: `@mvr/metadata::package_info::transfer`,
       arguments: [
@@ -125,5 +158,9 @@ export class PackageInfo {
 
   #checkInitialized() {
     if (!this.info) throw new Error("PackageInfo not initialized");
+  }
+
+  isEdited() {
+    return this.#edited;
   }
 }
