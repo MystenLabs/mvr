@@ -174,7 +174,7 @@ export function PackageEditor({
             value="versions"
             className="border-b border-stroke-secondary"
           >
-            <AccordionTrigger>Versions</AccordionTrigger>
+            <AccordionTrigger>Source Code Versioning</AccordionTrigger>
             <AccordionContent className="mb-md grid grid-cols-1 gap-md">
               {orderedVersions?.map((x) => (
                 <Version
