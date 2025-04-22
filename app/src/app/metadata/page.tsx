@@ -16,6 +16,7 @@ import { PackageInfoData } from "@/utils/types";
 import { PackageInfoSelector } from "@/components/ui/package-info-selector";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
+import { useGetPackageInfo } from "@/hooks/useGetPackageInfo";
 
 export default function Packages() {
   const selectedNetwork = usePackagesNetwork();
@@ -27,22 +28,32 @@ export default function Packages() {
   const { data: packageInfos, isLoading: packageInfosLoading } =
     useGetPackageInfoObjects(selectedNetwork);
 
-  const [selectedPackage, setSelectedPackage] =
-    useState<PackageInfoData | null>(null);
+  const [selectedPackageId, setSelectedPackageId] = useState<
+    string | undefined
+  >(packageInfos?.[0]?.objectId);
+
+  const {
+    data: selectedPackage,
+    isLoading: isPackageInfoLoading,
+    isPending: isPackageInfoPending,
+  } = useGetPackageInfo({
+    network: selectedNetwork,
+    objectId: selectedPackageId,
+  });
 
   // reset selected package when address changes
   useEffect(() => {
-    setSelectedPackage(packageInfos?.[0] ?? null);
+    setSelectedPackageId(packageInfos?.[0]?.objectId);
   }, [activeAddress]);
 
   useEffect(() => {
     if (!selectedPackage && packageInfos && packageInfos.length > 0) {
-      setSelectedPackage(packageInfos[0] ?? null);
+      setSelectedPackageId(packageInfos[0]?.objectId);
     }
   }, [packageInfos]);
 
   useEffect(() => {
-    setSelectedPackage(packageInfos?.[0] ?? null);
+    setSelectedPackageId(packageInfos?.[0]?.objectId);
   }, [selectedNetwork]);
 
   if (capsLoading || packageInfosLoading) return <LoadingState />;
@@ -100,9 +111,9 @@ export default function Packages() {
   }
 
   return (
-    <main className="pt-xl container flex-grow">
+    <main className="container flex-grow pt-xl">
       <div className="gap-md lg:flex lg:flex-grow">
-        <div className="gap-xs max-lg:py-lg lg:p-md flex-shrink-0 overflow-y-auto lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col">
+        <div className="flex-shrink-0 gap-xs overflow-y-auto max-lg:py-lg lg:flex lg:h-[75vh] lg:w-[300px] lg:flex-col lg:p-md">
           <div>
             <div className="mb-sm flex items-center justify-between">
               <Label className="block">Select Metadata</Label>
@@ -115,27 +126,25 @@ export default function Packages() {
                 />
                 <DialogTrigger asChild>
                   <Button variant="linkActive" size="fit">
-                    <Plus className="text-content-accent h-5 w-5" />
+                    <Plus className="h-5 w-5 text-content-accent" />
                   </Button>
                 </DialogTrigger>
               </Dialog>
             </div>
             <PackageInfoSelector
               disableClear
-              value={selectedPackage?.objectId}
+              value={selectedPackageId}
               options={packageInfos ?? []}
-              onChange={(id) =>
-                setSelectedPackage(
-                  packageInfos?.find((x) => x.objectId === id) ?? null,
-                )
-              }
+              onChange={(id) => setSelectedPackageId(id)}
             />
           </div>
         </div>
-        <div className="block w-full break-words max-lg:py-Large lg:p-Large">
-          {selectedPackage && (
-            <PackageInfoViewer packageInfo={selectedPackage} />
-          )}
+        <div className="max-lg:py-Large lg:p-Large block w-full break-words">
+          {selectedPackage &&
+            !isPackageInfoPending &&
+            !isPackageInfoLoading && (
+              <PackageInfoViewer packageInfo={selectedPackage} />
+            )}
         </div>
       </div>
     </main>

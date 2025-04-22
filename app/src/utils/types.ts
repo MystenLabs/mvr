@@ -16,7 +16,7 @@ export type PackageInfoData = {
   upgradeCapId: string;
   display: PackageDisplayType;
   gitVersionsTableId: string;
-  metadata: any;
+  metadata: Record<string, string>;
   suiDisplay?: {
     imageUrl: string;
   };

@@ -33,6 +33,7 @@ const buttonVariants = cva(
         fit: 'w-fit',
         auto: 'px-md py-sm',
         default: "h-8 px-md py-sm",
+        xs: "h-6 px-2 text-12",
         sm: "h-7 px-3 text-xs",
         lg: "h-9 px-8",
         icon: "h-8 w-9",

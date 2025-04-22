@@ -1,8 +1,9 @@
 import { Text } from "../ui/Text";
-import { PackageInfoDisplay } from "@/icons/PackageInfoDisplay";
 import { Button } from "../ui/button";
-import { PackageInfoTabs } from "./PackageInfoTabs";
 import { type PackageInfoData } from "@/utils/types";
+import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
+import { usePackagesNetwork } from "../providers/packages-provider";
+import { PackageEditor } from "./PackageEditor";
 
 export function PackageInfoViewer({
   packageInfo,
@@ -11,6 +12,7 @@ export function PackageInfoViewer({
   packageInfo: PackageInfoData;
   disableEdits?: boolean;
 }) {
+  const network = usePackagesNetwork();
   return (
     <div>
       {!disableEdits && (
@@ -19,9 +21,9 @@ export function PackageInfoViewer({
         </Text>
       )}
 
-      <div className="gap-md pt-md grid grid-cols-1 md:grid-cols-12">
+      <div className="grid grid-cols-1 gap-md pt-md md:grid-cols-12">
         <div className="md:col-span-9">
-          <PackageInfoTabs
+          <PackageEditor
             packageInfo={packageInfo}
             disableEdits={disableEdits}
           />
@@ -34,11 +36,19 @@ export function PackageInfoViewer({
             />
           )}
 
-          {/* {!disableEdits && (
-            <Button variant="secondary" className="w-full">
-              Edit NFT
-            </Button>
-          )} */}
+          <Button
+            variant="secondary"
+            className="mt-sm flex w-full items-center gap-xs"
+            onClick={() => {
+              window.open(
+                `https://suiexplorer.com/object/${packageInfo.objectId}?network=${network}`,
+                "_blank",
+              );
+            }}
+          >
+            View on Explorer
+            <OpenInNewWindowIcon />
+          </Button>
         </div>
       </div>
     </div>
