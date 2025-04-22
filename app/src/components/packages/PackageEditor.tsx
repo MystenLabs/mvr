@@ -22,8 +22,8 @@ import {
 import { Input } from "../ui/input";
 import { cn, nullishValueChanged } from "@/lib/utils";
 import { Label } from "../ui/label";
-import { useDebounce } from "@/hooks/useDebounce";
 import { useQueryClient } from "@tanstack/react-query";
+import { useIsFocused } from "@/hooks/useIsFocused";
 
 export function PackageEditor({
   packageInfo,
@@ -35,6 +35,8 @@ export function PackageEditor({
   const network = usePackagesNetwork();
   const queryClient = useQueryClient();
 
+  const { isFocused, handleBlur, handleFocus } = useIsFocused();
+
   const [showCreationDialog, setShowCreationDialog] = useState(false);
   const [updates, setUpdates] = useState<GitVersion[]>([]);
   const [forUpdate, setForUpdate] = useState<GitVersion | null>(null);
@@ -43,8 +45,6 @@ export function PackageEditor({
     packageInfo.metadata?.default || "",
   );
 
-  const { value: debouncedDefaultName } = useDebounce(defaultMvrName);
-
   useEffect(
     () => setDefaultMvrName(packageInfo.metadata?.default || ""),
     [packageInfo],
@@ -52,20 +52,14 @@ export function PackageEditor({
 
   // Check if the default name has changed.
   const hasNameChanged = useMemo(() => {
-    return nullishValueChanged(
-      debouncedDefaultName,
-      packageInfo.metadata?.default,
-    );
-  }, [debouncedDefaultName, packageInfo.metadata]);
+    return nullishValueChanged(defaultMvrName, packageInfo.metadata?.default);
+  }, [defaultMvrName, packageInfo.metadata]);
 
   // Check if the default name is a valid MVR name.
   const isValidName = useMemo(() => {
-    if (!debouncedDefaultName) return true;
-    return (
-      isValidNamedPackage(debouncedDefaultName) &&
-      debouncedDefaultName.includes("@")
-    );
-  }, [debouncedDefaultName]);
+    if (!defaultMvrName) return true;
+    return isValidNamedPackage(defaultMvrName) && defaultMvrName.includes("@");
+  }, [defaultMvrName]);
 
   const {
     data: versions,
@@ -118,7 +112,7 @@ export function PackageEditor({
       pkgInfo: packageInfo,
       updates,
       metadata: {
-        default: debouncedDefaultName,
+        default: defaultMvrName,
       },
     });
 
@@ -172,18 +166,25 @@ export function PackageEditor({
       />
 
       <div className="mb-md grid grid-cols-1 gap-md">
-        <Label className={cn("text-sm", !isValidName && "text-accent-red")}>
+        <Label
+          className={cn(
+            "text-sm",
+            !isFocused && !isValidName && "text-accent-red",
+          )}
+        >
           Default MVR name (reverse resolution)
         </Label>
         <Input
           value={defaultMvrName}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           placeholder="Type your MVR name here to enable reverse resolution (e.g. @mvr/core)"
           onChange={(e) => {
             setDefaultMvrName(e.target.value);
           }}
-          hasError={!isValidName}
+          hasError={!isFocused && !isValidName}
         />
-        {debouncedDefaultName && !isValidName && (
+        {!isFocused && defaultMvrName && !isValidName && (
           <Text
             kind="paragraph"
             size="paragraph-small"
@@ -236,7 +237,7 @@ export function PackageEditor({
           hasUpdates={updates.length > 0 || hasNameChanged}
           isLoading={isPending}
           save={saveChanges}
-          cancel={() => reset()}
+          cancel={reset}
           canUpdate={(updates.length > 0 || hasNameChanged) && isValidName}
         />
       </div>

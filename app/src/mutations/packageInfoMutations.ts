@@ -101,7 +101,7 @@ export function useUpdatePackageInfoMutation(network: Network) {
         packageInfo.setMetadata(key, value);
       }
 
-      packageInfo.verifyIsEdited();
+      if (!packageInfo.isEdited()) throw new Error("No changes to save");
 
       const res = await executeTransaction(tx);
       return res;
