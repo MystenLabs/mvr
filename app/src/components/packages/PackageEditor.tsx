@@ -163,7 +163,7 @@ export function PackageEditor({
             size="paragraph-small"
             className="text-accent-red"
           >
-            Invalid MVR name. Please use a valid MVR name (e.g. @mvr/core).
+            The supplied MVR name is invalid. Use a valid name to proceed (e.g. @mvr/core).
           </Text>
         )}
       </div>
