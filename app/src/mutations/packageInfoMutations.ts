@@ -1,7 +1,8 @@
 import { PackageInfo } from "@/data/package-info";
 import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { GitVersion } from "@/hooks/useVersionsTable";
-import { Network, PackageDisplayType } from "@/utils/types";
+import { nullishValueChanged } from "@/lib/utils";
+import { Network, PackageDisplayType, PackageInfoData } from "@/utils/types";
 import { Transaction } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 
@@ -54,20 +55,19 @@ export function useUpdatePackageInfoMutation(network: Network) {
   return useMutation({
     mutationKey: ["update-package-info"],
     mutationFn: async ({
-      packageInfoId,
+      pkgInfo,
       updates,
-      network,
+      metadata,
     }: {
-      packageInfoId: string;
+      pkgInfo: PackageInfoData;
       updates: GitVersion[];
       display?: PackageDisplayType;
-      network: Network;
+      metadata?: Record<string, string>;
     }) => {
-      if (!updates.length) throw new Error("No changes to save");
       const tx = new Transaction();
 
       // Call the API to create a new package info object
-      const packageInfo = new PackageInfo(tx, packageInfoId);
+      const packageInfo = new PackageInfo(tx, pkgInfo.objectId);
 
       for (const update of updates) {
         if (update.action === "add") {
@@ -88,6 +88,20 @@ export function useUpdatePackageInfoMutation(network: Network) {
             });
         }
       }
+
+      for (const [key, value] of Object.entries(metadata ?? {})) {
+        const hasChanged = nullishValueChanged(value, pkgInfo.metadata?.[key]);
+        if (!hasChanged) continue;
+
+        // remove if it existed..
+        if (pkgInfo.metadata.hasOwnProperty(key))
+          packageInfo.unsetMetadata(key);
+
+        // set the new value.
+        packageInfo.setMetadata(key, value);
+      }
+
+      packageInfo.verifyIsEdited();
 
       const res = await executeTransaction(tx);
       return res;

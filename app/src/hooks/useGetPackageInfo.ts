@@ -1,6 +1,5 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { useQuery } from "@tanstack/react-query";
-import { useActiveAddress } from "./useActiveAddress";
 import { AppQueryKeys, Network } from "@/utils/types";
 import { parsePackageInfoContent } from "@/utils/helpers";
 
@@ -13,7 +12,7 @@ export function useGetPackageInfo({
   const clients = useSuiClientsContext();
 
   return useQuery({
-    queryKey: [AppQueryKeys.PACKAGE_INFO_BY_ID, objectId],
+    queryKey: [AppQueryKeys.PACKAGE_INFO_BY_ID, objectId, network],
     queryFn: async () => {
       const infoObj = await clients[network].getObject({
         id: objectId!,
@@ -28,6 +27,7 @@ export function useGetPackageInfo({
     enabled: !!objectId,
     refetchOnMount: false,
     refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
     select(data) {
       return parsePackageInfoContent(data);
     },

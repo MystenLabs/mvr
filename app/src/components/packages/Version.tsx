@@ -15,7 +15,7 @@ export function Version({
       <div className="mb-xs border-stroke-secondary pb-xs flex items-center justify-between gap-5 border-b">
         <Text
           kind="heading"
-          size="heading-xs"
+          size="heading-2xs"
           className="text-content-secondary"
         >
           {version.action === "add" && "(+)"} Version {version.version}

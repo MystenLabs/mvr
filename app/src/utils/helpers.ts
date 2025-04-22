@@ -23,7 +23,13 @@ export const parsePackageInfoContent = (cap?: SuiObjectResponse): PackageInfoDat
         textColor: fields.display.fields.text_color,
       },
       gitVersionsTableId: fields.git_versioning.fields.id.id,
-      metadata: fields.metadata,
+      metadata: fields.metadata.fields.contents.reduce(
+        (acc: Record<string, string>, x: any) => {
+          acc[x.fields.key] = x.fields.value;
+          return acc;
+        },
+        {},
+      ),
       suiDisplay: {
         imageUrl: display.image_url,
       }

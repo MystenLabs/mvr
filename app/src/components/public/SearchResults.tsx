@@ -67,7 +67,7 @@ export function SearchResultItem({
       <div className="max-w-[50%]">
         <Text
           kind="heading"
-          size="heading-xxxs"
+          size="heading-3xs"
           className="text-content-primary"
         >
           {item.name}
