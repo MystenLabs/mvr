@@ -8,10 +8,6 @@ You can find more information [in the docs page](https://docs.suins.io/move-regi
 
 The `@mvr/core` Package is the foundational component of the Move Registry, providing essential on-chain functionality for application registration and resolution in the Sui ecosystem. It enables developers and protocols to register human-readable application names under organizations, assign immutable package details, and manage metadata and multichain deployment references.
 
-For on-chain integrations, it’s recommended to depend solely on the core package, as utility packages may change over time, potentially affecting functionality.
-
-Developers can integrate the core package into their Move-based projects by adding the appropriate dependency.
-
 ## Modules
 
 app_cap_display: Handles SVG-based rendering and URI-encoding of visual metadata for AppCaps. Supports stylized name displays based on immutability status.
