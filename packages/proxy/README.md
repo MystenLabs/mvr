@@ -12,10 +12,6 @@ This package simply forwards the subdomain registration to the `MoveRegistry`.
 
 Intended for integration scenarios where subdomains are used for app registration.
 
-## Modules
-
-`utils`: A module with a single `register` function. It proxies a call to `MoveRegistry::register` using a `SubDomainRegistration` NFT and creates an `AppCap` for the new app.
-
 ## Installing
 
 ### [Move Registry CLI](https://docs.mvr.app/move-registry)

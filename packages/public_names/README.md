@@ -19,10 +19,6 @@ Key features include:
 -   Proxy handling of both top level and subdomain SuiNS NFTs.
 -   Secure NFT reclamation via `destroy`.
 
-## Modules
-
-`public_names`: Main module exposing functionality to create `PublicName` objects from either `SuinsRegistration` or `SubDomainRegistration`. Supports registering new apps in the MVR registry and reclaiming NFTs through destruction.
-
 ## Installing
 
 ### [Move Registry CLI](https://docs.mvr.app/move-registry)

@@ -6,21 +6,43 @@ You can find more information [in the docs page](https://docs.suins.io/move-regi
 
 ## Overview
 
-The `@mvr/core` Package is the foundational component of the Move Registry, providing essential on-chain functionality for application registration and resolution in the Sui ecosystem. It enables developers and protocols to register human-readable application names under SuiNS names, assign immutable package details, and manage metadata and multichain deployment references.
+The `@mvr/core` package is the foundational component of the Move Registry (MVR, pronounced "mover"). It provides essential on-chain functionality for application registration and resolution in the Sui ecosystem.
 
-## Modules
+MVR allows developers and protocols to:
 
-`app_cap_display`: Handles SVG-based rendering and URI-encoding of visual metadata for AppCaps. Supports stylized name displays based on immutability status.
+-   Register human-readable application names under SuiNS.
+-   Assign immutable package metadata and type-level details.
+-   Reference Move packages and types by name in programmable transaction blocks (PTBs), abstracting away direct address usage.
+-   Manage multichain deployment references and package versioning across networks.
 
-`app_info`: A lightweight struct representing app-level package data, including the package address, `UpgradeCap`, and optional info ID.
+> ⚠️ **Note:** MVR can be used on both **mainnet** and **testnet**, but **mainnet is the source of truth** for resolving packages. Updates to registry entries can only be made on mainnet.
 
-`app_record`: Defines the structure an `AppRecord`, which includes metadata, storage, and cross-network info. Handles app immutability, metadata management, and deletion logic.
+## Why Use MVR?
 
-`constants`: Contains macro-defined constants such as maximum label lengths, valid separators, and network limits used across the registry.
+-   **Readable and maintainable Move code:** Reference named packages/types in PTBs.
+-   **Simplified dependency management:** Depend on packages by name, not address.
+-   **Automated version resolution:** If no version is specified, MVR resolves to the latest version.
+-   **Network abstraction:** Develop without hardcoding package addresses, enabling smoother multi-network support.
 
-`move_registry`: The core registry module managing app registrations. Supports registering and removing apps, assigning packages, managing cross-network data, and version control. Enforces immutability once a package is attached on mainnet.
+## Example
 
-`name`: Implements typed parsing and validation of `@suins-name/app` formatted names. Provides conversions to and from SuiNS `Domain` objects, label validation, and string utilities.
+Before MVR:
+
+```typescript
+transaction.moveCall({
+    target: `0xbb97fa5af2504cc944a8df78dcb5c8b72c3673ca4ba8e4969a98188bf745ee54::module::function`,
+});
+```
+
+After MVR:
+
+```typescript
+transaction.moveCall({
+    target: `@mvr/core::module::function`,
+});
+```
+
+For more details, please refer to the [docs](https://docs.suins.io/move-registry).
 
 ## Installing
 

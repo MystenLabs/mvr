@@ -17,10 +17,6 @@ Key features include:
 
 `PackageInfo` objects are intended to be indexed and owned, making them easily queryable and secure for long-term metadata tracking.
 
-## Modules
-
-`package_info`: Defines the `PackageInfo` object and its associated functions. Supports setting and removing display data, version metadata (e.g. Git tags/shas), and custom metadata. Includes validation logic for versioning safety and upgrade security.
-
 ## Installing
 
 ### [Move Registry CLI](https://docs.mvr.app/move-registry)
