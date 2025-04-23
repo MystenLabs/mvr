@@ -24,8 +24,5 @@ Key features include:
 ### [Move Registry CLI](https://docs.mvr.app/move-registry)
 
 ```bash
-mvr add @mvr/public-names --network testnet
-
-# or for mainnet
 mvr add @mvr/public-names --network mainnet
 ```

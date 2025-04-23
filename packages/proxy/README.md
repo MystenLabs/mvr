@@ -15,8 +15,5 @@ Intended for integration scenarios where subdomains are used for app registratio
 ### [Move Registry CLI](https://docs.mvr.app/move-registry)
 
 ```bash
-mvr add @mvr/subnames-proxy --network testnet
-
-# or for mainnet
 mvr add @mvr/subnames-proxy --network mainnet
 ```
