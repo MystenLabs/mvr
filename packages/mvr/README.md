@@ -48,10 +48,6 @@ For more MVR onboarding details, please refer to the [docs](https://docs.suins.i
 
 ### [Move Registry CLI](https://docs.mvr.app/move-registry)
 
-# or for mainnet
-
+```bash
 mvr add @mvr/core --network mainnet
-
-```
-
 ```
