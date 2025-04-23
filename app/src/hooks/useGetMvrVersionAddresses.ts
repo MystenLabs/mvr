@@ -1,5 +1,5 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
-import { NoRefetching } from "@/lib/utils";
+import { MvrHeader, NoRefetching } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -28,9 +28,7 @@ export function useGetMvrVersionAddresses(
 
       const response = await fetch(`${mvrEndpoint}/v1/resolution/bulk`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        ...MvrHeader({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           names: versionsToQuery.map((v) => `${name}/${v}`),
         }),
