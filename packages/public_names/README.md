@@ -17,7 +17,7 @@ Key features include:
 -   PublicName objects that represent ownership of a domain or subdomain.
 -   Capability-gated registration of apps in MVR.
 -   Proxy handling of both top level and subdomain SuiNS NFTs.
--   Secure NFT reclamation via `destroy`.
+-   Reclaim NFT by destroying the `PublicName` object
 
 ## Installing
 
