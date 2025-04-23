@@ -6,7 +6,7 @@ You can find the latest addresses for this package and more information [in the 
 
 ## Overview
 
-The `@mvr/metadata` package defines the structure and behavior of `PackageInfo` objects, which are metadata containers associated with registered Move packages. These objects track upgrade capabilities, package addresses, Git versioning metadata, and on-chain display configuration. This module ensures that metadata and version control can be seamlessly managed in a decentralized and upgrade-safe manner.
+The `@mvr/metadata` package defines `PackageInfo` objects, which are metadata associated with registered Move packages. These objects track upgrade capabilities, package addresses, Git versioning metadata, and on-chain display configuration. This module ensures that metadata and version control can be seamlessly managed in a decentralized and upgrade-safe manner.
 
 Key features include:
 

@@ -6,12 +6,12 @@ You can find more information [in the docs page](https://docs.suins.io/move-regi
 
 ## Overview
 
-The `@mvr/core` package is the foundational component of the Move Registry (MVR, pronounced "mover"). It provides essential on-chain functionality for application registration and resolution in the Sui ecosystem.
+The `@mvr/core` package is the foundational component of the Move Registry (MVR, pronounced "mover"). It provides essential functionality for application registration and resolution in the Sui ecosystem.
 
 MVR allows developers and protocols to:
 
 -   Register human-readable application names under SuiNS.
--   Assign immutable package metadata and type-level details.
+-   Assign immutable package metadata and other details.
 -   Reference Move packages and types by name in programmable transaction blocks (PTBs), abstracting away direct address usage.
 -   Manage multichain deployment references and package versioning across networks.
 
