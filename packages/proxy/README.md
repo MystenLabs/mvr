@@ -14,7 +14,7 @@ Intended for integration scenarios where subdomains are used for app registratio
 
 ## Modules
 
-utils: A module with a single `register` function. It proxies a call to `MoveRegistry::register` using a `SubDomainRegistration` NFT and creates an `AppCap` for the new app.
+`utils`: A module with a single `register` function. It proxies a call to `MoveRegistry::register` using a `SubDomainRegistration` NFT and creates an `AppCap` for the new app.
 
 ## Installing
 

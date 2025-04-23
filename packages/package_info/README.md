@@ -14,13 +14,12 @@ Key features include:
 -   Immutable link to package address and upgrade cap.
 -   On-chain display configuration and SVG generation.
 -   Git version tagging for source validation and development use.
--   Support for arbitrary dynamic fields for extensibility.
 
 `PackageInfo` objects are intended to be indexed and owned, making them easily queryable and secure for long-term metadata tracking.
 
 ## Modules
 
-package_info: Defines the `PackageInfo` object and its associated functions. Supports setting and removing display data, version metadata (e.g. Git tags/shas), plain-text metadata, and custom dynamic fields. Includes validation logic for versioning safety and upgrade security.
+`package_info`: Defines the `PackageInfo` object and its associated functions. Supports setting and removing display data, version metadata (e.g. Git tags/shas), and custom metadata. Includes validation logic for versioning safety and upgrade security.
 
 ## Installing
 

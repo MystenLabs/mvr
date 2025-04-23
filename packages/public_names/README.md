@@ -10,6 +10,8 @@ The `@mvr/public-names` package provides an open interface for creating and mana
 
 Each `PublicName` object stores a reference to the underlying NFT and grants the caller a `PublicNameCap` capability to create apps tied to that identity. The package supports clean destruction of the public name, safely returning the original NFT to the caller.
 
+> **Note:** Once a name is registered as a `PublicName`, the underlying NFT is locked and cannot be transferred until the `PublicName` is destroyed.
+
 Key features include:
 
 -   PublicName objects that represent ownership of a domain or subdomain.
@@ -19,7 +21,7 @@ Key features include:
 
 ## Modules
 
-public_names: Main module exposing functionality to create `PublicName` objects from either `SuinsRegistration` or `SubDomainRegistration`. Supports registering new apps in the MVR registry and reclaiming NFTs through destruction.
+`public_names`: Main module exposing functionality to create `PublicName` objects from either `SuinsRegistration` or `SubDomainRegistration`. Supports registering new apps in the MVR registry and reclaiming NFTs through destruction.
 
 ## Installing
 
