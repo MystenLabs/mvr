@@ -42,7 +42,7 @@ transaction.moveCall({
 });
 ```
 
-For more details, please refer to the [docs](https://docs.suins.io/move-registry).
+For more MVR onboarding details, please refer to the [docs](https://docs.suins.io/move-registry).
 
 ## Installing
 
