@@ -6,7 +6,7 @@ You can find the latest addresses for this package and more information [in the 
 
 ## Overview
 
-The `@mvr/subnames-proxy` package provides a thin wrapper that enables registering applications using `SubDomainRegistration` objects from SuiNS. This allows subdomains to seamlessly create app records in the Move Registry.
+The `@mvr/subnames-proxy` package provides a thin wrapper that enables registering applications using SuiNS subnames. This allows subdomains to seamlessly create app records in the Move Registry.
 
 This package simply forwards the subdomain registration to the `MoveRegistry`.
 

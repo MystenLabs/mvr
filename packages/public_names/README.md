@@ -6,7 +6,7 @@ You can find the latest addresses for this package and more information [in the 
 
 ## Overview
 
-The `@mvr/public-names` package provides an open interface for creating and managing public names, which can be backed by either a `SuinsRegistration` or a `SubDomainRegistration` NFT. These public names can then be used to register apps in the MVR registry in a permissionless manner.
+The `@mvr/public-names` package provides an open interface for creating and managing public names, which can be backed by either a SuiNS name or a SuiNS subname. These public names can then be used to register apps in the MVR registry in a permissionless manner.
 
 Each `PublicName` object stores a reference to the underlying NFT and grants the caller a `PublicNameCap` capability to create apps tied to that identity. The package supports clean destruction of the public name, safely returning the original NFT to the caller.
 
