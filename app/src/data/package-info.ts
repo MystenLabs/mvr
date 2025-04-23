@@ -137,7 +137,7 @@ export class PackageInfo {
     });
   }
 
-  tranfer({
+  transfer({
     to,
     selfTransfer,
   }: {

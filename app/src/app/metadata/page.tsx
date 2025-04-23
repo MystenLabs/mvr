@@ -47,7 +47,12 @@ export default function Packages() {
   }, [activeAddress]);
 
   useEffect(() => {
-    if (!selectedPackage && packageInfos && packageInfos.length > 0) {
+    if (
+      packageInfos &&
+      packageInfos.length > 0 &&
+      (!selectedPackage ||
+        !packageInfos.find((x) => x.objectId == selectedPackageId))
+    ) {
       setSelectedPackageId(packageInfos[0]?.objectId);
     }
   }, [packageInfos]);
