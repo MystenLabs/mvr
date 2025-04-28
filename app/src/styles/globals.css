@@ -4,6 +4,12 @@
 @layer base {
     /* Primitives */
   :root {
+    --chart-1: 250 100% 76.7%;
+    --chart-2: 250 100% 76.7%;
+    --chart-3: 250 100% 76.7% / 0.32;
+    --chart-4: 250 100% 76.7%;
+    --chart-5: 250 100% 76.7%;
+    
     /* px */
     /* color */
     --color-accent-green: #4fba7c;
