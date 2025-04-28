@@ -15,6 +15,9 @@ import { Text } from "../ui/Text";
 import { useMemo } from "react";
 import { SinglePackageContent } from "./SinglePackageLayout";
 import { SinglePackageSidebarTitle } from "./SinglePackageLayout";
+import { InfoIcon } from "lucide-react";
+import { TooltipWrapper } from "../ui/tooltip";
+import { Button } from "../ui/button";
 
 const chartConfig = {
   total: {
@@ -39,7 +42,15 @@ export function SinglePackageAnalytics({ name }: { name: ResolvedName }) {
   return (
     <SinglePackageContent>
       <SinglePackageSidebarTitle>
-        Lifetime Composable Calls
+        Interoperating Transactions
+        <TooltipWrapper
+          tooltipText="Interoperating transactions are transactions involving more than one package, either as calls to different packages in a PTB, or as dependencies in a Move smart contract."
+          tooltipPlace="bottom"
+        >
+          <Button variant="link" size="fit">
+            <InfoIcon className="h-4 w-4" />
+          </Button>
+        </TooltipWrapper>
       </SinglePackageSidebarTitle>
       <Text kind="label" size="label-large">
         {totalCalls?.toLocaleString("en-US", { useGrouping: true })}

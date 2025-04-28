@@ -33,7 +33,7 @@ export function SinglePackageSidebarTitle({
     <Text
       kind="heading"
       size="heading-headline"
-      className="mb-xxs flex flex-wrap items-center gap-2xs uppercase text-content-secondary"
+      className="mb-xxs flex flex-wrap items-center gap-sm uppercase text-content-secondary"
     >
       {children}
     </Text>
