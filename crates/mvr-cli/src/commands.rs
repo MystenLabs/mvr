@@ -19,11 +19,7 @@ use crate::types::Network;
 #[serde()]
 pub enum Command {
     /// Add a new dependency from the move registry to your Move.toml file.
-    Add {
-        name: String,
-        #[arg(short, long)]
-        network: Option<Network>,
-    },
+    Add { name: String },
     /// Resolve the app name to a package info.
     Resolve {
         name: String,
@@ -55,7 +51,7 @@ pub enum CommandOutput {
 impl Command {
     pub async fn execute(self) -> Result<CommandOutput> {
         match self {
-            Command::Add { name, network } => subcommand_add_dependency(&name, network).await,
+            Command::Add { name } => subcommand_add_dependency(&name).await,
             Command::Resolve { name, network } => subcommand_resolve_name(&name, network).await,
             Command::Search {
                 query,

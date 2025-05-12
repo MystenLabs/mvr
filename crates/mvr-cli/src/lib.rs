@@ -1,5 +1,6 @@
 pub mod commands;
 pub mod constants;
+pub mod errors;
 pub mod types;
 pub mod utils;
 
@@ -18,6 +19,7 @@ use utils::git::shallow_clone_repo;
 use sui_sdk_types::ObjectId;
 use types::MoveRegistryDependencies;
 use utils::manifest::{MoveToml, ADDRESSES_KEY, DEPENDENCIES_KEY, PUBLISHED_AT_KEY};
+use utils::sui_binary::get_active_network;
 
 use std::collections::HashMap;
 use std::env;
@@ -55,6 +57,10 @@ const MAINNET_CHAIN_ID: &str = "35834a8a";
 ///    for each package, allow the `sui move build` command to resolve packages from GitHub.
 pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
     let content = fs::read_to_string("Move.toml")?;
+
+    // Get the active network from the CLI.
+    let network = get_active_network()?;
+
     // we won't be writing in this phase.
     let move_toml = MoveToml::new_from_content(&content, None)?;
 
@@ -66,12 +72,15 @@ pub async fn resolve_move_dependencies(key: &str) -> Result<()> {
         key.blue().bold(),
         dependency.packages.blue().bold(),
         "ON".blue(),
-        dependency.network.blue().bold(),
+        network.blue().bold(),
     );
 
-    let network = Network::from_str(&move_toml.get_network()?)?;
+    // If the network is set in the Move.toml, warn that it is deprecated and no longer used.
+    if move_toml.get_network().is_some() {
+        eprintln!("Warning: The `[r.mvr]` network's section in Move.toml is no longer used. Adding/building packages depends on the active network from Sui CLI.");
+    }
 
-    let resolved_packages = query_multiple_dependencies(dependency).await?;
+    let resolved_packages = query_multiple_dependencies(dependency, &network).await?;
 
     let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
     let mut fetched_files: HashMap<String, (PathBuf, PathBuf)> = HashMap::new();
@@ -624,14 +633,13 @@ fn parse_source_package_name(toml_content: &str) -> Result<String> {
 async fn update_mvr_packages(
     mut move_toml: MoveToml,
     package_name: &str,
-    network: Network,
+    network: &Network,
 ) -> Result<String> {
     let dependencies = MoveRegistryDependencies {
-        network: network.clone(),
         packages: vec![package_name.to_string()],
     };
 
-    let resolved_packages = query_multiple_dependencies(dependencies.clone()).await?;
+    let resolved_packages = query_multiple_dependencies(dependencies.clone(), network).await?;
 
     // Infer package name to insert.
     let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
@@ -660,8 +668,6 @@ async fn update_mvr_packages(
     };
     move_toml.add_dependency(&name, &package_name)?;
 
-    move_toml.set_network(network.to_string())?;
-
     move_toml.save_to_file()?;
 
     let output_msg = format!(
@@ -676,25 +682,15 @@ async fn update_mvr_packages(
     Ok(output_msg)
 }
 
-pub async fn subcommand_add_dependency(
-    package_name: &str,
-    opt_network: Option<Network>,
-) -> Result<CommandOutput> {
+pub async fn subcommand_add_dependency(package_name: &str) -> Result<CommandOutput> {
     let move_toml = MoveToml::new(
         env::current_dir()
             .context("Failed to get current directory")?
             .join("Move.toml"),
     )?;
 
-    let network = match opt_network {
-        Some(network) => network,
-        None => {
-            let network = move_toml.get_network()?;
-            Network::from_str(&network)?
-        }
-    };
-
-    let cmd_output = update_mvr_packages(move_toml, package_name, network).await?;
+    let network = get_active_network()?;
+    let cmd_output = update_mvr_packages(move_toml, package_name, &network).await?;
 
     Ok(CommandOutput::Add(cmd_output))
 }

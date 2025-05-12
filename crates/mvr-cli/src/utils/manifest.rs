@@ -4,7 +4,7 @@ use yansi::Paint;
 use anyhow::{bail, Context, Result};
 use toml_edit::{DocumentMut, Formatted, InlineTable, Item, Table, TableLike, Value};
 
-use crate::{types::Network, MoveRegistryDependencies};
+use crate::MoveRegistryDependencies;
 
 pub const RESOLVER_PREFIX_KEY: &str = "r";
 pub const MVR_RESOLVER_KEY: &str = "mvr";
@@ -55,38 +55,15 @@ impl MoveToml {
         Ok(())
     }
 
-    /// Sets the network in `[r.mvr]` section of the `Move.toml` file.
-    pub fn set_network(&mut self, network: String) -> Result<()> {
-        self.create_r_mvr_section_if_not_exists()?;
-
-        if self.get_network().ok().is_some_and(|n| n != network) {
-            eprintln!(
-                "{}",
-                "Network value already exists in r.mvr section. It will be overwritten.".yellow()
-            );
-        }
-        // SAFETY: `create_r_mvr_section_if_not_exists` ensures that the `[r.mvr]` section exists.
-        let mvr_table = self.doc[RESOLVER_PREFIX_KEY][MVR_RESOLVER_KEY]
-            .as_table_mut()
-            .unwrap();
-
-        mvr_table.insert(NETWORK_KEY, toml_edit::value(network.to_string()));
-
-        Ok(())
-    }
-
     /// Get the network from the Move.toml file (specified in `[r.mvr]` section)
-    pub fn get_network(&self) -> Result<String> {
-        let network = self
-            .doc
+    pub fn get_network(&self) -> Option<String> {
+        self.doc
             .get(RESOLVER_PREFIX_KEY)
             .and_then(|v| v.get(MVR_RESOLVER_KEY))
             .and_then(|v| v.get(NETWORK_KEY))
             .map(|v| v.as_str())
             .flatten()
-            .ok_or_else(|| anyhow::anyhow!("Failed to get network from Move.toml. You can specify the network in the `[r.mvr]` section, or by using the `--network` flag."))?;
-
-        Ok(network.to_string())
+            .map(|s| s.to_string())
     }
 
     /// Writes the state of `MoveToml` file back to the file system (replaces the initial state).
@@ -108,7 +85,6 @@ impl MoveToml {
     pub fn get_dependencies_by_name(&self, package_name: &str) -> Result<MoveRegistryDependencies> {
         let mut packages = Vec::new();
 
-        let network = self.get_network()?;
         let dependencies = self.get_dependencies()?;
 
         for (key, value) in dependencies {
@@ -126,10 +102,7 @@ impl MoveToml {
             }
         }
 
-        Ok(MoveRegistryDependencies {
-            network: Network::from_str(&network)?,
-            packages,
-        })
+        Ok(MoveRegistryDependencies { packages })
     }
 
     pub fn get_dependencies(&self) -> Result<&Table> {
@@ -137,25 +110,6 @@ impl MoveToml {
             .get(DEPENDENCIES_KEY)
             .and_then(|v| v.as_table())
             .ok_or_else(|| anyhow::anyhow!("Dependencies not set in Move.toml"))
-    }
-
-    /// Creates the `[r.mvr]` section in the Move.toml file.
-    /// Calling this, you can always assume that the `[r.mvr]` section exists.
-    fn create_r_mvr_section_if_not_exists(&mut self) -> Result<()> {
-        if !self.doc.contains_key(RESOLVER_PREFIX_KEY) {
-            self.doc[RESOLVER_PREFIX_KEY] = Item::Table(Table::new());
-        }
-
-        let r_table = self.doc[RESOLVER_PREFIX_KEY].as_table_mut().unwrap();
-
-        r_table.set_dotted(true); // expecting to create `[r.mvr]` section only
-
-        // if we don't have the `.mvr` portion, create it.
-        if !r_table.contains_key(MVR_RESOLVER_KEY) {
-            r_table.insert(MVR_RESOLVER_KEY, Item::Table(Table::new()));
-        }
-
-        Ok(())
     }
 
     fn create_deps_if_not_exists(&mut self) -> Result<()> {

@@ -8,6 +8,8 @@ use std::process::Output;
 use yansi::Paint;
 
 use crate::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
+use crate::errors::CliError;
+use crate::types::Network;
 
 const VERSION_REGEX: &str = r"(\d+)\.(\d+)\.(\d+)";
 
@@ -81,12 +83,28 @@ pub fn force_build() -> Result<(), Error> {
     Ok(())
 }
 
-fn sui_command(args: Vec<&str>) -> Result<Output, Error> {
+/// Gets the active network by calling `sui client chain-identifier` from the Sui CLI.
+/// Returns the network as a `Network` enum, or errors if network is not `mainnet` or `testnet`.
+pub fn get_active_network() -> Result<Network, Error> {
+    let output = sui_command(["client", "chain-identifier", "--json"].to_vec())?;
+
+    let output = String::from_utf8_lossy(&output.stdout).to_string();
+
+    let chain_id: String = serde_json::from_str(&output).map_err(|_| {
+        CliError::UnexpectedParsingError(
+            "Failed to parse chain identifier using the SUI binary.".to_string(),
+        )
+    })?;
+
+    Ok(Network::from_chain_identifier(&chain_id)?)
+}
+
+fn sui_command(args: Vec<&str>) -> Result<Output, CliError> {
     let (bin, env) = get_sui_binary();
     Command::new(bin)
         .args(args)
         .output()
-        .map_err(|_| anyhow!("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {} environment variable.\n", env))
+        .map_err(|_| CliError::SuiBinaryNotFound(env))
 }
 
 fn get_sui_binary() -> (String, String) {
