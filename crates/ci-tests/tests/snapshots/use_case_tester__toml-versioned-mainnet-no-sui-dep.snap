@@ -11,6 +11,3 @@ mvr_a = { r.mvr = "@pkg/qwer/1" }
 
 [addresses]
 nftmaker = "0x0"
-
-[r.mvr]
-network = "mainnet"
