@@ -1,5 +1,5 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
-import { NoRefetching } from "@/lib/utils";
+import { MvrHeader, NoRefetching } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
@@ -16,6 +16,7 @@ export function useGetMvrDependencies(
 
       const response = await fetch(
         `${endpoint}/v1/package-address/${packageId}/dependencies`,
+        MvrHeader(),
       );
 
       if (!response.ok) {
@@ -53,6 +54,7 @@ export function useGetMvrDependents(
 
       const response = await fetch(
         `${endpoint}/v1/package-address/${packageId}/dependents?limit=50${pageParam ? `&cursor=${pageParam}` : ""}`,
+        MvrHeader(),
       );
 
       if (!response.ok) {

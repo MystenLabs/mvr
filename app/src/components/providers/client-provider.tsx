@@ -53,7 +53,7 @@ const mainnetNamedPackagesPlugin = namedPackagesPlugin({
 export const DefaultClients: Clients = {
   mainnet,
   testnet: new SuiClient({
-    url: "https://suins-rpc.testnet.sui.io:443",
+    url: "https://suins-rpc.testnet.sui.io",
     network: "testnet",
   }),
   devnet: new SuiClient({ url: getFullnodeUrl("devnet"), network: "devnet" }),
