@@ -7,6 +7,7 @@ pub mod utils;
 use crate::types::MoveTomlPublishedID;
 
 use commands::CommandOutput;
+use errors::CliError;
 use mvr_types::name::VersionedName;
 use types::api_types::PackageRequest;
 use types::api_types::SafeGitInfo;
@@ -465,6 +466,14 @@ async fn fetch_move_files(
     let repo_dir = shallow_clone_repo(name, git_info, temp_dir)?;
 
     let file_paths = files_to_fetch.map(|file_name| repo_dir.join(&git_info.path).join(file_name));
+
+    if !file_paths[0].exists() {
+        bail!(CliError::MissingTomlFile(name.to_string()));
+    }
+
+    if !file_paths[1].exists() {
+        bail!(CliError::MissingLockFile(name.to_string()));
+    }
 
     Ok((file_paths[0].clone(), file_paths[1].clone()))
 }
