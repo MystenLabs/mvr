@@ -700,7 +700,9 @@ pub async fn subcommand_resolve_name(
     name: &str,
     network: Option<Network>,
 ) -> Result<CommandOutput> {
-    let package_mainnet = query_package(name, &network.unwrap_or(Network::Mainnet)).await?;
+
+    let network = network.unwrap_or(get_active_network()?);
+    let package_mainnet = query_package(name, &network).await?;
 
     Ok(CommandOutput::Resolve(package_mainnet.1))
 }

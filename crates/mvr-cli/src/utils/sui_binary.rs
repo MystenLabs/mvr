@@ -86,17 +86,11 @@ pub fn force_build() -> Result<(), Error> {
 /// Gets the active network by calling `sui client chain-identifier` from the Sui CLI.
 /// Returns the network as a `Network` enum, or errors if network is not `mainnet` or `testnet`.
 pub fn get_active_network() -> Result<Network, Error> {
-    let output = sui_command(["client", "chain-identifier", "--json"].to_vec())?;
+    let output = sui_command(["client", "chain-identifier"].to_vec())?;
 
-    let output = String::from_utf8_lossy(&output.stdout).to_string();
+    let chain_id = String::from_utf8_lossy(&output.stdout).trim().to_string();
 
-    let chain_id: String = serde_json::from_str(&output).map_err(|_| {
-        CliError::UnexpectedParsingError(
-            "Failed to parse chain identifier using the SUI binary.".to_string(),
-        )
-    })?;
-
-    Ok(Network::from_chain_identifier(&chain_id)?)
+    Ok(Network::try_from_chain_identifier(&chain_id)?)
 }
 
 fn sui_command(args: Vec<&str>) -> Result<Output, CliError> {

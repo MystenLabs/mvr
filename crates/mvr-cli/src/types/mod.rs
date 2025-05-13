@@ -44,7 +44,7 @@ pub enum Network {
 }
 
 impl Network {
-    pub fn from_chain_identifier(chain_identifier: &str) -> Result<Self, CliError> {
+    pub fn try_from_chain_identifier(chain_identifier: &str) -> Result<Self, CliError> {
         match chain_identifier {
             MAINNET_CHAIN_ID => Ok(Network::Mainnet),
             TESTNET_CHAIN_ID => Ok(Network::Testnet),

@@ -28,7 +28,7 @@ pub async fn query_package(name: &str, network: &Network) -> Result<(String, Pac
         versioned_name.to_string()
     ))
     .await
-    .map_err(|e| CliError::QueryingError(e.to_string()))?;
+    .map_err(|e| CliError::Querying(e.to_string()))?;
 
     if response.status() == reqwest::StatusCode::NOT_FOUND {
         bail!(CliError::NameNotExists(
@@ -40,7 +40,7 @@ pub async fn query_package(name: &str, network: &Network) -> Result<(String, Pac
     let body = response
         .json()
         .await
-        .map_err(|e| CliError::UnexpectedParsingError(e.to_string()))?;
+        .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
     Ok((name.to_string(), body))
 }
@@ -52,7 +52,7 @@ pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<Obj
         name.to_string()
     ))
     .await
-    .map_err(|e| CliError::QueryingError(e.to_string()))?;
+    .map_err(|e| CliError::Querying(e.to_string()))?;
 
     if response.status() == reqwest::StatusCode::NOT_FOUND {
         bail!(CliError::NameNotExists(
@@ -64,7 +64,7 @@ pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<Obj
     let body: ResolutionResponse = response
         .json()
         .await
-        .map_err(|e| CliError::UnexpectedParsingError(e.to_string()))?;
+        .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
     Ok(ObjectId::from_str(&body.package_id)?)
 }
@@ -140,12 +140,12 @@ pub async fn search_names(
         .query(&params)
         .send()
         .await
-        .map_err(|e| CliError::QueryingError(e.to_string()))?;
+        .map_err(|e| CliError::Querying(e.to_string()))?;
 
     let body = response
         .json::<SearchNamesResponse>()
         .await
-        .map_err(|e| CliError::UnexpectedParsingError(e.to_string()))?;
+        .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
     Ok(body)
 }
