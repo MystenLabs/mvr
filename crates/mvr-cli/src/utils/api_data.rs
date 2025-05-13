@@ -6,9 +6,12 @@ use mvr_types::name::VersionedName;
 use reqwest::Client;
 use sui_sdk_types::ObjectId;
 
-use crate::types::{
-    api_types::{PackageRequest, ResolutionResponse, SearchNamesResponse},
-    MoveRegistryDependencies, Network,
+use crate::{
+    errors::CliError,
+    types::{
+        api_types::{PackageRequest, ResolutionResponse, SearchNamesResponse},
+        MoveRegistryDependencies, Network,
+    },
 };
 
 const MVR_API_MAINNET_URL: &str = "https://mainnet.mvr.mystenlabs.com";
@@ -25,12 +28,19 @@ pub async fn query_package(name: &str, network: &Network) -> Result<(String, Pac
         versioned_name.to_string()
     ))
     .await
-    .map_err(|e| anyhow::anyhow!("Failed to query package: {}. Error: {}", name, e))?;
+    .map_err(|e| CliError::Querying(e.to_string()))?;
+
+    if response.status() == reqwest::StatusCode::NOT_FOUND {
+        bail!(CliError::NameNotExists(
+            name.to_string(),
+            network.to_string()
+        ));
+    }
 
     let body = response
         .json()
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to resolve package: {}. Error: {}", name, e))?;
+        .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
     Ok((name.to_string(), body))
 }
@@ -41,12 +51,20 @@ pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<Obj
         get_api_url(network)?,
         name.to_string()
     ))
-    .await?;
+    .await
+    .map_err(|e| CliError::Querying(e.to_string()))?;
+
+    if response.status() == reqwest::StatusCode::NOT_FOUND {
+        bail!(CliError::NameNotExists(
+            name.to_string(),
+            network.to_string()
+        ));
+    }
 
     let body: ResolutionResponse = response
         .json()
         .await
-        .map_err(|e| anyhow::anyhow!("Failed to resolve name: {}. Error: {}", name, e))?;
+        .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
     Ok(ObjectId::from_str(&body.package_id)?)
 }
@@ -54,10 +72,11 @@ pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<Obj
 /// Query the MVR API to get Package Information for multiple dependencies.
 pub async fn query_multiple_dependencies(
     deps: MoveRegistryDependencies,
+    network: &Network,
 ) -> Result<HashMap<String, PackageRequest>> {
     let mut requests = vec![];
     deps.packages.iter().try_for_each(|package| {
-        requests.push(query_package(package, &deps.network));
+        requests.push(query_package(package, network));
         Ok::<(), anyhow::Error>(())
     })?;
 
@@ -121,21 +140,12 @@ pub async fn search_names(
         .query(&params)
         .send()
         .await
-        .map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to search names: {}. Error: {}",
-                params.get("search").map(|s| s.clone()).unwrap_or_default(),
-                e
-            )
-        })?;
+        .map_err(|e| CliError::Querying(e.to_string()))?;
 
-    let body = response.json::<SearchNamesResponse>().await.map_err(|e| {
-        anyhow::anyhow!(
-            "Failed to search names: {}. Error: {}",
-            params.get("search").map(|s| s.clone()).unwrap_or_default(),
-            e
-        )
-    })?;
+    let body = response
+        .json::<SearchNamesResponse>()
+        .await
+        .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
     Ok(body)
 }

@@ -1,4 +1,5 @@
-mvr add @mvr/demo --network mainnet
+sui client switch --env mainnet
+mvr add @mvr/demo
 mvr add @testingafreeclaim/upgraded
 mvr add @pkg/qwer
 sui move build

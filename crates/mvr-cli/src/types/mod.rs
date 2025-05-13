@@ -6,6 +6,10 @@ use std::str::FromStr;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::errors::CliError;
+use crate::MAINNET_CHAIN_ID;
+use crate::TESTNET_CHAIN_ID;
+
 #[derive(Serialize, Default, Debug)]
 pub struct MoveTomlPublishedID {
     pub addresses_id: Option<String>,
@@ -15,7 +19,6 @@ pub struct MoveTomlPublishedID {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct MoveRegistryDependencies {
-    pub network: Network,
     pub packages: Vec<String>,
 }
 
@@ -40,6 +43,16 @@ pub enum Network {
     Testnet,
 }
 
+impl Network {
+    pub fn try_from_chain_identifier(chain_identifier: &str) -> Result<Self, CliError> {
+        match chain_identifier {
+            MAINNET_CHAIN_ID => Ok(Network::Mainnet),
+            TESTNET_CHAIN_ID => Ok(Network::Testnet),
+            _ => Err(CliError::NetworkNotSupported(chain_identifier.to_string())),
+        }
+    }
+}
+
 impl fmt::Display for Network {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -50,16 +63,13 @@ impl fmt::Display for Network {
 }
 
 impl FromStr for Network {
-    type Err = anyhow::Error;
+    type Err = CliError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "mainnet" => Ok(Network::Mainnet),
             "testnet" => Ok(Network::Testnet),
-            _ => Err(anyhow::anyhow!(
-                "Invalid network: {:?}. The only supported networks are `mainnet` and `testnet`.",
-                s
-            )),
+            _ => Err(CliError::NetworkNotSupported(s.to_string())),
         }
     }
 }

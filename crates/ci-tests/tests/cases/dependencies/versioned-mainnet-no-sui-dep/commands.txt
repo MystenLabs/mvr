@@ -1,2 +1,3 @@
-mvr add @pkg/qwer/1 --network mainnet
+sui client switch --env mainnet
+mvr add @pkg/qwer/1
 sui move build

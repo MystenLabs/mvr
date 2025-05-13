@@ -108,6 +108,12 @@ jobs:
             - alias: localnet
               rpc: "http://127.0.0.1:9000"
               ws: ~
+            - alias: testnet
+              rpc: "https://fullnode.testnet.sui.io"
+              ws: ~
+            - alias: mainnet
+              rpc: "https://fullnode.mainnet.sui.io"
+              ws: ~
           active_env: localnet
           active_address: "0x14e7ac25259adcc373c96627893976d4fe562a3f3fedce493fc187c5ebd53eee"
           EOF

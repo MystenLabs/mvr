@@ -11,6 +11,3 @@ mvr = "0x0"
 
 [dependencies]
 mvr_demo = { r.mvr = "@mvr/demo" }
-
-[r.mvr]
-network = "mainnet"

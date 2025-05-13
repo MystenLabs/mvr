@@ -5091,6 +5091,7 @@ dependencies = [
  "serde_json",
  "sui-sdk-types 0.0.2 (git+https://github.com/mystenlabs/sui-rust-sdk?rev=86a9e06)",
  "tempfile",
+ "thiserror 2.0.12",
  "tokio",
  "toml_edit 0.22.24",
  "yansi",

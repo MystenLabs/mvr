@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use mvr::utils::binary_version_check::check_sui_version;
+use mvr::utils::sui_binary::check_sui_version;
 use mvr::{commands::Command, constants::MINIMUM_BUILD_SUI_VERSION, resolve_move_dependencies};
 
 bin_version::bin_version!();
