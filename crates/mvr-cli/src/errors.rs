@@ -16,4 +16,10 @@ pub enum CliError {
 
     #[error("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {0} environment variable.\n")]
     SuiBinaryNotFound(String),
+
+    #[error("Missing Move.lock file for dependency {0}.")]
+    MissingLockFile(String),
+
+    #[error("Missing Move.toml file for dependency {0}.")]
+    MissingTomlFile(String),
 }
