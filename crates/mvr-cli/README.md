@@ -43,8 +43,9 @@ Below are the `mvr` binaries for macOS (Intel and Apple CPUs), Ubuntu (Intel and
 | Windows | Intel 64bit     | [mvr-windows-x86_64](https://github.com/mystenlabs/mvr/releases/latest/download/mvr-windows-x86_64.exe)   |
 
 ### Cargo install
-
-- `cargo install --locked --git https://github.com/mystenlabs/mvr --branch release mvr`
+```
+cargo install --locked --git https://github.com/mystenlabs/mvr --branch release mvr
+```
 
 ### From release
  
