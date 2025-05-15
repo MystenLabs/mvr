@@ -84,7 +84,7 @@ where
     // Check results by comparing database tables with snapshots
     for table in tables_to_check {
         let rows = read_table(&table, &url.to_string()).await?;
-        assert_json_snapshot!(format!("{test_name}:{table}"), rows);
+        assert_json_snapshot!(format!("{test_name}__{table}"), rows);
     }
     Ok(())
 }
