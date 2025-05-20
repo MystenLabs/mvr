@@ -1,6 +1,3 @@
-# WARNING
-This is a **DEVELOPER PREVIEW** of the Move Registry. It is EXPERIMENTAL and has NO GUARANTEES of uptime or correctness. USE AT YOUR OWN RISK.
-
 # Move Registry
 Move Registry is a name registration system for Move packages. You can use an MVR app any time you would previously use a 64-character hex address.
 
