@@ -64,7 +64,7 @@ async fn immediate_dependency_test() -> Result<(), anyhow::Error> {
         handler,
         ["packages", "package_dependencies"],
     )
-        .await?;
+    .await?;
     Ok(())
 }
 
