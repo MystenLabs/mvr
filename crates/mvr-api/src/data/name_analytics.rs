@@ -121,38 +121,51 @@ impl From<AnalyticsQueryResponse> for AnalyticsValue {
 /// at once, rather than calculating the analytics for each version individually, and is created utilizing all
 /// existing indexes on tables.
 const ANALYTICS_QUERY: &str = "WITH target AS (
-    SELECT 
-        package_id,
-        original_id
+    SELECT package_id, original_id, package_version
     FROM packages
     WHERE package_id = ANY($1)
-    ),
+),
 related_packages AS (
-    SELECT 
-        p.package_id,
-        t.package_id AS input_package_id
+    SELECT t.package_id AS input_package_id, p.package_id
     FROM packages p
     JOIN target t ON p.original_id = t.original_id
 ),
-analytics_with_interval AS (
+intervals AS (
+    SELECT generate_series(
+        DATE '2023-05-03',
+        CURRENT_DATE,
+        INTERVAL '14 days'
+    )::DATE AS interval_start
+),
+all_combinations AS (
     SELECT
         rp.input_package_id,
-        (CURRENT_DATE - pa.call_date) / 14 AS interval_group,
-        pa.call_date,
-        pa.direct_calls,
-        pa.propagated_calls,
-        pa.total_calls
-    FROM package_analytics pa
-    JOIN related_packages rp ON pa.package_id = rp.package_id
-    WHERE pa.call_date < CURRENT_DATE
+		rp.package_id,
+        i.interval_start
+    FROM related_packages rp
+    CROSS JOIN intervals i
+),
+aggregated_calls AS (
+    SELECT
+        ac.input_package_id,
+        ac.interval_start,
+        SUM(pa.direct_calls)::BIGINT AS direct,
+        SUM(pa.propagated_calls)::BIGINT AS propagated,
+        SUM(pa.total_calls)::BIGINT AS total
+    FROM all_combinations ac
+    LEFT JOIN package_analytics pa
+      ON pa.package_id = ac.package_id
+     AND pa.call_date >= ac.interval_start
+     AND pa.call_date < ac.interval_start + INTERVAL '14 days'
+    WHERE pa.call_date IS NULL OR pa.call_date < CURRENT_DATE
+    GROUP BY ac.input_package_id, ac.interval_start
 )
 SELECT
-    input_package_id AS package_id,
-    MIN(call_date) AS date_from,
-    MAX(call_date) AS date_to,
-    SUM(direct_calls)::BIGINT AS direct,
-    SUM(propagated_calls)::BIGINT AS propagated,
-    SUM(total_calls)::BIGINT AS total
-FROM analytics_with_interval
-GROUP BY input_package_id, interval_group
-ORDER BY date_from;";
+    input_package_id as package_id,
+    interval_start AS date_from,
+    (interval_start + INTERVAL '13 days')::DATE AS date_to,
+    COALESCE(direct, 0) AS direct,
+    COALESCE(propagated, 0) AS propagated,
+    COALESCE(total, 0) AS total
+FROM aggregated_calls
+ORDER BY interval_start";
