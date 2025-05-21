@@ -64,3 +64,7 @@ path = "src/main.rs"
 [[example]]
 name = "download-checkpoint"
 path = "examples/download_checkpoint.rs"
+
+[[example]]
+name = "immediate-dependency-backfill"
+path = "examples/immediate_dependency_backfill.rs"

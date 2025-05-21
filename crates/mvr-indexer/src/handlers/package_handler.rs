@@ -22,34 +22,6 @@ impl<const MAINNET: bool> PackageHandler<MAINNET> {
     } else {
         TESTNET_CHAIN_ID
     };
-
-    fn package_dependencies(
-        package: &MovePackage,
-    ) -> Result<Vec<PackageDependency>, anyhow::Error> {
-        let package_id = package.id().to_hex_uncompressed();
-        let mut immediate_dependencies = HashSet::new();
-        for (_, bytes) in package.serialized_module_map() {
-            let module = CompiledModule::deserialize_with_defaults(bytes)?;
-            immediate_dependencies.extend(
-                module
-                    .immediate_dependencies()
-                    .into_iter()
-                    .map(|dep| ObjectID::from(*dep.address())),
-            );
-        }
-        Ok(package
-            .linkage_table()
-            .iter()
-            .map(|(_, u)| u.upgraded_id)
-            .dedup()
-            .map(|dependency_package_id| PackageDependency {
-                package_id: package_id.clone(),
-                dependency_package_id: dependency_package_id.to_hex_uncompressed(),
-                chain_id: Self::CHAIN_ID.to_string(),
-                immediate_dependency: immediate_dependencies.contains(&dependency_package_id),
-            })
-            .collect())
-    }
 }
 
 #[async_trait::async_trait]
@@ -95,7 +67,7 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
             for o in &tx.output_objects {
                 if let Data::Package(p) = &o.data {
                     let package_id = p.id().to_hex_uncompressed();
-                    let deps = Self::package_dependencies(p)?;
+                    let deps = package_dependencies(Self::CHAIN_ID.to_string(), p)?;
                     results.push(Package {
                         package_id,
                         original_id: p.original_package_id().to_hex_uncompressed(),
@@ -112,4 +84,33 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
         }
         Ok(results)
     }
+}
+
+pub fn package_dependencies(
+    chain_id: String,
+    package: &MovePackage,
+) -> Result<Vec<PackageDependency>, anyhow::Error> {
+    let package_id = package.id().to_hex_uncompressed();
+    let mut immediate_dependencies = HashSet::new();
+    for (_, bytes) in package.serialized_module_map() {
+        let module = CompiledModule::deserialize_with_defaults(bytes)?;
+        immediate_dependencies.extend(
+            module
+                .immediate_dependencies()
+                .into_iter()
+                .map(|dep| ObjectID::from(*dep.address())),
+        );
+    }
+    Ok(package
+        .linkage_table()
+        .iter()
+        .map(|(_, u)| u.upgraded_id)
+        .dedup()
+        .map(|dependency_package_id| PackageDependency {
+            package_id: package_id.clone(),
+            dependency_package_id: dependency_package_id.to_hex_uncompressed(),
+            chain_id: chain_id.clone(),
+            immediate_dependency: immediate_dependencies.contains(&dependency_package_id),
+        })
+        .collect())
 }
