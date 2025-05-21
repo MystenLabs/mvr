@@ -17,7 +17,7 @@ pub struct Package {
     pub timestamp: NaiveDateTime,
 
     #[diesel(skip_insertion)]
-    pub deps: Vec<String>,
+    pub deps: Vec<PackageDependency>,
 }
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount)]
@@ -26,6 +26,7 @@ pub struct PackageDependency {
     pub package_id: String,
     pub dependency_package_id: String,
     pub chain_id: String,
+    pub immediate_dependency: bool,
 }
 
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, FieldCount, Clone)]

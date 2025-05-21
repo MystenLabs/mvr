@@ -26,7 +26,8 @@ diesel::table! {
     package_dependencies (package_id, dependency_package_id, chain_id) {
         package_id -> Varchar,
         dependency_package_id -> Varchar,
-        chain_id -> Varchar
+        chain_id -> Varchar,
+        immediate_dependency -> Nullable<Bool>
     }
 }
 

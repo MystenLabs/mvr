@@ -56,6 +56,18 @@ async fn name_records_write_test() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+#[tokio::test]
+async fn immediate_dependency_test() -> Result<(), anyhow::Error> {
+    let handler = PackageHandler::<true>;
+    data_test(
+        "immediate_dependency",
+        handler,
+        ["packages", "package_dependencies"],
+    )
+        .await?;
+    Ok(())
+}
+
 async fn data_test<H, I>(
     test_name: &str,
     handler: H,
