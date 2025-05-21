@@ -145,7 +145,6 @@ impl Connection<'_> {
     }
 }
 
-
 /// Detect whether the error is due to a timeout.
 fn is_timeout(err: &diesel::result::Error) -> bool {
     let diesel::result::Error::DatabaseError(_, info) = err else {

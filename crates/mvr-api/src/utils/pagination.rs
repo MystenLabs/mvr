@@ -77,7 +77,12 @@ pub struct PaginatedResponse<T> {
 }
 
 impl<T> PaginatedResponse<T> {
-    pub fn new(mut data: Vec<T>, next_cursor: Option<String>, limit: u32, total: Option<i64>) -> Self {
+    pub fn new(
+        mut data: Vec<T>,
+        next_cursor: Option<String>,
+        limit: u32,
+        total: Option<i64>,
+    ) -> Self {
         // if the result has more items than the limit, we pop the last item, as it
         // is only used to determine if there is a next page
         if data.len() > limit as usize {
@@ -192,10 +197,11 @@ mod tests {
         assert_eq!(paginated.data[1], results[1]);
         assert_eq!(paginated.next_cursor, Some(Cursor::encode(&results[1])));
 
-        let paginated = format_paginated_response::<TestCursor, _, _>(vec![], 25, None, |_| TestCursor {
-            id: None,
-            name: None,
-        });
+        let paginated =
+            format_paginated_response::<TestCursor, _, _>(vec![], 25, None, |_| TestCursor {
+                id: None,
+                name: None,
+            });
 
         assert_eq!(paginated.data.len(), 0);
         assert!(paginated.next_cursor.is_none());
