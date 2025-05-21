@@ -124,6 +124,7 @@ ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false
         Ok(Json(format_paginated_response(
             results,
             limit.get(),
+            None,
             |item| NameCursor {
                 name: Some(item.name.clone()),
             },

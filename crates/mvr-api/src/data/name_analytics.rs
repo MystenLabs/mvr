@@ -120,6 +120,8 @@ impl From<AnalyticsQueryResponse> for AnalyticsValue {
 /// The query is bulk-optimized, meaning it will calculate the analytics for all versions of the packageId
 /// at once, rather than calculating the analytics for each version individually, and is created utilizing all
 /// existing indexes on tables.
+/// 
+/// The query has `DATE '2023-05-03'` which is the first day of mainnet on Sui.
 const ANALYTICS_QUERY: &str = "WITH target AS (
     SELECT package_id, original_id, package_version
     FROM packages

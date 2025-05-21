@@ -72,10 +72,12 @@ pub struct PaginatedResponse<T> {
     pub data: Vec<T>,
     pub next_cursor: Option<String>,
     pub limit: u32,
+    /// Total is optional, and only returned when the count is also retrievable.
+    pub total: Option<i64>,
 }
 
 impl<T> PaginatedResponse<T> {
-    pub fn new(mut data: Vec<T>, next_cursor: Option<String>, limit: u32) -> Self {
+    pub fn new(mut data: Vec<T>, next_cursor: Option<String>, limit: u32, total: Option<i64>) -> Self {
         // if the result has more items than the limit, we pop the last item, as it
         // is only used to determine if there is a next page
         if data.len() > limit as usize {
@@ -86,6 +88,7 @@ impl<T> PaginatedResponse<T> {
             data,
             next_cursor,
             limit,
+            total,
         }
     }
 }
@@ -98,6 +101,7 @@ impl<T> PaginatedResponse<T> {
 pub fn format_paginated_response<T, C: Serialize, F>(
     mut results: Vec<T>,
     limit: u32,
+    total: Option<i64>,
     encode_cursor: F,
 ) -> PaginatedResponse<T>
 where
@@ -117,7 +121,7 @@ where
         None
     };
 
-    PaginatedResponse::new(results, next_cursor, limit)
+    PaginatedResponse::new(results, next_cursor, limit, total)
 }
 
 #[cfg(test)]
@@ -168,7 +172,7 @@ mod tests {
             },
         ];
 
-        let paginated = format_paginated_response(results.clone(), 3, |item| TestCursor {
+        let paginated = format_paginated_response(results.clone(), 3, None, |item| TestCursor {
             id: item.id,
             name: item.name.clone(),
         });
@@ -177,7 +181,7 @@ mod tests {
         // limit is 3, and we pass exactly 3 results, so no next cursor. We always query with 1 more than the limit.
         assert!(paginated.next_cursor.is_none());
 
-        let paginated = format_paginated_response(results.clone(), 2, |item| TestCursor {
+        let paginated = format_paginated_response(results.clone(), 2, None, |item| TestCursor {
             id: item.id,
             name: item.name.clone(),
         });
@@ -188,7 +192,7 @@ mod tests {
         assert_eq!(paginated.data[1], results[1]);
         assert_eq!(paginated.next_cursor, Some(Cursor::encode(&results[1])));
 
-        let paginated = format_paginated_response::<TestCursor, _, _>(vec![], 25, |_| TestCursor {
+        let paginated = format_paginated_response::<TestCursor, _, _>(vec![], 25, None, |_| TestCursor {
             id: None,
             name: None,
         });
