@@ -1,0 +1,1 @@
+alter table package_dependencies drop immediate_dependency;

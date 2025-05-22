@@ -5157,6 +5157,7 @@ dependencies = [
  "futures",
  "insta",
  "itertools 0.14.0",
+ "move-binary-format",
  "move-binding-derive",
  "move-core-types",
  "move-types",

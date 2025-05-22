@@ -2,12 +2,16 @@ use crate::{MAINNET_CHAIN_ID, TESTNET_CHAIN_ID};
 use chrono::DateTime;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
+use move_binary_format::CompiledModule;
 use mvr_schema::models::{Package, PackageDependency};
+use std::collections::HashSet;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::Connection;
+use sui_types::base_types::ObjectID;
 use sui_types::full_checkpoint_content::CheckpointData;
+use sui_types::move_package::MovePackage;
 use sui_types::object::Data;
 
 pub struct PackageHandler<const MAINNET: bool>;
@@ -18,6 +22,34 @@ impl<const MAINNET: bool> PackageHandler<MAINNET> {
     } else {
         TESTNET_CHAIN_ID
     };
+
+    fn package_dependencies(
+        package: &MovePackage,
+    ) -> Result<Vec<PackageDependency>, anyhow::Error> {
+        let package_id = package.id().to_hex_uncompressed();
+        let mut immediate_dependencies = HashSet::new();
+        for (_, bytes) in package.serialized_module_map() {
+            let module = CompiledModule::deserialize_with_defaults(bytes)?;
+            immediate_dependencies.extend(
+                module
+                    .immediate_dependencies()
+                    .into_iter()
+                    .map(|dep| ObjectID::from(*dep.address())),
+            );
+        }
+        Ok(package
+            .linkage_table()
+            .iter()
+            .map(|(_, u)| u.upgraded_id)
+            .dedup()
+            .map(|dependency_package_id| PackageDependency {
+                package_id: package_id.clone(),
+                dependency_package_id: dependency_package_id.to_hex_uncompressed(),
+                chain_id: Self::CHAIN_ID.to_string(),
+                immediate_dependency: immediate_dependencies.contains(&dependency_package_id),
+            })
+            .collect())
+    }
 }
 
 #[async_trait::async_trait]
@@ -26,19 +58,7 @@ impl<const MAINNET: bool> Handler for PackageHandler<MAINNET> {
         use mvr_schema::schema::package_dependencies::dsl::package_dependencies;
         use mvr_schema::schema::packages::dsl::packages;
 
-        let deps = values
-            .iter()
-            .flat_map(|p| {
-                p.deps
-                    .iter()
-                    .cloned()
-                    .map(|dependency_package_id| PackageDependency {
-                        package_id: p.package_id.clone(),
-                        dependency_package_id,
-                        chain_id: p.chain_id.clone(),
-                    })
-            })
-            .collect::<Vec<_>>();
+        let deps = values.iter().flat_map(|p| &p.deps).collect::<Vec<_>>();
 
         let insert_package = diesel::insert_into(packages)
             .values(values)
@@ -70,35 +90,26 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
                 .unwrap()
                 .naive_utc();
 
-        checkpoint
-            .transactions
-            .iter()
-            .try_fold(vec![], |results, tx| {
-                tx.output_objects
-                    .iter()
-                    .try_fold(results, |mut results, o| {
-                        if let Data::Package(p) = &o.data {
-                            let package_id = p.id().to_hex_uncompressed();
-                            let deps = p
-                                .linkage_table()
-                                .iter()
-                                .map(|(_, u)| u.upgraded_id.to_hex_uncompressed())
-                                .dedup()
-                                .collect();
-                            results.push(Package {
-                                package_id,
-                                original_id: p.original_package_id().to_hex_uncompressed(),
-                                package_version: p.version().value() as i64,
-                                move_package: bcs::to_bytes(p)?,
-                                chain_id: Self::CHAIN_ID.to_string(),
-                                tx_hash: tx.transaction.digest().base58_encode(),
-                                sender: tx.transaction.sender_address().to_string(),
-                                timestamp,
-                                deps,
-                            })
-                        }
-                        Ok(results)
+        let mut results = vec![];
+        for tx in &checkpoint.transactions {
+            for o in &tx.output_objects {
+                if let Data::Package(p) = &o.data {
+                    let package_id = p.id().to_hex_uncompressed();
+                    let deps = Self::package_dependencies(p)?;
+                    results.push(Package {
+                        package_id,
+                        original_id: p.original_package_id().to_hex_uncompressed(),
+                        package_version: p.version().value() as i64,
+                        move_package: bcs::to_bytes(p)?,
+                        chain_id: Self::CHAIN_ID.to_string(),
+                        tx_hash: tx.transaction.digest().base58_encode(),
+                        sender: tx.transaction.sender_address().to_string(),
+                        timestamp,
+                        deps,
                     })
-            })
+                }
+            }
+        }
+        Ok(results)
     }
 }

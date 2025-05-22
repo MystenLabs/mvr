@@ -1,0 +1,192 @@
+---
+source: crates/mvr-indexer/tests/mvr_data_tests.rs
+expression: rows
+---
+[
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x0000000000000000000000000000000000000000000000000000000000000002",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x0000000000000000000000000000000000000000000000000000000000000003",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x000000000000000000000000000000000000000000000000000000000000dee9",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x0b572349baf4526c92c4e5242306e07a1658fa329ae93d1b9db0fc38b8a592bb",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xdc67d6de3f00051c505da10d8f6fbab3b3ec21ec65f0dc22a2f36c13fc102110",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x25929e7f29e0a30eb4e692952ba1b5b65a3a4d65ab5f2a32e1ba3edcb587f26d",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x2d9316f1f1a95f6d7c85a4e690ef7c359e6649773ef2c37ad7d9857adb6bef06",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x64213b0e4a52bac468d4ac3f140242f70714381653a1919a6d57cd49c628207a",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x712579292f80c11a0c9de4ff553d6e5c4757105e83a8a3129823d2b39e65d062",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xe2b515f0052c0b3f83c23db045d49dbe1732818ccfc5d4596c9482f7f2e76a85",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x73baa782c55003b3a359dec04b189312565d18e7309d4a51f5f112f891e3b2ab",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x7f6ce7ade63857c4fd16ef7783fed2dfc4d7fb7e40615abdb653030b76aef0c6",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x8e6adb40c50cf2ce81d7dd12d240fb881df715343ab61233124aadb87a9fd1fd",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x1a3c42ded7b75cdf4ebc7c7b7da9d1e1db49f16fcdca934fac003f35f39ecad9",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xa0eba10b173538c8fecca1dff298e488402cc9ff374f8a12ca7758eebe830b66",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xa6baab1e668c7868991c1c3c11e144100f5734c407d020f72a01b9d1a8bcb97f",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xb196672db3293fdebdbd4cbea950823ff84805547c7345710a1cf9d0db52938f",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x7be61b62d902f3fe78d0a5e20b81b4715a47ff06cae292db8991dfea422cf57e",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xba153169476e8c3114962261d1edc70de5ad9781b83cc617ecc8c1923191cae0",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0x1d56b8ec33c3fae897eb7bb1acb79914e8152faed614868928e684c25c8b198d",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xe93247b408fe44ed0ee5b6ac508b36325b239d6333e44ffa240dcc0c1a69cdd8",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xc66fabf1a9253e43c70f1cc02d40a1d18db183140ecaae2a3f58fa6b66c55acf",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xceb3b6f35b71dbd0296cd96f8c00959c230854c7797294148b413094b9621b0e",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xdb982f402a039f196f3e13cd73795db441393b5bc6eef7a0295a333808982a7d",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xc4049b2d1cc0f6e017fda8260e4377cecd236bd7f56a54fee120816e72e2e0dd",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc",
+    "chain_id": "35834a8a",
+    "immediate_dependency": true
+  },
+  {
+    "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
+    "dependency_package_id": "0xbd8d4489782042c6fafad4de4bc6a5e0b84a43c6c00647ffd7062d1e2bb7549e",
+    "chain_id": "35834a8a",
+    "immediate_dependency": false
+  }
+]
