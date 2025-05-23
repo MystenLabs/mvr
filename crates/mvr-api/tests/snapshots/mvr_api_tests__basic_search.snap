@@ -2,4 +2,4 @@
 source: crates/mvr-api/tests/mvr_api_tests.rs
 expression: basic_dummy_data.to_string()
 ---
-{"data":[{"name":"@test/core","metadata":{"icon_url":"https://moveregistry.com/icon.png","description":"This is a test package","website_url":"https://moveregistry.com","documentation_url":"https://docs.suins.io/move-registry"},"mainnet_package_info_id":"0x0000000000000000000000000000000000000000000000000000000000000002","testnet_package_info_id":null}],"next_cursor":null,"limit":20}
+{"data":[{"name":"@test/core","metadata":{"icon_url":"https://moveregistry.com/icon.png","description":"This is a test package","website_url":"https://moveregistry.com","documentation_url":"https://docs.suins.io/move-registry"},"mainnet_package_info_id":"0x0000000000000000000000000000000000000000000000000000000000000002","testnet_package_info_id":null}],"next_cursor":null,"limit":20,"total":null}

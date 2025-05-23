@@ -5,6 +5,7 @@ use axum::{
     Json,
 };
 use chrono::Local;
+use futures::try_join;
 use serde::{Deserialize, Serialize};
 use sui_sdk_types::ObjectId;
 
@@ -12,7 +13,10 @@ use crate::{
     data::{
         app_state::AppState,
         package_dependencies::{PackageDependencies, PackageDependenciesKey},
-        package_dependents::{PackageDependent, PackageDependentsCursor, PackageDependentsKey},
+        package_dependents::{
+            PackageDependent, PackageDependentsCountKey, PackageDependentsCursor,
+            PackageDependentsKey,
+        },
     },
     errors::ApiError,
     utils::pagination::{format_paginated_response, Cursor, PaginatedResponse, PaginationLimit},
@@ -59,19 +63,25 @@ impl PackageAddress {
         let limit = PaginationLimit::new(params.limit)?;
         let cursor = Cursor::decode_or_default::<PackageDependentsCursor>(&params.cursor)?;
 
-        let dependents = app_state
-            .cached_loader()
-            .load_one(PackageDependentsKey(
+        let (dependents, dependents_count) = try_join!(
+            app_state.cached_loader().load_one(PackageDependentsKey(
                 object_id,
                 cursor,
                 limit.clone(),
                 Local::now().date_naive(),
-            ))
-            .await?;
+            )),
+            app_state
+                .cached_loader()
+                .load_one(PackageDependentsCountKey(
+                    object_id,
+                    Local::now().date_naive(),
+                )),
+        )?;
 
         Ok(Json(format_paginated_response(
             dependents.unwrap_or_default(),
             limit.get(),
+            dependents_count,
             |item| PackageDependentsCursor {
                 package_id: Some(ObjectId::from_str(&item.package_id).unwrap()),
                 aggregated_total_calls: Some(item.aggregated_total_calls),
