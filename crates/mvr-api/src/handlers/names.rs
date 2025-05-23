@@ -9,6 +9,7 @@ use diesel::{
     prelude::QueryableByName,
     sql_types::{Integer, VarChar},
 };
+use futures::try_join;
 use mvr_types::name::VersionedName;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -17,7 +18,7 @@ use sui_sdk_types::ObjectId;
 use crate::{
     data::{
         app_state::AppState,
-        name_analytics::{AnalyticsAggregatedValues, NameAnalyticsKey},
+        name_analytics::{AnalyticsValue, NameAnalyticsKey, NameDependentsCountKey},
         package_by_name_loader::{PackageByNameBaseData, PackageByNameKey},
         resolution_loader::ResolutionKey,
     },
@@ -58,6 +59,12 @@ pub struct NameSearchQueryParams {
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct NameCursor {
     pub name: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+pub struct AnalyticsResponse {
+    pub analytics: Vec<AnalyticsValue>,
+    pub total_dependents: i64,
 }
 
 pub struct Names;
@@ -135,7 +142,7 @@ ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false
     pub async fn get_analytics(
         Path(name): Path<String>,
         State(app_state): State<Arc<AppState>>,
-    ) -> Result<Json<AnalyticsAggregatedValues>, ApiError> {
+    ) -> Result<Json<AnalyticsResponse>, ApiError> {
         let name = VersionedName::from_str(&name)?;
 
         let Some(resolution) = app_state
@@ -146,15 +153,22 @@ ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false
             return Err(ApiError::NotFound(format!("Package {} not found", name)));
         };
 
-        let analytics = app_state
-            .cached_loader()
-            .load_one(NameAnalyticsKey(
-                name.name,
+        let (analytics, total_dependents) = try_join!(
+            app_state.cached_loader().load_one(NameAnalyticsKey(
+                name.name.clone(),
                 resolution.id,
                 Local::now().date_naive(),
-            ))
-            .await?;
+            )),
+            app_state.cached_loader().load_one(NameDependentsCountKey(
+                name.name.clone(),
+                resolution.id,
+                Local::now().date_naive()
+            )),
+        )?;
 
-        Ok(Json(analytics.unwrap_or_default()))
+        Ok(Json(AnalyticsResponse {
+            analytics: analytics.unwrap_or_default().analytics,
+            total_dependents: total_dependents.unwrap_or_default(),
+        }))
     }
 }
