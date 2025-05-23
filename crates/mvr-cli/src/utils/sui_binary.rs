@@ -1,10 +1,12 @@
 use anyhow::anyhow;
+use anyhow::bail;
 use anyhow::Error;
 use anyhow::Result;
 use regex::Regex;
 use std::env;
 use std::process::Command;
 use std::process::Output;
+use std::str::FromStr;
 use yansi::Paint;
 
 use crate::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
@@ -83,14 +85,32 @@ pub fn force_build() -> Result<(), Error> {
     Ok(())
 }
 
-/// Gets the active network by calling `sui client chain-identifier` from the Sui CLI.
+/// Gets the active network by calling `sui client chain-identifier` from the Sui CLI, or falls back
+/// to the `MVR_FALLBACK_NETWORK` environment variable for other networks. This is useful for local testing.
+///
 /// Returns the network as a `Network` enum, or errors if network is not `mainnet` or `testnet`.
 pub fn get_active_network() -> Result<Network, Error> {
-    let output = sui_command(["client", "chain-identifier"].to_vec())?;
+    let fallback_network = env::var("MVR_FALLBACK_NETWORK");
 
-    let chain_id = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let cli_output = sui_command(["client", "chain-identifier"].to_vec())?;
 
-    Ok(Network::try_from_chain_identifier(&chain_id)?)
+    let chain_id = String::from_utf8_lossy(&cli_output.stdout)
+        .trim()
+        .to_string();
+
+    let cli_network = Network::try_from_chain_identifier(&chain_id);
+
+    // if the CLI network is not defined, and there's no fallback network,
+    // we want to "bail" with the CLI's error.
+    if cli_network.is_err() && !fallback_network.is_ok() {
+        bail!(cli_network.err().unwrap());
+    }
+
+    if cli_network.is_ok() {
+        Ok(cli_network.unwrap())
+    } else {
+        Ok(Network::from_str(&fallback_network.unwrap())?)
+    }
 }
 
 fn sui_command(args: Vec<&str>) -> Result<Output, CliError> {

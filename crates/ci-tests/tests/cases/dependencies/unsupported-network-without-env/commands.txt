@@ -1,0 +1,2 @@
+sui client switch --env devnet
+mvr add @mvr/core

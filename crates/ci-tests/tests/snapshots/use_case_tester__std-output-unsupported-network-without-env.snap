@@ -1,0 +1,7 @@
+---
+source: crates/ci-tests/tests/use_case_tester.rs
+expression: std_output
+---
+Active environment switched to [devnet]
+Error: The requested network (or chain identifier) is not supported. Only `mainnet` and `testnet` are supported. 
+    If you are using this locally, you can set the `MVR_FALLBACK_NETWORK` environment variable to `mainnet` or `testnet`.

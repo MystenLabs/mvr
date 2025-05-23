@@ -11,8 +11,12 @@ pub enum CliError {
     #[error("The requested package {0}, on network {1}, either does not exist, or it does not have an on-chain metadata mapping defined.")]
     NameNotExists(String, String),
 
-    #[error("The requested network (or chain identifier) {0} is not supported. Only `mainnet` and `testnet` are supported.")]
-    NetworkNotSupported(String),
+    #[error("The requested network (or chain identifier) is not supported. Only `mainnet` and `testnet` are supported. 
+    If you are using this locally, you can set the `MVR_FALLBACK_NETWORK` environment variable to `mainnet` or `testnet`.")]
+    NetworkNotSupported,
+
+    #[error("Invalid network: {0}. Please use `mainnet` or `testnet`.")]
+    InvalidNetwork(String),
 
     #[error("\n*** Failed to find the SUI binary. *** \nPlease make sure it is installed and available in your PATH, or supply it using {0} environment variable.\n")]
     SuiBinaryNotFound(String),

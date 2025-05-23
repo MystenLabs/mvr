@@ -1,0 +1,9 @@
+---
+source: crates/ci-tests/tests/use_case_tester.rs
+expression: std_output
+---
+Active environment switched to [devnet]
+
+Successfully added dependency @mvr/core to your Move.toml
+
+You can use this dependency in your modules by calling: use mvr::<module>;

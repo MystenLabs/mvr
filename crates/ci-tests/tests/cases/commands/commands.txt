@@ -1,5 +1,6 @@
 mvr --help
 mvr search @testingafreeclaim/upgraded
+sui client switch --env mainnet
 mvr resolve @pkg/qwer/1
 mvr resolve @pkg/qwer/1 --network testnet
 mvr search @testingafreeclaim/upgraded --limit 1
