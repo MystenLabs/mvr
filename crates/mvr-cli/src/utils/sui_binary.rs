@@ -100,17 +100,19 @@ pub fn get_active_network() -> Result<Network, Error> {
 
     let cli_network = Network::try_from_chain_identifier(&chain_id);
 
-    // if the CLI network is not defined, and there's no fallback network,
-    // we want to "bail" with the CLI's error.
-    if cli_network.is_err() && !fallback_network.is_ok() {
-        bail!(cli_network.err().unwrap());
-    }
+    let Ok(cli_network) = cli_network else {
+        if !fallback_network.is_ok() {
+            bail!(cli_network.unwrap_err());
+        }
 
-    if cli_network.is_ok() {
-        Ok(cli_network.unwrap())
-    } else {
-        Ok(Network::from_str(&fallback_network.unwrap())?)
-    }
+        let Ok(fallback) = fallback_network else {
+            bail!(cli_network.unwrap_err());
+        };
+
+        return Ok(Network::from_str(&fallback)?);
+    };
+
+    Ok(cli_network)
 }
 
 fn sui_command(args: Vec<&str>) -> Result<Output, CliError> {
