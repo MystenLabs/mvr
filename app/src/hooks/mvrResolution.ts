@@ -1,4 +1,5 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
+import { MvrHeader } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 
@@ -7,7 +8,7 @@ export type SearchResultItem = {
   metadata: Record<string, string>;
   mainnet_package_info_id: string | null;
   testnet_package_info_id: string | null;
-};  
+};
 
 export type SearchResult = {
   data: SearchResultItem[];
@@ -46,7 +47,10 @@ export function useResolveMvrName(
   return useQuery({
     queryKey: [AppQueryKeys.RESOLVE_MVR_NAME, network, name],
     queryFn: async () => {
-      const response = await fetch(`${mvrEndpoint}/v1/names/${name}`);
+      const response = await fetch(
+        `${mvrEndpoint}/v1/names/${name}`,
+        MvrHeader(),
+      );
 
       if (!response.ok) {
         throw new Error("Failed to resolve MVR name");
@@ -74,6 +78,7 @@ export function useSearchMvrNames(query: string) {
     queryFn: async () => {
       const response = await fetch(
         `${mvrEndpoint}/v1/names?search=${query}&limit=20&is_linked=true`,
+        MvrHeader(),
       );
 
       if (!response.ok) {
