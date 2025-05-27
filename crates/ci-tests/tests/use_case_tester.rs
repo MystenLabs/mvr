@@ -52,7 +52,7 @@ fn run_dependency_tests() -> Result<()> {
 
         let mut std_output = String::new();
         for command in commands {
-            std_output += &run_command(&project_temp_dir, command)?;
+            std_output.push_str(&run_command(&project_temp_dir, command)?);
         }
 
         let output_toml = force_read_file(&project_temp_dir.path().join("Move.toml"));
