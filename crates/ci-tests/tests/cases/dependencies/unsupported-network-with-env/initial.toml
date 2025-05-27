@@ -1,0 +1,8 @@
+[package]
+name = "nftmaker"
+edition = "2024.beta"
+
+[dependencies]
+
+[addresses]
+nftmaker = "0x0"

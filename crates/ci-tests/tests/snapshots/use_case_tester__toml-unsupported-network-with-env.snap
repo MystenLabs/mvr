@@ -1,0 +1,13 @@
+---
+source: crates/ci-tests/tests/use_case_tester.rs
+expression: output_toml
+---
+[package]
+name = "nftmaker"
+edition = "2024.beta"
+
+[dependencies]
+mvr = { r.mvr = "@mvr/core" }
+
+[addresses]
+nftmaker = "0x0"

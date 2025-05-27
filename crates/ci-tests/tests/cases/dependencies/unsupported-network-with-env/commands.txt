@@ -1,0 +1,2 @@
+sui client switch --env devnet
+MVR_FALLBACK_NETWORK=mainnet mvr add @mvr/core

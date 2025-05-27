@@ -50,8 +50,9 @@ fn run_dependency_tests() -> Result<()> {
 
         let project_temp_dir = create_tmp_project(&toml, &source)?;
 
+        let mut std_output = String::new();
         for command in commands {
-            let _ = run_command(&project_temp_dir, command)?;
+            std_output.push_str(&run_command(&project_temp_dir, command)?);
         }
 
         let output_toml = force_read_file(&project_temp_dir.path().join("Move.toml"));
@@ -59,6 +60,11 @@ fn run_dependency_tests() -> Result<()> {
         insta::assert_snapshot!(
             format!("toml-{}", test_case.file_name().to_string_lossy()),
             output_toml,
+        );
+
+        insta::assert_snapshot!(
+            format!("std-output-{}", test_case.file_name().to_string_lossy()),
+            std_output,
         );
     }
 

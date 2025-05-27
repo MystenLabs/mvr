@@ -48,7 +48,7 @@ impl Network {
         match chain_identifier {
             MAINNET_CHAIN_ID => Ok(Network::Mainnet),
             TESTNET_CHAIN_ID => Ok(Network::Testnet),
-            _ => Err(CliError::NetworkNotSupported(chain_identifier.to_string())),
+            _ => Err(CliError::NetworkNotSupported),
         }
     }
 }
@@ -69,7 +69,7 @@ impl FromStr for Network {
         match s {
             "mainnet" => Ok(Network::Mainnet),
             "testnet" => Ok(Network::Testnet),
-            _ => Err(CliError::NetworkNotSupported(s.to_string())),
+            _ => Err(CliError::InvalidNetwork(s.to_string())),
         }
     }
 }

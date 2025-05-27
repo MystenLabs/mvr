@@ -1,0 +1,5 @@
+---
+source: crates/ci-tests/tests/use_case_tester.rs
+expression: cmd_output
+---
+Active environment switched to [mainnet]
