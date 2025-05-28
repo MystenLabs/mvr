@@ -4,13 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
+sui-package-resolver = { workspace = true }
 async-graphql = { version = "=7.0.1", features = ["dataloader"] }
 axum = "0.8.1"
 tokio = { workspace = true, features = ["full"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 base64 = "0.22.1"
-
 futures.workspace = true
 serde = { workspace = true, features = ["derive"] }
 diesel = { workspace = true, features = ["serde_json"] }
@@ -36,11 +35,7 @@ mvr-types = { path = "../mvr-types" }
 mvr-schema = { path = "../mvr-schema" }
 
 [dev-dependencies]
-sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
-move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
+sui-move-build = { workspace = true }
+move-binary-format = { workspace = true }
 reqwest = { version = "0.12.11", features = ["json"] }
 insta = "1.42.2"
-
-[[bin]]
-name = "mvr-api"
-path = "src/main.rs"

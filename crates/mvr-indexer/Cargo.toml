@@ -11,19 +11,15 @@ tokio.workspace = true
 futures = "0.3.31"
 sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
 sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
-move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
+move-binary-format = { workspace = true }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
 reqwest = { version = "^0.12", features = ["blocking", "json"] }
-
 move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "99f68a28c2f19be40a09e5f1281af748df9a8d3e" }
 move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "99f68a28c2f19be40a09e5f1281af748df9a8d3e" }
-
-sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", features = ["serde"], rev = "86a9e06" }
-sui-transaction-builder = { git = "https://github.com/mystenlabs/sui-rust-sdk", rev = "86a9e06" }
-
+sui-sdk-types = { workspace = true }
+sui-transaction-builder = { workspace = true }
 mvr-schema = { path = "../mvr-schema" }
 mvr-types = { path = "../mvr-types" }
-
 clap = { workspace = true, features = ["env"] }
 itertools = "0.14.0"
 diesel = { workspace = true, features = ["postgres", "uuid", "chrono", "serde_json", "numeric"] }
@@ -36,7 +32,6 @@ anyhow.workspace = true
 serde_json.workspace = true
 chrono.workspace = true
 url.workspace = true
-
 sui-pg-db.workspace = true
 prometheus.workspace = true
 sui-indexer-alt-metrics.workspace = true
@@ -50,15 +45,3 @@ sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
 sqlx = {version = "0.8.3", features = ["runtime-tokio", "postgres", "chrono"]}
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
 insta = { version = "1.43.1", features = ["json"] }
-
-[[bin]]
-name = "mvr-indexer"
-path = "src/main.rs"
-
-[[example]]
-name = "download-checkpoint"
-path = "examples/download_checkpoint.rs"
-
-[[example]]
-name = "immediate-dependency-backfill"
-path = "examples/immediate_dependency_backfill.rs"
