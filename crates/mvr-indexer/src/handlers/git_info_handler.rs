@@ -15,7 +15,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::Connection;
+use sui_pg_db::{Connection, Db};
 use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::object::Object;
@@ -96,7 +96,12 @@ impl<T: MoveStruct + DeserializeOwned> Handler for GitInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, GitInfo>,
 {
-    async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
+    type Store = Db;
+
+    async fn commit<'a>(
+        values: &[Self::Value],
+        conn: &mut Connection<'a>,
+    ) -> anyhow::Result<usize> {
         use mvr_schema::schema::git_infos::columns::*;
         use mvr_schema::schema::git_infos::dsl::git_infos;
 

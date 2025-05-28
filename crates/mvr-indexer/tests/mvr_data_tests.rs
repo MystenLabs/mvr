@@ -16,6 +16,7 @@ use std::path::Path;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
+use sui_indexer_alt_framework::store::Store;
 use sui_pg_db::temp::TempDb;
 use sui_pg_db::Connection;
 use sui_pg_db::Db;
@@ -76,11 +77,12 @@ async fn data_test<H, I>(
 where
     I: IntoIterator<Item = &'static str>,
     H: Handler + Processor,
+    for<'a> H::Store: Store<Connection<'a> = Connection<'a>>,
 {
     // Set up the temporary database
     let temp_db = TempDb::new()?;
     let url = temp_db.database().url();
-    let db = Db::for_write(url.clone(), DbArgs::default()).await?;
+    let db = Arc::new(Db::for_write(url.clone(), DbArgs::default()).await?);
     db.run_migrations(MIGRATIONS).await?;
     let mut conn = db.connect().await?;
 
@@ -101,11 +103,14 @@ where
     Ok(())
 }
 
-async fn run_pipeline<T: Handler + Processor, P: AsRef<Path>>(
+async fn run_pipeline<'c, T: Handler + Processor, P: AsRef<Path>>(
     handler: &T,
     path: P,
-    conn: &mut Connection<'_>,
-) -> Result<(), anyhow::Error> {
+    conn: &mut Connection<'c>,
+) -> Result<(), anyhow::Error>
+where
+    T::Store: Store<Connection<'c> = Connection<'c>>,
+{
     let bytes = fs::read(path)?;
     let cp = Blob::from_bytes::<CheckpointData>(&bytes)?;
     let result = handler.process(&Arc::new(cp))?;
