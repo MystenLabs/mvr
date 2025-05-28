@@ -39,3 +39,7 @@ sui-move-build = { workspace = true }
 move-binary-format = { workspace = true }
 reqwest = { version = "0.12.11", features = ["json"] }
 insta = "1.42.2"
+
+[[bin]]
+name = "mvr-api"
+path = "src/main.rs"
