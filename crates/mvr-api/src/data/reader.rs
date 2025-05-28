@@ -14,7 +14,7 @@ use diesel::query_dsl::methods::LimitDsl;
 use diesel::query_dsl::CompatibleType;
 use diesel::result::Error as DieselError;
 use diesel_async::methods::LoadQuery;
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use prometheus::Registry;
 use sui_indexer_alt_metrics::db::DbConnectionStatsCollector;
 use sui_pg_db as db;
@@ -127,8 +127,8 @@ impl Connection<'_> {
     pub(crate) async fn results<Q, U>(&mut self, query: Q) -> Result<Vec<U>, ReadError>
     where
         U: Send,
-        Q: RunQueryDsl<db::ManagedConnection> + 'static,
-        Q: LoadQuery<'static, db::ManagedConnection, U> + QueryFragment<Pg> + Send,
+        Q: RunQueryDsl<AsyncPgConnection> + 'static,
+        Q: LoadQuery<'static, AsyncPgConnection, U> + QueryFragment<Pg> + Send,
     {
         debug!("{}", diesel::debug_query(&query));
 

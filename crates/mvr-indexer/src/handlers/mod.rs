@@ -16,7 +16,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::Connection;
+use sui_pg_db::{Connection, Db};
 use sui_sdk_types::StructTag;
 use sui_types::full_checkpoint_content::CheckpointData;
 use tracing::info;
@@ -79,7 +79,9 @@ pub struct NoOpsHandler;
 
 #[async_trait]
 impl Handler for NoOpsHandler {
-    async fn commit(_: &[Self::Value], _: &mut Connection<'_>) -> anyhow::Result<usize> {
+    type Store = Db;
+
+    async fn commit<'a>(_: &[Self::Value], _: &mut Connection<'a>) -> anyhow::Result<usize> {
         Ok(0)
     }
 }

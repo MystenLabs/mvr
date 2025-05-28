@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::Connection;
+use sui_pg_db::{Connection, Db};
 use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
 
@@ -34,7 +34,12 @@ impl NameRecordHandler {
 }
 #[async_trait]
 impl Handler for NameRecordHandler {
-    async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
+    type Store = Db;
+
+    async fn commit<'a>(
+        values: &[Self::Value],
+        conn: &mut Connection<'a>,
+    ) -> anyhow::Result<usize> {
         use mvr_schema::schema::name_records::columns::*;
         use mvr_schema::schema::name_records::dsl::name_records;
 

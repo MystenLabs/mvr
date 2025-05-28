@@ -19,16 +19,15 @@ name = "unit_tests"
 path = "tests/unit_tests.rs"
 
 [dependencies]
-bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "42ba6c0" }
+bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "298d049" }
 
 clap = { workspace = true, features = ["derive"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 tempfile = "3.13"
-tokio = { version = "1.40.0", features = ["full"] }
+tokio = { workspace = true, features = ["full"] }
 toml_edit = "0.22"
 regex = "1.11"
 yansi = "1.0"
-dirs = "6.0.0"
 anyhow.workspace = true
 serde.workspace = true
 serde_json.workspace = true

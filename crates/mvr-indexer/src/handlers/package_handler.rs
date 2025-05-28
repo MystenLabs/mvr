@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::Connection;
+use sui_pg_db::{Connection, Db};
 use sui_types::base_types::ObjectID;
 use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::move_package::MovePackage;
@@ -26,7 +26,12 @@ impl<const MAINNET: bool> PackageHandler<MAINNET> {
 
 #[async_trait::async_trait]
 impl<const MAINNET: bool> Handler for PackageHandler<MAINNET> {
-    async fn commit(values: &[Self::Value], conn: &mut Connection<'_>) -> anyhow::Result<usize> {
+    type Store = Db;
+
+    async fn commit<'a>(
+        values: &[Self::Value],
+        conn: &mut Connection<'a>,
+    ) -> anyhow::Result<usize> {
         use mvr_schema::schema::package_dependencies::dsl::package_dependencies;
         use mvr_schema::schema::packages::dsl::packages;
 

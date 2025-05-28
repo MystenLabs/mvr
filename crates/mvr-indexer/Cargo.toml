@@ -7,13 +7,11 @@ publish = false
 edition = "2021"
 
 [dependencies]
-tokio = "1.38.0"
+tokio.workspace = true
 futures = "0.3.31"
-sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
-sui-config = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
-sui-data-ingestion-core = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
-sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
-move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
+sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
+sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
+move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
 reqwest = { version = "^0.12", features = ["blocking", "json"] }
 
@@ -27,9 +25,6 @@ mvr-schema = { path = "../mvr-schema" }
 mvr-types = { path = "../mvr-types" }
 
 clap = { workspace = true, features = ["env"] }
-tempfile = "3.13.0"
-uuid = { version = "1.11.0", features = ["serde", "v4"] }
-bigdecimal = "0.4.5"
 itertools = "0.14.0"
 diesel = { workspace = true, features = ["postgres", "uuid", "chrono", "serde_json", "numeric"] }
 diesel-async = { workspace = true, features = ["bb8", "postgres"] }
@@ -45,17 +40,16 @@ url.workspace = true
 sui-pg-db.workspace = true
 prometheus.workspace = true
 sui-indexer-alt-metrics.workspace = true
-mysten-metrics.workspace = true
 sui-types.workspace = true
 move-core-types.workspace = true
 telemetry-subscribers.workspace = true
 tokio-util.workspace = true
 
 [dev-dependencies]
-sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "42ba6c0" }
+sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "298d049" }
 sqlx = {version = "0.8.3", features = ["runtime-tokio", "postgres", "chrono"]}
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
-insta = "1.42.2"
+insta = { version = "1.43.1", features = ["json"] }
 
 [[bin]]
 name = "mvr-indexer"
