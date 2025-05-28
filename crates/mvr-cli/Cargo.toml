@@ -19,8 +19,7 @@ name = "unit_tests"
 path = "tests/unit_tests.rs"
 
 [dependencies]
-bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "298d049" }
-
+bin-version = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 tempfile = "3.13"
@@ -33,11 +32,8 @@ serde.workspace = true
 serde_json.workspace = true
 futures.workspace = true
 thiserror.workspace = true
-# MVR Types
 mvr-types = { path = "../mvr-types" }
-
-# Rust SDK
-sui-sdk-types.workspace = true
+sui-sdk-types = { workspace = true }
 
 [dev-dependencies]
 expect-test = "1.5.0"
