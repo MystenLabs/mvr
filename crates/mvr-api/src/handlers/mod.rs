@@ -18,9 +18,9 @@ pub(crate) mod names;
 pub(crate) mod package_address;
 pub(crate) mod resolution;
 pub(crate) mod reverse_resolution;
+pub(crate) mod sitemap;
 pub(crate) mod struct_definition;
 pub(crate) mod type_resolution;
-pub(crate) mod sitemap;
 
 pub(crate) async fn health_check(
     State(app_state): State<Arc<AppState>>,

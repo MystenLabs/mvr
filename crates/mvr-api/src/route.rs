@@ -6,7 +6,9 @@ use std::sync::Arc;
 use crate::{
     data::app_state::AppState,
     handlers::{
-        health_check, names::Names, package_address::PackageAddress, resolution::Resolution, reverse_resolution::ReverseResolution, sitemap::Sitemap, struct_definition::StructDefinition, type_resolution::TypeResolution
+        health_check, names::Names, package_address::PackageAddress, resolution::Resolution,
+        reverse_resolution::ReverseResolution, sitemap::Sitemap,
+        struct_definition::StructDefinition, type_resolution::TypeResolution,
     },
     metrics::middleware::track_metrics,
 };
