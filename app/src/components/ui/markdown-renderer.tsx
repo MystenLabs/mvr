@@ -112,13 +112,13 @@ export function MarkdownRenderer({
           },
           ul: ({ node, ...props }) => (
             <ul
-              className="list-inside list-disc text-14 text-content-secondary lg:text-16"
+              className="list-inside list-disc text-14 text-content-secondary lg:text-16 ml-sm"
               {...props}
             />
           ),
           ol: ({ node, ...props }) => (
             <ol
-              className="list-inside list-decimal text-14 text-content-secondary lg:text-16"
+              className="list-inside list-decimal text-14 text-content-secondary lg:text-16 ml-sm"
               {...props}
             />
           ),
