@@ -1,4 +1,5 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
+import { MvrHeader } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -27,9 +28,7 @@ export function useReverseResolution(
         `${clients.mvrEndpoints[network]}/v1/reverse-resolution/bulk`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          ...MvrHeader({ "Content-Type": "application/json" }),
           body: JSON.stringify({
             package_ids: uncachedIds,
           }),
@@ -53,8 +52,8 @@ export function useReverseResolution(
   });
 
   // Return all items: cached + newly fetched
-  const allItems = addresses
-    .reduce((acc, id) => {
+  const allItems = addresses.reduce(
+    (acc, id) => {
       const cached = queryClient.getQueryData([
         AppQueryKeys.MVR_REVERSE_RESOLUTION,
         network,
@@ -62,7 +61,9 @@ export function useReverseResolution(
       ]);
       if (cached) acc[id] = cached;
       return acc;
-    }, {} as Record<string, any>)
+    },
+    {} as Record<string, any>,
+  );
 
   return {
     items: allItems,

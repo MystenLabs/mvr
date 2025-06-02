@@ -71,11 +71,19 @@ export const beautifySuiAddress = (address: string, digits = 6) => {
   );
 };
 
-
 // A tanstack configuration for no refetching.
 export const NoRefetching = {
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
   refetchOnReconnect: false,
+};
+
+export const MvrHeader = (headers: Record<string, string> = {}) => {
+  return {
+    headers: {
+      ...headers,
+      "Mvr-Source": "frontend-dapp",
+    },
+  };
 };
