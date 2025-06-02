@@ -5,12 +5,22 @@ use crate::data::reader::Reader;
 use crate::metrics::RpcMetrics;
 use async_graphql::dataloader::DataLoader;
 use async_graphql::dataloader::LruCache;
+use chrono::DateTime;
+use chrono::Utc;
 use prometheus::Registry;
 use std::sync::Arc;
 use std::time::Duration;
 use sui_package_resolver::{PackageStoreWithLruCache, Resolver};
 use sui_pg_db as db;
+use tokio::sync::RwLock;
 use url::Url;
+
+/// A sitemap that we refresh once every hour per instance.
+/// We keep it in-memory given the size is really small.
+pub struct CachedSitemap {
+    pub xml: String,
+    pub last_updated: Option<DateTime<Utc>>,
+}
 
 #[derive(Clone)]
 pub struct AppState {
@@ -19,6 +29,7 @@ pub struct AppState {
     cached_loader: Arc<DataLoader<Reader, LruCache>>,
     package_resolver: PackageResolver,
     metrics: Arc<RpcMetrics>,
+    sitemap_cache: Arc<RwLock<CachedSitemap>>,
 }
 
 impl AppState {
@@ -41,12 +52,19 @@ impl AppState {
         let package_cache = PackageStoreWithLruCache::new(api_pkg_resolver);
         let package_resolver = Arc::new(Resolver::new(package_cache));
 
+        // We populate the sitemap on demand, on the first request!
+        let sitemap_cache = Arc::new(RwLock::new(CachedSitemap {
+            xml: "".to_string(),
+            last_updated: None,
+        }));
+
         Ok(Self {
             reader,
             loader,
             cached_loader,
             package_resolver,
             metrics,
+            sitemap_cache,
         })
     }
 
@@ -72,5 +90,9 @@ impl AppState {
 
     pub(crate) fn network(&self) -> &str {
         &self.reader.network()
+    }
+
+    pub(crate) fn sitemap_cache(&self) -> &Arc<RwLock<CachedSitemap>> {
+        &self.sitemap_cache
     }
 }

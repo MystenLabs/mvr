@@ -6,9 +6,7 @@ use std::sync::Arc;
 use crate::{
     data::app_state::AppState,
     handlers::{
-        health_check, names::Names, package_address::PackageAddress, resolution::Resolution,
-        reverse_resolution::ReverseResolution, struct_definition::StructDefinition,
-        type_resolution::TypeResolution,
+        health_check, names::Names, package_address::PackageAddress, resolution::Resolution, reverse_resolution::ReverseResolution, sitemap::Sitemap, struct_definition::StructDefinition, type_resolution::TypeResolution
     },
     metrics::middleware::track_metrics,
 };
@@ -20,6 +18,7 @@ use axum::{
 
 pub fn create_router(app: Arc<AppState>) -> Router {
     let v1 = Router::new()
+        .route("/sitemap", get(Sitemap::get))
         .route("/resolution/bulk", post(Resolution::bulk_resolve))
         .route("/resolution/{*name}", get(Resolution::resolve))
         .route(
