@@ -15,8 +15,11 @@ use sui_pg_db as db;
 use tokio::sync::RwLock;
 use url::Url;
 
-/// A sitemap that we refresh once every hour per instance.
-/// We keep it in-memory given the size is really small.
+/// A sitemap that we refresh once every hour per API instance.
+/// We keep it in-memory given the size is quite small initially.
+///
+/// We do not care about multi-instance data staleness given the
+/// frequency of re-generation is quite rapid (~1 hr).
 pub struct CachedSitemap {
     pub xml: String,
     pub last_updated: Option<DateTime<Utc>>,
