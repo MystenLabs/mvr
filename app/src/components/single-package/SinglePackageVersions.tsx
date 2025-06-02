@@ -29,7 +29,7 @@ export function SinglePackageVersions({ name }: { name: ResolvedName }) {
         size="heading-regular"
         className="flex items-center gap-sm"
       >
-        Versions <DependentsCountLabel count={name.version} hasMore={false} />
+        Versions <DependentsCountLabel count={name.version} />
       </Text>
       <table className="w-full">
         <thead>

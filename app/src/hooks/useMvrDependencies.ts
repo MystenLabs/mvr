@@ -70,6 +70,7 @@ export function useGetMvrDependents(
       return {
         packages: data.pages.flatMap((page) => page.data) as MvrDependent[],
         hasMore: !!data.pages[data.pages.length - 1].next_cursor,
+        total: data.pages[0].total,
       };
     },
     initialPageParam: undefined,
