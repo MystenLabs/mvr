@@ -35,7 +35,7 @@ export function SinglePackageSidebar({
             You can install this package in your Move project by calling
           </Text>
           <CodeRenderer
-            code={`mvr add ${name.name} --network ${network}`}
+            code={`mvr add ${name.name}`}
             language="bash"
             wrapLines={false}
             wrapLongLines={false}
