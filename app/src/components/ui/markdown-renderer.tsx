@@ -5,6 +5,13 @@ import CodeRenderer, {
   Language,
 } from "../homepage/CodeRenderer";
 import remarkGfm from "remark-gfm";
+import { ReactNode } from "react";
+
+const getTitleAnchorId = (title: string | ReactNode) => {
+  if (typeof title !== "string") return undefined;
+
+  return title.toLowerCase().replace(/ /g, "-");
+};
 
 export function MarkdownRenderer({
   markdown,
@@ -20,36 +27,42 @@ export function MarkdownRenderer({
         components={{
           h1: ({ node, ...props }) => (
             <h1
+              id={getTitleAnchorId(props.children)}
               className="my-md font-sans text-32 font-bold text-content-primary"
               {...props}
             />
           ),
           h2: ({ node, ...props }) => (
             <h2
+              id={getTitleAnchorId(props.children)}
               className="my-md font-sans text-24 font-bold text-content-primary"
               {...props}
             />
           ),
           h3: ({ node, ...props }) => (
             <h3
+              id={getTitleAnchorId(props.children)}
               className="my-md font-sans text-20 font-bold text-content-primary"
               {...props}
             />
           ),
           h4: ({ node, ...props }) => (
             <h4
+              id={getTitleAnchorId(props.children)}
               className="my-md font-sans text-16 font-bold text-content-primary"
               {...props}
             />
           ),
           h5: ({ node, ...props }) => (
             <h5
+              id={getTitleAnchorId(props.children)}
               className="my-md font-sans text-16 font-bold text-content-primary"
               {...props}
             />
           ),
           h6: ({ node, ...props }) => (
             <h6
+              id={getTitleAnchorId(props.children)}
               className="my-md font-sans text-12 font-bold text-content-primary"
               {...props}
             />

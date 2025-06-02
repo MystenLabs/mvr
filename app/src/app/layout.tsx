@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(everett.variable, everettMono.variable, inter.variable)}
+      className={cn(everett.variable, everettMono.variable, inter.variable, "scroll-smooth")}
       suppressHydrationWarning
     >
       <body>
