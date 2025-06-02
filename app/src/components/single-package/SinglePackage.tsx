@@ -1,7 +1,11 @@
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { DependencyCount, DependentsCountLabel, SinglePackageTabs } from "./SinglePackageTabs";
+import {
+  DependencyCount,
+  DependentsCountLabel,
+  SinglePackageTabs,
+} from "./SinglePackageTabs";
 import { SinglePackageSidebar } from "./SinglePackageSidebar";
 import { ReadMeRenderer } from "./ReadMeRenderer";
 import { SinglePackageDependencies } from "./SinglePackageDependencies";
@@ -30,9 +34,11 @@ export const Tabs: SinglePackageTab[] = [
   {
     key: "versions",
     title: "Versions",
-    label: (address: string, network: "mainnet" | "testnet", name?: ResolvedName) => (
-      <DependentsCountLabel count={name?.version ?? 0} hasMore={false} />
-    ),
+    label: (
+      _address: string,
+      _network: "mainnet" | "testnet",
+      name?: ResolvedName,
+    ) => <DependentsCountLabel count={name?.version ?? 0} />,
     selectedIcon: <VersionsIconSelected />,
     unselectedIcon: <VersionsIconUnselected />,
     component: (name: ResolvedName) => <SinglePackageVersions name={name} />,
@@ -101,7 +107,7 @@ export function SinglePackage({
   return (
     <div className="flex-grow">
       <div className="container">
-        <div className="lg:grid-cols-24 grid grid-cols-1 gap-2xl">
+        <div className="grid grid-cols-1 gap-2xl lg:grid-cols-24">
           <SinglePackageTabs
             tabs={Tabs}
             name={name}
@@ -109,7 +115,7 @@ export function SinglePackage({
             isActiveTab={isActiveTab}
             className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-5 2xl:col-span-4"
           />
-          <div className="2xl:col-span-13 col-span-1 lg:col-span-12">
+          <div className="col-span-1 lg:col-span-12 2xl:col-span-13">
             {Tabs.find((t) => t.key === activeTab)?.component(name)}
           </div>
           <div className="relative col-span-1 lg:col-span-7">

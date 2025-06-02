@@ -74,7 +74,6 @@ export function DependencyCount({
   return (
     <DependentsCountLabel
       count={dependencies?.length ?? 0}
-      hasMore={false}
       className={className}
     />
   );
@@ -93,8 +92,7 @@ export function DependentsCount({
 
   return (
     <DependentsCountLabel
-      count={dependents?.packages.length ?? 0}
-      hasMore={dependents?.hasMore ?? false}
+      count={dependents?.total ?? 0}
       className={className}
     />
   );
@@ -102,11 +100,9 @@ export function DependentsCount({
 
 export function DependentsCountLabel({
   count,
-  hasMore,
   className,
 }: {
   count: number;
-  hasMore: boolean;
   className?: string;
 }) {
   return (
@@ -118,7 +114,6 @@ export function DependentsCountLabel({
     >
       <Text kind="label" size="label-2xs">
         {count}
-        {hasMore ? "+" : ""}
       </Text>
     </div>
   );
