@@ -132,12 +132,12 @@ export const Content = {
         {
           title: "Resolve packages",
           description: `Verify your configuration to ensure that your packages are resolving properly.`,
-          code: "mvr resolve @deepbook/core --network mainnet",
+          code: "mvr resolve @deepbook/core",
         },
         {
           title: "Add Dependencies",
           description: `Unlock seamless dependency management with just one simple command!`,
-          code: "mvr add @deepbook/core --network mainnet",
+          code: "mvr add @deepbook/core",
         },
       ],
     },
