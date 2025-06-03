@@ -18,7 +18,7 @@ export function TooltipWrapper({
   return (
     <>
       <div
-        className="text-12 leading-12"
+        className="leading-12 text-12"
         data-tooltip-id={tooltipId}
         data-tooltip-content={tooltipText}
         data-tooltip-place={tooltipPlace}
@@ -27,7 +27,7 @@ export function TooltipWrapper({
       </div>
       <Tooltip
         id={tooltipId}
-        className="rounded-md border border-stroke-secondary !text-12 leading-3 font-normal"
+        className="z-[9999] max-w-[300px] rounded-md border border-stroke-secondary !text-12 font-normal leading-5"
       />
     </>
   );

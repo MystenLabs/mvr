@@ -7,6 +7,7 @@ import {
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import { SinglePackageTab } from "@/utils/types";
+import { useNameAnalytics } from "@/hooks/useNameAnalytics";
 
 export function SinglePackageTabs({
   name,
@@ -93,6 +94,25 @@ export function DependentsCount({
   return (
     <DependentsCountLabel
       count={dependents?.total ?? 0}
+      className={className}
+    />
+  );
+}
+
+export function NameTotalDependentsCount({
+  name,
+  network,
+  className,
+}: {
+  name: string;
+  network: "mainnet" | "testnet";
+  className?: string;
+}) {
+  const { data } = useNameAnalytics(name, network);
+
+  return (
+    <DependentsCountLabel
+      count={data?.dependents ?? 0}
       className={className}
     />
   );

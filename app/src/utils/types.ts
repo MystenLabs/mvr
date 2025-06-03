@@ -77,4 +77,5 @@ export enum AppQueryKeys {
   MVR_REVERSE_RESOLUTION_BULK = "mvr-reverse-resolution-bulk",
   MVR_VERSION_ADDRESSES = "mvr-version-addresses",
   SUINS_NAME_RESOLUTION = "suins-name-resolution",
+  NAME_ANALYTICS = "name-analytics",
 }
