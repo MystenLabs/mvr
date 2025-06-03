@@ -6,12 +6,36 @@ import CodeRenderer, {
 } from "../homepage/CodeRenderer";
 import remarkGfm from "remark-gfm";
 import { ReactNode } from "react";
+import { HashIcon } from "lucide-react";
 
 const getTitleAnchorId = (title: string | ReactNode) => {
   if (typeof title !== "string") return undefined;
 
   return title.toLowerCase().replace(/ /g, "-");
 };
+
+function MarkdownTitle({
+  title,
+  children,
+}: {
+  title: string | ReactNode;
+  children: ReactNode;
+}) {
+  const anchorId = getTitleAnchorId(title);
+  return (
+    <div className="markdown-header relative">
+      {anchorId && (
+        <a
+          href={`#${anchorId}`}
+          className="header-anchor absolute top-[25%] w-[30px] text-content-secondary max-md:hidden md:-left-7"
+        >
+          <HashIcon className="h-4 w-4" />
+        </a>
+      )}
+      {children}
+    </div>
+  );
+}
 
 export function MarkdownRenderer({
   markdown,
@@ -26,46 +50,58 @@ export function MarkdownRenderer({
         remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ node, ...props }) => (
-            <h1
-              id={getTitleAnchorId(props.children)}
-              className="my-md font-sans text-32 font-bold text-content-primary"
-              {...props}
-            />
+            <MarkdownTitle title={props.children}>
+              <h1
+                id={getTitleAnchorId(props.children)}
+                className="my-md font-sans text-32 font-bold text-content-primary"
+                {...props}
+              />
+            </MarkdownTitle>
           ),
           h2: ({ node, ...props }) => (
-            <h2
-              id={getTitleAnchorId(props.children)}
-              className="my-md font-sans text-24 font-bold text-content-primary"
-              {...props}
-            />
+            <MarkdownTitle title={props.children}>
+              <h2
+                id={getTitleAnchorId(props.children)}
+                className="my-md font-sans text-24 font-bold text-content-primary"
+                {...props}
+              />
+            </MarkdownTitle>
           ),
           h3: ({ node, ...props }) => (
-            <h3
-              id={getTitleAnchorId(props.children)}
-              className="my-md font-sans text-20 font-bold text-content-primary"
-              {...props}
-            />
+            <MarkdownTitle title={props.children}>
+              <h3
+                id={getTitleAnchorId(props.children)}
+                className="my-md font-sans text-20 font-bold text-content-primary"
+                {...props}
+              />
+            </MarkdownTitle>
           ),
           h4: ({ node, ...props }) => (
-            <h4
-              id={getTitleAnchorId(props.children)}
-              className="my-md font-sans text-16 font-bold text-content-primary"
-              {...props}
-            />
+            <MarkdownTitle title={props.children}>
+              <h4
+                id={getTitleAnchorId(props.children)}
+                className="my-md font-sans text-16 font-bold text-content-primary"
+                {...props}
+              />
+            </MarkdownTitle>
           ),
           h5: ({ node, ...props }) => (
-            <h5
-              id={getTitleAnchorId(props.children)}
-              className="my-md font-sans text-16 font-bold text-content-primary"
-              {...props}
-            />
+            <MarkdownTitle title={props.children}>
+              <h5
+                id={getTitleAnchorId(props.children)}
+                className="my-md font-sans text-16 font-bold text-content-primary"
+                {...props}
+              />
+            </MarkdownTitle>
           ),
           h6: ({ node, ...props }) => (
-            <h6
-              id={getTitleAnchorId(props.children)}
-              className="my-md font-sans text-12 font-bold text-content-primary"
-              {...props}
-            />
+            <MarkdownTitle title={props.children}>
+              <h6
+                id={getTitleAnchorId(props.children)}
+                className="my-md font-sans text-12 font-bold text-content-primary"
+                {...props}
+              />
+            </MarkdownTitle>
           ),
           p: ({ node, ...props }) => (
             <p
@@ -106,19 +142,19 @@ export function MarkdownRenderer({
                 }
                 wrapLines={false}
                 wrapLongLines={false}
-                className="bg-bg-quarternaryBleedthrough2 lg:text-15 my-sm text-14"
+                className="lg:text-15 my-sm bg-bg-quarternaryBleedthrough2 text-14"
               />
             );
           },
           ul: ({ node, ...props }) => (
             <ul
-              className="list-inside list-disc text-14 text-content-secondary lg:text-16 ml-sm"
+              className="ml-sm list-inside list-disc text-14 text-content-secondary lg:text-16"
               {...props}
             />
           ),
           ol: ({ node, ...props }) => (
             <ol
-              className="list-inside list-decimal text-14 text-content-secondary lg:text-16 ml-sm"
+              className="ml-sm list-inside list-decimal text-14 text-content-secondary lg:text-16"
               {...props}
             />
           ),
