@@ -185,43 +185,43 @@ related_packages AS (
 ),
 intervals AS (
     SELECT generate_series(
+        CURRENT_DATE - INTERVAL '1 day',
         DATE '2023-05-03',
-        CURRENT_DATE,
-        INTERVAL '14 days'
-    )::DATE AS interval_start
+        INTERVAL '-14 days'
+    )::DATE AS interval_end
 ),
 all_combinations AS (
     SELECT
         rp.input_package_id,
 		rp.package_id,
-        i.interval_start
+        i.interval_end
     FROM related_packages rp
     CROSS JOIN intervals i
 ),
 aggregated_calls AS (
     SELECT
         ac.input_package_id,
-        ac.interval_start,
+        ac.interval_end,
         SUM(pa.direct_calls)::BIGINT AS direct,
         SUM(pa.propagated_calls)::BIGINT AS propagated,
         SUM(pa.total_calls)::BIGINT AS total
     FROM all_combinations ac
     LEFT JOIN package_analytics pa
       ON pa.package_id = ac.package_id
-     AND pa.call_date >= ac.interval_start
-     AND pa.call_date < ac.interval_start + INTERVAL '14 days'
+     AND pa.call_date >= ac.interval_end - INTERVAL '14 days'
+     AND pa.call_date < ac.interval_end 
     WHERE pa.call_date IS NULL OR pa.call_date < CURRENT_DATE
-    GROUP BY ac.input_package_id, ac.interval_start
+    GROUP BY ac.input_package_id, ac.interval_end
 )
 SELECT
     input_package_id as package_id,
-    interval_start AS date_from,
-    (interval_start + INTERVAL '13 days')::DATE AS date_to,
+    (interval_end - INTERVAL '13 days')::DATE AS date_from,
+    interval_end AS date_to,
     COALESCE(direct, 0) AS direct,
     COALESCE(propagated, 0) AS propagated,
     COALESCE(total, 0) AS total
 FROM aggregated_calls
-ORDER BY interval_start";
+ORDER BY interval_end";
 
 const DEPENDENTS_COUNT_PER_PACKAGE_QUERY: &str = "WITH target AS (
     SELECT package_id, original_id, package_version
