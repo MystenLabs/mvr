@@ -5,6 +5,7 @@ import {
   DependencyCount,
   DependentsCountLabel,
   SinglePackageTabs,
+  NameTotalDependentsCount,
 } from "./SinglePackageTabs";
 import { SinglePackageSidebar } from "./SinglePackageSidebar";
 import { ReadMeRenderer } from "./ReadMeRenderer";
@@ -60,9 +61,11 @@ export const Tabs: SinglePackageTab[] = [
     title: "Dependents",
     selectedIcon: <DependendsIconSelected />,
     unselectedIcon: <DependendsIconUnselected />,
-    // label: (address: string, network: "mainnet" | "testnet") => (
-    //   <DependentsCount address={address} network={network} />
-    // ),
+    label: (
+      _address: string,
+      network: "mainnet" | "testnet",
+      name?: ResolvedName,
+    ) => <NameTotalDependentsCount name={name!.name} network={network} />,
     component: (name: ResolvedName) => <SinglePackageDependents name={name} />,
   },
   {

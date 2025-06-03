@@ -26,7 +26,10 @@ export function useNameAnalytics(name: string, network: "mainnet" | "testnet") {
     },
 
     select: (data) => {
-      return data.analytics as NameAnalytics[];
+      return {
+        analytics: data.analytics as NameAnalytics[],
+        dependents: data.total_dependents as number || 0,
+      };
     },
   });
 }

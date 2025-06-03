@@ -34,10 +34,10 @@ export function SinglePackageAnalytics({ name }: { name: ResolvedName }) {
   const { data } = useNameAnalytics(name.name, network);
 
   const totalCalls = useMemo(() => {
-    return data?.reduce((acc, d) => acc + d.total, 0);
+    return data?.analytics.reduce((acc, d) => acc + d.total, 0);
   }, [data]);
 
-  if (data?.length === 0) return null;
+  if (data?.analytics.length === 0) return null;
 
   return (
     <SinglePackageContent>
@@ -60,7 +60,7 @@ export function SinglePackageAnalytics({ name }: { name: ResolvedName }) {
           accessibilityLayer
           height={150}
           data={
-            data?.map((d) => ({
+            data?.analytics.map((d) => ({
               period: d.date_from + " to " + d.date_to,
               calls: d.direct,
               propagated: d.propagated,
