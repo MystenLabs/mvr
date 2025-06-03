@@ -4,6 +4,7 @@ import { MarkdownRenderer } from "../ui/markdown-renderer";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { EmptyState } from "../EmptyState";
 import { Content } from "@/data/content";
+import { useEffect } from "react";
 
 export function ReadMeRenderer({ name }: { name: ResolvedName }) {
   const { data: readme, isLoading } = useGetSourceFromGit({
@@ -12,6 +13,16 @@ export function ReadMeRenderer({ name }: { name: ResolvedName }) {
     tagOrHash: name.git_info?.tag,
     file: "README.md",
   });
+
+  // Handle scrolling to the ID 
+  useEffect(() => {
+    setTimeout(() => {
+      const id = window.location.hash?.replace("#", "");
+      if (!id) return;
+
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }, [readme]);
 
   if (isLoading)
     return <LoadingState size="sm" title="" description="Loading..." />;

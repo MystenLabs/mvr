@@ -235,3 +235,14 @@ html {
 #terms p {
   @apply mb-sm;
 }
+
+
+.header-anchor{
+  @apply opacity-0 hover:opacity-100;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.markdown-header:hover .header-anchor {
+  @apply opacity-100;
+}
