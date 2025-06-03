@@ -24,12 +24,14 @@ function MarkdownTitle({
   const anchorId = getTitleAnchorId(title);
   return (
     <div className="markdown-header relative">
-      <a
-        href={`#${anchorId}`}
-        className="header-anchor absolute top-[25%] w-[30px] text-content-secondary max-md:hidden md:-left-7"
-      >
-        <HashIcon className="h-4 w-4" />
-      </a>
+      {anchorId && (
+        <a
+          href={`#${anchorId}`}
+          className="header-anchor absolute top-[25%] w-[30px] text-content-secondary max-md:hidden md:-left-7"
+        >
+          <HashIcon className="h-4 w-4" />
+        </a>
+      )}
       {children}
     </div>
   );
