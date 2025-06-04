@@ -12,6 +12,7 @@ use sui_sdk_types::ObjectId;
 use crate::{
     data::{
         app_state::AppState,
+        package_analytics::{PackageAnalytics, PackageAnalyticsKey},
         package_dependencies::{PackageDependencies, PackageDependenciesKey},
         package_dependents::{
             PackageDependent, PackageDependentsCountKey, PackageDependentsCursor,
@@ -26,6 +27,11 @@ use crate::{
 pub struct DependentsQueryParams {
     pub cursor: Option<String>,
     pub limit: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AnalyticsResponse {
+    pub analytics: Vec<PackageAnalytics>,
 }
 
 pub struct PackageAddress;
@@ -87,5 +93,22 @@ impl PackageAddress {
                 aggregated_total_calls: Some(item.aggregated_total_calls),
             },
         )))
+    }
+
+    pub async fn analytics(
+        Path(package_address): Path<String>,
+        State(app_state): State<Arc<AppState>>,
+    ) -> Result<Json<AnalyticsResponse>, ApiError> {
+        let object_id = ObjectId::from_str(&package_address)
+            .map_err(|e| ApiError::BadRequest(format!("Invalid package address: {}", e)))?;
+
+        let analytics = app_state
+            .cached_loader()
+            .load_one(PackageAnalyticsKey(object_id, Local::now().date_naive()))
+            .await?;
+
+        Ok(Json(AnalyticsResponse {
+            analytics: analytics.unwrap_or_default(),
+        }))
     }
 }
