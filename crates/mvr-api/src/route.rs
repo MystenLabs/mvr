@@ -59,6 +59,10 @@ pub fn create_router(app: Arc<AppState>) -> Router {
         .route(
             "/package-address/{package_address}/dependents",
             get(PackageAddress::dependents),
+        )
+        .route(
+            "/package-address/{package_address}/analytics",
+            get(PackageAddress::analytics),
         );
 
     Router::new()
