@@ -79,7 +79,12 @@ impl Loader<PackageAnalyticsKey> for Reader {
                     .filter(package_analytics::call_date.ge(diesel::dsl::sql::<
                         diesel::sql_types::Date,
                     >(
-                        "CURRENT_DATE - INTERVAL '90 days'"
+                        "CURRENT_DATE - INTERVAL '91 days'"
+                    )))
+                    .filter(package_analytics::call_date.le(diesel::dsl::sql::<
+                        diesel::sql_types::Date,
+                    >(
+                        "CURRENT_DATE - INTERVAL '1 day'"
                     )))
                     .order(package_analytics::call_date.desc()),
             )
