@@ -12,12 +12,11 @@ export type NameAnalytics = {
 };
 
 export function useNameAnalytics(name: string, network: "mainnet" | "testnet") {
-  const endpoint = useSuiClientsContext().mvrExperimentalEndpoints.mainnet;
+  const endpoint = useSuiClientsContext().mvrExperimentalEndpoints[network];
 
   return useQuery({
     queryKey: [AppQueryKeys.NAME_ANALYTICS, name, network],
     queryFn: async () => {
-      if (network !== "mainnet") return null;
       if (!isValidNamedPackage(name)) return null;
 
       const response = await fetch(`${endpoint}/v1/names/analytics/${name}`);
