@@ -529,7 +529,7 @@ fn insert_root_dependency(
     let mut new_deps = Array::new();
     new_deps.push(new_dep);
     move_section["dependencies"] = value(new_deps);
-    // Reset the `dev-dependencies` as they will get re-rooted, as long as 
+    // Reset the `dev-dependencies` as they will get re-rooted, as long as
     // there are some deps there.
     if original_dev_deps.is_some() {
         move_section["dev-dependencies"] = value(Array::new());
