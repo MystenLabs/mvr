@@ -509,6 +509,8 @@ fn insert_root_dependency(
 
     // Save the top-level `dependencies`, which will become the dependencies of the new root package.
     let original_deps = move_section.get("dependencies").cloned();
+    // Do the same for `dev-dependencies`
+    let original_dev_deps = move_section.get("dev-dependencies").cloned();
 
     // Make the top-level `dependencies` point to the new root package.
     let new_dep = {
@@ -527,6 +529,11 @@ fn insert_root_dependency(
     let mut new_deps = Array::new();
     new_deps.push(new_dep);
     move_section["dependencies"] = value(new_deps);
+    // Reset the `dev-dependencies` as they will get re-rooted, as long as
+    // there are some deps there.
+    if original_dev_deps.is_some() {
+        move_section["dev-dependencies"] = value(Array::new());
+    }
 
     // Create a new root package entry, set its dependencies to the original top-level dependencies, and persist.
     let mut new_package = Table::new();
@@ -540,6 +547,10 @@ fn insert_root_dependency(
 
     if let Some(deps) = original_deps {
         new_package.insert("dependencies", deps);
+    }
+
+    if let Some(deps) = original_dev_deps {
+        new_package.insert("dev-dependencies", deps);
     }
 
     let packages = move_section
