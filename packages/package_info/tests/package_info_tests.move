@@ -1,3 +1,4 @@
+#[test_only]
 module package_info::package_info_tests;
 
 use package_info::package_info::{Self, PackageInfo};
@@ -39,7 +40,6 @@ fun test_receive() {
     end(test);
 }
 
-#[test_only]
 fun share_object_for_testing(test: &mut Scenario): address {
     test.next_tx(ALICE);
 
