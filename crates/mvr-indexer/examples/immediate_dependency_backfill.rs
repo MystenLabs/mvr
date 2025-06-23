@@ -5,8 +5,7 @@ use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
 use futures::future::try_join_all;
 use mvr_indexer::handlers::package_handler::package_dependencies;
-use sui_indexer_alt_framework::db;
-use sui_pg_db::DbArgs;
+use sui_pg_db::{Db, DbArgs};
 use url::Url;
 
 const SQL_QUERY: &str = "select move_package, chain_id
@@ -34,7 +33,7 @@ async fn main() -> Result<(), anyhow::Error> {
     } = Args::parse();
 
     // 1, get list of packages need to be refilled.
-    let db = db::Db::for_write(database_url, db_args).await?;
+    let db = Db::for_write(database_url, db_args).await?;
     let mut conn = db.connect().await?;
     let packages: Vec<PackagesData> = diesel::sql_query(SQL_QUERY).load(&mut conn).await?;
 

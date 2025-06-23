@@ -39,7 +39,7 @@ impl MvrTestCluster {
 
     async fn migrate(&self) -> Result<(), anyhow::Error> {
         let db = self.db_for_write().await?;
-        db.run_migrations(MIGRATIONS).await?;
+        db.run_migrations(Some(&MIGRATIONS)).await?;
         Ok(())
     }
 
