@@ -17,8 +17,8 @@ use std::net::SocketAddr;
 use sui_indexer_alt_framework::ingestion::ClientArgs;
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
 use sui_indexer_alt_framework::{Indexer, IndexerArgs};
-use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_indexer_alt_metrics::db::DbConnectionStatsCollector;
+use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_pg_db::temp::TempDb;
 use sui_pg_db::{Db, DbArgs};
 use sui_rpc_api::Client;
@@ -82,7 +82,7 @@ async fn main() -> Result<(), anyhow::Error> {
         info!("Starting from checkpoint : {}", latest_cp.sequence_number);
 
         let temp_db = TempDb::new()?;
-        
+
         // Prepare the store for the indexer
         let store = Db::for_write(temp_db.database().url().clone(), db_args)
             .await
@@ -97,7 +97,7 @@ async fn main() -> Result<(), anyhow::Error> {
             Some("mvr_indexer_db"),
             store.clone(),
         )))?;
-        
+
         let indexer = Indexer::<Db>::new(
             store,
             IndexerArgs {
@@ -134,7 +134,7 @@ async fn main() -> Result<(), anyhow::Error> {
             Some("mvr_indexer_db"),
             store.clone(),
         )))?;
-        
+
         let indexer = Indexer::new(
             store,
             indexer_args,
