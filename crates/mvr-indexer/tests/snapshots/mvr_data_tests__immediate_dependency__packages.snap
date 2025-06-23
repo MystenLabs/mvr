@@ -6,7 +6,7 @@ expression: rows
   {
     "package_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
     "original_id": "0x0ce90717ec5f301c84c0be83893ab8cb64e6fe574f627c040b16ec4b1f87fbb6",
-    "package_version": 1,
+    "package_version": "1",
     "chain_id": "35834a8a",
     "move_package": "4JTuCBbZpDPkxaHo5qOk7uxYqCshHjIxTmIxxFF3qt4=",
     "tx_hash": "C2L7ChM9DQcAhugbfNQjNL7aVQEZcCdSAyxA7muSqon7",

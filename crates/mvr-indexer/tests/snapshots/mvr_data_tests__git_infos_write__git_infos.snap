@@ -5,8 +5,8 @@ expression: rows
 [
   {
     "table_id": "0x642a89123353726c004dd2c2fd52f2d4b48ec04fdb374163e099094706199423",
-    "object_version": 483220501,
-    "version": 2,
+    "object_version": "483220501",
+    "version": "2",
     "chain_id": "35834a8a",
     "repository": "https://github.com/mystenlabs/mvr",
     "path": "packages/mvr",
