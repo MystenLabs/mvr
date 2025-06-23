@@ -6,6 +6,6 @@ publish = false
 
 [dev-dependencies]
 insta = "1.42.2"
-tempfile = "3.19"
+tempfile.workspace = true
 anyhow = "1.0.91"
 strip-ansi-escapes = "0.2.1"

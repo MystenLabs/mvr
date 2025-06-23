@@ -85,7 +85,7 @@ pub enum Network {
 
 pub async fn run_migrations(url: Url, args: DbArgs) -> Result<(), anyhow::Error> {
     let db = Db::for_write(url, args).await?;
-    db.run_migrations(MIGRATIONS).await?;
+    db.run_migrations(Some(&MIGRATIONS)).await?;
     Ok(())
 }
 
