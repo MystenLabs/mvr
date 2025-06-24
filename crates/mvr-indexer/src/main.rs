@@ -17,9 +17,10 @@ use std::net::SocketAddr;
 use sui_indexer_alt_framework::ingestion::ClientArgs;
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
 use sui_indexer_alt_framework::{Indexer, IndexerArgs};
+use sui_indexer_alt_metrics::db::DbConnectionStatsCollector;
 use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_pg_db::temp::TempDb;
-use sui_pg_db::DbArgs;
+use sui_pg_db::{Db, DbArgs};
 use sui_rpc_api::Client;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
@@ -70,7 +71,7 @@ async fn main() -> Result<(), anyhow::Error> {
     .context("Failed to create Prometheus registry.")?;
     let metrics = MetricsService::new(
         MetricsArgs { metrics_address },
-        registry,
+        registry.clone(),
         cancel.child_token(),
     );
 
@@ -81,9 +82,24 @@ async fn main() -> Result<(), anyhow::Error> {
         info!("Starting from checkpoint : {}", latest_cp.sequence_number);
 
         let temp_db = TempDb::new()?;
-        let indexer = Indexer::new(
-            temp_db.database().url().clone(),
-            db_args,
+
+        // Prepare the store for the indexer
+        let store = Db::for_write(temp_db.database().url().clone(), db_args)
+            .await
+            .context("Failed to connect to database")?;
+
+        store
+            .run_migrations(None)
+            .await
+            .context("Failed to run pending migrations")?;
+
+        registry.register(Box::new(DbConnectionStatsCollector::new(
+            Some("mvr_indexer_db"),
+            store.clone(),
+        )))?;
+
+        let indexer = Indexer::<Db>::new(
+            store,
             IndexerArgs {
                 first_checkpoint: Some(latest_cp.sequence_number),
                 last_checkpoint: None,
@@ -98,16 +114,29 @@ async fn main() -> Result<(), anyhow::Error> {
                 rpc_password: None,
             },
             Default::default(),
-            None,
             metrics.registry(),
             cancel.clone(),
         )
         .await?;
         (indexer, Some(temp_db))
     } else {
+        // Prepare the store for the indexer
+        let store = Db::for_write(database_url, db_args)
+            .await
+            .context("Failed to connect to database")?;
+
+        store
+            .run_migrations(Some(&MIGRATIONS))
+            .await
+            .context("Failed to run pending migrations")?;
+
+        registry.register(Box::new(DbConnectionStatsCollector::new(
+            Some("mvr_indexer_db"),
+            store.clone(),
+        )))?;
+
         let indexer = Indexer::new(
-            database_url,
-            db_args,
+            store,
             indexer_args,
             ClientArgs {
                 remote_store_url: Some(env.remote_store_url()),
@@ -117,7 +146,6 @@ async fn main() -> Result<(), anyhow::Error> {
                 rpc_password: None,
             },
             Default::default(),
-            Some(&MIGRATIONS),
             metrics.registry(),
             cancel.clone(),
         )
@@ -140,7 +168,7 @@ async fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn create_mainnet_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::Error> {
+async fn create_mainnet_pipelines(indexer: &mut Indexer<Db>) -> Result<(), anyhow::Error> {
     use models::mainnet::mvr_metadata::package_info::PackageInfo;
     indexer
         .concurrent_pipeline(PackageHandler::<true>, Default::default())
@@ -167,7 +195,7 @@ async fn create_mainnet_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::E
     Ok(())
 }
 
-async fn create_testnet_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::Error> {
+async fn create_testnet_pipelines(indexer: &mut Indexer<Db>) -> Result<(), anyhow::Error> {
     use models::testnet::mvr_metadata::package_info::PackageInfo;
     indexer
         .concurrent_pipeline(PackageHandler::<false>, Default::default())
@@ -187,7 +215,7 @@ async fn create_testnet_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::E
     Ok(())
 }
 
-async fn create_ci_pipelines(indexer: &mut Indexer) -> Result<(), anyhow::Error> {
+async fn create_ci_pipelines(indexer: &mut Indexer<Db>) -> Result<(), anyhow::Error> {
     indexer
         .concurrent_pipeline(NoOpsHandler, Default::default())
         .await?;
