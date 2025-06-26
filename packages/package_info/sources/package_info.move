@@ -72,8 +72,8 @@ public fun transfer(info: PackageInfo, to: address) {
     transfer::transfer(info, to)
 }
 
-public fun receive(parent: &mut UID, receiving_ticket: Receiving<PackageInfo>): PackageInfo {
-    transfer::receive(parent, receiving_ticket)
+public fun receive(parent: &mut UID, to_receive: Receiving<PackageInfo>): PackageInfo {
+    transfer::receive(parent, to_receive)
 }
 
 public fun set_display(info: &mut PackageInfo, mut display: PackageDisplay) {
