@@ -46,9 +46,9 @@ fun share_object_for_testing(test: &mut Scenario): address {
     let shared = SharedObject {
         id: object::new(test.ctx()),
     };
-    let id = shared.id.to_address();
+    let addr = shared.id.to_address();
 
     transfer::public_share_object(shared);
 
-    id
+    addr
 }
