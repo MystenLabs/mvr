@@ -22,7 +22,7 @@ const packageInfoUpgrade = async () => {
   try {
     // Execute the command with the specified working directory and capture the output
     execSync(
-      `cd $PWD/../packages/package_info && ${upgradeCall} > $PWD/../../scripts/tx/tx-data.txt`
+      `cd $PWD/../packages/package_info && ${upgradeCall} > $PWD/../../scripts/multisig/tx-data.txt`
     );
 
     console.log(
