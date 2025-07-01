@@ -6,6 +6,7 @@ use sui::{
     dynamic_field as df,
     package::{Self, UpgradeCap},
     table::{Self, Table},
+    transfer::Receiving,
     vec_map::{Self, VecMap}
 };
 
@@ -69,6 +70,10 @@ public fun new(cap: &mut UpgradeCap, ctx: &mut TxContext): PackageInfo {
 /// Last PTB call (or ownership change).
 public fun transfer(info: PackageInfo, to: address) {
     transfer::transfer(info, to)
+}
+
+public fun receive(parent: &mut UID, to_receive: Receiving<PackageInfo>): PackageInfo {
+    transfer::receive(parent, to_receive)
 }
 
 public fun set_display(info: &mut PackageInfo, mut display: PackageDisplay) {
