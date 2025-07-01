@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "197ebfbc1ff03d83f908e23281e7269b65cf350d" }
+sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
 async-graphql = { version = "=7.0.1", features = ["dataloader"] }
 axum = "0.8.1"
 tokio = { workspace = true, features = ["full"] }
@@ -36,8 +36,8 @@ mvr-types = { path = "../mvr-types" }
 mvr-schema = { path = "../mvr-schema" }
 
 [dev-dependencies]
-sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "197ebfbc1ff03d83f908e23281e7269b65cf350d" }
-move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "197ebfbc1ff03d83f908e23281e7269b65cf350d" }
+sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
+move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
 reqwest = { version = "0.12.11", features = ["json"] }
 insta = "1.42.2"
 
