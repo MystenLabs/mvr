@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - Upgrade MVR package
+          - Upgrade Package Info
           - Register Public Names
       sui_tools_image:
         description: 'image reference of sui_tools'
@@ -73,6 +74,16 @@ jobs:
           ORIGIN: gh_action
         run: |
           cd scripts && pnpm ts-node multisig/upgrade-mvr.ts
+
+      - name: Upgrade Package Info
+        if: ${{ inputs.transaction_type == 'Upgrade Package Info' }}
+        env:
+          NODE_ENV: production
+          GAS_OBJECT: ${{ inputs.gas_object_id }}
+          NETWORK: mainnet
+          ORIGIN: gh_action
+        run: |
+          cd scripts && pnpm ts-node multisig/upgrade-packageinfo.ts
 
       - name: Register Public Names
         if: ${{ inputs.transaction_type == 'Register Public Names' }}
