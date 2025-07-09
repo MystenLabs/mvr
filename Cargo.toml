@@ -11,7 +11,7 @@ members = [
 ]
 
 [workspace.dependencies]
-tokio = "1.45.1"
+tokio = { version = "1.45.1", features = ["full", "tracing"] }
 serde = "1.0.217"
 serde_json = "1.0.138"
 dotenvy = "0.15.7"
