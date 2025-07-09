@@ -15,13 +15,15 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN cargo build --profile $PROFILE --bin mvr-indexer --config net.git-fetch-with-cli=true
 
-FROM debian:bookworm-slim AS runtime
+FROM rust:1.87.0 AS runtime
 
 RUN apt-get update
 RUN apt-get -y --no-install-recommends install wget \
         iputils-ping procps bind9-host bind9-dnsutils \
         curl iproute2 git ca-certificates libpq-dev \
         postgresql
+
+RUN cargo install tokio-console
 
 COPY --from=builder /work/target/release/mvr-indexer /opt/mysten/bin/
 COPY --from=builder /work/entry.sh .
