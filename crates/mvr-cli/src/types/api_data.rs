@@ -25,7 +25,7 @@ pub async fn query_package(name: &str, network: &Network) -> Result<(String, Pac
     let response = reqwest::get(format!(
         "{}/v1/names/{}",
         get_api_url(network)?,
-        versioned_name.to_string()
+        versioned_name
     ))
     .await
     .map_err(|e| CliError::Querying(e.to_string()))?;
@@ -46,13 +46,9 @@ pub async fn query_package(name: &str, network: &Network) -> Result<(String, Pac
 }
 
 pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<ObjectId> {
-    let response = reqwest::get(format!(
-        "{}/v1/resolution/{}",
-        get_api_url(network)?,
-        name.to_string()
-    ))
-    .await
-    .map_err(|e| CliError::Querying(e.to_string()))?;
+    let response = reqwest::get(format!("{}/v1/resolution/{}", get_api_url(network)?, name))
+        .await
+        .map_err(|e| CliError::Querying(e.to_string()))?;
 
     if response.status() == reqwest::StatusCode::NOT_FOUND {
         bail!(CliError::NameNotExists(

@@ -50,7 +50,7 @@ impl MoveToml {
         );
         new_dep_table.insert(RESOLVER_PREFIX_KEY, Value::InlineTable(r_table));
 
-        dependencies.insert(&name, Item::Value(Value::InlineTable(new_dep_table)));
+        dependencies.insert(name, Item::Value(Value::InlineTable(new_dep_table)));
 
         Ok(())
     }
@@ -61,8 +61,7 @@ impl MoveToml {
             .get(RESOLVER_PREFIX_KEY)
             .and_then(|v| v.get(MVR_RESOLVER_KEY))
             .and_then(|v| v.get(NETWORK_KEY))
-            .map(|v| v.as_str())
-            .flatten()
+            .and_then(|v| v.as_str())
             .map(|s| s.to_string())
     }
 

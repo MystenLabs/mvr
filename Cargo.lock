@@ -4218,6 +4218,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonrpc"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui?rev=0f91f6b#0f91f6beabaa0520d1f4bf62977ed59dd1cdd3a8"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "jsonrpsee"
 version = "0.24.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5458,6 +5470,7 @@ dependencies = [
  "expect-test",
  "futures",
  "insta",
+ "jsonrpc",
  "mvr-types",
  "regex",
  "reqwest",
