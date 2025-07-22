@@ -18,9 +18,10 @@ struct ResolveRequest {
     data: String,
 }
 
+/// [Experimental]
 /// The package-alt resolver for packages.
-/// Note: This does not provide validation -- a `validate` command needs to be implemented
-/// for validation to happen.
+/// Note: This does not provide validation for "IDs". A `validate` command needs to be implemented
+/// for validation of expected IDs to occur.
 pub async fn new_package_resolver() -> Result<()> {
     let input = parse_input();
 
