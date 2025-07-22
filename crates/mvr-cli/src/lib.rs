@@ -4,6 +4,10 @@ pub mod errors;
 pub mod types;
 pub mod utils;
 
+use crate::types::api_data::query_multiple_dependencies;
+use crate::types::api_data::query_package;
+use crate::types::api_data::resolve_name;
+use crate::types::api_data::search_names;
 use crate::types::MoveTomlPublishedID;
 
 use commands::CommandOutput;
@@ -12,9 +16,6 @@ use mvr_types::name::VersionedName;
 use types::api_types::PackageRequest;
 use types::api_types::SafeGitInfo;
 use types::Network;
-use utils::api_data::resolve_name;
-use utils::api_data::search_names;
-use utils::api_data::{query_multiple_dependencies, query_package};
 use utils::git::shallow_clone_repo;
 
 use sui_sdk_types::ObjectId;
@@ -540,9 +541,9 @@ fn insert_root_dependency(
     new_package.insert(LOCK_PACKAGE_ID_KEY, value(root_name));
 
     let mut source = Table::new();
-    source.insert("git", value(&git_info.repository_url.clone()));
-    source.insert("rev", value(&git_info.tag.clone()));
-    source.insert("subdir", value(&git_info.path.clone()));
+    source.insert("git", value(git_info.repository_url.clone()));
+    source.insert("rev", value(git_info.tag.clone()));
+    source.insert("subdir", value(git_info.path.clone()));
     new_package.insert("source", value(source.into_inline_table()));
 
     if let Some(deps) = original_deps {
@@ -560,7 +561,7 @@ fn insert_root_dependency(
         .ok_or_else(|| anyhow!("Failed to get or create package array in lock file".red()))?;
 
     for package in packages.iter_mut() {
-        if let Some(source) = convert_local_dep_to_git(package, &git_info)? {
+        if let Some(source) = convert_local_dep_to_git(package, git_info)? {
             package.insert("source", value(source));
         }
     }
@@ -601,8 +602,8 @@ fn convert_local_dep_to_git(
         .and_then(|items| items.get("local"))
         .map(|local| {
             let mut new_source = Table::new();
-            new_source.insert("git", value(&git_info.repository_url.clone()));
-            new_source.insert("rev", value(&git_info.tag.clone()));
+            new_source.insert("git", value(git_info.repository_url.clone()));
+            new_source.insert("rev", value(git_info.tag.clone()));
 
             let local_str = local.as_str().ok_or_else(|| {
                 anyhow!("Failed to get local dependency path. Found empty path on transitive dependency: {}", local)
@@ -686,7 +687,7 @@ async fn update_mvr_packages(
                 .red()
         );
     };
-    move_toml.add_dependency(&name, &package_name)?;
+    move_toml.add_dependency(&name, package_name)?;
 
     move_toml.save_to_file()?;
 

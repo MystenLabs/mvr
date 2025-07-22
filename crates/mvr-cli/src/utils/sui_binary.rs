@@ -101,7 +101,7 @@ pub fn get_active_network() -> Result<Network, Error> {
     let cli_network = Network::try_from_chain_identifier(&chain_id);
 
     let Ok(cli_network) = cli_network else {
-        if !fallback_network.is_ok() {
+        if fallback_network.is_err() {
             bail!(cli_network.unwrap_err());
         }
 
