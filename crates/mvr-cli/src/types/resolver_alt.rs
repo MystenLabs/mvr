@@ -39,11 +39,10 @@ pub async fn new_package_resolver() -> Result<()> {
             normalized_network.blue().bold(),
         );
 
-        if !names.contains_key(&normalized_network) {
-            names.insert(normalized_network, vec![name]);
-        } else {
-            names.get_mut(&normalized_network).unwrap().push(name);
-        }
+        names
+            .entry(normalized_network)
+            .or_insert_with(Vec::new)
+            .push(name);
     }
 
     for (network, names) in &names {

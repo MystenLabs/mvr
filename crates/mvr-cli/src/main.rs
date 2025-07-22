@@ -50,12 +50,9 @@ async fn main() -> Result<()> {
         }
     } else {
         let cli = Cli::parse_from(["mvr", "--help"]);
-        match cli.command {
-            Some(x) => {
-                let c = x.execute().await?;
-                println!("{:?}", c.to_string());
-            }
-            None => {}
+        if let Some(x) = cli.command {
+            let c = x.execute().await?;
+            println!("{:?}", c.to_string());
         }
     }
 

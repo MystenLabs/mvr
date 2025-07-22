@@ -409,12 +409,7 @@ fn original_published_id(move_toml_content: &str, target_chain_id: &str) -> Opti
         .as_table()?
         .iter()
         .filter_map(|(_, value)| value.as_table())
-        .find(|table| {
-            table
-                .get("chain-id")
-                .and_then(|v| v.as_str())
-                .map_or(false, |id| id == target_chain_id)
-        });
+        .find(|table| table.get("chain-id").and_then(|v| v.as_str()) == Some(target_chain_id));
     let original_published_id = table.and_then(|table| {
         table
             .get("original-published-id")
