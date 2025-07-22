@@ -4,10 +4,9 @@ pub mod errors;
 pub mod types;
 pub mod utils;
 
-use crate::types::api_data::query_multiple_dependencies;
-use crate::types::api_data::query_package;
-use crate::types::api_data::resolve_name;
-use crate::types::api_data::search_names;
+use crate::types::api_data::{
+    query_multiple_dependencies, query_package, resolve_name, search_names,
+};
 use crate::types::MoveTomlPublishedID;
 
 use commands::CommandOutput;
