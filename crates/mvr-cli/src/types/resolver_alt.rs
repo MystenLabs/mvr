@@ -24,7 +24,6 @@ struct ResolveRequest {
 /// for validation of expected IDs to occur.
 pub async fn new_package_resolver() -> Result<()> {
     let input = parse_input();
-
     let mut names = BTreeMap::new();
     let mut per_env = BTreeMap::new();
 
@@ -106,18 +105,21 @@ fn parse_input() -> BTreeMap<RequestID, ResolveRequest> {
         .collect()
 }
 
-// Returns the "normalized" network,
-// based on the requested env OR the fallback network.
+/// Returns the "normalized" network:
+/// 1. If the chain-id of the env is known, then we return that.
+/// 2. If the chain-id is not known, we try to get the `flag`-based setup.
+/// 3. We error with the "original" error.
 fn get_normalized_network(env: &str) -> Result<Network> {
-    let fallback_network = env::var("MVR_FALLBACK_NETWORK")
-        .ok()
-        .map(|s| Network::from_str(&s))
-        .transpose();
     let normalized_network = Network::try_from_chain_identifier(&env);
 
     if let Ok(normalized_network) = normalized_network {
         return Ok(normalized_network);
     }
+
+    let fallback_network = env::var("MVR_FALLBACK_NETWORK")
+        .ok()
+        .map(|s| Network::from_str(&s))
+        .transpose();
 
     if let Ok(Some(fallback_network)) = fallback_network {
         return Ok(fallback_network);
