@@ -60,8 +60,8 @@ pub async fn new_package_resolver() -> Result<()> {
     let responses: Vec<Response<serde_json::Value>> = input
         .into_iter()
         .map(|(id, request)| {
-            let env = request.env.unwrap_or_default();
-            let normalized_network = get_normalized_network(&env).expect("No normalized network found for env");
+            // TODO: properly propagate errors -- we can leave as is for now while we're testing pkg-alt.
+            let normalized_network = get_normalized_network(&request.env.unwrap_or_default()).expect("We should have a normalized network error by this point.");
             let map = per_env.get(&normalized_network).expect("No response found for env");
 
             let Some(response) = map.get(&request.data) else {
@@ -72,7 +72,7 @@ pub async fn new_package_resolver() -> Result<()> {
 
             let Some(git_info) = &response.git_info else {
                 return format_result(id, JsonRpcResult::Err {
-                    error: RemoteError { code: 404, message: format!("Package with name {} does not have git info for env {}", request.data, env), data: None } 
+                    error: RemoteError { code: 404, message: format!("Package with name {} does not have git info for env {}", request.data, normalized_network), data: None } 
                 });
             };
 
