@@ -19,7 +19,7 @@ name = "unit_tests"
 path = "tests/unit_tests.rs"
 
 [dependencies]
-bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "0f91f6b" }
+bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "7f45ba185ff0773331d256469c49aefb82542102" }
 
 clap = { workspace = true, features = ["derive"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
