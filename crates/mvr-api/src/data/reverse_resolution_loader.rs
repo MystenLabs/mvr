@@ -6,7 +6,7 @@ use diesel::{
     sql_types::{Array, Text},
 };
 use mvr_types::name::VersionedName;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::errors::ApiError;
 

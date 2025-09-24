@@ -8,7 +8,7 @@ use diesel::{
 };
 use mvr_types::name::Name;
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::errors::ApiError;
 

@@ -4,7 +4,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use axum::{extract::State, http::StatusCode};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::{
     data::{app_state::AppState, resolution_loader::ResolutionData},

@@ -8,7 +8,7 @@ use diesel::{
     ExpressionMethods,
 };
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::errors::ApiError;
 

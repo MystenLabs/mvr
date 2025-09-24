@@ -12,7 +12,7 @@ use diesel::{
 use futures::future::try_join_all;
 use mvr_schema::schema;
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::{errors::ApiError, utils::pagination::PaginationLimit};
 

@@ -4,7 +4,7 @@ use ::futures::future::try_join_all;
 use anyhow::{bail, Result};
 use mvr_types::name::VersionedName;
 use reqwest::Client;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::{
     errors::CliError,

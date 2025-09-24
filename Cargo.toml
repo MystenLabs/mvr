@@ -41,4 +41,4 @@ move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6
 sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
 
 # New Rust SDK
-sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", rev="86a9e06"}
+sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", rev="b3a5178b"}

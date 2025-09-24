@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 use tempfile::tempdir;
 
 fn create_resolved_packages() -> HashMap<String, PackageRequest> {

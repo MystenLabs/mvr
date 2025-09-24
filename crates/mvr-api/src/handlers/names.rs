@@ -13,7 +13,7 @@ use futures::try_join;
 use mvr_types::name::VersionedName;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::{
     data::{

@@ -7,7 +7,7 @@ use axum::{
 use chrono::Local;
 use futures::try_join;
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 
 use crate::{
     data::{

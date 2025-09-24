@@ -1383,6 +1383,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytestring"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "113b4343b5f6617e7ad401ced8de3cc8b012e73a594347c307b90db3e9271289"
+dependencies = [
+ "bytes",
+]
+
+[[package]]
 name = "bzip2-sys"
 version = "0.1.13+1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5463,7 +5472,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "sui-sdk-types 0.0.2",
+ "sui-sdk-types 0.0.7",
  "tempfile",
  "thiserror 2.0.12",
  "tokio",
@@ -5499,7 +5508,7 @@ dependencies = [
  "sui-move-build",
  "sui-package-resolver",
  "sui-pg-db",
- "sui-sdk-types 0.0.2",
+ "sui-sdk-types 0.0.7",
  "sui-types",
  "telemetry-subscribers",
  "thiserror 2.0.12",
@@ -5571,7 +5580,7 @@ dependencies = [
  "once_cell",
  "regex",
  "serde",
- "sui-sdk-types 0.0.2",
+ "sui-sdk-types 0.0.7",
  "thiserror 2.0.12",
 ]
 
@@ -9134,6 +9143,26 @@ dependencies = [
  "bnum",
  "bs58 0.5.1",
  "hex",
+ "itertools 0.13.0",
+ "roaring",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_with",
+ "winnow 0.7.3",
+]
+
+[[package]]
+name = "sui-sdk-types"
+version = "0.0.7"
+source = "git+https://github.com/mystenlabs/sui-rust-sdk?rev=b3a5178b#b3a5178b8653dbf9bad9bf6f6c71210867143eed"
+dependencies = [
+ "base64ct",
+ "bcs",
+ "bnum",
+ "bs58 0.5.1",
+ "bytes",
+ "bytestring",
  "itertools 0.13.0",
  "roaring",
  "serde",

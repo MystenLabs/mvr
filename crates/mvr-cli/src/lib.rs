@@ -17,7 +17,7 @@ use utils::api_data::search_names;
 use utils::api_data::{query_multiple_dependencies, query_package};
 use utils::git::shallow_clone_repo;
 
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address as ObjectId;
 use types::MoveRegistryDependencies;
 use utils::manifest::{MoveToml, ADDRESSES_KEY, DEPENDENCIES_KEY, PUBLISHED_AT_KEY};
 use utils::sui_binary::get_active_network;

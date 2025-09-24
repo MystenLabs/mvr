@@ -2,7 +2,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use anyhow::anyhow;
 use regex::{Captures, Regex};
-use sui_sdk_types::{ObjectId, TypeTag};
+use sui_sdk_types::{Address as ObjectId, TypeTag};
 
 use crate::name::{VersionedName, VERSIONED_NAME_UNBOUND_REG};
 
@@ -84,7 +84,7 @@ fn replace_all_result(
 mod tests {
     use std::{collections::HashMap, str::FromStr};
 
-    use sui_sdk_types::ObjectId;
+    use sui_sdk_types::Address as ObjectId;
 
     use super::NamedType;
 
