@@ -233,7 +233,8 @@ async fn setup(port: Option<u16>) -> Result<MvrTestCluster, anyhow::Error> {
 }
 
 async fn setup_dummy_data(db: &mut Db) -> Result<(), anyhow::Error> {
-    let c_pkg = MovePackage::new_initial(&build_test_modules("Cv1"), u64::MAX, 7, []).unwrap();
+    let protocol_config = ProtocolConfig::get_for_max_version_UNSAFE();
+    let c_pkg = MovePackage::new_initial(&build_test_modules("Cv1"), &protocol_config, []).unwrap();
     let c_new = c_pkg
         .new_upgraded(
             ObjectID::from_single_byte(0xc2),
