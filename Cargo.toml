@@ -11,34 +11,42 @@ members = [
 ]
 
 [workspace.dependencies]
-tokio = "1.45.1"
-serde = "1.0.217"
-serde_json = "1.0.138"
+tokio = "1.47.1"
+serde = "1.0.228"
+serde_json = "1.0.145"
 dotenvy = "0.15.7"
-chrono = { version = "=0.4.39", features = ["clock", "serde"] }
+chrono = { version = "=0.4.42", features = ["clock", "serde"] }
 diesel = "2.2.7"
 diesel-async = "0.5.2"
 diesel_migrations = "2.2.0"
-anyhow = "1.0.95"
-thiserror = "2.0.11"
+anyhow = "1.0.100"
+thiserror = "2.0.17"
 once_cell = "1.20.3"
 tracing = "0.1.41"
-clap = "4.5.31"
-async-trait = "0.1.83"
+clap = "4.5.48"
+async-trait = "0.1.89"
 bcs = "0.1.6"
-url = "2.5.4"
+url = "2.5.7"
 prometheus = "0.13.4"
-tokio-util = "0.7.13"
+tokio-util = "0.7.16"
 futures = "0.3.31"
 tempfile = "3.20.0"
 
 # Main Sui Mono-repo
-sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
-mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
-telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
-sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
-move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
-sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "0f91f6b" }
+sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62"}
 
 # New Rust SDK
 sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", rev="86a9e06"}
+insta = "1.43.2"

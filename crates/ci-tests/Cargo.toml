@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dev-dependencies]
-insta = "1.42.2"
+insta.workspace = true
 tempfile.workspace = true
-anyhow = "1.0.91"
+anyhow.workspace = true
 strip-ansi-escapes = "0.2.1"

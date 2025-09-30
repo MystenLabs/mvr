@@ -114,6 +114,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 rpc_password: None,
             },
             Default::default(),
+            None, /* Metrics prefix */
             metrics.registry(),
             cancel.clone(),
         )
@@ -135,6 +136,7 @@ async fn main() -> Result<(), anyhow::Error> {
             store.clone(),
         )))?;
 
+        let metrics_prefix = None;
         let indexer = Indexer::new(
             store,
             indexer_args,
@@ -146,6 +148,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 rpc_password: None,
             },
             Default::default(),
+            metrics_prefix,
             metrics.registry(),
             cancel.clone(),
         )
