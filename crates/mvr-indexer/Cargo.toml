@@ -15,11 +15,11 @@ move-binary-format.workspace = true
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto" }
 reqwest = { version = "^0.12", features = ["blocking", "json"] }
 
-move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "99f68a28c2f19be40a09e5f1281af748df9a8d3e" }
-move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "99f68a28c2f19be40a09e5f1281af748df9a8d3e" }
+move-binding-derive = { git = "https://github.com/MystenLabs/move-binding.git", rev = "13af489180a395c0ec8dad611e5579d6d7b4a4e3" }
+move-types = { git = "https://github.com/MystenLabs/move-binding.git", rev = "13af489180a395c0ec8dad611e5579d6d7b4a4e3" }
 
-sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", features = ["serde"], rev = "86a9e06" }
-sui-transaction-builder = { git = "https://github.com/mystenlabs/sui-rust-sdk", rev = "86a9e06" }
+sui-sdk-types = { git = "https://github.com/mystenlabs/sui-rust-sdk", package = "sui-sdk-types", features = ["serde"], rev = "f0c8068" }
+sui-transaction-builder = { git = "https://github.com/mystenlabs/sui-rust-sdk", rev = "f0c8068" }
 
 mvr-schema = { path = "../mvr-schema" }
 mvr-types = { path = "../mvr-types" }

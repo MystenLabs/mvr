@@ -4,7 +4,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use axum::{extract::State, http::StatusCode};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::{
     data::{app_state::AppState, resolution_loader::ResolutionData},
@@ -32,7 +32,7 @@ pub(crate) async fn health_check(
     Ok(StatusCode::OK)
 }
 
-fn into_object_id_map(resolution: &HashMap<String, ResolutionData>) -> HashMap<String, ObjectId> {
+fn into_object_id_map(resolution: &HashMap<String, ResolutionData>) -> HashMap<String, Address> {
     resolution
         .iter()
         .map(|(k, v)| (k.clone(), v.id))

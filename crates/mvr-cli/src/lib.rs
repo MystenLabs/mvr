@@ -17,7 +17,7 @@ use utils::api_data::search_names;
 use utils::api_data::{query_multiple_dependencies, query_package};
 use utils::git::shallow_clone_repo;
 
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 use types::MoveRegistryDependencies;
 use utils::manifest::{MoveToml, ADDRESSES_KEY, DEPENDENCIES_KEY, PUBLISHED_AT_KEY};
 use utils::sui_binary::get_active_network;
@@ -164,7 +164,7 @@ async fn check_single_package_consistency(
                 anyhow::anyhow!("Failed to retrieve original package address at version 1".red())
             })?
     } else {
-        ObjectId::from_str(&request_data.package_address)?
+        Address::from_str(&request_data.package_address)?
     };
 
     let git_info: SafeGitInfo = request_data.get_git_info()?.try_into()?;
@@ -194,7 +194,7 @@ async fn check_single_package_consistency(
 
     let address = addresses_id
         .map(|id_str| {
-            ObjectId::from_str(&id_str).map_err(|e| {
+            Address::from_str(&id_str).map_err(|e| {
                 anyhow!(
                     "{} {}",
                     "Failed to parse address in [addresses] section of Move.toml:".red(),
@@ -205,7 +205,7 @@ async fn check_single_package_consistency(
         .transpose()?;
     let published_at = published_at_id
         .map(|id_str| {
-            ObjectId::from_str(&id_str).map_err(|e| {
+            Address::from_str(&id_str).map_err(|e| {
                 anyhow!(
                     "{} {}",
                     "Failed to parse published-at address of Move.toml:".red(),
@@ -218,7 +218,7 @@ async fn check_single_package_consistency(
     // The original-published-id may exist in the Move.lock
     let original_published_id_in_lock = original_published_id(&move_lock_content, &target_chain_id)
         .map(|id_str| {
-            ObjectId::from_str(&id_str).map_err(|e| {
+            Address::from_str(&id_str).map_err(|e| {
                 anyhow!(
                     "{} {}",
                     "Failed to parse original-published-id in Move.lock:".red(),
@@ -228,7 +228,7 @@ async fn check_single_package_consistency(
         })
         .transpose()?;
 
-    let (original_source_id, provenance): (ObjectId, String) = match (
+    let (original_source_id, provenance): (Address, String) = match (
         original_published_id_in_lock,
         published_at,
         address,
@@ -245,7 +245,7 @@ async fn check_single_package_consistency(
             )
         }
         (None, Some(published_at_id), Some(address_id))
-            if address_id == ObjectId::ZERO || published_at_id == address_id =>
+            if address_id == Address::ZERO || published_at_id == address_id =>
         {
             // The [addresses] section has a package name set to "0x0" or the same as the published_at_id.
             // Our best guess is that the published-id refers to the original package (it may not, but
@@ -304,7 +304,7 @@ async fn check_single_package_consistency(
 /// used to reverse-lookup a candidate package name in the addresses section of the Move.toml.
 pub async fn published_ids(
     move_toml_content: &str,
-    original_address_on_chain: &ObjectId,
+    original_address_on_chain: &Address,
 ) -> MoveTomlPublishedID {
     let doc = match move_toml_content.parse::<DocumentMut>() {
         Ok(d) => d,
@@ -671,7 +671,7 @@ async fn update_mvr_packages(
 
     let dep_move_toml_content = fs::read_to_string(dep_move_toml_path)?;
 
-    let placeholder_address = ObjectId::from_str(&request_data.package_address)?;
+    let placeholder_address = Address::from_str(&request_data.package_address)?;
 
     let MoveTomlPublishedID {
         internal_pkg_name: Some(name),
