@@ -213,6 +213,7 @@ export function PackageEditor({
             disableEdits={
               isLoadingLatestVersion ||
               disableEdits ||
+              !latestVersion ||
               takenVersions.length >= latestVersion
             }
             reset={() => setForUpdate(null)}

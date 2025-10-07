@@ -23,10 +23,6 @@ export type Clients = {
     mainnet: SuiGraphQLClient;
     testnet: SuiGraphQLClient;
   };
-  mvrPlugin: {
-    mainnet: TransactionPlugin;
-    testnet: TransactionPlugin;
-  };
   mvrEndpoints: {
     mainnet: string;
     testnet: string;
@@ -40,14 +36,6 @@ export type Clients = {
 const mainnet = new SuiClient({
   url: "https://suins-rpc.mainnet.sui.io:443",
   network: "mainnet",
-});
-
-const testnetNamedPackagesPlugin = namedPackagesPlugin({
-  url: "https://testnet.mvr.mystenlabs.com",
-});
-
-const mainnetNamedPackagesPlugin = namedPackagesPlugin({
-  url: "https://mainnet.mvr.mystenlabs.com",
 });
 
 export const DefaultClients: Clients = {
@@ -69,15 +57,11 @@ export const DefaultClients: Clients = {
   },
   graphql: {
     mainnet: new SuiGraphQLClient({
-      url: "https://sui-mainnet.mystenlabs.com",
+      url: "https://graphql.mainnet.sui.io/graphql",
     }),
     testnet: new SuiGraphQLClient({
-      url: "https://sui-testnet.mystenlabs.com",
+      url: "https://graphql.testnet.sui.io/graphql",
     }),
-  },
-  mvrPlugin: {
-    mainnet: mainnetNamedPackagesPlugin,
-    testnet: testnetNamedPackagesPlugin,
   },
   mvrEndpoints: {
     mainnet: "https://mainnet.mvr.mystenlabs.com",

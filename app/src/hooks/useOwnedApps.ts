@@ -36,7 +36,7 @@ const parseName = (response: SuiObjectResponse) => {
     ...data,
     normalizedName: `${data.orgName}/${data.appName}`,
     dfName: {
-      type: `${Constants.appsPackageId}::name::Name`,
+      type: Constants.appsNameType,
       value: {
         org: {
           labels: fields.name.fields.org.fields.labels,
@@ -60,7 +60,7 @@ export function useOwnedApps() {
         client,
         address: activeAddress!,
         filter: {
-          StructType: `${Constants.appsPackageId}::app_record::AppCap`,
+          StructType: `@mvr/core::app_record::AppCap`,
         },
       });
 

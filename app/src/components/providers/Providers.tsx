@@ -24,7 +24,6 @@ export default function Providers({ children }: { children: ReactNode }) {
           <SuiClientProvider networks={networks} defaultNetwork="mainnet">
             <WalletProvider
               theme={mvrWalletTheme}
-              stashedWallet={{ name: "Move Registry (mvr)" }}
               autoConnect
             >
               {children}

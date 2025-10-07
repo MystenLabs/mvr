@@ -204,10 +204,10 @@ export default function CreateOrUpdateVersion({
 
       const atVersion = (
         versionPackageAddresses?.data?.atVersion as Record<string, any>
-      )?.packageAtVersion?.address;
+      )?.packageAt?.address;
       const original = (
         versionPackageAddresses?.data?.original as Record<string, any>
-      )?.packageAtVersion?.address;
+      )?.packageAt?.address;
 
       if (original !== originalId) {
         throw new Error(`
