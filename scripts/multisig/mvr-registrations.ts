@@ -2,15 +2,6 @@ import { SuiGraphQLClient } from "@mysten/sui/graphql";
 import { namedPackagesPlugin, Transaction } from "@mysten/sui/transactions";
 import { sender, signAndExecute, prepareMultisigTx } from "../utils";
 
-Transaction.registerGlobalSerializationPlugin(
-  "namedPackagesPlugin",
-  namedPackagesPlugin({
-    suiGraphQLClient: new SuiGraphQLClient({
-      url: `https://mvr-rpc.sui-mainnet.mystenlabs.com/graphql`,
-    }),
-  })
-);
-
 const VERSION = 3;
 
 export const run = async () => {

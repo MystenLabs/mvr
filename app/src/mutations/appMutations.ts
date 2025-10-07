@@ -15,7 +15,7 @@ import { useTransactionExecution } from "@/hooks/useTransactionExecution";
 import { sender } from "@/lib/utils";
 import { type PackageInfoData } from "@/utils/types";
 import { KioskTransaction } from "@mysten/kiosk";
-import { Transaction } from "@mysten/sui/transactions";
+import { Transaction, TransactionObjectArgument } from "@mysten/sui/transactions";
 import { useMutation } from "@tanstack/react-query";
 
 export function useCreateAppMutation() {
@@ -57,7 +57,7 @@ export function useCreateAppMutation() {
           itemType: suins.objectType!,
         });
 
-        nsObject = item;
+        nsObject = item as TransactionObjectArgument;
         promise = returnPromise;
       }
 
