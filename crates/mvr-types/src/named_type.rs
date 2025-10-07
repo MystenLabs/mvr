@@ -2,7 +2,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use anyhow::anyhow;
 use regex::{Captures, Regex};
-use sui_sdk_types::{ObjectId, TypeTag};
+use sui_sdk_types::{Address, TypeTag};
 
 use crate::name::{VersionedName, VERSIONED_NAME_UNBOUND_REG};
 
@@ -13,7 +13,7 @@ pub struct NamedType;
 impl NamedType {
     pub fn replace_names(
         type_name: &str,
-        names: &HashMap<String, ObjectId>,
+        names: &HashMap<String, Address>,
     ) -> Result<String, anyhow::Error> {
         let struct_tag_str = replace_all_result(
             &VERSIONED_NAME_UNBOUND_REG,
@@ -84,7 +84,7 @@ fn replace_all_result(
 mod tests {
     use std::{collections::HashMap, str::FromStr};
 
-    use sui_sdk_types::ObjectId;
+    use sui_sdk_types::Address;
 
     use super::NamedType;
 
@@ -152,7 +152,7 @@ mod tests {
             for (index, name) in data.expected_names.iter().enumerate() {
                 mapping.insert(
                     name.clone(),
-                    ObjectId::from_str(&format!("0x{}", index)).unwrap(),
+                    Address::from_str(&format!("0x{}", index)).unwrap(),
                 );
             }
 
@@ -183,7 +183,7 @@ mod tests {
     fn format_type(address: &str, rest: &str) -> String {
         format!(
             "{}{}",
-            ObjectId::from_str(address).unwrap().to_string(),
+            Address::from_str(address).unwrap().to_string(),
             rest
         )
     }

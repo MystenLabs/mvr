@@ -13,7 +13,7 @@ use futures::try_join;
 use mvr_types::name::VersionedName;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::{
     data::{
@@ -33,7 +33,7 @@ pub struct PackageByNameResponse {
     #[serde(flatten)]
     pub package_by_name_data: PackageByNameBaseData,
     pub version: i64,
-    pub package_address: ObjectId,
+    pub package_address: Address,
 }
 
 #[derive(Serialize, Deserialize, QueryableByName)]

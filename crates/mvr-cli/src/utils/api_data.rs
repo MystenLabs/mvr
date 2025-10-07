@@ -4,7 +4,7 @@ use ::futures::future::try_join_all;
 use anyhow::{bail, Result};
 use mvr_types::name::VersionedName;
 use reqwest::Client;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::{
     errors::CliError,
@@ -45,7 +45,7 @@ pub async fn query_package(name: &str, network: &Network) -> Result<(String, Pac
     Ok((name.to_string(), body))
 }
 
-pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<ObjectId> {
+pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<Address> {
     let response = reqwest::get(format!(
         "{}/v1/resolution/{}",
         get_api_url(network)?,
@@ -66,7 +66,7 @@ pub async fn resolve_name(name: &VersionedName, network: &Network) -> Result<Obj
         .await
         .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
-    Ok(ObjectId::from_str(&body.package_id)?)
+    Ok(Address::from_str(&body.package_id)?)
 }
 
 /// Query the MVR API to get Package Information for multiple dependencies.

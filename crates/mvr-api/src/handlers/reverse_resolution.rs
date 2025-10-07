@@ -5,7 +5,7 @@ use axum::{
     Json,
 };
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::{data::reverse_resolution_loader::ReverseResolutionKey, errors::ApiError, AppState};
 
@@ -13,11 +13,11 @@ use super::validate_batch_size;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BulkRequest {
-    package_ids: Vec<ObjectId>,
+    package_ids: Vec<Address>,
 }
 #[derive(Serialize, Deserialize)]
 pub struct BulkResponse {
-    resolution: HashMap<ObjectId, Response>,
+    resolution: HashMap<Address, Response>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -32,7 +32,7 @@ pub struct ReverseResolution;
 
 impl ReverseResolution {
     pub async fn resolve(
-        Path(package_id): Path<ObjectId>,
+        Path(package_id): Path<Address>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<Response>, ApiError> {
         let name = app_state

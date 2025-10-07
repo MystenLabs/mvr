@@ -6,7 +6,7 @@ use diesel::{
     sql_types::{Array, Text},
 };
 use mvr_types::name::VersionedName;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::errors::ApiError;
 
@@ -22,7 +22,7 @@ pub struct ReverseNameResolution {
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct ReverseResolutionKey(pub ObjectId);
+pub struct ReverseResolutionKey(pub Address);
 
 #[async_trait::async_trait]
 impl Loader<ReverseResolutionKey> for Reader {
@@ -72,7 +72,7 @@ impl Loader<ReverseResolutionKey> for Reader {
                 // SAFETY: We should never have a malformed name in the database.
                 let versioned_name = VersionedName::from_str(&name.name)?;
                 // SAFETY: We should never have a malformed package id in the database.
-                let object_id = ObjectId::from_str(&name.package_id).map_err(|e| {
+                let object_id = Address::from_str(&name.package_id).map_err(|e| {
                     ApiError::BadRequest(format!(
                         "Failed to parse package id: {e} {}",
                         name.package_id

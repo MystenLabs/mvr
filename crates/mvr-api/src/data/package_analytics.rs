@@ -8,7 +8,7 @@ use diesel::{
     ExpressionMethods,
 };
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::errors::ApiError;
 
@@ -17,7 +17,7 @@ use super::reader::Reader;
 /// The `NaiveDate` is the date of the analytics query, as we are caching the query on a daily basis
 /// per instance.
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct PackageAnalyticsKey(pub ObjectId, pub NaiveDate);
+pub struct PackageAnalyticsKey(pub Address, pub NaiveDate);
 
 #[derive(Serialize, Deserialize, Clone, Queryable)]
 pub struct PackageAnalytics {

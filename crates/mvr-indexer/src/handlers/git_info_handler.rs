@@ -1,14 +1,17 @@
 use crate::handlers::MoveObjectProcessor;
 use crate::handlers::{convert_struct_tag, OrderedDedup};
-use crate::models::mainnet::sui::dynamic_field::Field;
-use crate::models::{mainnet, testnet};
+use crate::models::mainnet::GitInfo as MainnetGitInfoValue;
+use crate::models::mainnet::GitInfoField as MainnetGitInfo;
+use crate::models::testnet::GitInfo as TestnetGitInfoValue;
+use crate::models::testnet::GitInfoField as TestnetGitInfo;
+use crate::models::MoveStructType;
+
 use anyhow::Error;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
-use move_types::MoveStruct;
 use mvr_schema::models::GitInfo;
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
@@ -20,16 +23,13 @@ use sui_types::base_types::MoveObjectType;
 use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::object::Object;
 
-pub type MainnetGitInfo = Field<u64, mainnet::mvr_metadata::git::GitInfo>;
-pub type TestnetGitInfo = Field<u64, testnet::mvr_metadata::git::GitInfo>;
-
 pub struct GitInfoHandler<T> {
     chain_id: String,
     type_: MoveObjectType,
     phantom_data: PhantomData<T>,
 }
 
-impl<T: MoveStruct> GitInfoHandler<T> {
+impl<T: MoveStructType> GitInfoHandler<T> {
     pub fn new(chain_id: String) -> Self {
         // Indexing dynamic field object Field<u64, [metadata_pkg_id]::git::GitInfo>
         let struct_tag = T::struct_type();
@@ -49,7 +49,7 @@ impl MoveObjectProcessor<MainnetGitInfo, GitInfo> for GitInfoHandler<MainnetGitI
         move_obj: MainnetGitInfo,
         obj: &Object,
     ) -> Result<GitInfo, Error> {
-        let mainnet::mvr_metadata::git::GitInfo {
+        let MainnetGitInfoValue {
             repository,
             path,
             tag,
@@ -74,7 +74,7 @@ impl MoveObjectProcessor<TestnetGitInfo, GitInfo> for GitInfoHandler<TestnetGitI
         move_obj: TestnetGitInfo,
         obj: &Object,
     ) -> Result<GitInfo, Error> {
-        let testnet::mvr_metadata::git::GitInfo {
+        let TestnetGitInfoValue {
             repository,
             path,
             tag,
@@ -92,7 +92,7 @@ impl MoveObjectProcessor<TestnetGitInfo, GitInfo> for GitInfoHandler<TestnetGitI
 }
 
 #[async_trait]
-impl<T: MoveStruct + DeserializeOwned> Handler for GitInfoHandler<T>
+impl<T: MoveStructType + DeserializeOwned> Handler for GitInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, GitInfo>,
 {
@@ -127,7 +127,7 @@ where
     }
 }
 
-impl<T: MoveStruct + DeserializeOwned> Processor for GitInfoHandler<T>
+impl<T: MoveStructType + DeserializeOwned> Processor for GitInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, GitInfo>,
 {

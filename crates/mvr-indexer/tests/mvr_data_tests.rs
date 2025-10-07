@@ -2,11 +2,13 @@ use chrono::NaiveDateTime;
 use fastcrypto::hash::{HashFunction, Sha256};
 use insta::assert_json_snapshot;
 use mvr_indexer::handlers::git_info_handler::GitInfoHandler;
-use mvr_indexer::handlers::git_info_handler::MainnetGitInfo;
+
+use mvr_indexer::models::mainnet::GitInfoField as MainnetGitInfo;
+
 use mvr_indexer::handlers::name_record_handler::NameRecordHandler;
 use mvr_indexer::handlers::package_handler::PackageHandler;
 use mvr_indexer::handlers::package_info_handler::PackageInfoHandler;
-use mvr_indexer::models::mainnet::mvr_metadata::package_info::PackageInfo;
+use mvr_indexer::models::mainnet::PackageInfo;
 use mvr_indexer::MAINNET_CHAIN_ID;
 use mvr_schema::MIGRATIONS;
 use serde_json::Value;

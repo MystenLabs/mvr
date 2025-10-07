@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 use tempfile::tempdir;
 
 fn create_resolved_packages() -> HashMap<String, PackageRequest> {
@@ -314,7 +314,7 @@ published-at = "0xabcdef"
 [addresses]
 demo = "0x1234567890abcdef"
 "#;
-    let original_address_on_chain = ObjectId::from_str("0x1234567890abcdef")?;
+    let original_address_on_chain = Address::from_str("0x1234567890abcdef")?;
     let result = published_ids(move_toml_content, &original_address_on_chain).await;
     expect![[r#"
         MoveTomlPublishedID {
