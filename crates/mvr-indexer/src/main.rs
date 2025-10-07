@@ -1,4 +1,8 @@
-use crate::handlers::git_info_handler::{GitInfoHandler, MainnetGitInfo, TestnetGitInfo};
+use crate::handlers::git_info_handler::GitInfoHandler;
+use crate::models::{
+    mainnet::GitInfoField as MainnetGitInfo, testnet::GitInfoField as TestnetGitInfo,
+};
+
 use crate::handlers::name_record_handler::NameRecordHandler;
 use crate::handlers::package_handler::PackageHandler;
 use crate::handlers::package_info_handler::PackageInfoHandler;
@@ -172,7 +176,7 @@ async fn main() -> Result<(), anyhow::Error> {
 }
 
 async fn create_mainnet_pipelines(indexer: &mut Indexer<Db>) -> Result<(), anyhow::Error> {
-    use models::mainnet::mvr_metadata::package_info::PackageInfo;
+    use models::mainnet::PackageInfo;
     indexer
         .concurrent_pipeline(PackageHandler::<true>, Default::default())
         .await?;
@@ -199,7 +203,7 @@ async fn create_mainnet_pipelines(indexer: &mut Indexer<Db>) -> Result<(), anyho
 }
 
 async fn create_testnet_pipelines(indexer: &mut Indexer<Db>) -> Result<(), anyhow::Error> {
-    use models::testnet::mvr_metadata::package_info::PackageInfo;
+    use models::testnet::PackageInfo;
     indexer
         .concurrent_pipeline(PackageHandler::<false>, Default::default())
         .await?;
