@@ -55,8 +55,8 @@ export function useGetPackageLatestVersion(
 
       return result;
     },
-    select: (data) => {
-      return (data?.data?.package as Record<string, unknown>)?.version || 1;
+    select: (data): number => {
+      return (data?.data?.package as Record<string, number>)?.version ?? 1;
     },
     // let's avoid hitting rate limits.
     refetchOnMount: false,
