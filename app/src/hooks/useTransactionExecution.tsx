@@ -1,6 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { useSignAndExecuteTransaction, useSignTransaction } from '@mysten/dapp-kit';
+import { useSignTransaction } from '@mysten/dapp-kit';
 import { useState } from 'react';
 import {toast} from 'sonner';
 import { Transaction } from '@mysten/sui/transactions';
@@ -26,7 +26,6 @@ export function useTransactionExecution(network: 'mainnet' | 'testnet') {
 	const executeTransaction = async (
 		tx: Transaction,
 	): Promise<SuiTransactionBlockResponse | void> => {
-		tx.addSerializationPlugin(clients.mvrPlugin[network]);
 		if (!client) throw new Error("Client is not defined. Please refresh.");
 		if (isCustom) {
 			if (!customAddress || !isValidSuiAddress(customAddress)) {

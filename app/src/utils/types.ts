@@ -49,9 +49,6 @@ export const AvailableNetworks = {
   testnet: "testnet",
 };
 
-export const packageInfoType = (network: Network) =>
-  `${Constants.packageInfoIds[network]}::package_info::PackageInfo`;
-
 export enum AppQueryKeys {
   APP = "app",
   OWNED_SUINS_NAMES = "owned-suins-names",

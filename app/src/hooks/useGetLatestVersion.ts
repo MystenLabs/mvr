@@ -7,22 +7,26 @@ import { SuiGraphQLClient } from "@mysten/sui/graphql";
 const LATEST_PACKAGE_VERSION_QUERY = graphql(`
   query ($address: String!) {
     package(address: $address) {
-      latestPackage {
-        version
+      packageAt(version: 1) {
+        packageVersionsAfter(last: 1) {
+          nodes {
+            version
+          }
+        }
       }
     }
-  }
+}
 `);
 
 const PACKAGE_AT_VERSION_QUERY = graphql(`
   query ($address: String!, $version: Int!) {
     atVersion: package(address: $address) {
-      packageAtVersion(version: $version) {
+      packageAt(version: $version) {
         address
       }
     }
     original: package(address: $address) {
-      packageAtVersion(version: 1) {
+      packageAt(version: 1) {
         address
       }
     }
@@ -58,8 +62,7 @@ export function useGetPackageLatestVersion(
       return result;
     },
     select: (data) => {
-      return (data?.data?.package as Record<string, any>)?.latestPackage
-        ?.version;
+      return (data?.data?.package as Record<string, any>)?.packageAt?.packageVersionsAfter?.nodes?.[0]?.version || 1;
     },
     // let's avoid hitting rate limits.
     refetchOnMount: false,

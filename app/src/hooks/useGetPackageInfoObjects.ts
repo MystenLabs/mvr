@@ -1,8 +1,8 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
-import { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
-import { AppQueryKeys, Network, PackageInfoData, packageInfoType } from "@/utils/types";
+import { SuiClient } from "@mysten/sui/client";
+import { AppQueryKeys, Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
 import { parsePackageInfoContent } from "@/utils/helpers";
 
@@ -29,13 +29,12 @@ export const DefaultColors = [
 const getPackageInfoObjects = async (
   client: SuiClient,
   address: string,
-  network: Network,
 ) => {
   return fetchAllOwnedObjects({
     client,
     address,
     filter: {
-      StructType: packageInfoType(network),
+      StructType: `@mvr/metadata::package_info::PackageInfo`,
     },
     options: {
       showContent: true,
@@ -54,7 +53,6 @@ export function useGetPackageInfoObjects(network: Network) {
       return await getPackageInfoObjects(
         clients[network],
         address!,
-        network as Network,
       );
     },
     enabled: !!address && !!network,
