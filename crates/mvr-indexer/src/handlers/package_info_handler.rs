@@ -1,5 +1,5 @@
-use crate::handlers::{MoveObjectProcessor, into_hash_map};
 use crate::handlers::{convert_struct_tag, OrderedDedup};
+use crate::handlers::{into_hash_map, MoveObjectProcessor};
 use crate::models::mainnet::PackageInfo as MainnetPackageInfo;
 use crate::models::testnet::PackageInfo as TestnetPackageInfo;
 use crate::models::MoveStructType;

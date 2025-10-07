@@ -85,10 +85,13 @@ pub mod mainnet {
     impl MoveStructType for GitInfoField {
         fn struct_type() -> StructTag {
             let git_info_tag = GitInfo::struct_type();
-            StructTag::from_str(format!(
-                "0x2::dynamic_field::Field<u64, {}>",
-                git_info_tag.to_string()
-            ).as_str())
+            StructTag::from_str(
+                format!(
+                    "0x2::dynamic_field::Field<u64, {}>",
+                    git_info_tag.to_string()
+                )
+                .as_str(),
+            )
             .expect("Failed to parse struct type that is known to be valid.")
         }
     }
@@ -153,10 +156,13 @@ pub mod testnet {
     impl MoveStructType for GitInfoField {
         fn struct_type() -> StructTag {
             let git_info_tag = GitInfo::struct_type();
-            StructTag::from_str(format!(
-                "0x2::dynamic_field::Field<u64, {}>",
-                git_info_tag.to_string()
-            ).as_str())
+            StructTag::from_str(
+                format!(
+                    "0x2::dynamic_field::Field<u64, {}>",
+                    git_info_tag.to_string()
+                )
+                .as_str(),
+            )
             .expect("Failed to parse struct type that is known to be valid.")
         }
     }
