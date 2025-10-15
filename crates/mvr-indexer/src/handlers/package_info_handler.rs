@@ -109,7 +109,7 @@ impl MoveObjectProcessor<TestnetPkgInfo, PackageInfo> for PackageInfoHandler<Tes
 }
 
 #[async_trait]
-impl<T: MoveStruct + DeserializeOwned> Handler for PackageInfoHandler<T>
+impl<T: MoveStruct + DeserializeOwned + Send + Sync + 'static> Handler for PackageInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, PackageInfo>,
 {
@@ -144,14 +144,15 @@ where
     }
 }
 
-impl<T: MoveStruct + DeserializeOwned> Processor for PackageInfoHandler<T>
+#[async_trait]
+impl<T: MoveStruct + DeserializeOwned + Send + Sync + 'static> Processor for PackageInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, PackageInfo>,
 {
     const NAME: &'static str = Self::PROC_NAME;
     type Value = PackageInfo;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint.transactions.iter().try_fold(vec![], |result, tx| {
             tx.output_objects.iter().try_fold(result, |mut result, obj| {
                 if matches!(obj.type_(), Some(t) if matches!(t.other(), Some(s) if s == &convert_struct_tag(T::struct_type())) ) {

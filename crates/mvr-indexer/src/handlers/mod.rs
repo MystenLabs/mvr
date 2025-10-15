@@ -86,11 +86,12 @@ impl Handler for NoOpsHandler {
     }
 }
 
+#[async_trait]
 impl Processor for NoOpsHandler {
     const NAME: &'static str = "No Ops Handler";
     type Value = Package;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
         info!(
             "Processed checkpoint: {}",
             checkpoint.checkpoint_summary.sequence_number

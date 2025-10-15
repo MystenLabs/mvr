@@ -1,4 +1,5 @@
 use crate::{MAINNET_CHAIN_ID, TESTNET_CHAIN_ID};
+use async_trait::async_trait;
 use chrono::DateTime;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
@@ -53,6 +54,7 @@ impl<const MAINNET: bool> Handler for PackageHandler<MAINNET> {
     }
 }
 
+#[async_trait]
 impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
     const NAME: &'static str = if MAINNET {
         "Package - Mainnet"
@@ -61,7 +63,7 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
     };
     type Value = Package;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
         let timestamp =
             DateTime::from_timestamp_millis(checkpoint.checkpoint_summary.timestamp_ms as i64)
                 .unwrap()
