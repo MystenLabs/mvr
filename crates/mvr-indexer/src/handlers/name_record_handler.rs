@@ -64,11 +64,12 @@ impl Handler for NameRecordHandler {
     }
 }
 
+#[async_trait]
 impl Processor for NameRecordHandler {
     const NAME: &'static str = "NameRecord";
     type Value = NameRecord;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint
             .transactions
             .iter()

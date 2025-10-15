@@ -92,7 +92,7 @@ impl MoveObjectProcessor<TestnetGitInfo, GitInfo> for GitInfoHandler<TestnetGitI
 }
 
 #[async_trait]
-impl<T: MoveStruct + DeserializeOwned> Handler for GitInfoHandler<T>
+impl<T: MoveStruct + DeserializeOwned + Send + Sync + 'static> Handler for GitInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, GitInfo>,
 {
@@ -127,14 +127,15 @@ where
     }
 }
 
-impl<T: MoveStruct + DeserializeOwned> Processor for GitInfoHandler<T>
+#[async_trait]
+impl<T: MoveStruct + DeserializeOwned + Send + Sync + 'static> Processor for GitInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, GitInfo>,
 {
     const NAME: &'static str = Self::PROC_NAME;
     type Value = GitInfo;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint
             .transactions
             .iter()
