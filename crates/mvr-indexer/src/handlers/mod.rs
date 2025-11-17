@@ -1,7 +1,8 @@
-use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::hash::Hash;
 use std::slice::Iter;
+use std::{cmp::Ordering, collections::HashMap};
+use sui_types::collection_types::VecMap;
 use sui_types::object::Object;
 
 pub mod git_info_handler;
@@ -97,4 +98,13 @@ impl Processor for NoOpsHandler {
         );
         Ok(vec![])
     }
+}
+
+// Convert a vec_map into a HashMap.
+pub(crate) fn into_hash_map<K: Eq + Hash, V>(vec_map: VecMap<K, V>) -> HashMap<K, V> {
+    vec_map
+        .contents
+        .into_iter()
+        .map(|entry| (entry.key, entry.value))
+        .collect::<HashMap<K, V>>()
 }

@@ -7,7 +7,7 @@ use axum::{
 use chrono::Local;
 use futures::try_join;
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::{
     data::{
@@ -42,7 +42,7 @@ impl PackageAddress {
         Path(package_address): Path<String>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<PackageDependencies>, ApiError> {
-        let object_id = ObjectId::from_str(&package_address)
+        let object_id = Address::from_str(&package_address)
             .map_err(|e| ApiError::BadRequest(format!("Invalid package address: {}", e)))?;
 
         let dependencies = app_state
@@ -63,7 +63,7 @@ impl PackageAddress {
         Query(params): Query<DependentsQueryParams>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<PaginatedResponse<PackageDependent>>, ApiError> {
-        let object_id = ObjectId::from_str(&package_address)
+        let object_id = Address::from_str(&package_address)
             .map_err(|e| ApiError::BadRequest(format!("Invalid package address: {}", e)))?;
 
         let limit = PaginationLimit::new(params.limit)?;
@@ -89,7 +89,7 @@ impl PackageAddress {
             limit.get(),
             dependents_count,
             |item| PackageDependentsCursor {
-                package_id: Some(ObjectId::from_str(&item.package_id).unwrap()),
+                package_id: Some(Address::from_str(&item.package_id).unwrap()),
                 aggregated_total_calls: Some(item.aggregated_total_calls),
             },
         )))
@@ -99,7 +99,7 @@ impl PackageAddress {
         Path(package_address): Path<String>,
         State(app_state): State<Arc<AppState>>,
     ) -> Result<Json<AnalyticsResponse>, ApiError> {
-        let object_id = ObjectId::from_str(&package_address)
+        let object_id = Address::from_str(&package_address)
             .map_err(|e| ApiError::BadRequest(format!("Invalid package address: {}", e)))?;
 
         let analytics = app_state

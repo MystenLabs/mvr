@@ -4,7 +4,7 @@ use async_graphql::dataloader::Loader;
 use diesel::{ExpressionMethods, QueryDsl};
 use mvr_schema::schema::package_dependencies;
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::errors::ApiError;
 
@@ -13,11 +13,11 @@ use super::reader::Reader;
 // This is a key to load all dependencies for a package.
 // Since there are system limits, we do not paginate this endpoint.
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct PackageDependenciesKey(pub ObjectId);
+pub struct PackageDependenciesKey(pub Address);
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct PackageDependencies {
-    pub dependencies: Vec<ObjectId>,
+    pub dependencies: Vec<Address>,
 }
 
 impl Default for PackageDependencies {
@@ -58,15 +58,15 @@ impl Loader<PackageDependenciesKey> for Reader {
             HashMap::new(),
             |mut acc, (package_id, dependency_package_id)| {
                 acc.entry(PackageDependenciesKey(
-                    // SAFETY: We know that the package_id is a valid ObjectId
-                    ObjectId::from_str(package_id).unwrap(),
+                    // SAFETY: We know that the package_id is a valid address
+                    Address::from_str(package_id).unwrap(),
                 ))
                 .or_insert_with(|| PackageDependencies {
                     dependencies: Vec::new(),
                 })
-                // SAFETY: We know that the dependency_package_id is a valid ObjectId
+                // SAFETY: We know that the dependency_package_id is a valid Address
                 .dependencies
-                .push(ObjectId::from_str(&dependency_package_id).unwrap());
+                .push(Address::from_str(&dependency_package_id).unwrap());
                 acc
             },
         );

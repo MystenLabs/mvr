@@ -1,33 +1,52 @@
-use crate::handlers::{convert_struct_tag, OrderedDedup};
-use crate::models::mainnet::mvr_core::app_record::AppRecord;
-use crate::models::mainnet::mvr_core::name::Name as MoveName;
-use crate::models::mainnet::sui::dynamic_field::Field;
+use crate::handlers::{convert_struct_tag, into_hash_map, OrderedDedup};
+use crate::models::mainnet::AppRecord;
+use crate::models::MoveStructType;
 use crate::TESTNET_CHAIN_ID;
 use async_trait::async_trait;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::upsert::excluded;
 use diesel::ExpressionMethods;
 use diesel_async::RunQueryDsl;
-use move_types::MoveStruct;
 use mvr_schema::models::NameRecord;
 use mvr_types::name::Name;
 use mvr_types::name_service::Domain;
-use std::collections::HashMap;
+use std::str::FromStr;
 use std::sync::Arc;
 use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
 use sui_pg_db::{Connection, Db};
+use sui_sdk_types::StructTag;
 use sui_types::base_types::MoveObjectType;
+use sui_types::dynamic_field::Field;
 use sui_types::full_checkpoint_content::CheckpointData;
 
 pub struct NameRecordHandler {
     type_: MoveObjectType,
 }
 
+impl MoveStructType for Field<Name, AppRecord> {
+    fn struct_type() -> StructTag {
+        let name_tag = StructTag::from_str(
+            "0x62c1f5b1cb9e3bfc3dd1f73c95066487b662048a6358eabdbf67f6cdeca6db4b::name::Name",
+        )
+        .expect("Failed to parse struct type");
+        let app_record_tag = AppRecord::struct_type();
+        StructTag::from_str(
+            format!(
+                "0x2::dynamic_field::Field<{}, {}>",
+                name_tag.to_string(),
+                app_record_tag.to_string()
+            )
+            .as_str(),
+        )
+        .expect("Failed to parse struct type")
+    }
+}
+
 impl NameRecordHandler {
     pub fn new() -> Self {
         // Indexing dynamic field object Field<[mvr_core]::name::Name, [mvr_core]::app_record::AppRecord>
-        let struct_tag = Field::<MoveName, AppRecord>::struct_type();
+        let struct_tag = Field::<Name, AppRecord>::struct_type();
         let type_ = MoveObjectType::from(convert_struct_tag(struct_tag));
         NameRecordHandler { type_ }
     }
@@ -77,9 +96,9 @@ impl Processor for NameRecordHandler {
                     // TODO: do we need to check if the parent of the DF table entry is the MVR registry?
                     if matches!(o.type_(), Some(t) if t == &self.type_) {
                         if let Some(move_obj) = o.data.try_as_move() {
-                            let data: Field<MoveName, AppRecord> =
+                            let data: Field<Name, AppRecord> =
                                 bcs::from_bytes(move_obj.contents())?;
-                            let MoveName { org, app } = data.name;
+                            let Name { org, app } = data.name;
                             let name = Name::new(Domain { labels: org.labels }, app);
                             let AppRecord {
                                 app_info,
@@ -88,18 +107,15 @@ impl Processor for NameRecordHandler {
                                 ..
                             } = data.value;
 
-                            let networks: HashMap<_, _> = networks.into();
-                            let metadata: HashMap<_, _> = metadata.into();
-
                             result.push(NameRecord {
                                 name: name.to_string(),
                                 object_version: o.version().value() as i64,
                                 mainnet_id: app_info
                                     .and_then(|info| Some(info.package_info_id?.to_string())),
                                 testnet_id: networks
-                                    .get(TESTNET_CHAIN_ID)
+                                    .get(&TESTNET_CHAIN_ID.to_string())
                                     .and_then(|info| Some(info.package_info_id?.to_string())),
-                                metadata: serde_json::to_value(metadata)?,
+                                metadata: serde_json::to_value(into_hash_map(metadata))?,
                             })
                         }
                     }

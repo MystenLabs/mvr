@@ -8,7 +8,7 @@ use diesel::{
 };
 use mvr_types::name::Name;
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::errors::ApiError;
 
@@ -21,12 +21,12 @@ use super::reader::Reader;
 /// The `NaiveDate` is the date of the analytics query, as we are caching the query on a daily basis
 /// per instance.
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct NameAnalyticsKey(pub Name, pub ObjectId, pub NaiveDate);
+pub struct NameAnalyticsKey(pub Name, pub Address, pub NaiveDate);
 
 /// Similar operation with analytics, this returns the "count" of
 /// dependents using a package, across versions.
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct NameDependentsCountKey(pub Name, pub ObjectId, pub NaiveDate);
+pub struct NameDependentsCountKey(pub Name, pub Address, pub NaiveDate);
 
 #[derive(Serialize, Deserialize, Clone, QueryableByName)]
 pub struct AnalyticsQueryResponse {
@@ -100,7 +100,7 @@ impl Loader<NameAnalyticsKey> for Reader {
 
         for res in result.into_iter() {
             // SAFETY: We should never have a malformed package id in the database.
-            let obj_id = ObjectId::from_str(&res.package_id).unwrap();
+            let obj_id = Address::from_str(&res.package_id).unwrap();
 
             if let Some(key) = addr_name_mapping.get(&obj_id) {
                 if let Some(v) = aggregated_values.get_mut(key) {

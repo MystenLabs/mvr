@@ -12,7 +12,7 @@ use diesel::{
 use futures::future::try_join_all;
 use mvr_schema::schema;
 use serde::{Deserialize, Serialize};
-use sui_sdk_types::ObjectId;
+use sui_sdk_types::Address;
 
 use crate::{errors::ApiError, utils::pagination::PaginationLimit};
 
@@ -20,20 +20,20 @@ use super::reader::Reader;
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct PackageDependentsCursor {
-    pub package_id: Option<ObjectId>,
+    pub package_id: Option<Address>,
     pub aggregated_total_calls: Option<i64>,
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct PackageDependentsKey(
-    pub ObjectId,
+    pub Address,
     pub PackageDependentsCursor,
     pub PaginationLimit,
     pub NaiveDate,
 );
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct PackageDependentsCountKey(pub ObjectId, pub NaiveDate);
+pub struct PackageDependentsCountKey(pub Address, pub NaiveDate);
 
 #[derive(Serialize, Deserialize, Clone, QueryableByName)]
 pub struct PackageDependent {
