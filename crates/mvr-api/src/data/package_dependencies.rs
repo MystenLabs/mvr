@@ -58,7 +58,7 @@ impl Loader<PackageDependenciesKey> for Reader {
             HashMap::new(),
             |mut acc, (package_id, dependency_package_id)| {
                 acc.entry(PackageDependenciesKey(
-                    // SAFETY: We know that the package_id is a valid Address
+                    // SAFETY: We know that the package_id is a valid address
                     Address::from_str(package_id).unwrap(),
                 ))
                 .or_insert_with(|| PackageDependencies {
