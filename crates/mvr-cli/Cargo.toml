@@ -20,9 +20,13 @@ path = "tests/unit_tests.rs"
 
 [dependencies]
 bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
+jsonrpc.workspace = true
 
 clap = { workspace = true, features = ["derive"] }
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "rustls-tls",
+] }
 tempfile.workspace = true
 tokio = { workspace = true, features = ["full"] }
 toml_edit = "0.22"
