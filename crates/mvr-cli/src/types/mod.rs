@@ -17,15 +17,6 @@ pub struct MoveRegistryDependencies {
     pub packages: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Env {
-    alias: String,
-    rpc: String,
-    ws: Option<String>,
-    /// Basic HTTP access authentication in the format of username:password, if needed.
-    basic_auth: Option<String>,
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Network {
     Mainnet,
