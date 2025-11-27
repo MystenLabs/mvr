@@ -12,13 +12,6 @@ use crate::errors::CliError;
 use crate::MAINNET_CHAIN_ID;
 use crate::TESTNET_CHAIN_ID;
 
-#[derive(Serialize, Default, Debug)]
-pub struct MoveTomlPublishedID {
-    pub addresses_id: Option<String>,
-    pub published_at_id: Option<String>,
-    pub internal_pkg_name: Option<String>,
-}
-
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct MoveRegistryDependencies {
     pub packages: Vec<String>,
@@ -31,12 +24,6 @@ pub(crate) struct Env {
     ws: Option<String>,
     /// Basic HTTP access authentication in the format of username:password, if needed.
     basic_auth: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct SuiConfig {
-    active_env: String,
-    envs: Vec<Env>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]

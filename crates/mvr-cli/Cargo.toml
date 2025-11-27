@@ -41,7 +41,7 @@ thiserror.workspace = true
 mvr-types = { path = "../mvr-types" }
 
 # Rust SDK
-sui-sdk-types.workspace = true
+sui-sdk-types = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 expect-test = "1.5.0"

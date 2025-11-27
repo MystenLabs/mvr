@@ -9,9 +9,13 @@ use anyhow::Result;
 use jsonrpc::types::{BatchRequest, JsonRpcResult, RemoteError, RequestID, Response, TwoPointZero};
 use mvr_types::name::VersionedName;
 use serde::Deserialize;
+use sui_sdk_types::Address;
 use yansi::Paint;
 
-use crate::types::{api_data::query_multiple_dependencies, MoveRegistryDependencies, Network};
+use crate::{
+    types::{api_data::query_multiple_dependencies, MoveRegistryDependencies, Network},
+    utils::sui_binary::cache_package,
+};
 
 #[derive(Deserialize, Debug)]
 struct ResolveRequest {
@@ -48,6 +52,7 @@ pub async fn new_package_resolver() -> Result<()> {
         );
         return Ok(());
     }
+
     // Peek into the first value and extract the network we'll use for the resolution.
     let network = get_normalized_network(
         &input
@@ -63,17 +68,7 @@ pub async fn new_package_resolver() -> Result<()> {
 
     for (_, request) in &input {
         let name = VersionedName::from_str(&request.data)?;
-
-        if !names.contains(&name) {
-            eprintln!(
-                "{}: {:?} {} {}",
-                "[mvr] RESOLVING".blue(),
-                request.data.blue().bold(),
-                "ON".blue(),
-                network.blue().bold(),
-            );
-            names.insert(name);
-        }
+        names.insert(name.to_string());
     }
 
     let package_responses = query_multiple_dependencies(
@@ -83,6 +78,40 @@ pub async fn new_package_resolver() -> Result<()> {
         &network,
     )
     .await?;
+
+    // Cache all packages and do an address/version check!
+    for (name, response) in &package_responses {
+        eprintln!(
+            "{}: {:?} {} {}",
+            "[mvr] resolving".blue(),
+            name.blue().bold(),
+            "on network: ".blue(),
+            network.blue().bold(),
+        );
+
+        let cached_package = cache_package(response.clone(), &network)?;
+        let address = Address::from_str(&response.package_address.clone())?;
+
+        // Detect address missmatches to protect users.
+        if address != cached_package.original_id && address != cached_package.published_at {
+            let err_message = format!("Package {} on network {} has an address missmatch. Neither of its addresses match the expected address", name, network);
+            let response: Response<serde_json::Value> = format_result(
+                0,
+                JsonRpcResult::Err {
+                    error: RemoteError {
+                        code: 404,
+                        message: err_message,
+                        data: None,
+                    },
+                },
+            );
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&response).unwrap_or_default()
+            );
+            return Ok(());
+        }
+    }
 
     let responses: Vec<Response<serde_json::Value>> = input
         .into_iter()
