@@ -25,7 +25,7 @@ pub async fn query_package(name: &str, network: &Network) -> Result<(String, Pac
     let response = reqwest::get(format!(
         "{}/v1/names/{}",
         get_api_url(network)?,
-        versioned_name.to_string()
+        versioned_name
     ))
     .await
     .map_err(|e| CliError::Querying(e.to_string()))?;

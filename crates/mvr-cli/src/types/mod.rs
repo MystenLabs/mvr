@@ -1,4 +1,6 @@
+pub mod api_data;
 pub mod api_types;
+pub mod resolver_alt;
 
 use std::fmt;
 use std::str::FromStr;
@@ -37,7 +39,7 @@ pub(crate) struct SuiConfig {
     envs: Vec<Env>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Network {
     Mainnet,
     Testnet,

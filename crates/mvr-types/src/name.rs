@@ -45,7 +45,7 @@ pub(crate) static VERSIONED_NAME_UNBOUND_REG: Lazy<Regex> =
 pub(crate) static VERSIONED_NAME_REG: Lazy<Regex> =
     Lazy::new(|| Regex::new(VERSIONED_NAME_REGEX).unwrap());
 
-#[derive(Debug, Serialize, Deserialize, Hash, Clone, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Hash, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct VersionedName {
     /// A version name defaults at None, which means we need the latest version.
     pub version: Option<u64>,
@@ -55,7 +55,7 @@ pub struct VersionedName {
 
 /// Attention: The format of this struct should not change unless the on-chain format changes,
 /// as we define it to deserialize on-chain data.
-#[derive(Debug, Serialize, Deserialize, Hash, Clone, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Hash, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Name {
     pub org: Domain,
     pub app: Vec<String>,
