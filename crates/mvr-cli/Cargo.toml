@@ -14,10 +14,6 @@ path = "src/main.rs"
 name = "mvr"
 path = "src/lib.rs"
 
-[[test]]
-name = "unit_tests"
-path = "tests/unit_tests.rs"
-
 [dependencies]
 bin-version = { git = "https://github.com/mystenlabs/sui", package = "bin-version", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
 jsonrpc.workspace = true
