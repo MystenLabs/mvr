@@ -5293,6 +5293,7 @@ dependencies = [
  "expect-test",
  "futures",
  "insta",
+ "jsonrpc",
  "mvr-types",
  "regex",
  "reqwest",
