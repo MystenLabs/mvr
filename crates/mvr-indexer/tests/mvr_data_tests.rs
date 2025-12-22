@@ -16,15 +16,12 @@ use sqlx::{Column, PgPool, Row, ValueRef};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_indexer_alt_framework::store::Store;
+use sui_indexer_alt_framework::postgres::handler::Handler;
+use sui_indexer_alt_framework::postgres::{Connection, Db, DbArgs};
 use sui_pg_db::temp::TempDb;
-use sui_pg_db::Connection;
-use sui_pg_db::Db;
-use sui_pg_db::DbArgs;
 use sui_storage::blob::Blob;
-use sui_types::full_checkpoint_content::CheckpointData;
+use sui_types::full_checkpoint_content::{Checkpoint, CheckpointData};
 
 #[tokio::test]
 async fn git_info_write_test() -> Result<(), anyhow::Error> {
@@ -79,7 +76,6 @@ async fn data_test<H, I>(
 where
     I: IntoIterator<Item = &'static str>,
     H: Handler + Processor,
-    for<'a> H::Store: Store<Connection<'a> = Connection<'a>>,
 {
     // Set up the temporary database
     let temp_db = TempDb::new()?;
@@ -109,13 +105,11 @@ async fn run_pipeline<'c, T: Handler + Processor, P: AsRef<Path>>(
     handler: &T,
     path: P,
     conn: &mut Connection<'c>,
-) -> Result<(), anyhow::Error>
-where
-    T::Store: Store<Connection<'c> = Connection<'c>>,
-{
+) -> Result<(), anyhow::Error> {
     let bytes = fs::read(path)?;
-    let cp = Blob::from_bytes::<CheckpointData>(&bytes)?;
-    let result = handler.process(&Arc::new(cp))?;
+    let cp: CheckpointData = Blob::from_bytes(&bytes)?;
+    let checkpoint: Checkpoint = cp.into();
+    let result = handler.process(&Arc::new(checkpoint)).await?;
     T::commit(&result, conn).await?;
     Ok(())
 }

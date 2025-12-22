@@ -12,12 +12,11 @@ use mvr_schema::models::PackageInfo;
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 use std::sync::Arc;
-use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::{Connection, Db};
+use sui_indexer_alt_framework::postgres::{handler::Handler, Connection};
+use sui_indexer_alt_framework::types::full_checkpoint_content::Checkpoint;
 use sui_sdk_types::Address;
 use sui_types::collection_types::VecMap;
-use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::object::Object;
 
 const DEFAULT_NAME_KEY: &str = "default";
@@ -114,12 +113,10 @@ impl MoveObjectProcessor<TestnetPackageInfo, PackageInfo>
 }
 
 #[async_trait]
-impl<T: MoveStructType + DeserializeOwned> Handler for PackageInfoHandler<T>
+impl<T: MoveStructType + DeserializeOwned + Send + Sync + 'static> Handler for PackageInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, PackageInfo>,
 {
-    type Store = Db;
-
     async fn commit<'a>(
         values: &[Self::Value],
         conn: &mut Connection<'a>,
@@ -149,16 +146,18 @@ where
     }
 }
 
-impl<T: MoveStructType + DeserializeOwned> Processor for PackageInfoHandler<T>
+#[async_trait]
+impl<T: MoveStructType + DeserializeOwned + Send + Sync + 'static> Processor
+    for PackageInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, PackageInfo>,
 {
     const NAME: &'static str = Self::PROC_NAME;
     type Value = PackageInfo;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<Checkpoint>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint.transactions.iter().try_fold(vec![], |result, tx| {
-            tx.output_objects.iter().try_fold(result, |mut result, obj| {
+            tx.output_objects(&checkpoint.object_set).try_fold(result, |mut result, obj| {
                 if matches!(obj.type_(), Some(t) if matches!(t.other(), Some(s) if s == &convert_struct_tag(T::struct_type())) ) {
                     if let Some(move_obj) = obj.data.try_as_move() {
                         let move_obj: T = bcs::from_bytes(move_obj.contents())?;

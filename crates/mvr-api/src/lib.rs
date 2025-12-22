@@ -34,11 +34,7 @@ pub async fn run_server(
     let registry = Registry::new_custom(Some("mvr_api".into()), None)
         .expect("Failed to create Prometheus registry.");
 
-    let metrics = MetricsService::new(
-        MetricsArgs { metrics_address },
-        registry,
-        cancellation_token.clone(),
-    );
+    let metrics = MetricsService::new(MetricsArgs { metrics_address }, registry);
 
     let mvr_source_header = HeaderName::from_str(MVR_SOURCE_HEADER)?;
 

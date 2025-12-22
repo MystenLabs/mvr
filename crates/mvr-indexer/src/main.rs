@@ -18,15 +18,15 @@ use prometheus::Registry;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::net::SocketAddr;
+use sui_indexer_alt_framework::ingestion::ingestion_client::IngestionClientArgs;
 use sui_indexer_alt_framework::ingestion::ClientArgs;
 use sui_indexer_alt_framework::pipeline::concurrent::ConcurrentConfig;
-use sui_indexer_alt_framework::{Indexer, IndexerArgs};
+use sui_indexer_alt_framework::{Indexer, IndexerArgs, TaskArgs};
 use sui_indexer_alt_metrics::db::DbConnectionStatsCollector;
 use sui_indexer_alt_metrics::{MetricsArgs, MetricsService};
 use sui_pg_db::temp::TempDb;
 use sui_pg_db::{Db, DbArgs};
 use sui_rpc_api::Client;
-use tokio_util::sync::CancellationToken;
 use tracing::info;
 use url::Url;
 
@@ -67,17 +67,12 @@ async fn main() -> Result<(), anyhow::Error> {
         database_url,
     } = Args::parse();
 
-    let cancel = CancellationToken::new();
     let registry = Registry::new_custom(
         Some("mvr".into()),
         Some(HashMap::from([("mvr_env".to_string(), env.to_string())])),
     )
     .context("Failed to create Prometheus registry.")?;
-    let metrics = MetricsService::new(
-        MetricsArgs { metrics_address },
-        registry.clone(),
-        cancel.child_token(),
-    );
+    let metrics = MetricsService::new(MetricsArgs { metrics_address }, registry.clone());
 
     let (mut indexer, _temp_db) = if matches!(env, MvrEnv::CI) {
         let latest_cp = Client::new(env.remote_store_url().to_string())?
@@ -108,19 +103,21 @@ async fn main() -> Result<(), anyhow::Error> {
                 first_checkpoint: Some(latest_cp.sequence_number),
                 last_checkpoint: None,
                 pipeline: vec![],
-                skip_watermark: true,
+                task: TaskArgs::default(),
             },
             ClientArgs {
-                remote_store_url: None,
-                local_ingestion_path: None,
-                rpc_api_url: Some(env.remote_store_url()),
-                rpc_username: None,
-                rpc_password: None,
+                ingestion: IngestionClientArgs {
+                    remote_store_url: None,
+                    local_ingestion_path: None,
+                    rpc_api_url: Some(env.remote_store_url()),
+                    rpc_username: None,
+                    rpc_password: None,
+                },
+                ..Default::default()
             },
             Default::default(),
             None, /* Metrics prefix */
-            metrics.registry(),
-            cancel.clone(),
+            &registry,
         )
         .await?;
         (indexer, Some(temp_db))
@@ -145,16 +142,18 @@ async fn main() -> Result<(), anyhow::Error> {
             store,
             indexer_args,
             ClientArgs {
-                remote_store_url: Some(env.remote_store_url()),
-                local_ingestion_path: None,
-                rpc_api_url: None,
-                rpc_username: None,
-                rpc_password: None,
+                ingestion: IngestionClientArgs {
+                    remote_store_url: Some(env.remote_store_url()),
+                    local_ingestion_path: None,
+                    rpc_api_url: None,
+                    rpc_username: None,
+                    rpc_password: None,
+                },
+                ..Default::default()
             },
             Default::default(),
             metrics_prefix,
-            metrics.registry(),
-            cancel.clone(),
+            &registry,
         )
         .await?;
         (indexer, None)
@@ -166,12 +165,10 @@ async fn main() -> Result<(), anyhow::Error> {
         MvrEnv::CI => create_ci_pipelines(&mut indexer).await?,
     };
 
-    let h_indexer = indexer.run().await?;
-    let h_metrics = metrics.run().await?;
+    let s_indexer = indexer.run().await?;
+    let s_metrics = metrics.run().await?;
 
-    let _ = h_indexer.await;
-    cancel.cancel();
-    let _ = h_metrics.await;
+    s_indexer.attach(s_metrics).main().await?;
     Ok(())
 }
 

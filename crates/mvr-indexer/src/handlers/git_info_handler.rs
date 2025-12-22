@@ -16,11 +16,10 @@ use mvr_schema::models::GitInfo;
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 use std::sync::Arc;
-use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::{Connection, Db};
+use sui_indexer_alt_framework::postgres::{handler::Handler, Connection};
+use sui_indexer_alt_framework::types::full_checkpoint_content::Checkpoint;
 use sui_types::base_types::MoveObjectType;
-use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::object::Object;
 
 pub struct GitInfoHandler<T> {
@@ -92,12 +91,10 @@ impl MoveObjectProcessor<TestnetGitInfo, GitInfo> for GitInfoHandler<TestnetGitI
 }
 
 #[async_trait]
-impl<T: MoveStructType + DeserializeOwned> Handler for GitInfoHandler<T>
+impl<T: MoveStructType + DeserializeOwned + Send + Sync + 'static> Handler for GitInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, GitInfo>,
 {
-    type Store = Db;
-
     async fn commit<'a>(
         values: &[Self::Value],
         conn: &mut Connection<'a>,
@@ -127,30 +124,32 @@ where
     }
 }
 
-impl<T: MoveStructType + DeserializeOwned> Processor for GitInfoHandler<T>
+#[async_trait]
+impl<T: MoveStructType + DeserializeOwned + Send + Sync + 'static> Processor for GitInfoHandler<T>
 where
     Self: MoveObjectProcessor<T, GitInfo>,
 {
     const NAME: &'static str = Self::PROC_NAME;
     type Value = GitInfo;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<Checkpoint>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint
             .transactions
             .iter()
             .try_fold(vec![], |result, tx| {
-                tx.output_objects.iter().try_fold(result, |mut result, o| {
-                    if matches!(o.type_(), Some(t) if t == &self.type_) {
-                        if let Some(move_obj) = o.data.try_as_move() {
-                            result.push(Self::process_move_object(
-                                self.chain_id.clone(),
-                                bcs::from_bytes(move_obj.contents())?,
-                                o,
-                            )?)
+                tx.output_objects(&checkpoint.object_set)
+                    .try_fold(result, |mut result, o| {
+                        if matches!(o.type_(), Some(t) if t == &self.type_) {
+                            if let Some(move_obj) = o.data.try_as_move() {
+                                result.push(Self::process_move_object(
+                                    self.chain_id.clone(),
+                                    bcs::from_bytes(move_obj.contents())?,
+                                    o,
+                                )?)
+                            }
                         }
-                    }
-                    Ok(result)
-                })
+                        Ok(result)
+                    })
             })
     }
 }
