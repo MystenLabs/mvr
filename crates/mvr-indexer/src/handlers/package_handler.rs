@@ -1,4 +1,5 @@
 use crate::{MAINNET_CHAIN_ID, TESTNET_CHAIN_ID};
+use async_trait::async_trait;
 use chrono::DateTime;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
@@ -6,13 +7,13 @@ use move_binary_format::CompiledModule;
 use mvr_schema::models::{Package, PackageDependency};
 use std::collections::HashSet;
 use std::sync::Arc;
-use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::{Connection, Db};
+use sui_indexer_alt_framework::postgres::{handler::Handler, Connection};
+use sui_indexer_alt_framework::types::full_checkpoint_content::Checkpoint;
 use sui_types::base_types::ObjectID;
-use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::move_package::MovePackage;
 use sui_types::object::Data;
+use sui_types::transaction::TransactionDataAPI;
 
 pub struct PackageHandler<const MAINNET: bool>;
 
@@ -24,10 +25,8 @@ impl<const MAINNET: bool> PackageHandler<MAINNET> {
     };
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl<const MAINNET: bool> Handler for PackageHandler<MAINNET> {
-    type Store = Db;
-
     async fn commit<'a>(
         values: &[Self::Value],
         conn: &mut Connection<'a>,
@@ -53,6 +52,7 @@ impl<const MAINNET: bool> Handler for PackageHandler<MAINNET> {
     }
 }
 
+#[async_trait]
 impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
     const NAME: &'static str = if MAINNET {
         "Package - Mainnet"
@@ -61,15 +61,14 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
     };
     type Value = Package;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
-        let timestamp =
-            DateTime::from_timestamp_millis(checkpoint.checkpoint_summary.timestamp_ms as i64)
-                .unwrap()
-                .naive_utc();
+    async fn process(&self, checkpoint: &Arc<Checkpoint>) -> anyhow::Result<Vec<Self::Value>> {
+        let timestamp = DateTime::from_timestamp_millis(checkpoint.summary.timestamp_ms as i64)
+            .unwrap()
+            .naive_utc();
 
         let mut results = vec![];
         for tx in &checkpoint.transactions {
-            for o in &tx.output_objects {
+            for o in tx.output_objects(&checkpoint.object_set) {
                 if let Data::Package(p) = &o.data {
                     let package_id = p.id().to_hex_uncompressed();
                     let deps = package_dependencies(Self::CHAIN_ID.to_string(), p)?;
@@ -80,7 +79,7 @@ impl<const MAINNET: bool> Processor for PackageHandler<MAINNET> {
                         move_package: bcs::to_bytes(p)?,
                         chain_id: Self::CHAIN_ID.to_string(),
                         tx_hash: tx.transaction.digest().base58_encode(),
-                        sender: tx.transaction.sender_address().to_string(),
+                        sender: tx.transaction.sender().to_string(),
                         timestamp,
                         deps,
                     })

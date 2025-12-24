@@ -15,11 +15,10 @@ use move_core_types::language_storage::StructTag as MoveStructTag;
 use mvr_schema::models::Package;
 use std::str::FromStr;
 use std::sync::Arc;
-use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::{Connection, Db};
+use sui_indexer_alt_framework::postgres::{handler::Handler, Connection};
+use sui_indexer_alt_framework::types::full_checkpoint_content::Checkpoint;
 use sui_sdk_types::StructTag;
-use sui_types::full_checkpoint_content::CheckpointData;
 use tracing::info;
 
 // Convert rust sdk struct tag to move struct tag.
@@ -80,21 +79,20 @@ pub struct NoOpsHandler;
 
 #[async_trait]
 impl Handler for NoOpsHandler {
-    type Store = Db;
-
     async fn commit<'a>(_: &[Self::Value], _: &mut Connection<'a>) -> anyhow::Result<usize> {
         Ok(0)
     }
 }
 
+#[async_trait]
 impl Processor for NoOpsHandler {
     const NAME: &'static str = "No Ops Handler";
     type Value = Package;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<Checkpoint>) -> anyhow::Result<Vec<Self::Value>> {
         info!(
             "Processed checkpoint: {}",
-            checkpoint.checkpoint_summary.sequence_number
+            checkpoint.summary.sequence_number
         );
         Ok(vec![])
     }

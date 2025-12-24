@@ -12,13 +12,12 @@ use mvr_types::name::Name;
 use mvr_types::name_service::Domain;
 use std::str::FromStr;
 use std::sync::Arc;
-use sui_indexer_alt_framework::pipeline::concurrent::Handler;
 use sui_indexer_alt_framework::pipeline::Processor;
-use sui_pg_db::{Connection, Db};
+use sui_indexer_alt_framework::postgres::{handler::Handler, Connection};
+use sui_indexer_alt_framework::types::full_checkpoint_content::Checkpoint;
 use sui_sdk_types::StructTag;
 use sui_types::base_types::MoveObjectType;
 use sui_types::dynamic_field::Field;
-use sui_types::full_checkpoint_content::CheckpointData;
 
 pub struct NameRecordHandler {
     type_: MoveObjectType,
@@ -53,8 +52,6 @@ impl NameRecordHandler {
 }
 #[async_trait]
 impl Handler for NameRecordHandler {
-    type Store = Db;
-
     async fn commit<'a>(
         values: &[Self::Value],
         conn: &mut Connection<'a>,
@@ -83,44 +80,46 @@ impl Handler for NameRecordHandler {
     }
 }
 
+#[async_trait]
 impl Processor for NameRecordHandler {
     const NAME: &'static str = "NameRecord";
     type Value = NameRecord;
 
-    fn process(&self, checkpoint: &Arc<CheckpointData>) -> anyhow::Result<Vec<Self::Value>> {
+    async fn process(&self, checkpoint: &Arc<Checkpoint>) -> anyhow::Result<Vec<Self::Value>> {
         checkpoint
             .transactions
             .iter()
             .try_fold(vec![], |result, tx| {
-                tx.output_objects.iter().try_fold(result, |mut result, o| {
-                    // TODO: do we need to check if the parent of the DF table entry is the MVR registry?
-                    if matches!(o.type_(), Some(t) if t == &self.type_) {
-                        if let Some(move_obj) = o.data.try_as_move() {
-                            let data: Field<Name, AppRecord> =
-                                bcs::from_bytes(move_obj.contents())?;
-                            let Name { org, app } = data.name;
-                            let name = Name::new(Domain { labels: org.labels }, app);
-                            let AppRecord {
-                                app_info,
-                                networks,
-                                metadata,
-                                ..
-                            } = data.value;
+                tx.output_objects(&checkpoint.object_set)
+                    .try_fold(result, |mut result, o| {
+                        // TODO: do we need to check if the parent of the DF table entry is the MVR registry?
+                        if matches!(o.type_(), Some(t) if t == &self.type_) {
+                            if let Some(move_obj) = o.data.try_as_move() {
+                                let data: Field<Name, AppRecord> =
+                                    bcs::from_bytes(move_obj.contents())?;
+                                let Name { org, app } = data.name;
+                                let name = Name::new(Domain { labels: org.labels }, app);
+                                let AppRecord {
+                                    app_info,
+                                    networks,
+                                    metadata,
+                                    ..
+                                } = data.value;
 
-                            result.push(NameRecord {
-                                name: name.to_string(),
-                                object_version: o.version().value() as i64,
-                                mainnet_id: app_info
-                                    .and_then(|info| Some(info.package_info_id?.to_string())),
-                                testnet_id: networks
-                                    .get(&TESTNET_CHAIN_ID.to_string())
-                                    .and_then(|info| Some(info.package_info_id?.to_string())),
-                                metadata: serde_json::to_value(into_hash_map(metadata))?,
-                            })
+                                result.push(NameRecord {
+                                    name: name.to_string(),
+                                    object_version: o.version().value() as i64,
+                                    mainnet_id: app_info
+                                        .and_then(|info| Some(info.package_info_id?.to_string())),
+                                    testnet_id: networks
+                                        .get(&TESTNET_CHAIN_ID.to_string())
+                                        .and_then(|info| Some(info.package_info_id?.to_string())),
+                                    metadata: serde_json::to_value(into_hash_map(metadata))?,
+                                })
+                            }
                         }
-                    }
-                    Ok(result)
-                })
+                        Ok(result)
+                    })
             })
     }
 }
