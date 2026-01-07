@@ -3,17 +3,34 @@ use anyhow::bail;
 use anyhow::Error;
 use anyhow::Result;
 use regex::Regex;
+use serde::Deserialize;
+use serde::Serialize;
 use std::env;
 use std::process::Command;
 use std::process::Output;
 use std::str::FromStr;
+use sui_sdk_types::Address;
 use yansi::Paint;
 
-use crate::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
+use crate::constants::EnvVariables;
 use crate::errors::CliError;
+use crate::get_chain_id;
+use crate::types::api_types::PackageRequest;
+use crate::types::api_types::SafeGitInfo;
 use crate::types::Network;
 
 const VERSION_REGEX: &str = r"(\d+)\.(\d+)\.(\d+)";
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+// The result of `cache-package` command
+pub struct SuiCachePackageResponse {
+    pub name: String,
+    #[serde(rename = "published-at")]
+    pub published_at: Address,
+    #[serde(rename = "original-id")]
+    pub original_id: Address,
+    pub chain_id: String,
+}
 
 /// Check the sui binary's version and print it to the console.
 /// This can be used
@@ -56,13 +73,7 @@ pub fn check_sui_version(expected_version: (u32, u32)) -> Result<(), Error> {
                 ),
             );
 
-            eprintln!(
-                "{} {}{}{}",
-                "DETECTED sui VERSION".blue(),
-                major.blue().bold(),
-                ".".blue().bold(),
-                minor.blue().bold()
-            );
+            eprintln!("{}", "[mvr] detected supported SUI CLI version".blue());
         } else {
             eprintln!("Could not find version components in the output.");
         }
@@ -73,15 +84,6 @@ pub fn check_sui_version(expected_version: (u32, u32)) -> Result<(), Error> {
             String::from_utf8_lossy(&output.stderr)
         );
     }
-    Ok(())
-}
-
-/// Calls `{sui} move build`. Currently needed when:
-/// 1. Adding a new dependency (mvr add)
-/// 2. Setting the network (mvr set-network)
-pub fn force_build() -> Result<(), Error> {
-    check_sui_version(MINIMUM_BUILD_SUI_VERSION)?;
-    sui_command(["move", "build"].to_vec())?;
     Ok(())
 }
 
@@ -101,7 +103,7 @@ pub fn get_active_network() -> Result<Network, Error> {
     let cli_network = Network::try_from_chain_identifier(&chain_id);
 
     let Ok(cli_network) = cli_network else {
-        if !fallback_network.is_ok() {
+        if fallback_network.is_err() {
             bail!(cli_network.unwrap_err());
         }
 
@@ -113,6 +115,38 @@ pub fn get_active_network() -> Result<Network, Error> {
     };
 
     Ok(cli_network)
+}
+
+pub fn cache_package(
+    dependency: PackageRequest,
+    network: &Network,
+) -> Result<SuiCachePackageResponse, Error> {
+    let git_info: SafeGitInfo = dependency.get_git_info()?.try_into()?;
+
+    // Make the dependency like this: { git = "...", rev = "...", subdir = "..." }
+    let dependency_str = format!(
+        "{{ git = \"{}\", rev = \"{}\", subdir = \"{}\" }}",
+        git_info.repository_url, git_info.tag, git_info.path
+    );
+    let network_name = network.to_string();
+    let chain_id = get_chain_id(&network)?;
+
+    let cli_output = sui_command(
+        [
+            "move",
+            "cache-package",
+            &network_name,
+            chain_id.as_str(),
+            dependency_str.as_str(),
+        ]
+        .to_vec(),
+    )?;
+
+    let response_str = String::from_utf8_lossy(&cli_output.stdout).to_string();
+    let response: SuiCachePackageResponse = serde_json::from_str(&response_str)
+        .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
+
+    Ok(response)
 }
 
 fn sui_command(args: Vec<&str>) -> Result<Output, CliError> {

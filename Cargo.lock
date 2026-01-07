@@ -4271,6 +4271,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonrpc"
+version = "0.1.0"
+source = "git+https://github.com/mystenlabs/sui?rev=3b96ab72dd5db2fb800837d6067bf45839178b62#3b96ab72dd5db2fb800837d6067bf45839178b62"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "jsonrpsee"
 version = "0.24.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5298,7 +5310,7 @@ dependencies = [
  "indexmap 2.12.1",
  "indoc",
  "itertools 0.10.5",
- "jsonrpc",
+ "jsonrpc 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=211e22a5b0e08f8840f6a3e74120e1b4b04d5adb)",
  "move-command-line-common",
  "move-compiler",
  "move-core-types",
@@ -5569,7 +5581,7 @@ checksum = "1d87ecb2933e8aeadb3e3a02b828fed80a7528047e68b4f424523a0981a3a084"
 
 [[package]]
 name = "mvr"
-version = "0.0.14"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "bin-version 1.57.0",
@@ -5577,6 +5589,7 @@ dependencies = [
  "expect-test",
  "futures",
  "insta",
+ "jsonrpc 0.1.0 (git+https://github.com/mystenlabs/sui?rev=3b96ab72dd5db2fb800837d6067bf45839178b62)",
  "mvr-types",
  "regex",
  "reqwest",
@@ -9283,7 +9296,7 @@ dependencies = [
  "bip32",
  "colored",
  "fastcrypto 0.1.9 (git+https://github.com/MystenLabs/fastcrypto?rev=4db0e90c732bbf7420ca20de808b698883148d9c)",
- "jsonrpc",
+ "jsonrpc 0.1.0 (git+https://github.com/MystenLabs/sui.git?rev=211e22a5b0e08f8840f6a3e74120e1b4b04d5adb)",
  "mockall",
  "rand 0.8.5",
  "regex",

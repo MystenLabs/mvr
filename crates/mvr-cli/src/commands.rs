@@ -75,8 +75,7 @@ impl Display for CommandOutput {
                     let description = pkg
                         .metadata
                         .get("description")
-                        .map(|s| s.as_str())
-                        .flatten()
+                        .and_then(|s| s.as_str())
                         .map(|s| s.to_string())
                         .unwrap_or("--".italic().to_string());
 
@@ -110,7 +109,6 @@ impl Display for CommandOutput {
                         "\n{}",
                         "There are multiple pages of results. Use the cursor to paginate through the results."
                             .italic()
-                            .to_string()
                     )?;
                     writeln!(
                         f,
@@ -118,7 +116,6 @@ impl Display for CommandOutput {
                         format!("mvr search <query> --cursor {}", next_cursor)
                             .italic()
                             .blue()
-                            .to_string()
                     )?;
                 }
 

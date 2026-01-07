@@ -13,7 +13,7 @@ Commands:
   help     Print this message or the help of the given subcommand(s)
 
 Options:
-      --resolve-move-dependencies <RESOLVE_MOVE_DEPENDENCIES>  
-      --json                                                   Output the result in JSON format
-  -h, --help                                                   Print help
-  -V, --version                                                Print version
+      --resolve-deps  
+      --json          Output the result in JSON format
+  -h, --help          Print help
+  -V, --version       Print version

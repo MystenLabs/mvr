@@ -46,6 +46,7 @@ sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev
 sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "211e22a5b0e08f8840f6a3e74120e1b4b04d5adb" }
 sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "211e22a5b0e08f8840f6a3e74120e1b4b04d5adb" }
 sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "211e22a5b0e08f8840f6a3e74120e1b4b04d5adb"}
+jsonrpc = { git = "https://github.com/mystenlabs/sui.git", rev = "3b96ab72dd5db2fb800837d6067bf45839178b62" }
 
 # New Rust SDK
 sui-sdk-types = { git = "https://github.com/MystenLabs/sui-rust-sdk", package = "sui-sdk-types", rev = "339c2272fd5b8fb4e1fa6662cfa9acdbb0d05704", features = ["hash", "serde"] }
