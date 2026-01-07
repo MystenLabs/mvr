@@ -7,3 +7,7 @@ Active environment switched to [mainnet]
 Successfully added dependency pkg.sui/qwer/1 to your Move.toml
 
 You can use this dependency in your modules by calling: use mvr_a::<module>;
+
+Output from mvr:
+  │ [mvr] detected valid SUI version: 1.63
+  │ [mvr] resolving: "@pkg/qwer/1" on network:  mainnet
