@@ -146,6 +146,7 @@ pub fn cache_package(
     let network_name = network.to_string();
     let chain_id = get_chain_id(&network)?;
 
+    check_sui_version(MINIMUM_BUILD_SUI_VERSION)?;
     let cli_output = sui_command(
         [
             "move",
