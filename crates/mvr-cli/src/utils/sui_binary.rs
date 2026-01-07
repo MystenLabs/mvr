@@ -73,10 +73,7 @@ pub fn check_sui_version(expected_version: (u32, u32)) -> Result<(), Error> {
                 ),
             );
 
-            eprintln!(
-                "{}",
-                "[mvr] detected supported SUI CLI version".blue()
-            );
+            eprintln!("{}", "[mvr] detected supported SUI CLI version".blue());
         } else {
             eprintln!("Could not find version components in the output.");
         }
