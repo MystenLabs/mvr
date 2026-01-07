@@ -1,6 +1,6 @@
 use std::fmt::{self, Display, Formatter};
 
-pub const MINIMUM_BUILD_SUI_VERSION: (u32, u32) = (1, 62);
+pub const MINIMUM_BUILD_SUI_VERSION: (u32, u32) = (1, 63);
 
 pub enum EnvVariables {
     SuiBinaryPath,
