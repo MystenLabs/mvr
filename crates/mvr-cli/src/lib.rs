@@ -4,8 +4,9 @@ pub mod errors;
 pub mod types;
 pub mod utils;
 
+use crate::constants::MINIMUM_BUILD_SUI_VERSION;
 use crate::types::api_data::{query_multiple_dependencies, query_package, search_names};
-use crate::utils::sui_binary::cache_package;
+use crate::utils::sui_binary::{cache_package, check_sui_version};
 
 use commands::CommandOutput;
 use types::Network;
@@ -56,6 +57,7 @@ async fn update_mvr_packages(
 }
 
 pub async fn subcommand_add_dependency(package_name: &str) -> Result<CommandOutput> {
+    check_sui_version(MINIMUM_BUILD_SUI_VERSION)?;
     let move_toml = MoveToml::new(
         env::current_dir()
             .context("Failed to get current directory")?

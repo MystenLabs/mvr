@@ -12,7 +12,7 @@ use std::str::FromStr;
 use sui_sdk_types::Address;
 use yansi::Paint;
 
-use crate::constants::{EnvVariables, MINIMUM_BUILD_SUI_VERSION};
+use crate::constants::EnvVariables;
 use crate::errors::CliError;
 use crate::get_chain_id;
 use crate::types::api_types::PackageRequest;
@@ -93,15 +93,6 @@ pub fn check_sui_version(expected_version: (u32, u32)) -> Result<(), Error> {
     Ok(())
 }
 
-/// Calls `{sui} move build`. Currently needed when:
-/// 1. Adding a new dependency (mvr add)
-/// 2. Setting the network (mvr set-network)
-pub fn force_build() -> Result<(), Error> {
-    check_sui_version(MINIMUM_BUILD_SUI_VERSION)?;
-    sui_command(["move", "build"].to_vec())?;
-    Ok(())
-}
-
 /// Gets the active network by calling `sui client chain-identifier` from the Sui CLI, or falls back
 /// to the `MVR_FALLBACK_NETWORK` environment variable for other networks. This is useful for local testing.
 ///
@@ -146,7 +137,6 @@ pub fn cache_package(
     let network_name = network.to_string();
     let chain_id = get_chain_id(&network)?;
 
-    check_sui_version(MINIMUM_BUILD_SUI_VERSION)?;
     let cli_output = sui_command(
         [
             "move",
