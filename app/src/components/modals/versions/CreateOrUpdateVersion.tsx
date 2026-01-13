@@ -28,7 +28,9 @@ import { LucideFileWarning, Terminal, VerifiedIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppQueryKeys } from "@/utils/types";
 import {
+  EnvironmentResult,
   parseEnvironmentsFromLockfile,
+  parseEnvironmentsFromPublicationFile,
   querySource,
 } from "@/hooks/useGetSourceFromGit";
 import { usePackagesNetwork } from "@/components/providers/packages-provider";
@@ -156,32 +158,58 @@ export default function CreateOrUpdateVersion({
     const values = form.getValues();
 
     try {
-      const source = await client.fetchQuery({
-        queryKey: [AppQueryKeys.GIT_SOURCE, values],
-        queryFn: async () => {
-          return querySource({
-            url: values.repository,
-            subPath: values.path ?? "",
-            tagOrHash: values.tag,
-          });
-        },
 
-        // we cache the source code for a long time, since it's not expected to change
-        staleTime: Infinity,
-        retry: false,
-        gcTime: Infinity,
-      });
+      const [lockfilePromise, publicationFilePromise] = await Promise.allSettled([
+        client.fetchQuery({
+          queryKey: [AppQueryKeys.GIT_SOURCE, values, 'Move.lock'],
+          queryFn: async () => {
+            return querySource({
+              url: values.repository,
+              subPath: values.path ?? "",
+              tagOrHash: values.tag,
+            });
+          },
 
-      const envSetup = parseEnvironmentsFromLockfile(source, network);
+          // we cache the source code for a long time, since it's not expected to change
+          staleTime: Infinity,
+          retry: false,
+          gcTime: Infinity,
+        }),
+        client.fetchQuery({
+          queryKey: [AppQueryKeys.GIT_SOURCE, values, 'Published.toml'],
+          queryFn: async () => {
+            return querySource({
+              url: values.repository,
+              subPath: values.path ?? "",
+              tagOrHash: values.tag,
+              file: "Published.toml"
+            });
+          },
+        })
+      ]);
 
-      if (+(envSetup["published-version"] ?? 0) !== +values.version) {
+      const lockfile = lockfilePromise.status === "fulfilled" ? lockfilePromise.value : undefined;
+      const publicationFile = publicationFilePromise.status === "fulfilled" ? publicationFilePromise.value : undefined;
+
+      let envSetup: EnvironmentResult | undefined;
+
+      // Priority is:
+      // 1. Published.toml (modern packages)
+      // 2. Move.lock (legacy packages)
+      // If both are present, IT must have the addresses on `Published.toml` to be valid.
+      if (publicationFile) envSetup = parseEnvironmentsFromPublicationFile(publicationFile, network);
+      else if (lockfile) envSetup = parseEnvironmentsFromLockfile(lockfile, network);
+
+      if (!envSetup) throw new Error(`Failed to parse the Move.lock or Published.toml files`);
+
+      if (envSetup.version !== +values.version) {
         throw new Error(
           `The version in the Move.lock file does not match the version you're trying to create.`,
         );
       }
 
-      const originalId = envSetup["original-published-id"];
-      const publishedId = envSetup["latest-published-id"];
+      const originalId = envSetup.originalId;
+      const publishedId = envSetup.publishedAt;
 
       const gqlClient = graphql[network as "mainnet" | "testnet"];
       if (!gqlClient) throw new Error("Invalid network");
@@ -224,7 +252,7 @@ export default function CreateOrUpdateVersion({
       console.log(e);
       setConfigError(
         e?.message ??
-          "Failed to retreive your source code's `Move.lock` file. Ignore this error if if your repository is private.",
+          "Failed to retrieve your source code's `Published.toml` or `Move.lock` files. Ignore this error if if your repository is private.",
       );
     }
     setIsValidatingConfig(false);

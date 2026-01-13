@@ -15,16 +15,44 @@ const GitProviderUrls = {
   [GitProvider.Bitbucket]: "bitbucket.org",
 };
 
+export type EnvironmentResult = {
+  publishedAt: string;
+  originalId: string;
+  version: number;
+}
+
 export const parseEnvironmentsFromLockfile = (
   lockfile: string,
   network: Network,
-) => {
+): EnvironmentResult => {
   const file = parse(lockfile);
   if (!file.env) throw new Error("Environment is missing from the lockfile");
   const env = file.env as Record<string, any>;
   if (!env[network])
     throw new Error(`Network ${network} is missing from the lockfile`);
-  return env[network] as Record<string, string>;
+
+  return {
+    publishedAt: env[network]["latest-published-id"],
+    originalId: env[network]["original-published-id"],
+    version: +env[network]["published-version"],
+  }
+};
+
+export const parseEnvironmentsFromPublicationFile = (
+  publicationFile: string,
+  network: Network,
+): EnvironmentResult => {
+  const file = parse(publicationFile);
+  if (!file.published) throw new Error("Published is missing from the publication file");
+  let env = file.published as Record<string, any>;
+
+  if (!env[network]) throw new Error(`Network ${network} is missing from the publication file`);
+
+  return {
+    publishedAt: env[network]["published-at"],
+    originalId: env[network]["original-id"],
+    version: +env[network]["version"],
+  };
 };
 
 const GithubUrl = (props: {
