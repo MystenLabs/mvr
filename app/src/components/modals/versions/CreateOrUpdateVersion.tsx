@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CodeIcon from "@/icons/CodeIcon";
+import Link from "next/link";
 
 const formSchema = z.object({
   version: z.coerce.number().positive(),
@@ -347,8 +348,8 @@ export default function CreateOrUpdateVersion({
                   </FormControl>
                   <FormDescription>
                     This must be an immutable pointer (commit SHA or tag). Learn
-                    more about how to properly keep your versions by clicking
-                    here.
+                    more about how to properly keep your versions by {' '} 
+                    <Link href="https://docs.suins.io/move-registry/maintainer-practices#tagging" target="_blank" className="text-content-secondary underline">clicking here</Link>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
