@@ -60,8 +60,8 @@ pub async fn run_server(
 
     println!("🚀 Server started successfully on port {}", api_port);
 
-    // Start the metrics service and keep the handle alive
-    let h_metrics = metrics.run().await?;
+    // Start the metrics service - must keep the Service alive or it aborts
+    let _metrics_service = metrics.run().await?;
 
     axum::serve(listener, app)
         .with_graceful_shutdown(async move {
@@ -69,8 +69,7 @@ pub async fn run_server(
         })
         .await?;
 
-    // Await metrics shutdown after API server stops
-    let _ = h_metrics.await;
+    // _metrics_service is dropped here, cleaning up the metrics server
 
     Ok(())
 }
