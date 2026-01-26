@@ -112,6 +112,7 @@ async fn main() -> Result<(), anyhow::Error> {
                     rpc_api_url: Some(env.remote_store_url()),
                     rpc_username: None,
                     rpc_password: None,
+                    ..Default::default()
                 },
                 ..Default::default()
             },
@@ -148,6 +149,7 @@ async fn main() -> Result<(), anyhow::Error> {
                     rpc_api_url: None,
                     rpc_username: None,
                     rpc_password: None,
+                    ..Default::default()
                 },
                 ..Default::default()
             },
