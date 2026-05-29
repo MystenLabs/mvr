@@ -106,15 +106,21 @@ export interface SeverityBand {
   label: string;
   /** A `text-…` color class for the band. */
   tone: string;
+  /** A `border-…` color class for the band. */
+  border: string;
 }
 
 /** Map a CVSS base score to its qualitative band (CVSS v3.1). */
 export function severityBand(score: number): SeverityBand {
-  if (score >= 9) return { label: "Critical", tone: "text-content-negative" };
-  if (score >= 7) return { label: "High", tone: "text-content-negative" };
-  if (score >= 4) return { label: "Medium", tone: "text-content-warning" };
-  if (score > 0) return { label: "Low", tone: "text-content-tertiary" };
-  return { label: "None", tone: "text-content-tertiary" };
+  if (score >= 9)
+    return { label: "Critical", tone: "text-content-negative", border: "border-content-negative" };
+  if (score >= 7)
+    return { label: "High", tone: "text-content-negative", border: "border-content-negative" };
+  if (score >= 4)
+    return { label: "Medium", tone: "text-content-warning", border: "border-content-warning" };
+  if (score > 0)
+    return { label: "Low", tone: "text-content-tertiary", border: "border-content-tertiary" };
+  return { label: "None", tone: "text-content-tertiary", border: "border-content-tertiary" };
 }
 
 /** The trusted attester whose lineage defines `innerType`, if any. */

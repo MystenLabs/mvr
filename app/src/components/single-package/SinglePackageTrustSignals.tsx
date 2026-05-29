@@ -8,6 +8,7 @@ import {
 } from "@/hooks/useGetAttestations";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
+import ExplorerLink from "../ui/explorer-link";
 import {
   isNegative,
   readSeverity,
@@ -207,23 +208,24 @@ function severityBreakdown(scores: number[]): string {
 }
 
 function VulnRow({ entry }: { entry: VulnEntry }) {
+  const network = usePackagesNetwork() as "mainnet" | "testnet";
   const { attestation, via } = entry;
-  const { display, innerType } = attestation.info;
+  const { display, innerType, id } = attestation.info;
   const title = str(display["name"]) ?? "Vulnerability";
   const description = str(display["description"]);
   const link = httpsLink(display["link"]);
   const severity = readSeverity(attestation.info);
+  const band = severityBand(severity ?? 0);
 
   return (
-    <div className="flex flex-col gap-2xs rounded-md border-l-2 border-stroke-negative bg-bg-negativeBleedthrough p-md">
+    <div
+      className={`flex flex-col gap-2xs rounded-md border-l-2 bg-bg-secondary p-md ${band.border}`}
+    >
       <div className="flex items-center justify-between gap-sm">
         <Text kind="label" size="label-small">
           {title}
         </Text>
-        <div className="flex items-center gap-sm">
-          {severity !== null && <SeverityChip score={severity} />}
-          <StatusBadge item={attestation} negative />
-        </div>
+        {severity !== null && <SeverityChip score={severity} />}
       </div>
       {description && (
         <Text as="p" kind="paragraph" size="paragraph-small">
@@ -236,7 +238,9 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
           {attestation.attestor.mvrName ? (
             <>
               {mvrLink(attestation.attestor.mvrName)}
-              {`::${moduleAndType(innerType)}`}
+              {`::${moduleAndType(innerType)} (`}
+              {objectLink(id, network)}
+              {")"}
             </>
           ) : (
             <span className="font-mono">{innerType}</span>
@@ -355,31 +359,25 @@ function AttesterAvatar({
 
 /** A positive attestation row (audits). */
 function AttestationRow({ item }: { item: DisplayedAttestation }) {
-  const { display, innerType } = item.info;
+  const network = usePackagesNetwork() as "mainnet" | "testnet";
+  const { display, innerType, id } = item.info;
   const title = str(display["name"]) ?? "Attestation";
   const description = str(display["description"]);
   const link = httpsLink(display["link"]);
 
   return (
     <div className="flex flex-col gap-2xs rounded-sm border-l-2 border-stroke-accent py-sm pl-sm">
-      <div className="flex items-center justify-between gap-sm">
-        <Text kind="label" size="label-small">
-          {title}
-        </Text>
-        <StatusBadge item={item} negative={false} />
-      </div>
+      <Text kind="label" size="label-small">
+        {title}
+      </Text>
       {description && (
         <Text as="p" kind="paragraph" size="paragraph-small">
           {description}
         </Text>
       )}
-      <Text
-        as="p"
-        kind="paragraph"
-        size="paragraph-xs"
-        className="break-all font-mono opacity-50"
-      >
-        {moduleAndType(innerType)}
+      <Text as="p" kind="paragraph" size="paragraph-xs" className="break-all opacity-60">
+        <span className="font-mono">{moduleAndType(innerType)}</span> (
+        {objectLink(id, network)})
       </Text>
       {link && (
         <a href={link} target="_blank" rel="noopener noreferrer" className="text-content-accent">
@@ -401,24 +399,12 @@ function SeverityChip({ score }: { score: number }) {
   );
 }
 
-function StatusBadge({
-  item,
-  negative,
-}: {
-  item: DisplayedAttestation;
-  negative: boolean;
-}) {
-  const revoked = item.info.display["active"] === "false";
-  const label = revoked ? "Revoked" : item.effective ? "Active" : "Ineffective";
-  const tone = !item.effective
-    ? "text-content-tertiary"
-    : negative
-      ? "text-content-warning"
-      : "text-content-positive";
+/** The attestation object id, truncated and linked to an explorer. */
+function objectLink(id: string, network: "mainnet" | "testnet"): React.ReactNode {
   return (
-    <Text as="span" kind="label" size="label-2xs" className={tone}>
-      {label}
-    </Text>
+    <ExplorerLink network={network} type="object" idOrHash={id}>
+      {truncateId(id)}
+    </ExplorerLink>
   );
 }
 
