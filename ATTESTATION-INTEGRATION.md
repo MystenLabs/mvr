@@ -167,9 +167,11 @@ hygiene-only if an attester declares no domains).
   `@demo/subject` resolves to the localnet package address (verified). Visual
   page render is confirmed alongside M2 (the Attestations tab), which is where
   there's something attestation-specific to see.
-- **M2** — Read hook with a **client-side lineage filter** (proves the
+- **M2 ✅** — Read hook with a **client-side lineage filter** (proves the
   end-to-end pipeline; not yet spam-proof) + the Attestations tab rendering
-  Display fields and effectiveness.
+  Display fields and effectiveness. Verified: the tab shows the AuditV2
+  (matched via the upgraded lineage) as ineffective post-revoke, and the
+  Vulnerability as effective.
 - **M3** — Swap in the Option 2 **server-side `MatchAny`** over the
   Display-registered trusted-type set (spam-resistance); finalize the
   enumeration mechanism from the M2 spike.
@@ -208,13 +210,14 @@ the localnet `package_address`. The demo server lives at
 - [x] Standalone Postgres seeder (lift `setup_dummy_data`) → `name_records`
       pointing at published subject IDs. (`examples/demo_server.rs`)
 - [x] Local run recipe: localnet + mvr-api + frontend env overrides.
-- [ ] `lib/constants.ts`: registry ids + `trustedAttestors` config.
-- [ ] Port `boxAddress`; add JSON-RPC `AttestationInfo` mapper.
+- [x] Attestation config (`lib/attestations.ts`, env `NEXT_PUBLIC_ATTESTATION_CONFIG`
+      generated from `demo-ids.json` by `scripts/write-demo-env.sh`).
+- [x] Port `boxAddress`; add JSON-RPC `AttestationInfo` mapper.
 - [ ] Spike: GraphQL generic type-filter for `Display<Attestation<*>>`; choose
-      enumeration mechanism.
-- [ ] Trusted-type resolver (lineage + Display enumeration), cached per attester.
-- [ ] `useGetAttestations` hook + port `conventions.ts`.
-- [ ] Attestations tab + count label; group-by-attester; row with exact `T`,
+      enumeration mechanism. (M3)
+- [ ] Trusted-type resolver (lineage + Display enumeration), cached per attester. (M3)
+- [x] `useGetAttestations` hook + port `conventions.ts`.
+- [x] Attestations tab + count label; group-by-attester; row with exact `T`,
       effectiveness, de-emphasized ineffective.
 - [ ] `image_url`/`link` conventions in `CONVENTIONS.md` + `conventions.ts`;
       host-allowlist rendering in the tab.
