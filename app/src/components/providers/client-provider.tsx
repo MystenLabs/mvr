@@ -33,8 +33,16 @@ export type Clients = {
   };
 };
 
+// The mainnet RPC and MVR endpoint can be overridden via env so the app can
+// be pointed at a local stack (e.g. a localnet + the attestation demo server)
+// without code changes. Unset in production, where the defaults apply.
+const MAINNET_RPC_URL =
+  process.env.NEXT_PUBLIC_MAINNET_RPC_URL ?? "https://suins-rpc.mainnet.sui.io:443";
+const MAINNET_MVR_ENDPOINT =
+  process.env.NEXT_PUBLIC_MAINNET_MVR_ENDPOINT ?? "https://mainnet.mvr.mystenlabs.com";
+
 const mainnet = new SuiClient({
-  url: "https://suins-rpc.mainnet.sui.io:443",
+  url: MAINNET_RPC_URL,
   network: "mainnet",
 });
 
@@ -64,7 +72,7 @@ export const DefaultClients: Clients = {
     }),
   },
   mvrEndpoints: {
-    mainnet: "https://mainnet.mvr.mystenlabs.com",
+    mainnet: MAINNET_MVR_ENDPOINT,
     testnet: "https://testnet.mvr.mystenlabs.com",
   },
   mvrExperimentalEndpoints: {

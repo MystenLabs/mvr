@@ -160,10 +160,13 @@ hygiene-only if an attester declares no domains).
 
 ## Build order (milestones)
 
-- **M0** — Localnet env up; packages published (incl. an upgraded attester);
-  attestations created + one revoked; IDs emitted.
-- **M1** — Postgres seeded + mvr-api running; frontend repointed; `@demo/subject`
-  resolves and the package page renders against localnet.
+- **M0 ✅** — Localnet env up; packages published (incl. an upgraded attester);
+  attestations created + one revoked; IDs emitted (attestation-registry repo,
+  commit `ff6845b`).
+- **M1 ✅ (data path)** — Postgres seeded + mvr-api running + frontend repointed;
+  `@demo/subject` resolves to the localnet package address (verified). Visual
+  page render is confirmed alongside M2 (the Attestations tab), which is where
+  there's something attestation-specific to see.
 - **M2** — Read hook with a **client-side lineage filter** (proves the
   end-to-end pipeline; not yet spam-proof) + the Attestations tab rendering
   Display fields and effectiveness.
@@ -173,14 +176,37 @@ hygiene-only if an attester declares no domains).
 - **M4** — `image_url`/`link` conventions + host-allowlist policing; sidebar
   trust badge.
 
+## Running locally (M0–M1)
+
+Three terminals; the first holds the localnet + published packages + attestations.
+
+```bash
+# 1) attestation-registry repo: localnet + publish + upgrade + attest, kept up
+KEEP_ALIVE=1 bash scripts/run-demo.sh         # writes demo-ids.json, holds :9000
+
+# 2) mvr repo: real mvr-api over an ephemeral Postgres, seeded from demo-ids.json
+cargo run -p mvr-api --example demo_server -- \
+    --demo-ids ~/Mysten/sui-attestation-registry/demo-ids.json --port 8000
+
+# 3) mvr repo: the frontend, mainnet repointed at the local stack via app/.env
+#    (NEXT_PUBLIC_MAINNET_RPC_URL=http://127.0.0.1:9000,
+#     NEXT_PUBLIC_MAINNET_MVR_ENDPOINT=http://127.0.0.1:8000)
+pnpm --dir app dev
+```
+
+Resolution check: `curl http://127.0.0.1:8000/v1/names/@demo/subject` returns
+the localnet `package_address`. The demo server lives at
+`crates/mvr-api/examples/demo_server.rs`; the frontend override is in
+`app/src/components/providers/client-provider.tsx` (see `app/.env.example`).
+
 ## Task checklist
 
-- [ ] Extend the attestation-registry repo's `scripts/run-demo.sh` / `ts/demo.ts`:
+- [x] Extend the attestation-registry repo's `scripts/run-demo.sh` / `ts/demo.ts`:
       publish + upgrade attester (`AuditV2`), create + revoke attestations, emit
       published IDs.
-- [ ] Standalone Postgres seeder (lift `setup_dummy_data`) → `name_records`
-      pointing at published subject IDs.
-- [ ] Local run recipe: localnet + mvr-api + frontend env overrides.
+- [x] Standalone Postgres seeder (lift `setup_dummy_data`) → `name_records`
+      pointing at published subject IDs. (`examples/demo_server.rs`)
+- [x] Local run recipe: localnet + mvr-api + frontend env overrides.
 - [ ] `lib/constants.ts`: registry ids + `trustedAttestors` config.
 - [ ] Port `boxAddress`; add JSON-RPC `AttestationInfo` mapper.
 - [ ] Spike: GraphQL generic type-filter for `Display<Attestation<*>>`; choose
