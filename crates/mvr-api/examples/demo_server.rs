@@ -130,8 +130,8 @@ async fn main() -> anyhow::Result<()> {
 /// trust config in scripts/write-demo-env.sh).
 fn auditor_mvr_name(pkg_name: &str) -> String {
     match pkg_name {
-        "audit_example" => "@demo/audit".to_string(),
-        "vuln_example" => "@demo/vuln".to_string(),
+        "audit_example" => "@example-auditor/audits".to_string(),
+        "vuln_example" => "@example-scanner/disclosures".to_string(),
         other => format!("@demo/{other}"),
     }
 }

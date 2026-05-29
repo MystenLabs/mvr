@@ -234,6 +234,7 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
         <AttesterAvatar attestor={attestation.attestor} size="sm" />
         <Text as="span" kind="paragraph" size="paragraph-xs">
           {attesterNameNode(attestation.attestor)}
+          {attestation.attestor.mvrName ? ` (${attestation.attestor.mvrName})` : ""}
           {via && (
             <>
               {" · in dependency "}

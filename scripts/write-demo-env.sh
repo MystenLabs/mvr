@@ -33,8 +33,8 @@ NAMES = {
 }
 # MVR names of the attester packages (kept in sync with demo_server.rs).
 MVR_NAMES = {
-    "audit_example": "@demo/audit",
-    "vuln_example": "@demo/vuln",
+    "audit_example": "@example-auditor/audits",
+    "vuln_example": "@example-scanner/disclosures",
 }
 attestors = []
 for a in d["trustedAttestors"]:
