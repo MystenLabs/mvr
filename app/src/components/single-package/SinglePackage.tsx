@@ -13,9 +13,9 @@ import { SinglePackageDependencies } from "./SinglePackageDependencies";
 import { SinglePackageDependents } from "./SinglePackageDependents";
 import { SinglePackageVersions } from "./SinglePackageVersions";
 import {
-  SinglePackageAttestations,
-  AttestationCount,
-} from "./SinglePackageAttestations";
+  SinglePackageTrustSignals,
+  TrustSignalCount,
+} from "./SinglePackageTrustSignals";
 import { DependenciesIconSelected } from "@/icons/single-package/DependenciesIcon";
 import { DependendsIconSelected } from "@/icons/single-package/DependendsIcon";
 import { DependenciesIconUnselected } from "@/icons/single-package/DependenciesIcon";
@@ -28,8 +28,8 @@ import { SinglePackageTab } from "@/utils/types";
 import { AnalyticsIconUnselected } from "@/icons/single-package/AnalyticsIcon";
 import { AnalyticsIconSelected } from "@/icons/single-package/AnalyticsIcon";
 
-// Simple shield-check glyph for the Attestations tab; reused for both states.
-const AttestationsIcon = () => (
+// Simple shield-check glyph for the Trust Signals tab; reused for both states.
+const TrustSignalsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
     <path d="M9 12l2 2 4-4" />
@@ -81,14 +81,14 @@ export const Tabs: SinglePackageTab[] = [
     component: (name: ResolvedName) => <SinglePackageDependents name={name} />,
   },
   {
-    key: "attestations",
-    title: "Attestations",
-    selectedIcon: <AttestationsIcon />,
-    unselectedIcon: <AttestationsIcon />,
+    key: "trust-signals",
+    title: "Trust Signals",
+    selectedIcon: <TrustSignalsIcon />,
+    unselectedIcon: <TrustSignalsIcon />,
     label: (address: string, network: "mainnet" | "testnet") => (
-      <AttestationCount address={address} network={network} />
+      <TrustSignalCount address={address} network={network} />
     ),
-    component: (name: ResolvedName) => <SinglePackageAttestations name={name} />,
+    component: (name: ResolvedName) => <SinglePackageTrustSignals name={name} />,
   },
   {
     key: "analytics",

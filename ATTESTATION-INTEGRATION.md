@@ -223,8 +223,35 @@ the localnet `package_address`. The demo server lives at
       host-allowlist rendering in the tab.
 - [ ] Sidebar trust badge (phase 2).
 
+## Later passes (post-M2 UI feedback)
+
+- **Pass 1 ✅** — polarity convention (positive/negative), Trust Signals tab
+  with separate Vulnerabilities/Audits sections + per-kind count pills +
+  attester avatars; negative test data (untrusted attester + undisplayed type)
+  proving both filters.
+- **Pass 2** — negative **propagation**: surface a dependency's effective vulns
+  on its dependents (walk the dep graph; seed the `subject → dependency` edge).
+  Plus auditor MVR-page links (seed auditor names; link attester → its MVR
+  page).
+- **Pass 3** — `requires`/propagation provenance + an attestation detail view
+  ("why ineffective", which required attestation was revoked).
+- **Pass 4** — reverse "audits issued by this auditor" tab (needs a reverse
+  query over events/indexer).
+
 ## Out of scope / follow-ups
 
+- **Web-of-trust whitelist bootstrap.** Replace the hardcoded `trustedAttestors`
+  with on-chain meta-attestations: MVR defines a `TrustedAuditor` schema and
+  issues `Attestation<TrustedAuditor>` about auditor packages; the only
+  hardcoded value becomes MVR's own attester package id (the trust root). Per
+  attestation, check whether its attester package carries an effective
+  `TrustedAuditor` attestation from MVR (a per-attester lookup, dynamic and
+  revocable). Non-transitive to start.
+- **`summary` vs `description` convention.** A short `summary` field for list
+  rows, separate from a fuller `description`, if on-chain description size
+  becomes a concern. Undecided.
+- `image_url`/`link` host-allowlisting (constrain to the attester's declared
+  domains) — currently https-only.
 - gRPC read path (revisit when MVR moves to `@mysten/sui` 2.x).
 - Full `mvr-indexer`-on-localnet stack (D1 seeds Postgres directly instead).
 - Adding a first-class `localnet` network to the MVR UI (the demo repoints

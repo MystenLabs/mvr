@@ -11,6 +11,9 @@ import type { SuiObjectResponse } from "@mysten/sui/client";
 export interface TrustedAttestor {
   /** Human-readable label, shown as the attester heading. */
   name: string;
+  /** Optional brand icon URL (from trust config, never from on-chain data).
+   *  Absent → the UI renders an initials avatar. */
+  iconUrl?: string;
   /** Original publish id of the attester package — the trust anchor. */
   originalId: string;
   /** Every package-version id in the attester's lineage. Matching an
@@ -82,6 +85,12 @@ export function toAttestationInfo(resp: SuiObjectResponse): AttestationInfo | nu
 /** The defining (origin) package id of an inner type string. */
 export function innerTypePackage(innerType: string): string {
   return normalizeSuiAddress(innerType.split("::")[0]!);
+}
+
+/** A negative attestation (e.g. a vulnerability) per the `polarity` convention.
+ *  Absence of the field defaults to positive. */
+export function isNegative(att: AttestationInfo): boolean {
+  return att.display["polarity"] === "negative";
 }
 
 /** The trusted attester whose lineage defines `innerType`, if any. */
