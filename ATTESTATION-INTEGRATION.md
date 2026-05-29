@@ -246,7 +246,9 @@ the localnet `package_address`. The demo server lives at
   hardcoded value becomes MVR's own attester package id (the trust root). Per
   attestation, check whether its attester package carries an effective
   `TrustedAuditor` attestation from MVR (a per-attester lookup, dynamic and
-  revocable). Non-transitive to start.
+  revocable). Non-transitive to start. **Deferred** pending a team discussion:
+  the per-attester on-chain lookups add RPC roundtrips on the read path, and we
+  want to scope that (batching/caching) before replacing the hardcoded list.
 - **`summary` vs `description` convention.** A short `summary` field for list
   rows, separate from a fuller `description`, if on-chain description size
   becomes a concern. Undecided.

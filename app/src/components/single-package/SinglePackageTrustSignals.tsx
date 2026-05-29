@@ -291,9 +291,15 @@ function AttestorGroupCard({ group }: { group: AttestorGroup }) {
           <Text kind="label" size="label-regular">
             {attesterNameNode(group.attestor)}
           </Text>
-          <Text as="p" kind="paragraph" size="paragraph-xs" className="font-mono opacity-60">
-            {truncateId(group.attestor.originalId)}
-          </Text>
+          {group.attestor.mvrName ? (
+            <Text as="p" kind="paragraph" size="paragraph-xs" className="opacity-60">
+              {group.attestor.mvrName}
+            </Text>
+          ) : (
+            <Text as="p" kind="paragraph" size="paragraph-xs" className="font-mono opacity-60">
+              {truncateId(group.attestor.originalId)}
+            </Text>
+          )}
         </div>
       </div>
       {group.items.map((item) => (
