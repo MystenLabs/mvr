@@ -229,10 +229,10 @@ the localnet `package_address`. The demo server lives at
   with separate Vulnerabilities/Audits sections + per-kind count pills +
   attester avatars; negative test data (untrusted attester + undisplayed type)
   proving both filters.
-- **Pass 2** — negative **propagation**: surface a dependency's effective vulns
-  on its dependents (walk the dep graph; seed the `subject → dependency` edge).
-  Plus auditor MVR-page links (seed auditor names; link attester → its MVR
-  page).
+- **Pass 2 ✅** — negative **propagation** (a dependency's effective vulns
+  surface on its dependents; seeded `subject → dependency` edge); CVSS
+  `severity` convention with severity-sorted, band-colored vulnerabilities;
+  friendly attester names + MVR-page links for attesters.
 - **Pass 3** — `requires`/propagation provenance + an attestation detail view
   ("why ineffective", which required attestation was revoked).
 - **Pass 4** — reverse "audits issued by this auditor" tab (needs a reverse
