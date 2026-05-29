@@ -177,11 +177,7 @@ function VulnerabilitiesSection({
         <Text kind="heading" size="heading-xs">
           Vulnerabilities
         </Text>
-        <Text
-          kind="label"
-          size="label-xs"
-          className={scores.length ? maxTone : "text-content-tertiary"}
-        >
+        <Text kind="label" size="label-xs" className="text-content-tertiary">
           · {scores.length ? severityBreakdown(scores) : "none active"}
         </Text>
       </div>
@@ -193,18 +189,23 @@ function VulnerabilitiesSection({
   );
 }
 
-/** Summarize scores by band, e.g. "1 high, 1 medium" (most severe first). */
-function severityBreakdown(scores: number[]): string {
+/** Summarize scores by band, e.g. "1 high, 1 medium" (most severe first),
+ *  each segment colored by its own band. */
+function severityBreakdown(scores: number[]): React.ReactNode {
   const order = ["Critical", "High", "Medium", "Low", "None"];
-  const counts: Record<string, number> = {};
+  const byBand: Record<string, { count: number; tone: string }> = {};
   for (const s of scores) {
-    const band = severityBand(s).label;
-    counts[band] = (counts[band] ?? 0) + 1;
+    const b = severityBand(s);
+    byBand[b.label] = { count: (byBand[b.label]?.count ?? 0) + 1, tone: b.tone };
   }
   return order
-    .filter((b) => counts[b])
-    .map((b) => `${counts[b]} ${b.toLowerCase()}`)
-    .join(", ");
+    .filter((label) => byBand[label])
+    .map((label, i) => (
+      <span key={label} className={byBand[label]!.tone}>
+        {i > 0 ? ", " : ""}
+        {byBand[label]!.count} {label.toLowerCase()}
+      </span>
+    ));
 }
 
 function VulnRow({ entry }: { entry: VulnEntry }) {
