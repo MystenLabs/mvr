@@ -233,8 +233,9 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
       <div className="flex items-center gap-2xs text-content-tertiary">
         <AttesterAvatar attestor={attestation.attestor} size="sm" />
         <Text as="span" kind="paragraph" size="paragraph-xs">
-          {attesterNameNode(attestation.attestor)}
-          {attestation.attestor.mvrName ? ` (${attestation.attestor.mvrName})` : ""}
+          {attestation.attestor.mvrName
+            ? mvrLink(attestation.attestor.mvrName)
+            : attestation.attestor.name}
           {via && (
             <>
               {" · in dependency "}
@@ -290,11 +291,11 @@ function AttestorGroupCard({ group }: { group: AttestorGroup }) {
         <AttesterAvatar attestor={group.attestor} />
         <div className="flex flex-col">
           <Text kind="label" size="label-regular">
-            {attesterNameNode(group.attestor)}
+            {group.attestor.name}
           </Text>
           {group.attestor.mvrName ? (
-            <Text as="p" kind="paragraph" size="paragraph-xs" className="opacity-60">
-              {group.attestor.mvrName}
+            <Text as="p" kind="paragraph" size="paragraph-xs">
+              {mvrLink(group.attestor.mvrName)}
             </Text>
           ) : (
             <Text as="p" kind="paragraph" size="paragraph-xs" className="font-mono opacity-60">
@@ -437,12 +438,11 @@ function DepLink({ id, name }: { id: string; name?: string }) {
   return <span className="font-mono">{truncateId(id)}</span>;
 }
 
-/** The attester name, linked to its MVR page when one is configured. */
-function attesterNameNode(attestor: TrustedAttestor): React.ReactNode {
-  if (!attestor.mvrName) return attestor.name;
+/** Render an MVR name as a link to its package page. */
+function mvrLink(name: string): React.ReactNode {
   return (
-    <a href={`/package/${attestor.mvrName}`} className="text-content-accent underline">
-      {attestor.name}
+    <a href={`/package/${name}`} className="text-content-accent underline">
+      {name}
     </a>
   );
 }
