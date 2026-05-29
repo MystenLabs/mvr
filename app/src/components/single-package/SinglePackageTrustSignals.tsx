@@ -17,7 +17,13 @@ import {
 } from "@/lib/attestations";
 
 /** A triangle-exclamation glyph; color comes from the text color (currentColor). */
-function WarningIcon({ className }: { className?: string }) {
+function WarningIcon({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -27,6 +33,7 @@ function WarningIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
+      style={style}
     >
       <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
       <line x1="12" y1="9" x2="12" y2="13" />
@@ -72,7 +79,7 @@ export function TrustSignalCount({
     .filter((a) => isNegative(a.info))
     .map((a) => readSeverity(a.info) ?? 0)
     .concat((inherited ?? []).map((v) => readSeverity(v.attestation.info) ?? 0));
-  const warnTone = severityBand(vulnScores.length ? Math.max(...vulnScores) : 0).tone;
+  const warnColor = severityBand(vulnScores.length ? Math.max(...vulnScores) : 0).color;
 
   if (!positives && !vulnScores.length) return null;
   return (
@@ -85,7 +92,7 @@ export function TrustSignalCount({
       )}
       {vulnScores.length > 0 && (
         <CountPill
-          icon={<WarningIcon className={`h-3.5 w-3.5 ${warnTone}`} />}
+          icon={<WarningIcon className="h-3.5 w-3.5" style={{ color: warnColor }} />}
           count={vulnScores.length}
         />
       )}
@@ -168,12 +175,12 @@ function VulnerabilitiesSection({
 
   // Header is colored and summarized by the active vulnerabilities' severities.
   const scores = entries.map((e) => readSeverity(e.attestation.info) ?? 0);
-  const maxTone = severityBand(scores.length ? Math.max(...scores) : 0).tone;
+  const maxColor = severityBand(scores.length ? Math.max(...scores) : 0).color;
 
   return (
     <section className="flex flex-col gap-sm">
       <div className="flex items-center gap-2xs">
-        <WarningIcon className={`h-4 w-4 shrink-0 ${maxTone}`} />
+        <WarningIcon className="h-4 w-4 shrink-0" style={{ color: maxColor }} />
         <Text kind="heading" size="heading-xs">
           Vulnerabilities
         </Text>
@@ -193,15 +200,15 @@ function VulnerabilitiesSection({
  *  each segment colored by its own band. */
 function severityBreakdown(scores: number[]): React.ReactNode {
   const order = ["Critical", "High", "Medium", "Low", "None"];
-  const byBand: Record<string, { count: number; tone: string }> = {};
+  const byBand: Record<string, { count: number; color: string }> = {};
   for (const s of scores) {
     const b = severityBand(s);
-    byBand[b.label] = { count: (byBand[b.label]?.count ?? 0) + 1, tone: b.tone };
+    byBand[b.label] = { count: (byBand[b.label]?.count ?? 0) + 1, color: b.color };
   }
   return order
     .filter((label) => byBand[label])
     .map((label, i) => (
-      <span key={label} className={byBand[label]!.tone}>
+      <span key={label} style={{ color: byBand[label]!.color }}>
         {i > 0 ? ", " : ""}
         {byBand[label]!.count} {label.toLowerCase()}
       </span>
@@ -212,27 +219,23 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
   const { attestation, via } = entry;
   const { display, innerType, id } = attestation.info;
-  const title = str(display["name"]) ?? "Vulnerability";
-  const description = str(display["description"]);
+  const headline = str(display["description"]) ?? str(display["name"]) ?? "Vulnerability";
   const link = httpsLink(display["link"]);
   const severity = readSeverity(attestation.info);
   const band = severityBand(severity ?? 0);
 
   return (
     <div
-      className={`flex flex-col gap-2xs rounded-md border-l-2 bg-bg-secondary p-md ${band.border}`}
+      className="flex flex-col gap-2xs rounded-md border-l-2 bg-bg-secondary p-md"
+      style={{ borderLeftColor: band.color }}
     >
-      <div className="flex items-center justify-between gap-sm">
+      <div className="flex items-start justify-between gap-sm">
         <Text kind="label" size="label-small">
-          {title}
+          {headline}
+          {link && <> ({reportLink(link)})</>}
         </Text>
         {severity !== null && <SeverityChip score={severity} />}
       </div>
-      {description && (
-        <Text as="p" kind="paragraph" size="paragraph-small">
-          {description}
-        </Text>
-      )}
       <div className="flex items-center gap-2xs break-all text-content-tertiary">
         <AttesterAvatar attestor={attestation.attestor} size="sm" />
         <Text as="span" kind="paragraph" size="paragraph-xs">
@@ -254,13 +257,6 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
           )}
         </Text>
       </div>
-      {link && (
-        <a href={link} target="_blank" rel="noopener noreferrer" className="text-content-accent">
-          <Text as="span" kind="paragraph" size="paragraph-xs">
-            {hostOf(link)} ↗
-          </Text>
-        </a>
-      )}
     </div>
   );
 }
@@ -362,31 +358,19 @@ function AttesterAvatar({
 function AttestationRow({ item }: { item: DisplayedAttestation }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
   const { display, innerType, id } = item.info;
-  const title = str(display["name"]) ?? "Attestation";
-  const description = str(display["description"]);
+  const headline = str(display["description"]) ?? str(display["name"]) ?? "Attestation";
   const link = httpsLink(display["link"]);
 
   return (
     <div className="flex flex-col gap-2xs rounded-sm border-l-2 border-stroke-accent py-sm pl-sm">
       <Text kind="label" size="label-small">
-        {title}
+        {headline}
+        {link && <> ({reportLink(link)})</>}
       </Text>
-      {description && (
-        <Text as="p" kind="paragraph" size="paragraph-small">
-          {description}
-        </Text>
-      )}
       <Text as="p" kind="paragraph" size="paragraph-xs" className="break-all opacity-60">
         <span className="font-mono">{moduleAndType(innerType)}</span> (
         {objectLink(id, network)})
       </Text>
-      {link && (
-        <a href={link} target="_blank" rel="noopener noreferrer" className="text-content-accent">
-          <Text as="span" kind="paragraph" size="paragraph-xs">
-            {hostOf(link)} ↗
-          </Text>
-        </a>
-      )}
     </div>
   );
 }
@@ -394,9 +378,11 @@ function AttestationRow({ item }: { item: DisplayedAttestation }) {
 function SeverityChip({ score }: { score: number }) {
   const band = severityBand(score);
   return (
-    <Text as="span" kind="label" size="label-2xs" className={band.tone}>
-      {band.label} ({score.toFixed(1)})
-    </Text>
+    <span style={{ color: band.color }}>
+      <Text as="span" kind="label" size="label-2xs">
+        {band.label} ({score.toFixed(1)})
+      </Text>
+    </span>
   );
 }
 
@@ -406,6 +392,20 @@ function objectLink(id: string, network: "mainnet" | "testnet"): React.ReactNode
     <ExplorerLink network={network} type="object" idOrHash={id}>
       {truncateId(id)}
     </ExplorerLink>
+  );
+}
+
+/** The report/advisory URL as a link showing its host. */
+function reportLink(url: string): React.ReactNode {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-content-accent underline"
+    >
+      {hostOf(url)} ↗
+    </a>
   );
 }
 

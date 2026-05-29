@@ -104,24 +104,19 @@ export function readSeverity(att: AttestationInfo): number | null {
 
 export interface SeverityBand {
   label: string;
-  /** A `text-…` color class for the band. */
-  tone: string;
-  /** A `border-…` color class for the band (the `content` palette is
-   *  text-only, so this uses an arbitrary value bound to the CSS var). */
-  border: string;
+  /** A CSS color (var) for the band, for inline styling. The `content`
+   *  palette is text-only (no `border-content-*`), and Tailwind only scans
+   *  `.tsx`, so a class built here wouldn't be generated — hence a raw var. */
+  color: string;
 }
 
 /** Map a CVSS base score to its qualitative band (CVSS v3.1). */
 export function severityBand(score: number): SeverityBand {
-  if (score >= 9)
-    return { label: "Critical", tone: "text-content-negative", border: "border-[color:var(--content-negative)]" };
-  if (score >= 7)
-    return { label: "High", tone: "text-content-negative", border: "border-[color:var(--content-negative)]" };
-  if (score >= 4)
-    return { label: "Medium", tone: "text-content-warning", border: "border-[color:var(--content-warning)]" };
-  if (score > 0)
-    return { label: "Low", tone: "text-content-tertiary", border: "border-[color:var(--content-tertiary)]" };
-  return { label: "None", tone: "text-content-tertiary", border: "border-[color:var(--content-tertiary)]" };
+  if (score >= 9) return { label: "Critical", color: "var(--content-negative)" };
+  if (score >= 7) return { label: "High", color: "var(--content-negative)" };
+  if (score >= 4) return { label: "Medium", color: "var(--content-warning)" };
+  if (score > 0) return { label: "Low", color: "var(--content-tertiary)" };
+  return { label: "None", color: "var(--content-tertiary)" };
 }
 
 /** The trusted attester whose lineage defines `innerType`, if any. */
