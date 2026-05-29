@@ -25,10 +25,14 @@ use diesel::insert_into;
 use diesel_async::RunQueryDsl;
 use mvr_api::{run_server, Network};
 use mvr_schema::{
-    models::{NameRecord, Package, PackageDependency, PackageInfo},
-    schema::{name_records, package_dependencies, package_infos, packages},
+    models::{GitInfo, NameRecord, Package, PackageDependency, PackageInfo},
+    schema::{git_infos, name_records, package_dependencies, package_infos, packages},
     MIGRATIONS,
 };
+
+// Where the auditor package READMEs live, for MVR's git-backed README fetch.
+const DEMO_REPO_URL: &str = "https://github.com/mdgeorge4153/sui-attestation-registry";
+const DEMO_GIT_TAG: &str = "mvr-demo";
 use serde_json::json;
 use sui_pg_db::{temp::TempDb, Db, DbArgs};
 use tokio_util::sync::CancellationToken;
@@ -71,6 +75,7 @@ async fn main() -> anyhow::Result<()> {
         &subject,
         PKG_INFO_SUBJECT,
         "The example subject package browsed in the MVR attestation demo.",
+        None,
     )
     .await?;
     seed(
@@ -79,6 +84,7 @@ async fn main() -> anyhow::Result<()> {
         &dependency,
         PKG_INFO_DEPENDENCY,
         "A dependency of @demo/subject.",
+        None,
     )
     .await?;
 
@@ -105,7 +111,16 @@ async fn main() -> anyhow::Result<()> {
             let latest = a["latestId"].as_str().unwrap_or_default().to_string();
             let mvr_name = auditor_mvr_name(pkg_name);
             let pkg_info_id = format!("0x{:064x}", 0xdee0_0010u64 + i as u64);
-            seed(&mut db, &mvr_name, &latest, &pkg_info_id, "A trusted attester in the demo.").await?;
+            let git_path = format!("packages/{pkg_name}");
+            seed(
+                &mut db,
+                &mvr_name,
+                &latest,
+                &pkg_info_id,
+                "A trusted attester in the demo.",
+                Some(&git_path),
+            )
+            .await?;
             println!("seeded {mvr_name}  -> {latest}");
         }
     }
@@ -152,6 +167,7 @@ async fn seed(
     package_id: &str,
     pkg_info_id: &str,
     description: &str,
+    git_path: Option<&str>,
 ) -> anyhow::Result<()> {
     let package = Package {
         package_id: package_id.to_string(),
@@ -168,7 +184,11 @@ async fn seed(
         id: pkg_info_id.to_string(),
         object_version: 0,
         package_id: package_id.to_string(),
-        git_table_id: String::new(),
+        git_table_id: if git_path.is_some() {
+            pkg_info_id.to_string()
+        } else {
+            String::new()
+        },
         chain_id: "localnet".to_string(),
         default_name: Some(name.to_string()),
         metadata: serde_json::Value::Null,
@@ -185,5 +205,20 @@ async fn seed(
     insert_into(packages::table).values(vec![package]).execute(&mut *conn).await?;
     insert_into(package_infos::table).values(vec![package_info]).execute(&mut *conn).await?;
     insert_into(name_records::table).values(vec![name_record]).execute(&mut *conn).await?;
+    if let Some(path) = git_path {
+        // git_table_id == pkg_info_id (set above); join key for the README.
+        insert_into(git_infos::table)
+            .values(vec![GitInfo {
+                table_id: pkg_info_id.to_string(),
+                object_version: 0,
+                version: 1,
+                chain_id: "localnet".to_string(),
+                repository: Some(DEMO_REPO_URL.to_string()),
+                path: Some(path.to_string()),
+                tag: Some(DEMO_GIT_TAG.to_string()),
+            }])
+            .execute(&mut *conn)
+            .await?;
+    }
     Ok(())
 }
