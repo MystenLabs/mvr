@@ -50,10 +50,14 @@ function fetchByIdFor(client: SuiClient): ConventionsContext["fetchById"] {
 /**
  * Core read: the attestations about `subject` from the configured trusted
  * attesters, with effectiveness. Reads the per-subject Box directly over
- * JSON-RPC (no MVR backend), keeps only `Attestation<T>` whose inner-type
- * package is in a trusted lineage and that carry a registered Display.
- * M2 filters the lineage client-side; M3 will scope it server-side via
- * `MatchAny` over the exact Display-registered trusted types.
+ * JSON-RPC (no MVR backend).
+ *
+ * Spam-resistant (M3): rather than fetch every `Attestation<*>` on the box and
+ * filter client-side, it asks the node for only the exact trusted types via a
+ * `MatchAny` `StructType` filter — so attestations from untrusted attesters are
+ * never returned. The trusted type set is the `Attestation<T>` for every store
+ * type `T` defined by a trusted attester's lineage (see `resolveTrustedTypes`).
+ * A read-time Display-gate still drops trusted-but-undisplayed types.
  */
 export async function fetchTrustedAttestations(
   client: SuiClient,
@@ -61,15 +65,16 @@ export async function fetchTrustedAttestations(
   subject: string,
 ): Promise<DisplayedAttestation[]> {
   const owner = boxAddress(cfg.registryId, subject);
-  const structType = `${cfg.registryPkg}::attestation_registry::Attestation`;
+  const trustedTypes = await resolveTrustedTypes(client, cfg);
+  if (trustedTypes.length === 0) return [];
 
-  // 1. List every Attestation<*> on the box (empty type params match all).
+  // 1. Fetch only attestations of trusted types (server-side MatchAny).
   const infos: AttestationInfo[] = [];
   let cursor: string | null | undefined = null;
   do {
     const page = await client.getOwnedObjects({
       owner,
-      filter: { StructType: structType },
+      filter: { MatchAny: trustedTypes.map((StructType) => ({ StructType })) },
       options: { showType: true, showDisplay: true },
       cursor,
     });
@@ -80,7 +85,8 @@ export async function fetchTrustedAttestations(
     cursor = page.hasNextPage ? page.nextCursor : null;
   } while (cursor);
 
-  // 2. Keep trusted attesters (lineage) that registered a Display.
+  // 2. Display-gate (drop trusted-but-undisplayed types) and attribute each to
+  //    its attester for grouping.
   const trusted = infos
     .map((info) => ({ info, attestor: attestorFor(cfg, info.innerType) }))
     .filter(
@@ -97,6 +103,48 @@ export async function fetchTrustedAttestations(
       effective: await isEffective(info, ctx),
     })),
   );
+}
+
+// Cache the trusted type set per config — the lineage is static, so this only
+// changes when an attester upgrades (re-load the app to refresh).
+const trustedTypesCache = new Map<string, Promise<string[]>>();
+
+/**
+ * The exact set of trusted `Attestation<T>` type strings: for every package in
+ * a trusted attester's lineage, every `store` struct it defines becomes a
+ * candidate `T`. Querying each lineage version covers types by their defining
+ * (canonical) id; non-canonical combinations simply match no objects.
+ */
+export function resolveTrustedTypes(
+  client: SuiClient,
+  cfg: AttestationConfig,
+): Promise<string[]> {
+  const lineage = [
+    ...new Set(cfg.trustedAttestors.flatMap((a) => a.lineage.map((id) => normalizeSuiAddress(id)))),
+  ];
+  const key = `${cfg.registryPkg}|${lineage.join(",")}`;
+  const cached = trustedTypesCache.get(key);
+  if (cached) return cached;
+
+  const promise = (async () => {
+    const types = new Set<string>();
+    for (const pkg of lineage) {
+      const modules = await client.getNormalizedMoveModulesByPackage({ package: pkg });
+      for (const [moduleName, mod] of Object.entries(modules)) {
+        for (const [structName, struct] of Object.entries(mod.structs ?? {})) {
+          if (struct.abilities.abilities.includes("Store")) {
+            types.add(
+              `${cfg.registryPkg}::attestation_registry::Attestation<${pkg}::${moduleName}::${structName}>`,
+            );
+          }
+        }
+      }
+    }
+    return [...types];
+  })();
+
+  trustedTypesCache.set(key, promise);
+  return promise;
 }
 
 /** The attestations about `subject` from the configured trusted attesters. */
