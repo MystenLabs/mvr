@@ -230,12 +230,17 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
           {description}
         </Text>
       )}
-      <div className="flex items-center gap-2xs text-content-tertiary">
+      <div className="flex items-center gap-2xs break-all text-content-tertiary">
         <AttesterAvatar attestor={attestation.attestor} size="sm" />
         <Text as="span" kind="paragraph" size="paragraph-xs">
-          {attestation.attestor.mvrName
-            ? mvrLink(attestation.attestor.mvrName)
-            : attestation.attestor.name}
+          {attestation.attestor.mvrName ? (
+            <>
+              {mvrLink(attestation.attestor.mvrName)}
+              {`::${moduleAndType(innerType)}`}
+            </>
+          ) : (
+            <span className="font-mono">{innerType}</span>
+          )}
           {via && (
             <>
               {" · in dependency "}
@@ -244,14 +249,6 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
           )}
         </Text>
       </div>
-      <Text
-        as="p"
-        kind="paragraph"
-        size="paragraph-xs"
-        className="break-all font-mono opacity-50"
-      >
-        {innerType}
-      </Text>
       {link && (
         <a href={link} target="_blank" rel="noopener noreferrer" className="text-content-accent">
           <Text as="span" kind="paragraph" size="paragraph-xs">
@@ -382,7 +379,7 @@ function AttestationRow({ item }: { item: DisplayedAttestation }) {
         size="paragraph-xs"
         className="break-all font-mono opacity-50"
       >
-        {innerType}
+        {moduleAndType(innerType)}
       </Text>
       {link && (
         <a href={link} target="_blank" rel="noopener noreferrer" className="text-content-accent">
@@ -491,6 +488,12 @@ function severityOf(info: DisplayedAttestation["info"]): number {
 
 function truncateId(id: string): string {
   return id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
+}
+
+/** The `module::Type` part of an inner type, dropping the package address. */
+function moduleAndType(innerType: string): string {
+  const parts = innerType.split("::");
+  return parts.length > 1 ? parts.slice(1).join("::") : innerType;
 }
 
 function str(v: unknown): string | undefined {
