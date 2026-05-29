@@ -25,10 +25,20 @@ fi
 CONFIG=$(python3 - "$DEMO_IDS" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1]))
+# Friendly display names for the demo attesters (presentation lives in the
+# consumer's trust config, not on-chain).
+NAMES = {
+    "audit_example": "Example Auditor",
+    "vuln_example": "Example Security Scanner",
+}
 attestors = []
 for a in d["trustedAttestors"]:
     lineage = list(dict.fromkeys([a["originalId"], a.get("latestId", a["originalId"])]))
-    attestors.append({"name": a["name"], "originalId": a["originalId"], "lineage": lineage})
+    attestors.append({
+        "name": NAMES.get(a["name"], a["name"]),
+        "originalId": a["originalId"],
+        "lineage": lineage,
+    })
 print(json.dumps({
     "registryPkg": d["attestationRegistryPkg"],
     "registryId": d["registryId"],

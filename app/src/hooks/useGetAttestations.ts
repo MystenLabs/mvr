@@ -2,12 +2,16 @@ import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import type { SuiClient } from "@mysten/sui/client";
+import { normalizeSuiAddress } from "@mysten/sui/utils";
+import { MvrHeader } from "@/lib/utils";
 import {
   attestationConfig,
   attestorFor,
   boxAddress,
   isEffective,
+  isNegative,
   toAttestationInfo,
+  type AttestationConfig,
   type AttestationInfo,
   type ConventionsContext,
   type TrustedAttestor,
@@ -19,6 +23,15 @@ export interface DisplayedAttestation {
   attestor: TrustedAttestor;
   /** Effectiveness per the conventions (active + unexpired + requires met). */
   effective: boolean;
+}
+
+/** A dependency's effective vulnerability, surfaced on a dependent package. */
+export interface InheritedVuln {
+  attestation: DisplayedAttestation;
+  /** The dependency package the vulnerability is attested about. */
+  viaPackageId: string;
+  /** That dependency's MVR name, if it resolves. */
+  viaName?: string;
 }
 
 /** Resolve an attestation by id from chain (for `requires` traversal). */
@@ -35,14 +48,58 @@ function fetchByIdFor(client: SuiClient): ConventionsContext["fetchById"] {
 }
 
 /**
- * List the attestations about `subject` from the configured trusted attesters.
- *
- * Reads the per-subject Box directly over JSON-RPC (no MVR backend), keeps only
- * `Attestation<T>` whose inner-type package is in a trusted lineage and that
- * carry a registered Display, and computes each one's effectiveness. M2 filters
- * the lineage client-side; M3 will scope it server-side via `MatchAny` over the
- * exact Display-registered trusted types.
+ * Core read: the attestations about `subject` from the configured trusted
+ * attesters, with effectiveness. Reads the per-subject Box directly over
+ * JSON-RPC (no MVR backend), keeps only `Attestation<T>` whose inner-type
+ * package is in a trusted lineage and that carry a registered Display.
+ * M2 filters the lineage client-side; M3 will scope it server-side via
+ * `MatchAny` over the exact Display-registered trusted types.
  */
+export async function fetchTrustedAttestations(
+  client: SuiClient,
+  cfg: AttestationConfig,
+  subject: string,
+): Promise<DisplayedAttestation[]> {
+  const owner = boxAddress(cfg.registryId, subject);
+  const structType = `${cfg.registryPkg}::attestation_registry::Attestation`;
+
+  // 1. List every Attestation<*> on the box (empty type params match all).
+  const infos: AttestationInfo[] = [];
+  let cursor: string | null | undefined = null;
+  do {
+    const page = await client.getOwnedObjects({
+      owner,
+      filter: { StructType: structType },
+      options: { showType: true, showDisplay: true },
+      cursor,
+    });
+    for (const r of page.data) {
+      const info = toAttestationInfo(r);
+      if (info) infos.push(info);
+    }
+    cursor = page.hasNextPage ? page.nextCursor : null;
+  } while (cursor);
+
+  // 2. Keep trusted attesters (lineage) that registered a Display.
+  const trusted = infos
+    .map((info) => ({ info, attestor: attestorFor(cfg, info.innerType) }))
+    .filter(
+      (x): x is { info: AttestationInfo; attestor: TrustedAttestor } =>
+        !!x.attestor && Object.keys(x.info.display).length > 0,
+    );
+
+  // 3. Effectiveness honours the transitive `requires` convention.
+  const ctx: ConventionsContext = { fetchById: fetchByIdFor(client) };
+  return Promise.all(
+    trusted.map(async ({ info, attestor }) => ({
+      info,
+      attestor,
+      effective: await isEffective(info, ctx),
+    })),
+  );
+}
+
+/** The attestations about `subject` from the configured trusted attesters. */
 export function useGetAttestations(
   subject: string | undefined,
   network: "mainnet" | "testnet",
@@ -53,46 +110,67 @@ export function useGetAttestations(
   return useQuery({
     queryKey: [AppQueryKeys.ATTESTATIONS, network, subject],
     enabled: !!subject && !!cfg,
-    queryFn: async (): Promise<DisplayedAttestation[]> => {
-      const owner = boxAddress(cfg!.registryId, subject!);
-      const structType = `${cfg!.registryPkg}::attestation_registry::Attestation`;
+    queryFn: () => fetchTrustedAttestations(client, cfg!, subject!),
+  });
+}
 
-      // 1. List every Attestation<*> on the box (empty type params match all
-      //    instantiations server-side).
-      const infos: AttestationInfo[] = [];
-      let cursor: string | null | undefined = null;
-      do {
-        const page = await client.getOwnedObjects({
-          owner,
-          filter: { StructType: structType },
-          options: { showType: true, showDisplay: true },
-          cursor,
-        });
-        for (const r of page.data) {
-          const info = toAttestationInfo(r);
-          if (info) infos.push(info);
-        }
-        cursor = page.hasNextPage ? page.nextCursor : null;
-      } while (cursor);
+/**
+ * Vulnerabilities inherited from `subject`'s dependencies: a dependency's
+ * effective negative attestations surface on its dependents (the negative dual
+ * of `requires` — see CONVENTIONS.md `polarity`). Dependencies come from MVR;
+ * the per-dependency reads are the same trusted-attestation reads as above.
+ */
+export function useInheritedVulns(
+  subject: string | undefined,
+  network: "mainnet" | "testnet",
+) {
+  const clients = useSuiClientsContext();
+  const client = clients[network];
+  const endpoint = clients.mvrEndpoints[network];
+  const cfg = attestationConfig();
 
-      // 2. Keep trusted attesters (inner-type package in a trusted lineage)
-      //    that registered a Display (non-empty display fields).
-      const trusted = infos
-        .map((info) => ({ info, attestor: attestorFor(cfg!, info.innerType) }))
-        .filter(
-          (x): x is { info: AttestationInfo; attestor: TrustedAttestor } =>
-            !!x.attestor && Object.keys(x.info.display).length > 0,
-        );
-
-      // 3. Effectiveness honours the transitive `requires` convention.
-      const ctx: ConventionsContext = { fetchById: fetchByIdFor(client) };
-      return Promise.all(
-        trusted.map(async ({ info, attestor }) => ({
-          info,
-          attestor,
-          effective: await isEffective(info, ctx),
-        })),
+  return useQuery({
+    queryKey: [AppQueryKeys.ATTESTATIONS, "inherited", network, subject],
+    enabled: !!subject && !!cfg,
+    queryFn: async (): Promise<InheritedVuln[]> => {
+      // 1. Direct dependencies (from MVR).
+      const res = await fetch(
+        `${endpoint}/v1/package-address/${subject}/dependencies`,
+        MvrHeader(),
       );
+      const deps: string[] = res.ok ? ((await res.json()).dependencies ?? []) : [];
+      if (!deps.length) return [];
+
+      // 2. Each dependency's effective negative attestations.
+      const perDep = await Promise.all(
+        deps.map(async (dep) => {
+          const atts = await fetchTrustedAttestations(client, cfg!, dep);
+          return atts
+            .filter((a) => a.effective && isNegative(a.info))
+            .map<InheritedVuln>((a) => ({ attestation: a, viaPackageId: dep }));
+        }),
+      );
+      const inherited = perDep.flat();
+      if (!inherited.length) return inherited;
+
+      // 3. Best-effort dependency names for the provenance note.
+      try {
+        const body = await fetch(`${endpoint}/v1/reverse-resolution/bulk`, {
+          method: "POST",
+          ...MvrHeader({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ package_ids: deps }),
+        }).then((r) => r.json());
+        const nameByAddr: Record<string, string | undefined> = {};
+        for (const [addr, r] of Object.entries(body.resolution ?? {})) {
+          nameByAddr[normalizeSuiAddress(addr)] = (r as { name?: string })?.name;
+        }
+        for (const v of inherited) {
+          v.viaName = nameByAddr[normalizeSuiAddress(v.viaPackageId)];
+        }
+      } catch {
+        // names are optional; fall back to the package id in the UI
+      }
+      return inherited;
     },
   });
 }

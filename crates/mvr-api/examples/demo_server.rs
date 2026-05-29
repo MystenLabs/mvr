@@ -25,8 +25,8 @@ use diesel::insert_into;
 use diesel_async::RunQueryDsl;
 use mvr_api::{run_server, Network};
 use mvr_schema::{
-    models::{NameRecord, Package, PackageInfo},
-    schema::{name_records, package_infos, packages},
+    models::{NameRecord, Package, PackageDependency, PackageInfo},
+    schema::{name_records, package_dependencies, package_infos, packages},
     MIGRATIONS,
 };
 use serde_json::json;
@@ -82,8 +82,24 @@ async fn main() -> anyhow::Result<()> {
     )
     .await?;
 
+    // The real `subject -> dependency` edge, so the dependencies endpoint
+    // returns it (powering both the Dependencies tab and vuln propagation).
+    {
+        let mut conn = db.connect().await?;
+        insert_into(package_dependencies::table)
+            .values(vec![PackageDependency {
+                package_id: subject.clone(),
+                dependency_package_id: dependency.clone(),
+                chain_id: "localnet".to_string(),
+                immediate_dependency: true,
+            }])
+            .execute(&mut *conn)
+            .await?;
+    }
+
     println!("seeded @demo/subject     -> {subject}");
     println!("seeded @demo/dependency  -> {dependency}");
+    println!("seeded dependency edge   {subject} -> {dependency}");
     println!("point the frontend's mainnet mvrEndpoint at http://127.0.0.1:{}", args.port);
 
     run_server(

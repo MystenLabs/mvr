@@ -82,7 +82,7 @@ export const Tabs: SinglePackageTab[] = [
   },
   {
     key: "trust-signals",
-    title: "Trust Signals",
+    title: "Security",
     selectedIcon: <TrustSignalsIcon />,
     unselectedIcon: <TrustSignalsIcon />,
     label: (address: string, network: "mainnet" | "testnet") => (

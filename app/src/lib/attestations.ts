@@ -93,6 +93,28 @@ export function isNegative(att: AttestationInfo): boolean {
   return att.display["polarity"] === "negative";
 }
 
+/** The `severity` convention value (a CVSS base score 0–10), or null. */
+export function readSeverity(att: AttestationInfo): number | null {
+  const raw = att.display["severity"];
+  const n = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
+  return Number.isFinite(n) ? n : null;
+}
+
+export interface SeverityBand {
+  label: string;
+  /** A `text-…` color class for the band. */
+  tone: string;
+}
+
+/** Map a CVSS base score to its qualitative band (CVSS v3.1). */
+export function severityBand(score: number): SeverityBand {
+  if (score >= 9) return { label: "Critical", tone: "text-content-negative" };
+  if (score >= 7) return { label: "High", tone: "text-content-negative" };
+  if (score >= 4) return { label: "Medium", tone: "text-content-warning" };
+  if (score > 0) return { label: "Low", tone: "text-content-tertiary" };
+  return { label: "None", tone: "text-content-tertiary" };
+}
+
 /** The trusted attester whose lineage defines `innerType`, if any. */
 export function attestorFor(
   cfg: AttestationConfig,
