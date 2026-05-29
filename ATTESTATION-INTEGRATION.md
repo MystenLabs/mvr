@@ -188,10 +188,11 @@ KEEP_ALIVE=1 bash scripts/run-demo.sh         # writes demo-ids.json, holds :900
 cargo run -p mvr-api --example demo_server -- \
     --demo-ids ~/Mysten/sui-attestation-registry/demo-ids.json --port 8000
 
-# 3) mvr repo: the frontend, mainnet repointed at the local stack via app/.env
-#    (NEXT_PUBLIC_MAINNET_RPC_URL=http://127.0.0.1:9000,
-#     NEXT_PUBLIC_MAINNET_MVR_ENDPOINT=http://127.0.0.1:8000)
-pnpm --dir app dev
+# 3) mvr repo: the frontend, all networks repointed at the local stack via
+#    app/.env (NEXT_PUBLIC_LOCAL_RPC_URL=http://127.0.0.1:9000,
+#    NEXT_PUBLIC_LOCAL_MVR_ENDPOINT=http://127.0.0.1:8000) so it never touches
+#    live Sui infra. Browse http://localhost:3000/package/@demo/subject
+pnpm --dir app install && pnpm --dir app dev
 ```
 
 Resolution check: `curl http://127.0.0.1:8000/v1/names/@demo/subject` returns

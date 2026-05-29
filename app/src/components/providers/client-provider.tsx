@@ -33,23 +33,22 @@ export type Clients = {
   };
 };
 
-// The mainnet RPC and MVR endpoint can be overridden via env so the app can
-// be pointed at a local stack (e.g. a localnet + the attestation demo server)
-// without code changes. Unset in production, where the defaults apply.
-const MAINNET_RPC_URL =
-  process.env.NEXT_PUBLIC_MAINNET_RPC_URL ?? "https://suins-rpc.mainnet.sui.io:443";
-const MAINNET_MVR_ENDPOINT =
-  process.env.NEXT_PUBLIC_MAINNET_MVR_ENDPOINT ?? "https://mainnet.mvr.mystenlabs.com";
+// When set (the local demo stack — a localnet + the attestation demo server),
+// ALL networks are pointed at it so the app does not depend on live Sui infra.
+// Unset in production, where the per-network defaults apply.
+// See ATTESTATION-INTEGRATION.md.
+const LOCAL_RPC = process.env.NEXT_PUBLIC_LOCAL_RPC_URL;
+const LOCAL_MVR = process.env.NEXT_PUBLIC_LOCAL_MVR_ENDPOINT;
 
 const mainnet = new SuiClient({
-  url: MAINNET_RPC_URL,
+  url: LOCAL_RPC ?? "https://suins-rpc.mainnet.sui.io:443",
   network: "mainnet",
 });
 
 export const DefaultClients: Clients = {
   mainnet,
   testnet: new SuiClient({
-    url: "https://suins-rpc.testnet.sui.io",
+    url: LOCAL_RPC ?? "https://suins-rpc.testnet.sui.io",
     network: "testnet",
   }),
   devnet: new SuiClient({ url: getFullnodeUrl("devnet"), network: "devnet" }),
@@ -72,12 +71,12 @@ export const DefaultClients: Clients = {
     }),
   },
   mvrEndpoints: {
-    mainnet: MAINNET_MVR_ENDPOINT,
-    testnet: "https://testnet.mvr.mystenlabs.com",
+    mainnet: LOCAL_MVR ?? "https://mainnet.mvr.mystenlabs.com",
+    testnet: LOCAL_MVR ?? "https://testnet.mvr.mystenlabs.com",
   },
   mvrExperimentalEndpoints: {
-    mainnet: "https://qa.mainnet.mvr.mystenlabs.com",
-    testnet: "https://qa.testnet.mvr.mystenlabs.com",
+    mainnet: LOCAL_MVR ?? "https://qa.mainnet.mvr.mystenlabs.com",
+    testnet: LOCAL_MVR ?? "https://qa.testnet.mvr.mystenlabs.com",
   },
 };
 
