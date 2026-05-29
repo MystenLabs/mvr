@@ -14,6 +14,8 @@ export interface TrustedAttestor {
   /** Optional brand icon URL (from trust config, never from on-chain data).
    *  Absent → the UI renders an initials avatar. */
   iconUrl?: string;
+  /** Optional MVR name of the attester package, for linking to its page. */
+  mvrName?: string;
   /** Original publish id of the attester package — the trust anchor. */
   originalId: string;
   /** Every package-version id in the attester's lineage. Matching an

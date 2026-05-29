@@ -31,11 +31,17 @@ NAMES = {
     "audit_example": "Example Auditor",
     "vuln_example": "Example Security Scanner",
 }
+# MVR names of the attester packages (kept in sync with demo_server.rs).
+MVR_NAMES = {
+    "audit_example": "@demo/audit",
+    "vuln_example": "@demo/vuln",
+}
 attestors = []
 for a in d["trustedAttestors"]:
     lineage = list(dict.fromkeys([a["originalId"], a.get("latestId", a["originalId"])]))
     attestors.append({
         "name": NAMES.get(a["name"], a["name"]),
+        "mvrName": MVR_NAMES.get(a["name"]),
         "originalId": a["originalId"],
         "lineage": lineage,
     })

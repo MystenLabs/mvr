@@ -97,6 +97,19 @@ async fn main() -> anyhow::Result<()> {
             .await?;
     }
 
+    // Give each trusted attester package an MVR name, so the UI can link to
+    // its page. Names are kept in sync with scripts/write-demo-env.sh.
+    if let Some(attestors) = ids["trustedAttestors"].as_array() {
+        for (i, a) in attestors.iter().enumerate() {
+            let pkg_name = a["name"].as_str().unwrap_or_default();
+            let latest = a["latestId"].as_str().unwrap_or_default().to_string();
+            let mvr_name = auditor_mvr_name(pkg_name);
+            let pkg_info_id = format!("0x{:064x}", 0xdee0_0010u64 + i as u64);
+            seed(&mut db, &mvr_name, &latest, &pkg_info_id, "A trusted attester in the demo.").await?;
+            println!("seeded {mvr_name}  -> {latest}");
+        }
+    }
+
     println!("seeded @demo/subject     -> {subject}");
     println!("seeded @demo/dependency  -> {dependency}");
     println!("seeded dependency edge   {subject} -> {dependency}");
@@ -111,6 +124,16 @@ async fn main() -> anyhow::Result<()> {
         SocketAddr::from_str("0.0.0.0:9184")?,
     )
     .await
+}
+
+/// MVR name for a trusted attester package (kept in sync with the frontend
+/// trust config in scripts/write-demo-env.sh).
+fn auditor_mvr_name(pkg_name: &str) -> String {
+    match pkg_name {
+        "audit_example" => "@demo/audit".to_string(),
+        "vuln_example" => "@demo/vuln".to_string(),
+        other => format!("@demo/{other}"),
+    }
 }
 
 /// Read `subjects.<key>` from demo-ids.json, or panic with a clear message.

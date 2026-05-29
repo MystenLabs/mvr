@@ -233,7 +233,7 @@ function VulnRow({ entry }: { entry: VulnEntry }) {
       <div className="flex items-center gap-2xs text-content-tertiary">
         <AttesterAvatar attestor={attestation.attestor} size="sm" />
         <Text as="span" kind="paragraph" size="paragraph-xs">
-          {attestation.attestor.name}
+          {attesterNameNode(attestation.attestor)}
           {via && (
             <>
               {" · in dependency "}
@@ -289,7 +289,7 @@ function AttestorGroupCard({ group }: { group: AttestorGroup }) {
         <AttesterAvatar attestor={group.attestor} />
         <div className="flex flex-col">
           <Text kind="label" size="label-regular">
-            {group.attestor.name}
+            {attesterNameNode(group.attestor)}
           </Text>
           <Text as="p" kind="paragraph" size="paragraph-xs" className="font-mono opacity-60">
             {truncateId(group.attestor.originalId)}
@@ -428,6 +428,16 @@ function DepLink({ id, name }: { id: string; name?: string }) {
     );
   }
   return <span className="font-mono">{truncateId(id)}</span>;
+}
+
+/** The attester name, linked to its MVR page when one is configured. */
+function attesterNameNode(attestor: TrustedAttestor): React.ReactNode {
+  if (!attestor.mvrName) return attestor.name;
+  return (
+    <a href={`/package/${attestor.mvrName}`} className="text-content-accent underline">
+      {attestor.name}
+    </a>
+  );
 }
 
 interface AttestorGroup {
