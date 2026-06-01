@@ -243,8 +243,11 @@ the localnet `package_address`. The demo server lives at
   friendly attester names + MVR-page links for attesters.
 - **Pass 3** — `requires`/propagation provenance + an attestation detail view
   ("why ineffective", which required attestation was revoked).
-- **Pass 4** — reverse "audits issued by this auditor" tab (needs a reverse
-  query over events/indexer).
+- **Pass 4 ✅** — reverse "Issued" tab on attester pages: GraphQL
+  `objects(filter:{type})` over the attester's `Attestation<T>` types →
+  issued attestations grouped by subject (linked to each subject's page),
+  Display-gated, with revoked/expired entries shown inactive. Tab gated on
+  whitelist membership (free in-memory check; no per-package probing).
 
 ## Out of scope / follow-ups
 
@@ -262,6 +265,23 @@ the localnet `package_address`. The demo server lives at
   becomes a concern. Undecided.
 - `image_url`/`link` host-allowlisting (constrain to the attester's declared
   domains) — currently https-only.
+- **Read-path round-trip reduction** (fine at local/demo scale; revisit for
+  real-network latency). All three are latency, not correctness:
+  - *Batch the sequential reads.* `fetchTrustedAttestations`,
+    `enumerateAttestationTypes`, and `useIssuedAttestations` issue their
+    `getObject`/`getOwnedObjects`/per-type GraphQL calls one at a time in
+    `for…await` loops, so round-trips ≈ latency. Use `multiGetObjects` for the
+    re-reads and a single aliased query (or an `Any` type filter) for the
+    per-type GraphQL.
+  - *Reuse the trusted-type cache on the Issued path.* `useIssuedAttestations`
+    calls `enumerateAttestationTypes` directly instead of going through the
+    `resolveTrustedTypes` module cache, so a cold Issued page re-runs
+    `getNormalizedMoveModulesByPackage` per lineage version.
+  - *Drop the redundant Display re-read on the Issued path.* The reverse query
+    already pulls `contents.json`; we then `getObject` each result again purely
+    for server-rendered Display. Fetching `display { key value }` in the same
+    GraphQL query removes the ~1-per-object JSON-RPC re-reads (Issued page would
+    go from ~7 JSON-RPC + 4 GraphQL to just the per-type GraphQL).
 - gRPC read path (revisit when MVR moves to `@mysten/sui` 2.x).
 - Full `mvr-indexer`-on-localnet stack (D1 seeds Postgres directly instead).
 - Adding a first-class `localnet` network to the MVR UI (the demo repoints

@@ -14,6 +14,7 @@ APP_ENV="$SCRIPT_DIR/../app/.env"
 DEMO_IDS="${1:-$HOME/Mysten/sui-attestation-registry/demo-ids.json}"
 RPC="${RPC_URL:-http://127.0.0.1:9000}"
 MVR="${MVR_ENDPOINT:-http://127.0.0.1:8000}"
+GRAPHQL="${GRAPHQL_URL:-http://127.0.0.1:9125/graphql}"
 
 if [[ ! -f "$DEMO_IDS" ]]; then
     echo "demo-ids.json not found at $DEMO_IDS (run the attestation demo first)" >&2
@@ -56,6 +57,7 @@ PY
 {
     echo "NEXT_PUBLIC_LOCAL_RPC_URL=\"$RPC\""
     echo "NEXT_PUBLIC_LOCAL_MVR_ENDPOINT=\"$MVR\""
+    echo "NEXT_PUBLIC_LOCAL_GRAPHQL=\"$GRAPHQL\""
     echo "NEXT_PUBLIC_ATTESTATION_CONFIG='$CONFIG'"
 } > "$APP_ENV"
 

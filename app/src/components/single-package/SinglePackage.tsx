@@ -16,6 +16,10 @@ import {
   SinglePackageTrustSignals,
   TrustSignalCount,
 } from "./SinglePackageTrustSignals";
+import {
+  SinglePackageIssued,
+  IssuedCount,
+} from "./SinglePackageIssued";
 import { DependenciesIconSelected } from "@/icons/single-package/DependenciesIcon";
 import { DependendsIconSelected } from "@/icons/single-package/DependendsIcon";
 import { DependenciesIconUnselected } from "@/icons/single-package/DependenciesIcon";
@@ -27,12 +31,22 @@ import { ReadMeIconUnselected } from "@/icons/single-package/ReadMeIcon";
 import { SinglePackageTab } from "@/utils/types";
 import { AnalyticsIconUnselected } from "@/icons/single-package/AnalyticsIcon";
 import { AnalyticsIconSelected } from "@/icons/single-package/AnalyticsIcon";
+import { attestationConfig, isConfiguredAttestor } from "@/lib/attestations";
 
 // Simple shield-check glyph for the Trust Signals tab; reused for both states.
 const TrustSignalsIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
     <path d="M9 12l2 2 4-4" />
+  </svg>
+);
+
+// Upload/outbox glyph for the Issued tab (attestations this package emits).
+const IssuedIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+    <path d="M12 15V3" />
+    <path d="M7 8l5-5 5 5" />
   </svg>
 );
 
@@ -91,6 +105,16 @@ export const Tabs: SinglePackageTab[] = [
     component: (name: ResolvedName) => <SinglePackageTrustSignals name={name} />,
   },
   {
+    key: "issued",
+    title: "Issued",
+    selectedIcon: <IssuedIcon />,
+    unselectedIcon: <IssuedIcon />,
+    label: (address: string, network: "mainnet" | "testnet") => (
+      <IssuedCount address={address} network={network} />
+    ),
+    component: (name: ResolvedName) => <SinglePackageIssued name={name} />,
+  },
+  {
     key: "analytics",
     title: "Analytics",
     selectedIcon: <AnalyticsIconSelected />,
@@ -111,11 +135,19 @@ export function SinglePackage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
+  // The "Issued" tab only applies to attesters — gate it on whitelist
+  // membership (a free in-memory check) rather than probing every package.
+  const cfg = attestationConfig();
+  const visibleTabs =
+    cfg && isConfiguredAttestor(cfg, name.package_address)
+      ? Tabs
+      : Tabs.filter((t) => t.key !== "issued");
+
+  const [activeTab, setActiveTab] = useState(visibleTabs[0]!.key);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && Tabs.some((t) => t.key === tab) && tab !== activeTab) {
+    if (tab && visibleTabs.some((t) => t.key === tab) && tab !== activeTab) {
       setActiveTab(tab as string);
     }
   }, [searchParams]);
@@ -134,14 +166,14 @@ export function SinglePackage({
       <div className="container">
         <div className="grid grid-cols-1 gap-2xl lg:grid-cols-24">
           <SinglePackageTabs
-            tabs={Tabs}
+            tabs={visibleTabs}
             name={name}
             setActiveTab={updateTab}
             isActiveTab={isActiveTab}
             className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-5 2xl:col-span-4"
           />
           <div className="col-span-1 lg:col-span-12 2xl:col-span-13">
-            {Tabs.find((t) => t.key === activeTab)?.component(name)}
+            {visibleTabs.find((t) => t.key === activeTab)?.component(name)}
           </div>
           <div className="relative col-span-1 lg:col-span-7">
             <SinglePackageSidebar name={name} network={network} />

@@ -119,6 +119,15 @@ export function severityBand(score: number): SeverityBand {
   return { label: "None", color: "var(--content-tertiary)" };
 }
 
+/** Whether `pkg` is a configured trusted attester (any lineage version).
+ *  A pure in-memory check — used to gate the "Issued" tab without any RPC. */
+export function isConfiguredAttestor(cfg: AttestationConfig, pkg: string): boolean {
+  const id = normalizeSuiAddress(pkg);
+  return cfg.trustedAttestors.some((a) =>
+    a.lineage.some((v) => normalizeSuiAddress(v) === id),
+  );
+}
+
 /** The trusted attester whose lineage defines `innerType`, if any. */
 export function attestorFor(
   cfg: AttestationConfig,

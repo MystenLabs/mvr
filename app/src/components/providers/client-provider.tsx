@@ -39,6 +39,7 @@ export type Clients = {
 // See ATTESTATION-INTEGRATION.md.
 const LOCAL_RPC = process.env.NEXT_PUBLIC_LOCAL_RPC_URL;
 const LOCAL_MVR = process.env.NEXT_PUBLIC_LOCAL_MVR_ENDPOINT;
+const LOCAL_GRAPHQL = process.env.NEXT_PUBLIC_LOCAL_GRAPHQL;
 
 const mainnet = new SuiClient({
   url: LOCAL_RPC ?? "https://suins-rpc.mainnet.sui.io:443",
@@ -64,10 +65,10 @@ export const DefaultClients: Clients = {
   },
   graphql: {
     mainnet: new SuiGraphQLClient({
-      url: "https://graphql.mainnet.sui.io/graphql",
+      url: LOCAL_GRAPHQL ?? "https://graphql.mainnet.sui.io/graphql",
     }),
     testnet: new SuiGraphQLClient({
-      url: "https://graphql.testnet.sui.io/graphql",
+      url: LOCAL_GRAPHQL ?? "https://graphql.testnet.sui.io/graphql",
     }),
   },
   mvrEndpoints: {
