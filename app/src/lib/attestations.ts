@@ -140,7 +140,7 @@ export function attestorFor(
 }
 
 // === Conventions (effectiveness) — ported from the attestation-registry repo's
-// ts/lib/conventions.ts. Operates purely on Display fields + ids. ===
+// ts/src/conventions.ts. Operates purely on Display fields + ids. ===
 
 export interface ConventionsContext {
   fetchById: (id: string) => Promise<AttestationInfo>;

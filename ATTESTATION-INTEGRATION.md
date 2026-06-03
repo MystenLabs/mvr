@@ -46,7 +46,7 @@ frontend feature pointed at whatever chain the `SuiClient` uses.
 | # | Decision | Rationale |
 |---|----------|-----------|
 | D1 | **Approach A**: seed Postgres + localnet | Faithful to how the app fetches; isolates us from MVR's on-chain name-registration contracts. The `crates/mvr-api/tests/mvr_test_cluster.rs` `setup_dummy_data` pattern inserts directly into `name_records`/`packages`/`package_infos` — no indexer, no live chain needed for resolution. |
-| D2 | **JSON-RPC**, not gRPC | MVR is pinned to `@mysten/sui@1.39.0`, which has no `/grpc` export. Adding `SuiGrpcClient` forces a 1.x→2.x SDK upgrade dragging dapp-kit `0.19→1.0`, kiosk, suins — a repo-wide modernization that dwarfs (and destabilizes) this feature. gRPC stays a separate, future MVR initiative; the attestation-registry repo's `ts/lib/queries.ts` (gRPC) ports back trivially when it lands. |
+| D2 | **JSON-RPC**, not gRPC | MVR is pinned to `@mysten/sui@1.39.0`, which has no `/grpc` export. Adding `SuiGrpcClient` forces a 1.x→2.x SDK upgrade dragging dapp-kit `0.19→1.0`, kiosk, suins — a repo-wide modernization that dwarfs (and destabilizes) this feature. gRPC stays a separate, future MVR initiative; the attestation-registry repo's `ts/src/queries.ts` (gRPC) ports back trivially when it lands. |
 | D3 | **Subject = `package_address`** (resolved version), not original ID | Directly available on `ResolvedName`; the demo seeds the on-chain attestation against the same value. |
 | D4 | **Trusted set = original package IDs** | Mirrors on-chain `attester_of<T>() = type_name::original_id<T>()`. Any type from any version of a trusted package counts. |
 | D5 | **Option 2**: server-side exact-type `MatchAny`, trusted set = `Attestation<T>` types each trusted attester **registered a Display for** | The JSON-RPC `StructType` filter matches type params all-or-nothing (`sui-json-rpc-types` `SuiObjectDataFilter::matches`) — no inner-package prefix. Spam-resistance therefore requires the exact trusted-type list. "Registered a Display" is the deliberate, finite, evolution-friendly definition, and Display registration carries the same `internal::Permit<T>` bytecode identity as `attest`, so it can't be forged. |
@@ -71,7 +71,7 @@ Browser (MVR app, @mysten/sui 1.39 JSON-RPC)
 ```
 
 `boxAddr = deriveObjectID(registryId, '0x2::object::ID', subjectBytes)` — the
-client-agnostic derivation in the attestation-registry repo's `ts/lib/boxes.ts`,
+client-agnostic derivation in the attestation-registry repo's `ts/src/boxes.ts`,
 ports to MVR as-is.
 
 ## Implementation sections
@@ -108,7 +108,7 @@ New code in MVR (`app/src`):
 - **`lib/constants.ts`**: `attestationRegistryPkg`, `attestationRegistryId`
   (per network; demo fills `mainnet` with the localnet registry id), and
   `trustedAttestors: { originalId, name, iconUrl, domains? }[]`.
-- **`boxAddress` helper**: port the attestation-registry repo's `ts/lib/boxes.ts`
+- **`boxAddress` helper**: port the attestation-registry repo's `ts/src/boxes.ts`
   (pure `deriveObjectID`).
 - **Trusted-type resolver** (cached per attester, GraphQL):
   1. For each trusted `originalId`, get its lineage via `packageVersions`.
@@ -123,7 +123,7 @@ New code in MVR (`app/src`):
   paginated → map each `SuiObjectResponse` into the `AttestationInfo` shape
   (`{ id, version, digest, type, display, content }`; JSON-RPC nests Display
   under `data.display.data`).
-- **Effectiveness**: port the attestation-registry repo's `ts/lib/conventions.ts`
+- **Effectiveness**: port the attestation-registry repo's `ts/src/conventions.ts`
   (`isEffective`, `active`/`expires_at`/`requires`) — operates purely on
   `display` + `id`, so it drops in unchanged.
 
@@ -144,7 +144,7 @@ New code in MVR (`app/src`):
 - **(Phase 2) Sidebar trust badge** in `SinglePackageSidebar` — compact
   "✓ Attested by N trusted attestors"; same hook (react-query dedupes).
 
-### Section 4 — Convention additions (attestation-registry repo: `CONVENTIONS.md` / `ts/lib/conventions.ts`)
+### Section 4 — Convention additions (attestation-registry repo: `CONVENTIONS.md` / `ts/src/conventions.ts`)
 
 Add two **optional** conventions using the standard Sui Display keys (so
 attestations render in any Display-aware tool, not just MVR):
