@@ -106,7 +106,7 @@ export const Tabs: SinglePackageTab[] = [
   },
   {
     key: "issued",
-    title: "Issued",
+    title: "Attestations",
     selectedIcon: <IssuedIcon />,
     unselectedIcon: <IssuedIcon />,
     label: (address: string, network: "mainnet" | "testnet") => (

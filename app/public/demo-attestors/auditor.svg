@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Example Auditor">
+  <rect width="64" height="64" rx="14" fill="#1F6FEB"/>
+  <path d="M32 12l14 5v10c0 9.5-6 15.6-14 18-8-2.4-14-8.5-14-18V17l14-5z" fill="#FFFFFF" fill-opacity="0.16"/>
+  <path d="M32 13.5l12.5 4.5v9c0 8.4-5.3 13.9-12.5 16.2-7.2-2.3-12.5-7.8-12.5-16.2v-9L32 13.5z" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M25.5 31.5l4.8 4.8L39 27.5" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

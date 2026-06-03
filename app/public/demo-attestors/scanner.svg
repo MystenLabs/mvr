@@ -1,0 +1,7 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Example Security Scanner">
+  <rect width="64" height="64" rx="14" fill="#D97706"/>
+  <circle cx="29" cy="29" r="12.5" stroke="#FFFFFF" stroke-width="3" fill="#FFFFFF" fill-opacity="0.14"/>
+  <line x1="38.5" y1="38.5" x2="48" y2="48" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M29 22.5v13M22.5 29h13" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="29" cy="29" r="3.2" fill="#FFFFFF"/>
+</svg>

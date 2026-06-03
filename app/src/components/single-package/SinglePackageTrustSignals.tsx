@@ -10,6 +10,7 @@ import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
 import ExplorerLink from "../ui/explorer-link";
 import {
+  attestationConfig,
   isNegative,
   readSeverity,
   severityBand,
@@ -145,6 +146,17 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
       )}
 
       {positives.length > 0 && <AuditsSection items={positives} />}
+
+      {attestationConfig() && (
+        <a
+          href="/attestors"
+          className="text-content-accent underline w-fit"
+        >
+          <Text kind="label" size="label-small">
+            View all trusted attestors →
+          </Text>
+        </a>
+      )}
     </div>
   );
 }
@@ -324,15 +336,15 @@ function InactiveList({ items }: { items: DisplayedAttestation[] }) {
   );
 }
 
-function AttesterAvatar({
+export function AttesterAvatar({
   attestor,
   size = "md",
 }: {
   attestor: TrustedAttestor;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }) {
-  const dim = size === "sm" ? "h-5 w-5" : "h-9 w-9";
-  const base = `flex ${dim} shrink-0 items-center justify-center rounded-full overflow-hidden`;
+  const dim = size === "sm" ? "h-5 w-5" : size === "lg" ? "h-12 w-12" : "h-9 w-9";
+  const base = `flex ${dim} shrink-0 items-center justify-center rounded-md overflow-hidden`;
   if (attestor.iconUrl) {
     return (
       <span className={base}>
