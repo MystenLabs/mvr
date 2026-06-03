@@ -190,12 +190,15 @@ hygiene-only if an attester declares no domains).
 Three terminals; the first holds the localnet + published packages + attestations.
 
 ```bash
-# 1) attestation-registry repo: localnet + publish + upgrade + attest, kept up
-KEEP_ALIVE=1 bash scripts/run-demo.sh         # writes demo-ids.json, holds :9000
+# 1) attestation-registry repo: localnet + publish + upgrade + attest, kept up.
+#    WITH_GRAPHQL=1 starts localnet GraphQL on :9125 (the frontend reads need it).
+KEEP_ALIVE=1 WITH_GRAPHQL=1 bash scripts/run-demo.sh   # writes demo-ids.json, holds :9000/:9125
 
-# 2) mvr repo: real mvr-api over an ephemeral Postgres, seeded from demo-ids.json
+# 2) mvr repo: real mvr-api over an ephemeral Postgres, seeded from demo-ids.json.
+#    Pass the path to the attestation-registry checkout's demo-ids.json (written
+#    by its run-demo.sh in step 1).
 cargo run -p mvr-api --example demo_server -- \
-    --demo-ids ~/Mysten/sui-attestation-registry/demo-ids.json --port 8000
+    --demo-ids <attestation-registry>/demo-ids.json --port 8000
 
 # 3) mvr repo: the frontend, all networks repointed at the local stack via
 #    app/.env (NEXT_PUBLIC_LOCAL_RPC_URL=http://127.0.0.1:9000,

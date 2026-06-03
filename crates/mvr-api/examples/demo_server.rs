@@ -13,7 +13,7 @@
 //!
 //! Run (from the mvr repo), with a localnet up and the demo already run:
 //!   cargo run -p mvr-api --example demo_server -- \
-//!       --demo-ids ~/Mysten/sui-attestation-registry/demo-ids.json --port 8000
+//!       --demo-ids <attestation-registry>/demo-ids.json --port 8000
 //!
 //! Then point the MVR frontend's mainnet `mvrEndpoint` at http://localhost:8000.
 
