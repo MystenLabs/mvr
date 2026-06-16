@@ -8,12 +8,12 @@ import {
   attestationConfig,
   attestorFor,
   boxAddress,
+  revokedBoxAddress,
   isEffective,
   isNegative,
   toAttestationInfo,
   type AttestationConfig,
   type AttestationInfo,
-  type ConventionsContext,
   type TrustedAttestor,
 } from "@/lib/attestations";
 
@@ -21,7 +21,7 @@ export interface DisplayedAttestation {
   info: AttestationInfo;
   /** The trusted attester this attestation's type belongs to. */
   attestor: TrustedAttestor;
-  /** Effectiveness per the conventions (active + unexpired + requires met). */
+  /** Effectiveness per the conventions (unexpired; revocation is box membership). */
   effective: boolean;
 }
 
@@ -32,19 +32,6 @@ export interface InheritedVuln {
   viaPackageId: string;
   /** That dependency's MVR name, if it resolves. */
   viaName?: string;
-}
-
-/** Resolve an attestation by id from chain (for `requires` traversal). */
-function fetchByIdFor(client: SuiClient): ConventionsContext["fetchById"] {
-  return async (id: string) => {
-    const resp = await client.getObject({
-      id,
-      options: { showType: true, showDisplay: true },
-    });
-    const info = toAttestationInfo(resp);
-    if (!info) throw new Error(`required attestation ${id} is not an Attestation<T>`);
-    return info;
-  };
 }
 
 /**
@@ -64,7 +51,7 @@ export async function fetchTrustedAttestations(
   cfg: AttestationConfig,
   subject: string,
 ): Promise<DisplayedAttestation[]> {
-  const owner = boxAddress(cfg.registryId, subject);
+  const owner = boxAddress(cfg.registryPkg, cfg.registryId, subject);
   const trustedTypes = await resolveTrustedTypes(client, cfg);
   if (trustedTypes.length === 0) return [];
 
@@ -94,15 +81,12 @@ export async function fetchTrustedAttestations(
         !!x.attestor && Object.keys(x.info.display).length > 0,
     );
 
-  // 3. Effectiveness honours the transitive `requires` convention.
-  const ctx: ConventionsContext = { fetchById: fetchByIdFor(client) };
-  return Promise.all(
-    trusted.map(async ({ info, attestor }) => ({
-      info,
-      attestor,
-      effective: await isEffective(info, ctx),
-    })),
-  );
+  // 3. Effectiveness: unexpired (revocation is handled by box membership).
+  return trusted.map(({ info, attestor }) => ({
+    info,
+    attestor,
+    effective: isEffective(info),
+  }));
 }
 
 // Cache the trusted type set per config — the lineage is static, so this only
@@ -236,6 +220,9 @@ export interface IssuedAttestation {
   info: AttestationInfo;
   /** The subject (package) the attestation is about. */
   subject: string;
+  /** Moved to the subject's revoked sink (vs. its active box). */
+  revoked: boolean;
+  /** Unexpired per the `expires_at` convention (independent of `revoked`). */
   effective: boolean;
 }
 
@@ -290,14 +277,32 @@ export function useIssuedAttestations(
       }
       if (subjectById.size === 0) return [];
 
-      // Re-read each for Display + effectiveness; drop undisplayed types.
-      const fetchById = fetchByIdFor(client);
-      const ctx: ConventionsContext = { fetchById };
+      // Re-read each for Display + owner; drop undisplayed types. An issued
+      // attestation is revoked iff it now lives in its subject's revoked sink
+      // rather than the active box — the read-by-type Issued view is the one
+      // place that recovers revocation from ownership, since the object itself
+      // carries no status field.
       const out: IssuedAttestation[] = [];
       for (const [id, subject] of subjectById) {
-        const info = await fetchById(id).catch(() => null);
+        const resp = await client
+          .getObject({ id, options: { showType: true, showDisplay: true, showOwner: true } })
+          .catch(() => null);
+        if (!resp) continue;
+        const info = toAttestationInfo(resp);
         if (!info || Object.keys(info.display).length === 0) continue;
-        out.push({ info, subject: normalizeSuiAddress(subject), effective: await isEffective(info, ctx) });
+        const ownerField = resp.data?.owner;
+        const owner =
+          ownerField && typeof ownerField === "object" && "AddressOwner" in ownerField
+            ? ownerField.AddressOwner
+            : undefined;
+        const sink = revokedBoxAddress(cfg!.registryPkg, cfg!.registryId, subject);
+        const revoked = !!owner && normalizeSuiAddress(owner) === normalizeSuiAddress(sink);
+        out.push({
+          info,
+          subject: normalizeSuiAddress(subject),
+          revoked,
+          effective: isEffective(info),
+        });
       }
       return out;
     },

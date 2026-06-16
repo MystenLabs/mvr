@@ -3,7 +3,8 @@
 // `Attestation<T>` objects it owns, keeping only those from trusted attesters.
 // See ATTESTATION-INTEGRATION.md.
 
-import { deriveObjectID, fromHex, normalizeSuiAddress } from "@mysten/sui/utils";
+import { bcs } from "@mysten/sui/bcs";
+import { deriveObjectID, normalizeSuiAddress } from "@mysten/sui/utils";
 import type { SuiObjectResponse } from "@mysten/sui/client";
 
 // === Config (NEXT_PUBLIC_ATTESTATION_CONFIG, JSON) ===
@@ -46,10 +47,47 @@ export function attestationConfig(): AttestationConfig | null {
 
 // === Box address ===
 
-/** Address of the per-subject `Box`, mirroring `derived_object::derive_address`. */
-export function boxAddress(registryId: string, subject: string): string {
-  const subjectBytes = fromHex(normalizeSuiAddress(subject).slice(2));
-  return deriveObjectID(registryId, "0x2::object::ID", subjectBytes);
+const BoxKey = bcs.struct("BoxKey", { subject: bcs.Address, revoked: bcs.bool() });
+
+/** Derive a subject's box address, mirroring on-chain
+ *  `derived_object::derive_address(registry, BoxKey { subject, revoked })`. */
+function derivedBox(
+  registryPkg: string,
+  registryId: string,
+  subject: string,
+  revoked: boolean,
+): string {
+  const keyBytes = BoxKey.serialize({
+    subject: normalizeSuiAddress(subject),
+    revoked,
+  }).toBytes();
+  return deriveObjectID(
+    registryId,
+    `${registryPkg}::attestation_registry::BoxKey`,
+    keyBytes,
+  );
+}
+
+/** Address of the per-subject active `Box` (`revoked: false`). `revoke` moves
+ *  attestations out to the sibling revoked sink, so a read of this address
+ *  yields exactly the un-revoked set. */
+export function boxAddress(
+  registryPkg: string,
+  registryId: string,
+  subject: string,
+): string {
+  return derivedBox(registryPkg, registryId, subject, false);
+}
+
+/** Address of the per-subject revoked sink (`revoked: true`) — where `revoke`
+ *  moves attestations. Lets a read-by-type view (the Issued tab) tell a revoked
+ *  attestation from a live one by its owner, since the object carries no status. */
+export function revokedBoxAddress(
+  registryPkg: string,
+  registryId: string,
+  subject: string,
+): string {
+  return derivedBox(registryPkg, registryId, subject, true);
 }
 
 // === Attestation info + mapping ===
@@ -140,20 +178,10 @@ export function attestorFor(
 }
 
 // === Conventions (effectiveness) — ported from the attestation-registry repo's
-// ts/src/conventions.ts. Operates purely on Display fields + ids. ===
-
-export interface ConventionsContext {
-  fetchById: (id: string) => Promise<AttestationInfo>;
-  now?: () => number;
-}
-
-/** `active` renders as "true"/"false"; absent defaults to active. */
-function readActive(att: AttestationInfo): boolean {
-  const raw = att.display["active"];
-  if (raw === true || raw === "true") return true;
-  if (raw === false || raw === "false") return false;
-  return true;
-}
+// ts/src/conventions.ts. Operates purely on Display fields. Revocation is no
+// longer a convention: a revoked attestation is moved out of the active Box
+// (the address `boxAddress` reads), so anything fetched from there is, by
+// construction, un-revoked. ===
 
 /** `expires_at` as Unix-ms, or null if absent/unparseable. */
 function readExpiresAt(att: AttestationInfo): number | null {
@@ -169,50 +197,14 @@ function readExpiresAt(att: AttestationInfo): number | null {
   return null;
 }
 
-/** `requires` as a list of attestation ids (a JSON-array string over JSON-RPC). */
-function readRequires(att: AttestationInfo): string[] {
-  const raw = att.display["requires"];
-  if (raw == null) return [];
-  if (Array.isArray(raw)) return raw.filter((x): x is string => typeof x === "string");
-  if (typeof raw === "string") {
-    try {
-      const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return parsed.filter((x): x is string => typeof x === "string");
-      }
-    } catch {
-      // not JSON; ignore
-    }
-  }
-  return [];
-}
-
 /**
- * An attestation is effective iff it is active, unexpired, and every
- * attestation it `requires` is (transitively) effective. Cycles — which can't
- * occur on-chain but could in malformed Display data — are treated as
- * ineffective.
+ * An attestation is effective iff its `expires_at` Display field (if present)
+ * is still in the future. Revocation is handled upstream by box membership.
  */
-export async function isEffective(
+export function isEffective(
   att: AttestationInfo,
-  ctx: ConventionsContext,
-  visited: Set<string> = new Set(),
-): Promise<boolean> {
-  if (!readActive(att)) return false;
-
+  now: () => number = Date.now,
+): boolean {
   const expiresAt = readExpiresAt(att);
-  const now = (ctx.now ?? Date.now)();
-  if (expiresAt !== null && now >= expiresAt) return false;
-
-  const required = readRequires(att);
-  if (required.length > 0) {
-    if (visited.has(att.id)) return false; // cycle
-    const next = new Set(visited);
-    next.add(att.id);
-    for (const reqId of required) {
-      const req = await ctx.fetchById(reqId);
-      if (!(await isEffective(req, ctx, next))) return false;
-    }
-  }
-  return true;
+  return expiresAt === null || now() < expiresAt;
 }

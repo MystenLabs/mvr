@@ -101,21 +101,24 @@ function IssuedRow({ item }: { item: IssuedAttestation }) {
   const title = str(display["description"]) ?? str(display["name"]) ?? "Attestation";
   const severity = negative ? readSeverity(item.info) : null;
   const band = severity !== null ? severityBand(severity) : null;
+  const live = !item.revoked && item.effective;
 
   return (
     <div
       className="flex flex-col gap-2xs rounded-sm border-l-2 py-sm pl-sm"
       style={{
         borderLeftColor: band ? band.color : "var(--stroke-accent)",
-        opacity: item.effective ? 1 : 0.5,
+        opacity: live ? 1 : 0.5,
       }}
     >
       <div className="flex items-center justify-between gap-sm">
         <Text kind="label" size="label-small">
           {title}
-          {!item.effective && (
-            <span className="ml-xs text-content-tertiary">(inactive)</span>
-          )}
+          {item.revoked ? (
+            <span className="ml-xs text-content-tertiary">(revoked)</span>
+          ) : !item.effective ? (
+            <span className="ml-xs text-content-tertiary">(expired)</span>
+          ) : null}
         </Text>
         {band && (
           <span style={{ color: band.color }}>
