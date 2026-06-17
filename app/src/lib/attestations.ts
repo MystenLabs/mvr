@@ -127,36 +127,6 @@ export function innerTypePackage(innerType: string): string {
   return normalizeSuiAddress(innerType.split("::")[0]!);
 }
 
-/** A negative attestation (e.g. a vulnerability) per the `polarity` convention.
- *  Absence of the field defaults to positive. */
-export function isNegative(att: AttestationInfo): boolean {
-  return att.display["polarity"] === "negative";
-}
-
-/** The `severity` convention value (a CVSS base score 0–10), or null. */
-export function readSeverity(att: AttestationInfo): number | null {
-  const raw = att.display["severity"];
-  const n = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
-  return Number.isFinite(n) ? n : null;
-}
-
-export interface SeverityBand {
-  label: string;
-  /** A CSS color (var) for the band, for inline styling. The `content`
-   *  palette is text-only (no `border-content-*`), and Tailwind only scans
-   *  `.tsx`, so a class built here wouldn't be generated — hence a raw var. */
-  color: string;
-}
-
-/** Map a CVSS base score to its qualitative band (CVSS v3.1). */
-export function severityBand(score: number): SeverityBand {
-  if (score >= 9) return { label: "Critical", color: "var(--content-negative)" };
-  if (score >= 7) return { label: "High", color: "var(--content-negative)" };
-  if (score >= 4) return { label: "Medium", color: "var(--content-warning)" };
-  if (score > 0) return { label: "Low", color: "var(--content-tertiary)" };
-  return { label: "None", color: "var(--content-tertiary)" };
-}
-
 /** Whether `pkg` is a configured trusted attester (any lineage version).
  *  A pure in-memory check — used to gate the "Issued" tab without any RPC. */
 export function isConfiguredAttestor(cfg: AttestationConfig, pkg: string): boolean {

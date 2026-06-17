@@ -3,47 +3,13 @@ import { usePackagesNetwork } from "../providers/packages-provider";
 import {
   useGetAttestations,
   useGetRevokedAttestations,
-  useInheritedVulns,
   type AttributedAttestation,
   type DisplayedAttestation,
-  type InheritedVuln,
 } from "@/hooks/useGetAttestations";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
 import ExplorerLink from "../ui/explorer-link";
-import {
-  attestationConfig,
-  isNegative,
-  readSeverity,
-  severityBand,
-  type TrustedAttestor,
-} from "@/lib/attestations";
-
-/** A triangle-exclamation glyph; color comes from the text color (currentColor). */
-function WarningIcon({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      style={style}
-    >
-      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-      <line x1="12" y1="9" x2="12" y2="13" />
-      <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
-}
+import { type TrustedAttestor } from "@/lib/attestations";
 
 /** A check glyph; color comes from the text color (currentColor). */
 function CheckIcon({ className }: { className?: string }) {
@@ -62,8 +28,26 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-/** Tab label: two pills — effective positive attestations (check) and
- *  effective negative ones (warning, incl. inherited). Each shown if non-zero. */
+/** A triangle-exclamation glyph; color comes from the text color (currentColor). */
+function WarningIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
+/** Tab label: a pill with the count of effective attestations. */
 export function TrustSignalCount({
   address,
   network,
@@ -72,33 +56,15 @@ export function TrustSignalCount({
   network: "mainnet" | "testnet";
 }) {
   const { data } = useGetAttestations(address, network);
-  const { data: inherited } = useInheritedVulns(address, network);
-  const effective = (data ?? []).filter((a) => a.effective);
-  const positives = effective.filter((a) => !isNegative(a.info)).length;
+  const positives = (data ?? []).filter((a) => a.effective).length;
 
-  // Vulnerability scores (own effective negatives + inherited); the warning
-  // pill is colored by the most severe one.
-  const vulnScores = effective
-    .filter((a) => isNegative(a.info))
-    .map((a) => readSeverity(a.info) ?? 0)
-    .concat((inherited ?? []).map((v) => readSeverity(v.attestation.info) ?? 0));
-  const warnColor = severityBand(vulnScores.length ? Math.max(...vulnScores) : 0).color;
-
-  if (!positives && !vulnScores.length) return null;
+  if (!positives) return null;
   return (
     <div className="flex items-center gap-2xs">
-      {positives > 0 && (
-        <CountPill
-          icon={<CheckIcon className="h-3.5 w-3.5 text-content-positive" />}
-          count={positives}
-        />
-      )}
-      {vulnScores.length > 0 && (
-        <CountPill
-          icon={<WarningIcon className="h-3.5 w-3.5" style={{ color: warnColor }} />}
-          count={vulnScores.length}
-        />
-      )}
+      <CountPill
+        icon={<CheckIcon className="h-3.5 w-3.5 text-content-positive" />}
+        count={positives}
+      />
     </div>
   );
 }
@@ -119,15 +85,11 @@ function CountPill({ icon, count }: { icon: React.ReactNode; count: number }) {
 export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
   const { data, isLoading } = useGetAttestations(name.package_address, network);
-  const { data: inheritedData } = useInheritedVulns(name.package_address, network);
-  const inherited = inheritedData ?? [];
   const { data: revokedData } = useGetRevokedAttestations(name.package_address, network);
   const revoked = revokedData ?? [];
 
-  const all = data ?? [];
-  const negatives = all.filter((a) => isNegative(a.info));
-  const positives = all.filter((a) => !isNegative(a.info));
-  const hasVulnSection = negatives.length > 0 || inherited.length > 0;
+  const positives = data ?? [];
+  const hasLiveAttestation = positives.some((a) => a.effective);
 
   return (
     <div className="flex flex-col gap-lg">
@@ -139,17 +101,14 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
         <LoadingState size="sm" title="" description="Loading attestations..." />
       )}
 
-      {!isLoading &&
-        all.length === 0 &&
-        inherited.length === 0 &&
-        revoked.length === 0 && (
+      {!isLoading && !hasLiveAttestation && (
+        <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
+          <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
           <Text as="p" kind="paragraph" size="paragraph-small">
-            No attestations from trusted attestors.
+            This package has no active attestations published on MVR — it may
+            not have been audited.
           </Text>
-        )}
-
-      {hasVulnSection && (
-        <VulnerabilitiesSection own={negatives} inherited={inherited} />
+        </div>
       )}
 
       {positives.length > 0 && <AuditsSection items={positives} />}
@@ -159,129 +118,6 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
           <InactiveList label="Revoked" items={revoked} />
         </div>
       )}
-
-      {attestationConfig() && (
-        <a
-          href="/attestors"
-          className="text-content-accent underline w-fit"
-        >
-          <Text kind="label" size="label-small">
-            View all trusted attestors →
-          </Text>
-        </a>
-      )}
-    </div>
-  );
-}
-
-/** A single vulnerability to render — own or inherited from a dependency. */
-interface VulnEntry {
-  attestation: DisplayedAttestation;
-  /** Set when the vulnerability is inherited from a dependency. */
-  via?: { id: string; name?: string };
-}
-
-/** All vulnerabilities (own + inherited) in one severity-sorted list. */
-function VulnerabilitiesSection({
-  own,
-  inherited,
-}: {
-  own: DisplayedAttestation[];
-  inherited: InheritedVuln[];
-}) {
-  const ineffective = own.filter((a) => !a.effective);
-  const entries: VulnEntry[] = [
-    ...own.filter((a) => a.effective).map((a) => ({ attestation: a })),
-    ...inherited.map((v) => ({
-      attestation: v.attestation,
-      via: { id: v.viaPackageId, name: v.viaName },
-    })),
-  ].sort((a, b) => severityOf(b.attestation.info) - severityOf(a.attestation.info));
-
-  // Header is colored and summarized by the active vulnerabilities' severities.
-  const scores = entries.map((e) => readSeverity(e.attestation.info) ?? 0);
-  const maxColor = severityBand(scores.length ? Math.max(...scores) : 0).color;
-
-  return (
-    <section className="flex flex-col gap-sm">
-      <div className="flex items-center gap-2xs">
-        <WarningIcon className="h-4 w-4 shrink-0" style={{ color: maxColor }} />
-        <Text kind="heading" size="heading-xs">
-          Vulnerabilities
-        </Text>
-        <Text kind="label" size="label-xs" className="text-content-tertiary">
-          · {scores.length ? severityBreakdown(scores) : "none active"}
-        </Text>
-      </div>
-      {entries.map((e) => (
-        <VulnRow key={e.attestation.info.id} entry={e} />
-      ))}
-      {ineffective.length > 0 && <InactiveList label="Inactive" items={ineffective} />}
-    </section>
-  );
-}
-
-/** Summarize scores by band, e.g. "1 high, 1 medium" (most severe first),
- *  each segment colored by its own band. */
-function severityBreakdown(scores: number[]): React.ReactNode {
-  const order = ["Critical", "High", "Medium", "Low", "None"];
-  const byBand: Record<string, { count: number; color: string }> = {};
-  for (const s of scores) {
-    const b = severityBand(s);
-    byBand[b.label] = { count: (byBand[b.label]?.count ?? 0) + 1, color: b.color };
-  }
-  return order
-    .filter((label) => byBand[label])
-    .map((label, i) => (
-      <span key={label} style={{ color: byBand[label]!.color }}>
-        {i > 0 ? ", " : ""}
-        {byBand[label]!.count} {label.toLowerCase()}
-      </span>
-    ));
-}
-
-function VulnRow({ entry }: { entry: VulnEntry }) {
-  const network = usePackagesNetwork() as "mainnet" | "testnet";
-  const { attestation, via } = entry;
-  const { display, innerType, id } = attestation.info;
-  const headline = str(display["description"]) ?? str(display["name"]) ?? "Vulnerability";
-  const link = httpsLink(display["link"]);
-  const severity = readSeverity(attestation.info);
-  const band = severityBand(severity ?? 0);
-
-  return (
-    <div
-      className="flex flex-col gap-2xs rounded-md border-l-2 bg-bg-secondary p-md"
-      style={{ borderLeftColor: band.color }}
-    >
-      <div className="flex items-start justify-between gap-sm">
-        <Text kind="label" size="label-small">
-          {headline}
-          {link && <> ({reportLink(link)})</>}
-        </Text>
-        {severity !== null && <SeverityChip score={severity} />}
-      </div>
-      <div className="flex items-center gap-2xs break-all text-content-tertiary">
-        <AttesterAvatar attestor={attestation.attestor} size="sm" />
-        <Text as="span" kind="paragraph" size="paragraph-xs">
-          {attestation.attestor.mvrName ? (
-            <>
-              {mvrLink(attestation.attestor.mvrName)}
-              {`::${moduleAndType(innerType)} (`}
-              {objectLink(id, network)}
-              {")"}
-            </>
-          ) : (
-            <span className="font-mono">{innerType}</span>
-          )}
-          {via && (
-            <>
-              {" · in dependency "}
-              <DepLink id={via.id} name={via.name} />
-            </>
-          )}
-        </Text>
-      </div>
     </div>
   );
 }
@@ -407,17 +243,6 @@ function AttestationRow({ item }: { item: DisplayedAttestation }) {
   );
 }
 
-function SeverityChip({ score }: { score: number }) {
-  const band = severityBand(score);
-  return (
-    <span style={{ color: band.color }}>
-      <Text as="span" kind="label" size="label-2xs">
-        {band.label} ({score.toFixed(1)})
-      </Text>
-    </span>
-  );
-}
-
 /** The attestation object id, truncated and linked to an explorer. */
 function objectLink(id: string, network: "mainnet" | "testnet"): React.ReactNode {
   return (
@@ -443,17 +268,6 @@ function reportLink(url: string): React.ReactNode {
 
 /** Link to a dependency's MVR page by name, or show its id when unresolved
  *  (the package route resolves by name, so a raw id isn't linkable). */
-function DepLink({ id, name }: { id: string; name?: string }) {
-  if (name) {
-    return (
-      <a href={`/package/${name}`} className="text-content-accent underline">
-        {name}
-      </a>
-    );
-  }
-  return <span className="font-mono">{truncateId(id)}</span>;
-}
-
 /** Render an MVR name as a link to its package page. */
 function mvrLink(name: string): React.ReactNode {
   return (
@@ -501,10 +315,6 @@ function initials(name: string): string {
 }
 
 /** CVSS score for sorting; unscored attestations sort last. */
-function severityOf(info: DisplayedAttestation["info"]): number {
-  return readSeverity(info) ?? -1;
-}
-
 function truncateId(id: string): string {
   return id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
 }

@@ -3,14 +3,12 @@ import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import type { SuiClient } from "@mysten/sui/client";
 import { normalizeSuiAddress } from "@mysten/sui/utils";
-import { MvrHeader } from "@/lib/utils";
 import {
   attestationConfig,
   attestorFor,
   boxAddress,
   revokedBoxAddress,
   isEffective,
-  isNegative,
   toAttestationInfo,
   type AttestationConfig,
   type AttestationInfo,
@@ -28,15 +26,6 @@ export interface AttributedAttestation {
 export interface DisplayedAttestation extends AttributedAttestation {
   /** Effectiveness per the conventions (unexpired; revocation is box membership). */
   effective: boolean;
-}
-
-/** A dependency's effective vulnerability, surfaced on a dependent package. */
-export interface InheritedVuln {
-  attestation: DisplayedAttestation;
-  /** The dependency package the vulnerability is attested about. */
-  viaPackageId: string;
-  /** That dependency's MVR name, if it resolves. */
-  viaName?: string;
 }
 
 /**
@@ -195,66 +184,6 @@ export function useGetRevokedAttestations(
   });
 }
 
-/**
- * Vulnerabilities inherited from `subject`'s dependencies: a dependency's
- * effective negative attestations surface on its dependents (the negative dual
- * of `requires` — see CONVENTIONS.md `polarity`). Dependencies come from MVR;
- * the per-dependency reads are the same trusted-attestation reads as above.
- */
-export function useInheritedVulns(
-  subject: string | undefined,
-  network: "mainnet" | "testnet",
-) {
-  const clients = useSuiClientsContext();
-  const client = clients[network];
-  const endpoint = clients.mvrEndpoints[network];
-  const cfg = attestationConfig();
-
-  return useQuery({
-    queryKey: [AppQueryKeys.ATTESTATIONS, "inherited", network, subject],
-    enabled: !!subject && !!cfg,
-    queryFn: async (): Promise<InheritedVuln[]> => {
-      // 1. Direct dependencies (from MVR).
-      const res = await fetch(
-        `${endpoint}/v1/package-address/${subject}/dependencies`,
-        MvrHeader(),
-      );
-      const deps: string[] = res.ok ? ((await res.json()).dependencies ?? []) : [];
-      if (!deps.length) return [];
-
-      // 2. Each dependency's effective negative attestations.
-      const perDep = await Promise.all(
-        deps.map(async (dep) => {
-          const atts = await fetchTrustedAttestations(client, cfg!, dep);
-          return atts
-            .filter((a) => a.effective && isNegative(a.info))
-            .map<InheritedVuln>((a) => ({ attestation: a, viaPackageId: dep }));
-        }),
-      );
-      const inherited = perDep.flat();
-      if (!inherited.length) return inherited;
-
-      // 3. Best-effort dependency names for the provenance note.
-      try {
-        const body = await fetch(`${endpoint}/v1/reverse-resolution/bulk`, {
-          method: "POST",
-          ...MvrHeader({ "Content-Type": "application/json" }),
-          body: JSON.stringify({ package_ids: deps }),
-        }).then((r) => r.json());
-        const nameByAddr: Record<string, string | undefined> = {};
-        for (const [addr, r] of Object.entries(body.resolution ?? {})) {
-          nameByAddr[normalizeSuiAddress(addr)] = (r as { name?: string })?.name;
-        }
-        for (const v of inherited) {
-          v.viaName = nameByAddr[normalizeSuiAddress(v.viaPackageId)];
-        }
-      } catch {
-        // names are optional; fall back to the package id in the UI
-      }
-      return inherited;
-    },
-  });
-}
 
 /** An attestation issued *by* a package, and the subject it is about. */
 export interface IssuedAttestation {

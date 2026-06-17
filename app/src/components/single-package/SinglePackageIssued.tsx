@@ -7,7 +7,6 @@ import {
 import { useReverseResolution } from "@/hooks/useReverseResolution";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
-import { isNegative, readSeverity, severityBand } from "@/lib/attestations";
 
 /** Tab label: count of attestations this package has issued. */
 export function IssuedCount({
@@ -127,19 +126,13 @@ function SubjectGroup({
 
 function IssuedRow({ item }: { item: IssuedAttestation }) {
   const { display, innerType } = item.info;
-  const negative = isNegative(item.info);
   const title = str(display["description"]) ?? str(display["name"]) ?? "Attestation";
-  const severity = negative ? readSeverity(item.info) : null;
-  const band = severity !== null ? severityBand(severity) : null;
   const live = !item.revoked && item.effective;
 
   return (
     <div
-      className="flex flex-col gap-2xs rounded-sm border-l-2 py-sm pl-sm"
-      style={{
-        borderLeftColor: band ? band.color : "var(--stroke-accent)",
-        opacity: live ? 1 : 0.5,
-      }}
+      className="flex flex-col gap-2xs rounded-sm border-l-2 border-stroke-accent py-sm pl-sm"
+      style={{ opacity: live ? 1 : 0.5 }}
     >
       <div className="flex items-center justify-between gap-sm">
         <Text kind="label" size="label-small">
@@ -150,13 +143,6 @@ function IssuedRow({ item }: { item: IssuedAttestation }) {
             <span className="ml-xs text-content-tertiary">(expired)</span>
           ) : null}
         </Text>
-        {band && (
-          <span style={{ color: band.color }}>
-            <Text as="span" kind="label" size="label-2xs">
-              {band.label} ({severity!.toFixed(1)})
-            </Text>
-          </span>
-        )}
       </div>
       <Text as="p" kind="paragraph" size="paragraph-xs" className="break-all font-mono opacity-50">
         {innerType.split("::").slice(1).join("::")}
