@@ -2,7 +2,9 @@ import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import {
   useGetAttestations,
+  useGetRevokedAttestations,
   useInheritedVulns,
+  type AttributedAttestation,
   type DisplayedAttestation,
   type InheritedVuln,
 } from "@/hooks/useGetAttestations";
@@ -119,6 +121,8 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   const { data, isLoading } = useGetAttestations(name.package_address, network);
   const { data: inheritedData } = useInheritedVulns(name.package_address, network);
   const inherited = inheritedData ?? [];
+  const { data: revokedData } = useGetRevokedAttestations(name.package_address, network);
+  const revoked = revokedData ?? [];
 
   const all = data ?? [];
   const negatives = all.filter((a) => isNegative(a.info));
@@ -135,17 +139,26 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
         <LoadingState size="sm" title="" description="Loading attestations..." />
       )}
 
-      {!isLoading && all.length === 0 && inherited.length === 0 && (
-        <Text as="p" kind="paragraph" size="paragraph-small">
-          No attestations from trusted attestors.
-        </Text>
-      )}
+      {!isLoading &&
+        all.length === 0 &&
+        inherited.length === 0 &&
+        revoked.length === 0 && (
+          <Text as="p" kind="paragraph" size="paragraph-small">
+            No attestations from trusted attestors.
+          </Text>
+        )}
 
       {hasVulnSection && (
         <VulnerabilitiesSection own={negatives} inherited={inherited} />
       )}
 
       {positives.length > 0 && <AuditsSection items={positives} />}
+
+      {revoked.length > 0 && (
+        <div className="border-t border-stroke-secondary pt-md">
+          <InactiveList label="Revoked" items={revoked} />
+        </div>
+      )}
 
       {attestationConfig() && (
         <a
@@ -203,7 +216,7 @@ function VulnerabilitiesSection({
       {entries.map((e) => (
         <VulnRow key={e.attestation.info.id} entry={e} />
       ))}
-      {ineffective.length > 0 && <InactiveList items={ineffective} />}
+      {ineffective.length > 0 && <InactiveList label="Inactive" items={ineffective} />}
     </section>
   );
 }
@@ -288,7 +301,7 @@ function AuditsSection({ items }: { items: DisplayedAttestation[] }) {
       {groups.map((g) => (
         <AttestorGroupCard key={g.attestor.originalId} group={g} />
       ))}
-      {ineffective.length > 0 && <InactiveList items={ineffective} />}
+      {ineffective.length > 0 && <InactiveList label="Inactive" items={ineffective} />}
     </section>
   );
 }
@@ -321,11 +334,18 @@ function AttestorGroupCard({ group }: { group: AttestorGroup }) {
   );
 }
 
-/** A compact, de-emphasized list of ineffective (revoked/superseded) ones. */
-function InactiveList({ items }: { items: DisplayedAttestation[] }) {
+/** A compact, de-emphasized list — `label` is "Inactive" (expired) or
+ *  "Revoked". Items are attributed attestations; effectiveness isn't read. */
+function InactiveList({
+  label,
+  items,
+}: {
+  label: string;
+  items: AttributedAttestation[];
+}) {
   return (
     <Text as="p" kind="paragraph" size="paragraph-xs" className="text-content-tertiary">
-      Inactive:{" "}
+      {label}:{" "}
       {items.map((it, i) => (
         <span key={it.info.id}>
           {i > 0 ? ", " : ""}

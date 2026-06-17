@@ -17,10 +17,15 @@ import {
   type TrustedAttestor,
 } from "@/lib/attestations";
 
-export interface DisplayedAttestation {
+/** A trusted attestation attributed to the attester whose lineage defines its
+ *  type — the shared base for the active-box and revoked-sink reads. */
+export interface AttributedAttestation {
   info: AttestationInfo;
   /** The trusted attester this attestation's type belongs to. */
   attestor: TrustedAttestor;
+}
+
+export interface DisplayedAttestation extends AttributedAttestation {
   /** Effectiveness per the conventions (unexpired; revocation is box membership). */
   effective: boolean;
 }
@@ -51,16 +56,46 @@ export async function fetchTrustedAttestations(
   cfg: AttestationConfig,
   subject: string,
 ): Promise<DisplayedAttestation[]> {
-  const owner = boxAddress(cfg.registryPkg, cfg.registryId, subject);
+  const box = boxAddress(cfg.registryPkg, cfg.registryId, subject);
+  const trusted = await fetchBoxAttestations(client, cfg, box);
+  // Effectiveness: unexpired. Revocation is handled by box membership — a
+  // revoked attestation isn't in this box at all.
+  return trusted.map((a) => ({ ...a, effective: isEffective(a.info) }));
+}
+
+/**
+ * The revoked attestations about `subject`: the trusted, displayed ones that
+ * `revoke` moved out of the active box into the subject's revoked sink. Same
+ * trusted/Display filter, just against the sink address.
+ */
+export async function fetchRevokedAttestations(
+  client: SuiClient,
+  cfg: AttestationConfig,
+  subject: string,
+): Promise<AttributedAttestation[]> {
+  const sink = revokedBoxAddress(cfg.registryPkg, cfg.registryId, subject);
+  return fetchBoxAttestations(client, cfg, sink);
+}
+
+/**
+ * Trusted, displayed attestations owned by `boxAddr`, attributed to their
+ * attester. Shared by the active-box and revoked-sink reads. Uses the gRPC
+ * `MatchAny` `StructType` filter so untrusted attesters are never fetched; a
+ * read-time Display-gate drops trusted-but-undisplayed types.
+ */
+async function fetchBoxAttestations(
+  client: SuiClient,
+  cfg: AttestationConfig,
+  boxAddr: string,
+): Promise<AttributedAttestation[]> {
   const trustedTypes = await resolveTrustedTypes(client, cfg);
   if (trustedTypes.length === 0) return [];
 
-  // 1. Fetch only attestations of trusted types (server-side MatchAny).
   const infos: AttestationInfo[] = [];
   let cursor: string | null | undefined = null;
   do {
     const page = await client.getOwnedObjects({
-      owner,
+      owner: boxAddr,
       filter: { MatchAny: trustedTypes.map((StructType) => ({ StructType })) },
       options: { showType: true, showDisplay: true },
       cursor,
@@ -72,21 +107,12 @@ export async function fetchTrustedAttestations(
     cursor = page.hasNextPage ? page.nextCursor : null;
   } while (cursor);
 
-  // 2. Display-gate (drop trusted-but-undisplayed types) and attribute each to
-  //    its attester for grouping.
-  const trusted = infos
+  return infos
     .map((info) => ({ info, attestor: attestorFor(cfg, info.innerType) }))
     .filter(
-      (x): x is { info: AttestationInfo; attestor: TrustedAttestor } =>
+      (x): x is AttributedAttestation =>
         !!x.attestor && Object.keys(x.info.display).length > 0,
     );
-
-  // 3. Effectiveness: unexpired (revocation is handled by box membership).
-  return trusted.map(({ info, attestor }) => ({
-    info,
-    attestor,
-    effective: isEffective(info),
-  }));
 }
 
 // Cache the trusted type set per config — the lineage is static, so this only
@@ -151,6 +177,21 @@ export function useGetAttestations(
     queryKey: [AppQueryKeys.ATTESTATIONS, network, subject],
     enabled: !!subject && !!cfg,
     queryFn: () => fetchTrustedAttestations(client, cfg!, subject!),
+  });
+}
+
+/** The revoked attestations about `subject` (read from the revoked sink). */
+export function useGetRevokedAttestations(
+  subject: string | undefined,
+  network: "mainnet" | "testnet",
+) {
+  const client = useSuiClientsContext()[network];
+  const cfg = attestationConfig();
+
+  return useQuery({
+    queryKey: [AppQueryKeys.ATTESTATIONS, "revoked", network, subject],
+    enabled: !!subject && !!cfg,
+    queryFn: () => fetchRevokedAttestations(client, cfg!, subject!),
   });
 }
 

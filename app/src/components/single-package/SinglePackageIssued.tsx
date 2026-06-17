@@ -36,17 +36,12 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
 
   const subjects = [...new Set(issued.map((i) => i.subject))];
   const { items: names } = useReverseResolution(subjects, network);
+  const nameOf = (subject: string) => (names[subject] as { name?: string })?.name;
 
-  // Group issued attestations by the subject they're about.
-  const groups: { subject: string; items: IssuedAttestation[] }[] = [];
-  for (const item of issued) {
-    let g = groups.find((x) => x.subject === item.subject);
-    if (!g) {
-      g = { subject: item.subject, items: [] };
-      groups.push(g);
-    }
-    g.items.push(item);
-  }
+  // Live attestations group at the top; revoked ones move to their own
+  // section at the bottom so they don't read as endorsements.
+  const liveGroups = groupBySubject(issued.filter((i) => !i.revoked));
+  const revokedGroups = groupBySubject(issued.filter((i) => i.revoked));
 
   return (
     <div className="flex flex-col gap-lg">
@@ -62,8 +57,7 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
         >
           On-chain claims this package has signed about other packages — audits,
           vulnerability disclosures, and the like. Each one also appears on the
-          subject package&apos;s Security tab. Inactive entries have been revoked
-          or have expired.
+          subject package&apos;s Security tab.
         </Text>
       </div>
 
@@ -77,19 +71,55 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
         </Text>
       )}
 
-      {groups.map((g) => (
-        <div
-          key={g.subject}
-          className="flex flex-col gap-sm rounded-md bg-bg-secondary p-md"
-        >
-          <Text as="p" kind="label" size="label-regular">
-            about{" "}
-            <SubjectLink id={g.subject} name={(names[g.subject] as { name?: string })?.name} />
+      {liveGroups.map((g) => (
+        <SubjectGroup key={g.subject} group={g} name={nameOf(g.subject)} />
+      ))}
+
+      {revokedGroups.length > 0 && (
+        <div className="flex flex-col gap-sm border-t border-stroke-secondary pt-md">
+          <Text as="div" kind="label" size="label-regular" className="text-content-tertiary">
+            <p>Revoked</p>
           </Text>
-          {g.items.map((item) => (
-            <IssuedRow key={item.info.id} item={item} />
+          {revokedGroups.map((g) => (
+            <SubjectGroup key={g.subject} group={g} name={nameOf(g.subject)} />
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+/** Group issued attestations by the subject they're about. */
+function groupBySubject(
+  items: IssuedAttestation[],
+): { subject: string; items: IssuedAttestation[] }[] {
+  const groups: { subject: string; items: IssuedAttestation[] }[] = [];
+  for (const item of items) {
+    let g = groups.find((x) => x.subject === item.subject);
+    if (!g) {
+      g = { subject: item.subject, items: [] };
+      groups.push(g);
+    }
+    g.items.push(item);
+  }
+  return groups;
+}
+
+/** A card of the attestations one package issued about a single subject. */
+function SubjectGroup({
+  group,
+  name,
+}: {
+  group: { subject: string; items: IssuedAttestation[] };
+  name?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-sm rounded-md bg-bg-secondary p-md">
+      <Text as="p" kind="label" size="label-regular">
+        about <SubjectLink id={group.subject} name={name} />
+      </Text>
+      {group.items.map((item) => (
+        <IssuedRow key={item.info.id} item={item} />
       ))}
     </div>
   );
