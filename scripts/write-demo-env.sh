@@ -36,18 +36,18 @@ d = json.load(open(sys.argv[1]))
 # Friendly display names for the demo attesters (presentation lives in the
 # consumer's trust config, not on-chain).
 NAMES = {
-    "audit_example": "Example Auditor",
+    "auditor_a": "Auditor A",
     "vuln_example": "Example Security Scanner",
 }
 # MVR names of the attester packages (kept in sync with demo_server.rs).
 MVR_NAMES = {
-    "audit_example": "@example-auditor/audits",
+    "auditor_a": "@auditor-a/audits",
     "vuln_example": "@example-scanner/disclosures",
 }
 # Brand icons (served from app/public). Presentation lives in the consumer's
 # trust config, never on-chain; absent → the UI falls back to an initials avatar.
 ICONS = {
-    "audit_example": "/demo-attestors/auditor.svg",
+    "auditor_a": "/demo-attestors/auditor.svg",
     "vuln_example": "/demo-attestors/scanner.svg",
 }
 attestors = []
