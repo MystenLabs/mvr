@@ -8,7 +8,6 @@ import {
   attestorFor,
   boxAddress,
   revokedBoxAddress,
-  isEffective,
   toAttestationInfo,
   type AttestationConfig,
   type AttestationInfo,
@@ -16,59 +15,56 @@ import {
 } from "@/lib/attestations";
 
 /** A trusted attestation attributed to the attester whose lineage defines its
- *  type — the shared base for the active-box and revoked-sink reads. */
+ *  type — the shared base for the active-box and revoked-box reads. */
 export interface AttributedAttestation {
   info: AttestationInfo;
   /** The trusted attester this attestation's type belongs to. */
   attestor: TrustedAttestor;
 }
 
-export interface DisplayedAttestation extends AttributedAttestation {
-  /** Effectiveness per the conventions (unexpired; revocation is box membership). */
-  effective: boolean;
-}
+/** A trusted, display-gated attestation ready to render. (Currently the same
+ *  shape as AttributedAttestation; kept as a distinct name on the render path.) */
+export type DisplayedAttestation = AttributedAttestation;
 
 /**
  * Core read: the attestations about `subject` from the configured trusted
- * attesters, with effectiveness. Reads the per-subject Box directly over
- * JSON-RPC (no MVR backend).
+ * attesters. Reads the per-subject Box directly over JSON-RPC (no MVR backend).
  *
- * Spam-resistant (M3): rather than fetch every `Attestation<*>` on the box and
- * filter client-side, it asks the node for only the exact trusted types via a
- * `MatchAny` `StructType` filter — so attestations from untrusted attesters are
- * never returned. The trusted type set is the `Attestation<T>` for every store
- * type `T` defined by a trusted attester's lineage (see `resolveTrustedTypes`).
- * A read-time Display-gate still drops trusted-but-undisplayed types.
+ * Spam-resistant: rather than fetch every `Attestation<*>` on the box and filter
+ * client-side, it asks the node for only the exact trusted types via a `MatchAny`
+ * `StructType` filter — so attestations from untrusted attesters are never
+ * returned. The trusted type set is the `Attestation<T>` for every store type `T`
+ * defined by a trusted attester's lineage (see `resolveTrustedTypes`). A
+ * read-time Display-gate still drops trusted-but-undisplayed types.
  */
 export async function fetchTrustedAttestations(
   client: SuiClient,
   cfg: AttestationConfig,
   subject: string,
 ): Promise<DisplayedAttestation[]> {
+  // Revocation is handled by box membership — a revoked attestation isn't in
+  // the active box at all, so everything read here is live.
   const box = boxAddress(cfg.registryPkg, cfg.registryId, subject);
-  const trusted = await fetchBoxAttestations(client, cfg, box);
-  // Effectiveness: unexpired. Revocation is handled by box membership — a
-  // revoked attestation isn't in this box at all.
-  return trusted.map((a) => ({ ...a, effective: isEffective(a.info) }));
+  return fetchBoxAttestations(client, cfg, box);
 }
 
 /**
  * The revoked attestations about `subject`: the trusted, displayed ones that
- * `revoke` moved out of the active box into the subject's revoked sink. Same
- * trusted/Display filter, just against the sink address.
+ * `revoke` moved out of the active box into the subject's revoked box. Same
+ * trusted/Display filter, just against the revoked-box address.
  */
 export async function fetchRevokedAttestations(
   client: SuiClient,
   cfg: AttestationConfig,
   subject: string,
 ): Promise<AttributedAttestation[]> {
-  const sink = revokedBoxAddress(cfg.registryPkg, cfg.registryId, subject);
-  return fetchBoxAttestations(client, cfg, sink);
+  const revokedBox = revokedBoxAddress(cfg.registryPkg, cfg.registryId, subject);
+  return fetchBoxAttestations(client, cfg, revokedBox);
 }
 
 /**
  * Trusted, displayed attestations owned by `boxAddr`, attributed to their
- * attester. Shared by the active-box and revoked-sink reads. Uses the gRPC
+ * attester. Shared by the active-box and revoked-box reads. Uses the gRPC
  * `MatchAny` `StructType` filter so untrusted attesters are never fetched; a
  * read-time Display-gate drops trusted-but-undisplayed types.
  */
@@ -129,8 +125,8 @@ export function resolveTrustedTypes(
 
 /**
  * The `Attestation<T>` type strings for every `store` type `T` defined across
- * the given package lineage. Querying each version covers types by their
- * defining (canonical) id; non-canonical combinations match no objects.
+ * the given package lineage. Querying each version covers types by their defining
+ * (canonical) id; non-canonical combinations match no objects.
  */
 export async function enumerateAttestationTypes(
   client: SuiClient,
@@ -169,7 +165,7 @@ export function useGetAttestations(
   });
 }
 
-/** The revoked attestations about `subject` (read from the revoked sink). */
+/** The revoked attestations about `subject` (read from the revoked box). */
 export function useGetRevokedAttestations(
   subject: string | undefined,
   network: "mainnet" | "testnet",
@@ -184,16 +180,13 @@ export function useGetRevokedAttestations(
   });
 }
 
-
 /** An attestation issued *by* a package, and the subject it is about. */
 export interface IssuedAttestation {
   info: AttestationInfo;
   /** The subject (package) the attestation is about. */
   subject: string;
-  /** Moved to the subject's revoked sink (vs. its active box). */
+  /** Moved to the subject's revoked box (vs. its active box). */
   revoked: boolean;
-  /** Unexpired per the `expires_at` convention (independent of `revoked`). */
-  effective: boolean;
 }
 
 const ISSUED_QUERY = `query($type: String!) {
@@ -204,11 +197,11 @@ const ISSUED_QUERY = `query($type: String!) {
 
 /**
  * The attestations *issued by* `pkg` — the reverse of the per-subject read.
- * Uses GraphQL `objects(type:)` to find every `Attestation<T>` of the
- * package's types across all Boxes (the object's `subject` field says who it's
- * about), then re-reads each over JSON-RPC for Display + effectiveness. Only
- * configured trusted attesters issue attestations in the demo, so a package not
- * in the trust config returns nothing.
+ * Uses GraphQL `objects(type:)` to find every `Attestation<T>` of the package's
+ * types across all Boxes (the object's `subject` field says who it's about), then
+ * re-reads each over JSON-RPC for Display + owner. Only configured trusted
+ * attesters issue attestations in the demo, so a package not in the trust config
+ * returns nothing.
  */
 export function useIssuedAttestations(
   pkg: string | undefined,
@@ -248,7 +241,7 @@ export function useIssuedAttestations(
       if (subjectById.size === 0) return [];
 
       // Re-read each for Display + owner; drop undisplayed types. An issued
-      // attestation is revoked iff it now lives in its subject's revoked sink
+      // attestation is revoked iff it now lives in its subject's revoked box
       // rather than the active box — the read-by-type Issued view is the one
       // place that recovers revocation from ownership, since the object itself
       // carries no status field.
@@ -265,13 +258,12 @@ export function useIssuedAttestations(
           ownerField && typeof ownerField === "object" && "AddressOwner" in ownerField
             ? ownerField.AddressOwner
             : undefined;
-        const sink = revokedBoxAddress(cfg!.registryPkg, cfg!.registryId, subject);
-        const revoked = !!owner && normalizeSuiAddress(owner) === normalizeSuiAddress(sink);
+        const revokedBox = revokedBoxAddress(cfg!.registryPkg, cfg!.registryId, subject);
+        const revoked = !!owner && normalizeSuiAddress(owner) === normalizeSuiAddress(revokedBox);
         out.push({
           info,
           subject: normalizeSuiAddress(subject),
           revoked,
-          effective: isEffective(info),
         });
       }
       return out;

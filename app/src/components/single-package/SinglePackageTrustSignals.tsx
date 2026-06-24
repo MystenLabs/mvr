@@ -47,7 +47,7 @@ function WarningIcon({ className }: { className?: string }) {
   );
 }
 
-/** Tab label: a pill with the count of effective attestations. */
+/** Tab label: a pill with the count of live attestations. */
 export function TrustSignalCount({
   address,
   network,
@@ -56,7 +56,7 @@ export function TrustSignalCount({
   network: "mainnet" | "testnet";
 }) {
   const { data } = useGetAttestations(address, network);
-  const positives = (data ?? []).filter((a) => a.effective).length;
+  const positives = (data ?? []).length;
 
   if (!positives) return null;
   return (
@@ -89,7 +89,7 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   const revoked = revokedData ?? [];
 
   const positives = data ?? [];
-  const hasLiveAttestation = positives.some((a) => a.effective);
+  const hasLiveAttestation = positives.length > 0;
 
   return (
     <div className="flex flex-col gap-lg">
@@ -124,8 +124,7 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
 
 /** Audits (positive attestations), grouped by attester. */
 function AuditsSection({ items }: { items: DisplayedAttestation[] }) {
-  const ineffective = items.filter((a) => !a.effective);
-  const groups = groupByAttestor(items.filter((a) => a.effective));
+  const groups = groupByAttestor(items);
   return (
     <section className="flex flex-col gap-sm">
       <div className="flex items-center gap-2xs">
@@ -137,7 +136,6 @@ function AuditsSection({ items }: { items: DisplayedAttestation[] }) {
       {groups.map((g) => (
         <AttestorGroupCard key={g.attestor.originalId} group={g} />
       ))}
-      {ineffective.length > 0 && <InactiveList label="Inactive" items={ineffective} />}
     </section>
   );
 }
@@ -170,8 +168,8 @@ function AttestorGroupCard({ group }: { group: AttestorGroup }) {
   );
 }
 
-/** A compact, de-emphasized list — `label` is "Inactive" (expired) or
- *  "Revoked". Items are attributed attestations; effectiveness isn't read. */
+/** A compact, de-emphasized list — `label` is "Revoked". Items are attributed
+ *  attestations. */
 function InactiveList({
   label,
   items,

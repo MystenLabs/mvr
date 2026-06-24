@@ -3,6 +3,19 @@
 # repo's demo-ids.json: repoint all networks at the local stack and inject the
 # attestation config (registry id/pkg + trusted attesters with their lineage).
 #
+# demo-ids.json (produced by the attestation-registry repo's run-demo.sh):
+#   {
+#     "registryId": "0x…",                // the shared Registry object id
+#     "attestationRegistryPkg": "0x…",     // the attestation_registry package id
+#     "subjects": { "subject": "0x…", "dependency": "0x…" },
+#     "trustedAttestors": [
+#       { "name": "auditor_a", "originalId": "0x…", "latestId": "0x…" }
+#     ],
+#     "createdAttestations": { "dependencyAudit": "0x…", "subjectAuditV2": "0x…" }
+#   }
+# This script reads registryId, attestationRegistryPkg, and trustedAttestors
+# (name → friendly presentation via ATTESTORS below; originalId+latestId → lineage).
+#
 # Usage:
 #   bash scripts/write-demo-env.sh <path/to/demo-ids.json>
 # The path is required (or set ATTESTATION_DEMO_IDS); demo-ids.json is written
@@ -29,34 +42,34 @@ if [[ ! -f "$DEMO_IDS" ]]; then
 fi
 
 # Build the attestation config. Each attester's lineage is its original id plus
-# any later version ids (deduped) — the M2 client-side trusted set.
+# any later version ids (deduped) — the client-side trusted set.
 CONFIG=$(python3 - "$DEMO_IDS" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1]))
-# Friendly display names for the demo attesters (presentation lives in the
-# consumer's trust config, not on-chain).
-NAMES = {
-    "auditor_a": "Auditor A",
-    "vuln_example": "Example Security Scanner",
-}
-# MVR names of the attester packages (kept in sync with demo_server.rs).
-MVR_NAMES = {
-    "auditor_a": "@auditor-a/audits",
-    "vuln_example": "@example-scanner/disclosures",
-}
-# Brand icons (served from app/public). Presentation lives in the consumer's
-# trust config, never on-chain; absent → the UI falls back to an initials avatar.
-ICONS = {
-    "auditor_a": "/demo-attestors/auditor.svg",
-    "vuln_example": "/demo-attestors/scanner.svg",
+# Per-attester presentation metadata, keyed by the demo-ids `name`. Presentation
+# lives in the consumer's trust config, never on-chain. `iconUrl` is served from
+# app/public; `mvrName` is kept in sync with demo_server.rs. An attester absent
+# from this map falls back to its raw name with no icon/mvrName.
+ATTESTORS = {
+    "auditor_a": {
+        "name": "Auditor A",
+        "mvrName": "@auditor-a/audits",
+        "iconUrl": "/demo-attestors/auditor.svg",
+    },
+    "vuln_example": {
+        "name": "Example Security Scanner",
+        "mvrName": "@example-scanner/disclosures",
+        "iconUrl": "/demo-attestors/scanner.svg",
+    },
 }
 attestors = []
 for a in d["trustedAttestors"]:
+    meta = ATTESTORS.get(a["name"], {})
     lineage = list(dict.fromkeys([a["originalId"], a.get("latestId", a["originalId"])]))
     attestors.append({
-        "name": NAMES.get(a["name"], a["name"]),
-        "iconUrl": ICONS.get(a["name"]),
-        "mvrName": MVR_NAMES.get(a["name"]),
+        "name": meta.get("name", a["name"]),
+        "iconUrl": meta.get("iconUrl"),
+        "mvrName": meta.get("mvrName"),
         "originalId": a["originalId"],
         "lineage": lineage,
     })

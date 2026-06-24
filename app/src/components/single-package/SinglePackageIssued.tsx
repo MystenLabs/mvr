@@ -127,7 +127,7 @@ function SubjectGroup({
 function IssuedRow({ item }: { item: IssuedAttestation }) {
   const { display, innerType } = item.info;
   const title = str(display["description"]) ?? str(display["name"]) ?? "Attestation";
-  const live = !item.revoked && item.effective;
+  const live = !item.revoked;
 
   return (
     <div
@@ -137,11 +137,9 @@ function IssuedRow({ item }: { item: IssuedAttestation }) {
       <div className="flex items-center justify-between gap-sm">
         <Text kind="label" size="label-small">
           {title}
-          {item.revoked ? (
+          {item.revoked && (
             <span className="ml-xs text-content-tertiary">(revoked)</span>
-          ) : !item.effective ? (
-            <span className="ml-xs text-content-tertiary">(expired)</span>
-          ) : null}
+          )}
         </Text>
       </div>
       <Text as="p" kind="paragraph" size="paragraph-xs" className="break-all font-mono opacity-50">

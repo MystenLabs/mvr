@@ -7,6 +7,11 @@ import { bcs } from "@mysten/sui/bcs";
 import { deriveObjectID, normalizeSuiAddress } from "@mysten/sui/utils";
 import type { SuiObjectResponse } from "@mysten/sui/client";
 
+/** A 0x-prefixed Sui address. */
+export type SuiAddress = string;
+/** A 0x-prefixed object id. */
+export type ObjectId = string;
+
 // === Config (NEXT_PUBLIC_ATTESTATION_CONFIG, JSON) ===
 
 export interface TrustedAttestor {
@@ -18,19 +23,19 @@ export interface TrustedAttestor {
   /** Optional MVR name of the attester package, for linking to its page. */
   mvrName?: string;
   /** Original publish id of the attester package — the trust anchor. */
-  originalId: string;
-  /** Every package-version id in the attester's lineage. Matching an
-   *  attestation's inner-type package against this set is equivalent to
-   *  resolving that package's original id (the on-chain `attester_of` rule).
-   *  M2 seeds this directly; M3 derives it via GraphQL `packageVersions`. */
-  lineage: string[];
+  originalId: SuiAddress;
+  /** Every package-version id in the attester's lineage (original publish +
+   *  upgrades). An attestation is trusted when its inner type's defining
+   *  package is in this set — the off-chain equivalent of the on-chain
+   *  `attester_of` rule. */
+  lineage: SuiAddress[];
 }
 
 export interface AttestationConfig {
   /** attestation_registry package id (the `Attestation<>` wrapper type). */
-  registryPkg: string;
+  registryPkg: SuiAddress;
   /** The shared Registry object id — parent for per-subject Box derivation. */
-  registryId: string;
+  registryId: ObjectId;
   trustedAttestors: TrustedAttestor[];
 }
 
@@ -52,11 +57,11 @@ const BoxKey = bcs.struct("BoxKey", { subject: bcs.Address, revoked: bcs.bool() 
 /** Derive a subject's box address, mirroring on-chain
  *  `derived_object::derive_address(registry, BoxKey { subject, revoked })`. */
 function derivedBox(
-  registryPkg: string,
-  registryId: string,
-  subject: string,
+  registryPkg: SuiAddress,
+  registryId: ObjectId,
+  subject: SuiAddress,
   revoked: boolean,
-): string {
+): ObjectId {
   const keyBytes = BoxKey.serialize({
     subject: normalizeSuiAddress(subject),
     revoked,
@@ -68,35 +73,35 @@ function derivedBox(
   );
 }
 
-/** Address of the per-subject active `Box` (`revoked: false`). `revoke` moves
- *  attestations out to the sibling revoked sink, so a read of this address
- *  yields exactly the un-revoked set. */
+/** Address of the subject's active `Box` (`revoked: false`). `revoke` moves an
+ *  attestation to the sibling revoked box, so reading this address yields
+ *  exactly the un-revoked set. */
 export function boxAddress(
-  registryPkg: string,
-  registryId: string,
-  subject: string,
-): string {
+  registryPkg: SuiAddress,
+  registryId: ObjectId,
+  subject: SuiAddress,
+): ObjectId {
   return derivedBox(registryPkg, registryId, subject, false);
 }
 
-/** Address of the per-subject revoked sink (`revoked: true`) — where `revoke`
- *  moves attestations. Lets a read-by-type view (the Issued tab) tell a revoked
- *  attestation from a live one by its owner, since the object carries no status. */
+/** Address of the subject's revoked `Box` (`revoked: true`) — where `revoke`
+ *  moves attestations. Lets the read-by-type Issued tab tell a revoked
+ *  attestation from a live one by its owner, since the object carries no
+ *  status field. */
 export function revokedBoxAddress(
-  registryPkg: string,
-  registryId: string,
-  subject: string,
-): string {
+  registryPkg: SuiAddress,
+  registryId: ObjectId,
+  subject: SuiAddress,
+): ObjectId {
   return derivedBox(registryPkg, registryId, subject, true);
 }
 
 // === Attestation info + mapping ===
 
 export interface AttestationInfo {
-  id: string;
-  /** Full object type, `…::attestation_registry::Attestation<T>`. */
-  type: string;
-  /** The inner type `T`, e.g. `0xAUD::audit::Audit`. */
+  id: ObjectId;
+  /** The inner type `T`, e.g. `0xAUD::audit::Audit`. The full object type is
+   *  always `${registryPkg}::attestation_registry::Attestation<${innerType}>`. */
   innerType: string;
   /** Server-rendered Display v2 fields (all values are strings). */
   display: Record<string, unknown>;
@@ -116,20 +121,19 @@ export function toAttestationInfo(resp: SuiObjectResponse): AttestationInfo | nu
   if (!m) return null;
   return {
     id: d.objectId,
-    type: d.type,
     innerType: m[1]!,
     display: (d.display?.data ?? {}) as Record<string, unknown>,
   };
 }
 
 /** The defining (origin) package id of an inner type string. */
-export function innerTypePackage(innerType: string): string {
+export function innerTypePackage(innerType: string): SuiAddress {
   return normalizeSuiAddress(innerType.split("::")[0]!);
 }
 
 /** Whether `pkg` is a configured trusted attester (any lineage version).
  *  A pure in-memory check — used to gate the "Issued" tab without any RPC. */
-export function isConfiguredAttestor(cfg: AttestationConfig, pkg: string): boolean {
+export function isConfiguredAttestor(cfg: AttestationConfig, pkg: SuiAddress): boolean {
   const id = normalizeSuiAddress(pkg);
   return cfg.trustedAttestors.some((a) =>
     a.lineage.some((v) => normalizeSuiAddress(v) === id),
@@ -145,36 +149,4 @@ export function attestorFor(
   return cfg.trustedAttestors.find((a) =>
     a.lineage.some((id) => normalizeSuiAddress(id) === pkg),
   );
-}
-
-// === Conventions (effectiveness) — ported from the attestation-registry repo's
-// ts/src/conventions.ts. Operates purely on Display fields. Revocation is no
-// longer a convention: a revoked attestation is moved out of the active Box
-// (the address `boxAddress` reads), so anything fetched from there is, by
-// construction, un-revoked. ===
-
-/** `expires_at` as Unix-ms, or null if absent/unparseable. */
-function readExpiresAt(att: AttestationInfo): number | null {
-  const raw = att.display["expires_at"];
-  if (raw == null) return null;
-  if (typeof raw === "number") return raw;
-  if (typeof raw === "string") {
-    const asNum = Number(raw);
-    if (!Number.isNaN(asNum) && asNum > 0) return asNum;
-    const asDate = Date.parse(raw);
-    if (!Number.isNaN(asDate)) return asDate;
-  }
-  return null;
-}
-
-/**
- * An attestation is effective iff its `expires_at` Display field (if present)
- * is still in the future. Revocation is handled upstream by box membership.
- */
-export function isEffective(
-  att: AttestationInfo,
-  now: () => number = Date.now,
-): boolean {
-  const expiresAt = readExpiresAt(att);
-  return expiresAt === null || now() < expiresAt;
 }
