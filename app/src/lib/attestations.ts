@@ -39,13 +39,34 @@ export interface AttestationConfig {
   trustedAttestors: TrustedAttestor[];
 }
 
+/**
+ * Curated trusted attesters for production, sourced from code — like the network
+ * endpoints in `client-provider.tsx`, not the environment. Empty for now, so the
+ * feature stays dormant until attesters are onboarded here. The demo overrides
+ * this via `NEXT_PUBLIC_ATTESTATION_CONFIG` (written by `write-demo-env.sh`), the
+ * same way `NEXT_PUBLIC_LOCAL_*` overrides the endpoints.
+ */
+const CHECKED_IN_CONFIG: AttestationConfig = {
+  registryPkg: "",
+  registryId: "",
+  trustedAttestors: [],
+};
+
 let cached: AttestationConfig | null | undefined;
 
-/** Parse the attestation config from env, or null if unset (production). */
+/**
+ * The attestation config: the `NEXT_PUBLIC_ATTESTATION_CONFIG` env override (the
+ * demo) if set, else the checked-in production config — or null while that has no
+ * attesters (the feature is dormant).
+ */
 export function attestationConfig(): AttestationConfig | null {
   if (cached === undefined) {
     const raw = process.env.NEXT_PUBLIC_ATTESTATION_CONFIG;
-    cached = raw ? (JSON.parse(raw) as AttestationConfig) : null;
+    cached = raw
+      ? (JSON.parse(raw) as AttestationConfig)
+      : CHECKED_IN_CONFIG.trustedAttestors.length > 0
+        ? CHECKED_IN_CONFIG
+        : null;
   }
   return cached;
 }
