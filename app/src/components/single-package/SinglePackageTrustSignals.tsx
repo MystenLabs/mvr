@@ -127,8 +127,7 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
         <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
           <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
           <Text as="p" kind="paragraph" size="paragraph-small">
-            This package has no active attestations published on MVR — it may
-            not have been audited.
+            This package version has no published audits.
           </Text>
         </div>
       )}
