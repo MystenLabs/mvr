@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import {
@@ -6,12 +7,20 @@ import {
   type AttributedAttestation,
   type DisplayedAttestation,
 } from "@/hooks/useGetAttestations";
+import { useGetMvrVersionAddresses } from "@/hooks/useGetMvrVersionAddresses";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
 import ExplorerLink from "../ui/explorer-link";
 import { type TrustedAttestor } from "@/lib/attestations";
 import { CheckIcon } from "@/icons/single-package/CheckIcon";
 import { WarningIcon } from "@/icons/single-package/WarningIcon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 /** Tab label: a pill with the count of live attestations. */
 export function TrustSignalCount({
@@ -51,8 +60,24 @@ function CountPill({ icon, count }: { icon: React.ReactNode; count: number }) {
 
 export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
-  const { data, isLoading } = useGetAttestations(name.package_address, network);
-  const { data: revokedData } = useGetRevokedAttestations(name.package_address, network);
+  // Attestations are per package version (the subject is a version's package
+  // id), so let the viewer pick which version's attestations to inspect.
+  // Defaults to the resolved version; the selector only appears when the
+  // package has more than one version.
+  const { data: versions } = useGetMvrVersionAddresses(
+    name.name,
+    name.version,
+    network,
+  );
+  const [selectedAddress, setSelectedAddress] = useState(name.package_address);
+  // Re-sync to the resolved version when the page navigates to a different
+  // package/version; picking a version in the dropdown changes selectedAddress
+  // but not name.package_address, so it doesn't fight the user's selection.
+  useEffect(() => {
+    setSelectedAddress(name.package_address);
+  }, [name.package_address]);
+  const { data, isLoading } = useGetAttestations(selectedAddress, network);
+  const { data: revokedData } = useGetRevokedAttestations(selectedAddress, network);
   const revoked = revokedData ?? [];
 
   const positives = data ?? [];
@@ -61,11 +86,38 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   // Attestations are a mainnet-only feature in the demo.
   if (network === "testnet") return null;
 
+  const versionList = versions ?? [];
+  const selectedVersion =
+    versionList.find((v) => v.address === selectedAddress)?.version ??
+    name.version;
+
   return (
     <div className="flex flex-col gap-lg">
-      <Text as="div" kind="heading" size="heading-regular">
-        <p>Security</p>
-      </Text>
+      <div className="flex items-center justify-between gap-sm">
+        <Text as="div" kind="heading" size="heading-regular">
+          <p>Security</p>
+        </Text>
+        {versionList.length > 1 && (
+          <Select
+            value={String(selectedVersion)}
+            onValueChange={(val) => {
+              const v = versionList.find((x) => String(x.version) === val);
+              if (v) setSelectedAddress(v.address);
+            }}
+          >
+            <SelectTrigger className="w-auto gap-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {versionList.map((v) => (
+                <SelectItem key={v.version} value={String(v.version)}>
+                  Version {v.version}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
 
       {isLoading && (
         <LoadingState size="sm" title="" description="Loading attestations..." />

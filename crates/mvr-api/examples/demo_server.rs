@@ -63,6 +63,9 @@ async fn main() -> anyhow::Result<()> {
     let ids: serde_json::Value = serde_json::from_slice(&std::fs::read(&args.demo_ids)?)?;
     let subject = field(&ids, "subject");
     let dependency = field(&ids, "dependency");
+    // The dependency is published in two versions (demo of the per-version
+    // attestation selector); seed all of them under one MVR name.
+    let dependency_versions = dependency_versions(&ids);
 
     // Ephemeral Postgres, alive for the lifetime of this process.
     let temp_db = TempDb::new()?;
@@ -80,13 +83,13 @@ async fn main() -> anyhow::Result<()> {
         None,
     )
     .await?;
-    seed(
+    seed_versions(
         &mut db,
         "@demo/dependency",
-        &dependency,
+        &dependency_versions,
         PKG_INFO_DEPENDENCY,
         "A dependency of @demo/subject.",
-        None,
+        Some("demo/dependency_example"),
     )
     .await?;
 
@@ -128,7 +131,15 @@ async fn main() -> anyhow::Result<()> {
     }
 
     println!("seeded @demo/subject     -> {subject}");
-    println!("seeded @demo/dependency  -> {dependency}");
+    println!(
+        "seeded @demo/dependency  -> {} version(s): {}",
+        dependency_versions.len(),
+        dependency_versions
+            .iter()
+            .map(|(addr, v)| format!("v{v}={addr}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
     println!("seeded dependency edge   {subject} -> {dependency}");
     println!("point the frontend's mainnet mvrEndpoint at http://127.0.0.1:{}", args.port);
 
@@ -161,8 +172,28 @@ fn field(ids: &serde_json::Value, key: &str) -> String {
         .to_string()
 }
 
-/// Insert the `packages` / `package_infos` / `name_records` rows that make
-/// `name` resolve to `package_id` (version 1, not upgraded) on mainnet.
+/// Read the top-level `dependencyVersions` array as `(package_id, version)`
+/// pairs, sorted ascending by version so `[0]` is v1 (the original id).
+fn dependency_versions(ids: &serde_json::Value) -> Vec<(String, i64)> {
+    let mut versions: Vec<(String, i64)> = ids["dependencyVersions"]
+        .as_array()
+        .unwrap_or_else(|| panic!("demo-ids.json missing dependencyVersions"))
+        .iter()
+        .map(|v| {
+            let addr = v["address"]
+                .as_str()
+                .expect("dependencyVersions[].address")
+                .to_string();
+            let version = v["version"].as_i64().expect("dependencyVersions[].version");
+            (addr, version)
+        })
+        .collect();
+    versions.sort_by_key(|(_, v)| *v);
+    versions
+}
+
+/// Insert the rows that make `name` resolve to `package_id` (single version,
+/// not upgraded) on mainnet.
 async fn seed(
     db: &mut Db,
     name: &str,
@@ -171,21 +202,51 @@ async fn seed(
     description: &str,
     git_path: Option<&str>,
 ) -> anyhow::Result<()> {
-    let package = Package {
-        package_id: package_id.to_string(),
-        original_id: package_id.to_string(),
-        package_version: 1,
-        move_package: vec![],
-        chain_id: "localnet".to_string(),
-        tx_hash: String::new(),
-        sender: String::new(),
-        timestamp: NaiveDateTime::MAX,
-        deps: vec![],
-    };
+    seed_versions(
+        db,
+        name,
+        &[(package_id.to_string(), 1)],
+        pkg_info_id,
+        description,
+        git_path,
+    )
+    .await
+}
+
+/// Insert the `packages` / `package_infos` / `name_records` rows for a package
+/// published in one or more versions. `versions` is `(package_id, version)`
+/// sorted ascending; `[0]` is the original (v1). mvr resolution models an
+/// upgraded package as multiple `packages` rows sharing one `original_id`, so
+/// we seed one row per version (all under that original) plus a single
+/// `package_info`/`name_record`/`git_info` — then `@name/N` resolves to the row
+/// whose `package_version == N`, and bare `@name` to the latest.
+async fn seed_versions(
+    db: &mut Db,
+    name: &str,
+    versions: &[(String, i64)],
+    pkg_info_id: &str,
+    description: &str,
+    git_path: Option<&str>,
+) -> anyhow::Result<()> {
+    let original_id = &versions[0].0;
+    let packages: Vec<Package> = versions
+        .iter()
+        .map(|(package_id, version)| Package {
+            package_id: package_id.to_string(),
+            original_id: original_id.to_string(),
+            package_version: *version,
+            move_package: vec![],
+            chain_id: "localnet".to_string(),
+            tx_hash: String::new(),
+            sender: String::new(),
+            timestamp: NaiveDateTime::MAX,
+            deps: vec![],
+        })
+        .collect();
     let package_info = PackageInfo {
         id: pkg_info_id.to_string(),
         object_version: 0,
-        package_id: package_id.to_string(),
+        package_id: original_id.to_string(),
         git_table_id: if git_path.is_some() {
             pkg_info_id.to_string()
         } else {
@@ -204,7 +265,7 @@ async fn seed(
     };
 
     let mut conn = db.connect().await?;
-    insert_into(packages::table).values(vec![package]).execute(&mut *conn).await?;
+    insert_into(packages::table).values(packages).execute(&mut *conn).await?;
     insert_into(package_infos::table).values(vec![package_info]).execute(&mut *conn).await?;
     insert_into(name_records::table).values(vec![name_record]).execute(&mut *conn).await?;
     if let Some(path) = git_path {
