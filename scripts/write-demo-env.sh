@@ -53,7 +53,7 @@ d = json.load(open(sys.argv[1]))
 ATTESTORS = {
     "auditor_a": {
         "name": "Auditor A",
-        "mvrName": "@auditor-a/audits",
+        "mvrName": "@demo/auditor-a",
         "iconUrl": "/demo-attestors/auditor.svg",
     },
     "vuln_example": {

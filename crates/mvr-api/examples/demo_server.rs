@@ -111,7 +111,7 @@ async fn main() -> anyhow::Result<()> {
             let latest = a["latestId"].as_str().unwrap_or_default().to_string();
             let mvr_name = auditor_mvr_name(pkg_name);
             let pkg_info_id = format!("0x{:064x}", 0xdee0_0010u64 + i as u64);
-            let git_path = format!("packages/{pkg_name}");
+            let git_path = format!("demo/{pkg_name}");
             seed(
                 &mut db,
                 &mvr_name,
@@ -145,9 +145,9 @@ async fn main() -> anyhow::Result<()> {
 /// trust config in scripts/write-demo-env.sh).
 fn auditor_mvr_name(pkg_name: &str) -> String {
     match pkg_name {
-        "audit_example" => "@example-auditor/audits".to_string(),
         "vuln_example" => "@example-scanner/disclosures".to_string(),
-        other => format!("@demo/{other}"),
+        // MVR names can't contain `_`; the demo auditor package is `auditor_a`.
+        other => format!("@demo/{}", other.replace('_', "-")),
     }
 }
 
