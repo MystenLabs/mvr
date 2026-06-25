@@ -45,6 +45,8 @@ export interface AttestationConfig {
  * feature stays dormant until attesters are onboarded here. The demo overrides
  * this via `NEXT_PUBLIC_ATTESTATION_CONFIG` (written by `write-demo-env.sh`), the
  * same way `NEXT_PUBLIC_LOCAL_*` overrides the endpoints.
+ *
+ * See `attestation-config.example.ts` for a populated example of this shape.
  */
 const CHECKED_IN_CONFIG: AttestationConfig = {
   registryPkg: "",
