@@ -18,7 +18,8 @@ export function IssuedCount({
 }) {
   const { data } = useIssuedAttestations(address, network);
   const count = (data ?? []).length;
-  if (!count) return null;
+  // Attestations are a mainnet-only feature in the demo.
+  if (network === "testnet" || !count) return null;
   return (
     <div className="rounded-full bg-bg-quarternaryBleedthrough px-xs py-2xs">
       <Text kind="label" size="label-2xs">
@@ -36,6 +37,9 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   const subjects = [...new Set(issued.map((i) => i.subject))];
   const { items: names } = useReverseResolution(subjects, network);
   const nameOf = (subject: string) => (names[subject] as { name?: string })?.name;
+
+  // Attestations are a mainnet-only feature in the demo.
+  if (network === "testnet") return null;
 
   // Live attestations group at the top; revoked ones move to their own
   // section at the bottom so they don't read as endorsements.
