@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import {
@@ -132,82 +133,114 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
         </div>
       )}
 
-      {positives.length > 0 && <AuditsSection items={positives} />}
-
-      {revoked.length > 0 && (
-        <div className="border-t border-stroke-secondary pt-md">
-          <InactiveList label="Revoked" items={revoked} />
-        </div>
+      {positives.length > 0 && (
+        <section className="flex flex-col gap-sm">
+          {positives.map((item) => (
+            <AuditCard key={item.info.id} item={item} />
+          ))}
+        </section>
       )}
+
+      {revoked.length > 0 && <RevokedSummary items={revoked} />}
     </div>
   );
 }
 
-/** Audits (positive attestations), grouped by attester. */
-function AuditsSection({ items }: { items: DisplayedAttestation[] }) {
-  const groups = groupByAttestor(items);
+/** One focused card per audit: a badge, the verdict headline (and score), the
+ *  attester, and — demoted — the type and object link. Optimized for the common
+ *  case of one audit per attester, so there is no per-attester sub-grouping. */
+function AuditCard({ item }: { item: DisplayedAttestation }) {
+  const network = usePackagesNetwork() as "mainnet" | "testnet";
+  const { display, innerType, id } = item.info;
+  const headline =
+    str(display["description"]) ?? str(display["name"]) ?? "Attestation";
+  const score = str(display["score"]);
+  const link = httpsLink(display["link"]);
+
   return (
-    <section className="flex flex-col gap-sm">
-      <div className="flex items-center gap-2xs">
-        <CheckIcon className="h-4 w-4 shrink-0 text-content-positive" />
-        <Text kind="heading" size="heading-xs">
-          Audits
+    <div className="flex gap-sm rounded-md bg-bg-secondary p-md">
+      <AuditBadge item={item} />
+      <div className="flex min-w-0 flex-1 flex-col gap-2xs">
+        {/* Verdict — the line the eye should land on first. */}
+        <div className="flex items-start justify-between gap-sm">
+          <Text kind="label" size="label-regular">
+            {headline}
+          </Text>
+          {score && <ScorePill>{score}</ScorePill>}
+        </div>
+
+        {/* Attester identity + report link. */}
+        <Text as="div" kind="paragraph" size="paragraph-xs" className="text-content-secondary">
+          by {item.attestor.mvrName ? (
+            mvrLink(item.attestor.mvrName, item.attestor.name)
+          ) : (
+            <span>{item.attestor.name}</span>
+          )}
+          {link && <> · {reportLink(link)}</>}
+        </Text>
+
+        {/* Developer metadata, de-emphasized at the end. */}
+        <Text as="p" kind="paragraph" size="paragraph-xs" className="break-all text-content-tertiary">
+          <span className="font-mono">{moduleAndType(innerType)}</span> ·{" "}
+          {objectLink(id, network)}
         </Text>
       </div>
-      {groups.map((g) => (
-        <AttestorGroupCard key={g.attestor.originalId} group={g} />
-      ))}
-    </section>
-  );
-}
-
-/** Effective attestations from one trusted attester. */
-function AttestorGroupCard({ group }: { group: AttestorGroup }) {
-  return (
-    <div className="flex flex-col gap-sm rounded-md bg-bg-secondary p-md">
-      <div className="flex items-center gap-sm">
-        <AttesterAvatar attestor={group.attestor} />
-        <div className="flex flex-col">
-          <Text kind="label" size="label-regular">
-            {group.attestor.name}
-          </Text>
-          {group.attestor.mvrName ? (
-            <Text as="p" kind="paragraph" size="paragraph-xs">
-              {mvrLink(group.attestor.mvrName)}
-            </Text>
-          ) : (
-            <Text as="p" kind="paragraph" size="paragraph-xs" className="font-mono opacity-60">
-              {truncateId(group.attestor.originalId)}
-            </Text>
-          )}
-        </div>
-      </div>
-      {group.items.map((item) => (
-        <AttestationRow key={item.info.id} item={item} />
-      ))}
     </div>
   );
 }
 
-/** A compact, de-emphasized list — `label` is "Revoked". Items are attributed
- *  attestations. */
-function InactiveList({
-  label,
-  items,
-}: {
-  label: string;
-  items: AttributedAttestation[];
-}) {
+/** The audit's `image_url` as a badge, falling back to the attester avatar if
+ *  it is absent or fails to load (so a broken/placeholder URL never shows a
+ *  broken-image icon). */
+function AuditBadge({ item }: { item: DisplayedAttestation }) {
+  const [broken, setBroken] = useState(false);
+  const src = httpsLink(item.info.display["image_url"]);
+  if (!src || broken) {
+    return <AttesterAvatar attestor={item.attestor} />;
+  }
   return (
-    <Text as="p" kind="paragraph" size="paragraph-xs" className="text-content-tertiary">
-      {label}:{" "}
-      {items.map((it, i) => (
-        <span key={it.info.id}>
-          {i > 0 ? ", " : ""}
-          {it.attestor.name} ({str(it.info.display["name"]) ?? "Attestation"})
-        </span>
-      ))}
-    </Text>
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        className="h-full w-full object-cover"
+        onError={() => setBroken(true)}
+      />
+    </span>
+  );
+}
+
+/** A small score pill (e.g. "95/100"), reusing the count-chip styling. */
+function ScorePill({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="shrink-0 rounded-full bg-bg-quarternaryBleedthrough px-xs py-2xs">
+      <Text kind="label" size="label-2xs">
+        {children}
+      </Text>
+    </div>
+  );
+}
+
+/** Revoked attestations, minimized: on a package the viewer rarely cares about
+ *  them, so they collapse to a small "N revoked" line that expands on demand. */
+function RevokedSummary({ items }: { items: AttributedAttestation[] }) {
+  return (
+    <details className="border-t border-stroke-secondary pt-md">
+      <summary className="cursor-pointer">
+        <Text as="span" kind="paragraph" size="paragraph-xs" className="text-content-tertiary">
+          {items.length} revoked
+        </Text>
+      </summary>
+      <Text as="p" kind="paragraph" size="paragraph-xs" className="mt-xs text-content-tertiary">
+        {items.map((it, i) => (
+          <span key={it.info.id}>
+            {i > 0 ? ", " : ""}
+            {it.attestor.name} ({str(it.info.display["name"]) ?? "Attestation"})
+          </span>
+        ))}
+      </Text>
+    </details>
   );
 }
 
@@ -241,27 +274,6 @@ export function AttesterAvatar({
   );
 }
 
-/** A positive attestation row (audits). */
-function AttestationRow({ item }: { item: DisplayedAttestation }) {
-  const network = usePackagesNetwork() as "mainnet" | "testnet";
-  const { display, innerType, id } = item.info;
-  const headline = str(display["description"]) ?? str(display["name"]) ?? "Attestation";
-  const link = httpsLink(display["link"]);
-
-  return (
-    <div className="flex flex-col gap-2xs rounded-sm border-l-2 border-stroke-accent py-sm pl-sm">
-      <Text kind="label" size="label-small">
-        {headline}
-        {link && <> ({reportLink(link)})</>}
-      </Text>
-      <Text as="p" kind="paragraph" size="paragraph-xs" className="break-all opacity-60">
-        <span className="font-mono">{moduleAndType(innerType)}</span> (
-        {objectLink(id, network)})
-      </Text>
-    </div>
-  );
-}
-
 /** The attestation object id, truncated and linked to an explorer. */
 function objectLink(id: string, network: "mainnet" | "testnet"): React.ReactNode {
   return (
@@ -285,36 +297,13 @@ function reportLink(url: string): React.ReactNode {
   );
 }
 
-/** Link to a dependency's MVR page by name, or show its id when unresolved
- *  (the package route resolves by name, so a raw id isn't linkable). */
-/** Render an MVR name as a link to its package page. */
-function mvrLink(name: string): React.ReactNode {
+/** Render an MVR name as an internal link to its package page. */
+function mvrLink(name: string, label?: string): React.ReactNode {
   return (
-    <a href={`/package/${name}`} className="text-content-accent underline">
-      {name}
-    </a>
+    <Link href={`/package/${name}`} className="text-content-accent underline">
+      {label ?? name}
+    </Link>
   );
-}
-
-interface AttestorGroup {
-  attestor: TrustedAttestor;
-  items: DisplayedAttestation[];
-}
-
-/** Group attestations by their trusted attester, preserving discovery order. */
-function groupByAttestor(items: DisplayedAttestation[]): AttestorGroup[] {
-  const groups: AttestorGroup[] = [];
-  for (const item of items) {
-    let group = groups.find(
-      (g) => g.attestor.originalId === item.attestor.originalId,
-    );
-    if (!group) {
-      group = { attestor: item.attestor, items: [] };
-      groups.push(group);
-    }
-    group.items.push(item);
-  }
-  return groups;
 }
 
 const AVATAR_COLORS = ["bg-pastel-blue", "bg-pastel-green", "bg-pastel-purple", "bg-pastel-orange"];
@@ -333,7 +322,6 @@ function initials(name: string): string {
   return letters.toUpperCase();
 }
 
-/** CVSS score for sorting; unscored attestations sort last. */
 function truncateId(id: string): string {
   return id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
 }
