@@ -47,19 +47,24 @@ CONFIG=$(python3 - "$DEMO_IDS" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1]))
 # Per-attester presentation metadata, keyed by the demo-ids `name`. Presentation
-# lives in the consumer's trust config, never on-chain. `iconUrl` is served from
-# app/public; `mvrName` is kept in sync with demo_server.rs. An attester absent
-# from this map falls back to its raw name with no icon/mvrName.
+# lives in the consumer's trust config, never on-chain. `iconUrl` points at the
+# attester's brand icon hosted with its package in the attestation-registry repo
+# (the same place its README — shown on the mvr page — lives), so no demo asset
+# ships in the mvr app. `mvrName` is kept in sync with demo_server.rs. An
+# attester absent from this map falls back to its raw name with no icon/mvrName.
+RAW = "https://raw.githubusercontent.com/mdgeorge4153/sui-attestation-registry/mdgeorge/attest-positive"
 ATTESTORS = {
     "auditor_a": {
         "name": "Auditor A",
         "mvrName": "@demo/auditor-a",
-        "iconUrl": "/demo-attestors/auditor.svg",
+        "iconUrl": f"{RAW}/demo/auditor_a/icon.svg",
     },
+    # PR-B attester; its icon lands at demo/vuln_reporter_a/icon.svg when that
+    # package is added. Inert here (not in PR A's trusted set).
     "vuln_example": {
         "name": "Example Security Scanner",
         "mvrName": "@example-scanner/disclosures",
-        "iconUrl": "/demo-attestors/scanner.svg",
+        "iconUrl": f"{RAW}/demo/vuln_reporter_a/icon.svg",
     },
 }
 attestors = []
