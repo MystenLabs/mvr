@@ -209,6 +209,13 @@ export function useIssuedAttestations(
             }[];
           };
         }>({ query: ISSUED_QUERY, variables: { type } });
+        // Surface GraphQL errors instead of treating a failed query as "no
+        // results" — e.g. the localnet GraphQL's "Request is outside consistent
+        // range" when its consistent store lags. Swallowing it renders a
+        // failure as an empty Issued tab, which is misleading.
+        if (res.errors?.length) {
+          throw new Error(`GraphQL query failed: ${res.errors[0]?.message}`);
+        }
         for (const node of res.data?.objects?.nodes ?? []) {
           const subject = node.asMoveObject?.contents?.json?.subject;
           if (node.address && subject) subjectById.set(node.address, subject);

@@ -9,6 +9,7 @@ import {
 import { useReverseResolution } from "@/hooks/useReverseResolution";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
+import { WarningIcon } from "@/icons/single-package/WarningIcon";
 
 const PAGE_SIZE = 20;
 
@@ -35,7 +36,7 @@ export function IssuedCount({
 
 export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
-  const { data, isLoading } = useIssuedAttestations(name.package_address, network);
+  const { data, isLoading, error } = useIssuedAttestations(name.package_address, network);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const issued = data ?? [];
@@ -90,7 +91,16 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
         <LoadingState size="sm" title="" description="Loading issued attestations..." />
       )}
 
-      {!isLoading && issued.length === 0 && (
+      {error && (
+        <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
+          <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
+          <Text as="p" kind="paragraph" size="paragraph-small">
+            Couldn&apos;t load issued attestations: {error.message}
+          </Text>
+        </div>
+      )}
+
+      {!isLoading && !error && issued.length === 0 && (
         <Text as="p" kind="paragraph" size="paragraph-small">
           This package hasn&apos;t issued any attestations.
         </Text>
