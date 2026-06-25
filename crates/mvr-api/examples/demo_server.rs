@@ -30,9 +30,11 @@ use mvr_schema::{
     MIGRATIONS,
 };
 
-// Where the auditor package READMEs live, for MVR's git-backed README fetch.
+// Where the demo package READMEs live, for MVR's git-backed README fetch. We
+// point at the PR branch (not a tag) so the READMEs always track the deployed
+// demo sources; a pinned tag goes stale whenever the demo is restructured.
 const DEMO_REPO_URL: &str = "https://github.com/mdgeorge4153/sui-attestation-registry";
-const DEMO_GIT_TAG: &str = "mvr-demo";
+const DEMO_GIT_REF: &str = "mdgeorge/attest-positive";
 use serde_json::json;
 use sui_pg_db::{temp::TempDb, Db, DbArgs};
 use tokio_util::sync::CancellationToken;
@@ -215,7 +217,7 @@ async fn seed(
                 chain_id: "localnet".to_string(),
                 repository: Some(DEMO_REPO_URL.to_string()),
                 path: Some(path.to_string()),
-                tag: Some(DEMO_GIT_TAG.to_string()),
+                tag: Some(DEMO_GIT_REF.to_string()),
             }])
             .execute(&mut *conn)
             .await?;
