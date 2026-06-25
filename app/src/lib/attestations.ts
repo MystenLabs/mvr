@@ -32,7 +32,7 @@ export interface TrustedAttestor {
 }
 
 export interface AttestationConfig {
-  /** attestation_registry package id (the `Attestation<>` wrapper type). */
+  /** attestations package id (the `Attestation<>` wrapper type). */
   registryPkg: SuiAddress;
   /** The shared Registry object id — parent for per-subject Box derivation. */
   registryId: ObjectId;
@@ -89,7 +89,7 @@ function derivedBox(
   }).toBytes();
   return deriveObjectID(
     registryId,
-    `${registryPkg}::attestation_registry::BoxKey`,
+    `${registryPkg}::attestations::BoxKey`,
     keyBytes,
   );
 }
@@ -122,13 +122,13 @@ export function revokedBoxAddress(
 export interface AttestationInfo {
   id: ObjectId;
   /** The inner type `T`, e.g. `0xAUD::audit::Audit`. The full object type is
-   *  always `${registryPkg}::attestation_registry::Attestation<${innerType}>`. */
+   *  always `${registryPkg}::attestations::Attestation<${innerType}>`. */
   innerType: string;
   /** Server-rendered Display v2 fields (all values are strings). */
   display: Record<string, unknown>;
 }
 
-const ATTESTATION_RE = /::attestation_registry::Attestation<(.+)>$/;
+const ATTESTATION_RE = /::attestations::Attestation<(.+)>$/;
 
 /**
  * Map a `getOwnedObjects`/`getObject` response into `AttestationInfo`, or null

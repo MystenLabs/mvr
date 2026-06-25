@@ -79,7 +79,7 @@ ports to MVR as-is.
 ### Section 1 — Demo environment (the simulated network)
 
 1. `sui start --with-faucet --with-graphql` (localnet + faucet + GraphQL/indexer).
-2. Publish on localnet: `attestation_registry` (creates the shared `Registry`
+2. Publish on localnet: `attestations` (creates the shared `Registry`
    in `init`), `audit_example`/`vuln_example` attestors, and subject package(s).
    **Exercise evolution**: upgrade an attestor to add a second schema type
    (e.g. `AuditV2`) and register its Display, so both surface under one attester.
@@ -113,7 +113,7 @@ New code in MVR (`app/src`):
 - **Trusted-type resolver** (cached per attester, GraphQL):
   1. For each trusted `originalId`, get its lineage via `packageVersions`.
   2. Enumerate `Attestation<T>` types the lineage registered Displays for —
-     either `objects(filter:{type:"0x2::display_registry::Display<…attestation_registry::Attestation>"})`
+     either `objects(filter:{type:"0x2::display_registry::Display<…attestations::Attestation>"})`
      filtered to trusted lineages, or per-attester datatypes → derived
      `Display<Attestation<T>>` existence check. **Spike: confirm GraphQL generic
      type-filter matching; pick the mechanism.**

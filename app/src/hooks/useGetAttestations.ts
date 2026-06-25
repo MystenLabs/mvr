@@ -61,7 +61,7 @@ export async function fetchRevokedAttestations(
  * Trusted, displayed attestations owned by `boxAddr`, attributed to their
  * attester. Shared by the active-box and revoked-box reads. Fetches every
  * `Attestation<T>` on the box (a `MoveModule` filter on the registry's
- * `attestation_registry` module) and filters client-side: keep only those from a
+ * `attestations` module) and filters client-side: keep only those from a
  * configured trusted attester (`attestorFor`) that carry a registered Display.
  * Untrusted attesters can transfer junk into a box; we just drop it here. (A
  * server-side trusted-type filter would avoid downloading that junk — a possible
@@ -78,7 +78,7 @@ async function fetchBoxAttestations(
     const page = await client.getOwnedObjects({
       owner: boxAddr,
       filter: {
-        MoveModule: { package: cfg.registryPkg, module: "attestation_registry" },
+        MoveModule: { package: cfg.registryPkg, module: "attestations" },
       },
       options: { showType: true, showDisplay: true },
       cursor,
@@ -117,7 +117,7 @@ export async function enumerateAttestationTypes(
       for (const [structName, struct] of Object.entries(mod.structs ?? {})) {
         if (struct.abilities.abilities.includes("Store")) {
           types.add(
-            `${registryPkg}::attestation_registry::Attestation<${pkg}::${moduleName}::${structName}>`,
+            `${registryPkg}::attestations::Attestation<${pkg}::${moduleName}::${structName}>`,
           );
         }
       }

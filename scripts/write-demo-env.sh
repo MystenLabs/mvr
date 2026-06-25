@@ -6,7 +6,7 @@
 # demo-ids.json (produced by the attestation-registry repo's run-demo.sh):
 #   {
 #     "registryId": "0x…",                // the shared Registry object id
-#     "attestationRegistryPkg": "0x…",     // the attestation_registry package id
+#     "attestationRegistryPkg": "0x…",     // the attestations package id
 #     "subjects": { "subject": "0x…", "dependency": "0x…" },
 #     "trustedAttestors": [
 #       { "name": "auditor_a", "originalId": "0x…", "latestId": "0x…" }
