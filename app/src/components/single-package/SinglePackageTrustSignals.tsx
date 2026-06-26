@@ -77,7 +77,7 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   useEffect(() => {
     setSelectedAddress(name.package_address);
   }, [name.package_address]);
-  const { data, isLoading } = useGetAttestations(selectedAddress, network);
+  const { data, isLoading, error } = useGetAttestations(selectedAddress, network);
   const { data: revokedData } = useGetRevokedAttestations(selectedAddress, network);
   const revoked = revokedData ?? [];
 
@@ -124,7 +124,16 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
         <LoadingState size="sm" title="" description="Loading attestations..." />
       )}
 
-      {!isLoading && !hasLiveAttestation && (
+      {error && (
+        <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
+          <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
+          <Text as="p" kind="paragraph" size="paragraph-small">
+            Couldn&apos;t load attestations: {error.message}
+          </Text>
+        </div>
+      )}
+
+      {!isLoading && !error && !hasLiveAttestation && (
         <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
           <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
           <Text as="p" kind="paragraph" size="paragraph-small">
