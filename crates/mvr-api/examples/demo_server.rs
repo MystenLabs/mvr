@@ -130,6 +130,28 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
+    // Untrusted attesters get a name too, so their pages are browsable — the UI
+    // should hide the Issued tab for them (they're not in the trust config).
+    if let Some(attestors) = ids["untrustedAttestors"].as_array() {
+        for (i, a) in attestors.iter().enumerate() {
+            let pkg_name = a["name"].as_str().unwrap_or_default();
+            let id = a["id"].as_str().unwrap_or_default().to_string();
+            let mvr_name = auditor_mvr_name(pkg_name);
+            let pkg_info_id = format!("0x{:064x}", 0xdee0_0020u64 + i as u64);
+            let git_path = format!("demo/{pkg_name}");
+            seed(
+                &mut db,
+                &mvr_name,
+                &id,
+                &pkg_info_id,
+                "An untrusted attester in the demo.",
+                Some(&git_path),
+            )
+            .await?;
+            println!("seeded {mvr_name}  -> {id} (untrusted)");
+        }
+    }
+
     println!("seeded @demo/subject     -> {subject}");
     println!(
         "seeded @demo/dependency  -> {} version(s): {}",
