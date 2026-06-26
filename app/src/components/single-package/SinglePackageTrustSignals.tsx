@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import {
@@ -70,16 +71,19 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
     name.version,
     network,
   );
-  const [selectedAddress, setSelectedAddress] = useState(name.package_address);
-  // Re-sync to the resolved version when the page navigates to a different
-  // package/version; picking a version in the dropdown changes selectedAddress
-  // but not name.package_address, so it doesn't fight the user's selection.
-  useEffect(() => {
-    setSelectedAddress(name.package_address);
-  }, [name.package_address]);
-  const { data, isLoading, error } = useGetAttestations(selectedAddress, network);
-  const { data: revokedData } = useGetRevokedAttestations(selectedAddress, network);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // The attestations shown are for the version the page resolved to. The version
+  // selector navigates to /package/<name>/<version> rather than swapping a local
+  // list, so the whole page — including the tab's attestation-count pill —
+  // reflects the chosen version.
+  const { data, isLoading, error } = useGetAttestations(name.package_address, network);
+  const { data: revokedData, error: revokedError } = useGetRevokedAttestations(
+    name.package_address,
+    network,
+  );
   const revoked = revokedData ?? [];
+  const displayError = error ?? revokedError;
 
   const positives = data ?? [];
   const hasLiveAttestation = positives.length > 0;
@@ -88,9 +92,7 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   if (network === "testnet") return null;
 
   const versionList = versions ?? [];
-  const selectedVersion =
-    versionList.find((v) => v.address === selectedAddress)?.version ??
-    name.version;
+  const selectedVersion = name.version;
 
   return (
     <div className="flex flex-col gap-lg">
@@ -102,8 +104,8 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
           <Select
             value={String(selectedVersion)}
             onValueChange={(val) => {
-              const v = versionList.find((x) => String(x.version) === val);
-              if (v) setSelectedAddress(v.address);
+              const qs = searchParams.toString();
+              router.push(`/package/${name.name}/${val}${qs ? `?${qs}` : ""}`);
             }}
           >
             <SelectTrigger className="w-auto gap-xs">
@@ -124,16 +126,16 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
         <LoadingState size="sm" title="" description="Loading attestations..." />
       )}
 
-      {error && (
+      {displayError && (
         <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
           <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
           <Text as="p" kind="paragraph" size="paragraph-small">
-            Couldn&apos;t load attestations: {error.message}
+            Couldn&apos;t load attestations: {displayError.message}
           </Text>
         </div>
       )}
 
-      {!isLoading && !error && !hasLiveAttestation && (
+      {!isLoading && !displayError && !hasLiveAttestation && (
         <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
           <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
           <Text as="p" kind="paragraph" size="paragraph-small">
