@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import {
@@ -16,13 +15,6 @@ import ExplorerLink from "../ui/explorer-link";
 import { type TrustedAttestor } from "@/lib/attestations";
 import { CheckIcon } from "@/icons/single-package/CheckIcon";
 import { WarningIcon } from "@/icons/single-package/WarningIcon";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 
 /** Tab label: a pill with the count of live attestations. */
 export function TrustSignalCount({
@@ -63,65 +55,86 @@ function CountPill({ icon, count }: { icon: React.ReactNode; count: number }) {
 export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
   // Attestations are per package version (the subject is a version's package
-  // id), so let the viewer pick which version's attestations to inspect.
-  // Defaults to the resolved version; the selector only appears when the
-  // package has more than one version.
+  // id), and each version is audited — or not — independently. So we show every
+  // version's status here at once rather than only the resolved version.
   const { data: versions } = useGetMvrVersionAddresses(
     name.name,
     name.version,
     network,
   );
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  // The attestations shown are for the version the page resolved to. The version
-  // selector navigates to /package/<name>/<version> rather than swapping a local
-  // list, so the whole page — including the tab's attestation-count pill —
-  // reflects the chosen version.
-  const { data, isLoading, error } = useGetAttestations(name.package_address, network);
-  const { data: revokedData, error: revokedError } = useGetRevokedAttestations(
-    name.package_address,
-    network,
-  );
-  const revoked = revokedData ?? [];
-  const displayError = error ?? revokedError;
-
-  const positives = data ?? [];
-  const hasLiveAttestation = positives.length > 0;
 
   // Attestations are a mainnet-only feature in the demo.
   if (network === "testnet") return null;
 
-  const versionList = versions ?? [];
-  const selectedVersion = name.version;
+  const versionList = (versions ?? [])
+    .slice()
+    .sort((a, b) => b.version - a.version); // newest first
+  const latestVersion = versionList.reduce(
+    (max, v) => Math.max(max, v.version),
+    name.version,
+  );
 
   return (
     <div className="flex flex-col gap-lg">
-      <div className="flex items-center justify-between gap-sm">
-        <Text as="div" kind="heading" size="heading-regular">
-          <p>Security</p>
-        </Text>
-        {versionList.length > 1 && (
-          <Select
-            value={String(selectedVersion)}
-            onValueChange={(val) => {
-              const qs = searchParams.toString();
-              router.push(`/package/${name.name}/${val}${qs ? `?${qs}` : ""}`);
-            }}
-          >
-            <SelectTrigger className="w-auto gap-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {versionList.map((v) => (
-                <SelectItem key={v.version} value={String(v.version)}>
-                  Version {v.version}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
+      <Text as="div" kind="heading" size="heading-regular">
+        <p>Security</p>
+      </Text>
 
+      {versionList.length <= 1 ? (
+        // Single-version package (the common case): no per-version headers.
+        <VersionAudits address={name.package_address} network={network} />
+      ) : (
+        versionList.map((v, i) => (
+          <div
+            key={v.version}
+            className={`flex flex-col gap-sm ${
+              i > 0 ? "border-t border-stroke-secondary pt-md" : ""
+            }`}
+          >
+            <div className="flex items-center gap-sm">
+              <Text kind="label" size="label-regular">
+                Version {v.version}
+              </Text>
+              {v.version === latestVersion && (
+                <Text
+                  as="span"
+                  size="label-xs"
+                  kind="label"
+                  className="rounded-md bg-bg-accentBleedthrough3 px-sm py-xs"
+                >
+                  Latest
+                </Text>
+              )}
+            </div>
+            <VersionAudits address={v.address} network={network} />
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+/** The attestation status of a single package version: live audits, the
+ *  "no audits" warning, surfaced load errors, and any revoked attestations. */
+function VersionAudits({
+  address,
+  network,
+}: {
+  address: string;
+  network: "mainnet" | "testnet";
+}) {
+  const { data, isLoading, error } = useGetAttestations(address, network);
+  const { data: revokedData, error: revokedError } = useGetRevokedAttestations(
+    address,
+    network,
+  );
+  const revoked = revokedData ?? [];
+  const displayError = error ?? revokedError;
+  const positives = data ?? [];
+  const hasLiveAttestation = positives.length > 0;
+
+  return (
+    <div className="flex flex-col gap-sm">
       {isLoading && (
         <LoadingState size="sm" title="" description="Loading attestations..." />
       )}
