@@ -79,8 +79,10 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
 
   return (
     <div className="flex flex-col gap-lg">
+      {/* Page heading is "Audits" for now; the "Security" tab will become an
+          h1 over an "Audits" h2 once other trust signals are integrated. */}
       <Text as="div" kind="heading" size="heading-regular">
-        <p>Security</p>
+        <p>Audits</p>
       </Text>
 
       {versionList.length <= 1 ? (
