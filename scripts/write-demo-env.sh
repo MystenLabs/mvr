@@ -56,7 +56,7 @@ RAW = "https://raw.githubusercontent.com/mdgeorge4153/sui-attestation-registry/m
 ATTESTORS = {
     "auditor_a": {
         "name": "Auditor A",
-        "mvrName": "@demo/auditor-a",
+        "mvrName": "@auditor-a/audit",
         "iconUrl": f"{RAW}/demo/auditor_a/icon.svg",
     },
     # PR-B attester; its icon lands at demo/vuln_reporter_a/icon.svg when that

@@ -102,14 +102,14 @@ async fn main() -> anyhow::Result<()> {
         .expect("demo-ids.json missing attestationRegistryPkg");
     seed(
         &mut db,
-        "@demo/attestations",
+        "@mysten/attestations",
         registry_pkg,
         PKG_INFO_REGISTRY,
         "The attestation registry package: Attestation<T>, per-subject boxes, Display.",
         None,
     )
     .await?;
-    println!("seeded @demo/attestations -> {registry_pkg}");
+    println!("seeded @mysten/attestations -> {registry_pkg}");
 
     // The real `subject -> dependency` edge, so the dependencies endpoint
     // returns it (powering both the Dependencies tab and vuln propagation).
@@ -199,8 +199,8 @@ async fn main() -> anyhow::Result<()> {
 fn auditor_mvr_name(pkg_name: &str) -> String {
     match pkg_name {
         "vuln_example" => "@example-scanner/disclosures".to_string(),
-        // MVR names can't contain `_`; the demo auditor package is `auditor_a`.
-        other => format!("@demo/{}", other.replace('_', "-")),
+        // Each auditor is its own org; MVR names can't contain `_` (auditor_a).
+        other => format!("@{}/audit", other.replace('_', "-")),
     }
 }
 
