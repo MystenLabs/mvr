@@ -191,11 +191,11 @@ export function useIssuedAttestations(
   return useQuery({
     queryKey: [AppQueryKeys.ATTESTATIONS, "issued", network, pkg],
     enabled: !!pkg && !!cfg,
-    queryFn: async (): Promise<IssuedAttestation[]> => {
+    queryFn: async (): Promise<{ items: IssuedAttestation[]; failures: number }> => {
       const attestor = cfg!.trustedAttestors.find((a) =>
         a.lineage.some((id) => normalizeSuiAddress(id) === normalizeSuiAddress(pkg!)),
       );
-      if (!attestor) return [];
+      if (!attestor) return { items: [], failures: 0 };
       const types = await enumerateAttestationTypes(client, attestor.lineage, cfg!.registryPkg);
 
       // Reverse query: every object of each issued type, across all Boxes.
@@ -221,19 +221,28 @@ export function useIssuedAttestations(
           if (node.address && subject) subjectById.set(node.address, subject);
         }
       }
-      if (subjectById.size === 0) return [];
+      if (subjectById.size === 0) return { items: [], failures: 0 };
 
       // Re-read each for Display + owner; drop undisplayed types. An issued
       // attestation is revoked iff it now lives in its subject's revoked box
       // rather than the active box — the read-by-type Issued view is the one
       // place that recovers revocation from ownership, since the object itself
-      // carries no status field.
+      // carries no status field. A re-read that fails (vs. a legitimately
+      // undisplayed/non-attestation object) is counted so the UI can flag that
+      // some attestations couldn't be loaded rather than silently dropping them.
       const out: IssuedAttestation[] = [];
+      let failures = 0;
       for (const [id, subject] of subjectById) {
-        const resp = await client
-          .getObject({ id, options: { showType: true, showDisplay: true, showOwner: true } })
-          .catch(() => null);
-        if (!resp) continue;
+        let resp;
+        try {
+          resp = await client.getObject({
+            id,
+            options: { showType: true, showDisplay: true, showOwner: true },
+          });
+        } catch {
+          failures++;
+          continue;
+        }
         const info = toAttestationInfo(resp);
         if (!info || Object.keys(info.display).length === 0) continue;
         const ownerField = resp.data?.owner;
@@ -249,7 +258,7 @@ export function useIssuedAttestations(
           revoked,
         });
       }
-      return out;
+      return { items: out, failures };
     },
   });
 }

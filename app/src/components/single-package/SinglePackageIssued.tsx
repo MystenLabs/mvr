@@ -22,7 +22,7 @@ export function IssuedCount({
   network: "mainnet" | "testnet";
 }) {
   const { data } = useIssuedAttestations(address, network);
-  const count = (data ?? []).length;
+  const count = data?.items.length ?? 0;
   // Attestations are a mainnet-only feature in the demo.
   if (network === "testnet" || !count) return null;
   return (
@@ -37,16 +37,26 @@ export function IssuedCount({
 export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
   const { data, isLoading, error } = useIssuedAttestations(name.package_address, network);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [liveCount, setLiveCount] = useState(PAGE_SIZE);
+  const [revokedShown, setRevokedShown] = useState(PAGE_SIZE);
 
-  const issued = data ?? [];
-  // Newest first; attestations without a publish_date sort last.
-  const sorted = [...issued].sort((a, b) => publishMs(b) - publishMs(a));
-  const visible = sorted.slice(0, visibleCount);
+  const issued = data?.items ?? [];
+  const failures = data?.failures ?? 0;
 
-  // Resolve names only for the subjects currently on screen, so the lookup
-  // fan-out grows with what's shown rather than the whole (possibly large) list.
-  const visibleSubjects = [...new Set(visible.map((i) => i.subject))];
+  // Newest first; attestations without a publish_date sort last. Live and
+  // revoked are split into separate sections (revoked moved out of the main
+  // list) so endorsements read distinctly from withdrawn ones.
+  const byDate = (a: IssuedAttestation, b: IssuedAttestation) => publishMs(b) - publishMs(a);
+  const liveItems = issued.filter((i) => !i.revoked).sort(byDate);
+  const revokedItems = issued.filter((i) => i.revoked).sort(byDate);
+  const liveVisible = liveItems.slice(0, liveCount);
+  const revokedVisible = revokedItems.slice(0, revokedShown);
+
+  // Resolve names only for the subjects currently on screen (both sections), so
+  // the lookup fan-out grows with what's shown rather than the whole list.
+  const visibleSubjects = [
+    ...new Set([...liveVisible, ...revokedVisible].map((i) => i.subject)),
+  ];
   const { items: names } = useReverseResolution(visibleSubjects, network);
   const nameOf = (subject: string) => (names[subject] as { name?: string })?.name;
 
@@ -54,8 +64,6 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   if (network === "testnet") return null;
 
   const subjectCount = new Set(issued.map((i) => i.subject)).size;
-  const revokedCount = issued.filter((i) => i.revoked).length;
-  const activeCount = issued.length - revokedCount;
 
   return (
     <div className="flex flex-col gap-lg">
@@ -80,9 +88,9 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
             className="text-content-tertiary"
           >
             {issued.length} attestation{issued.length === 1 ? "" : "s"} about{" "}
-            {subjectCount} package{subjectCount === 1 ? "" : "s"} · {activeCount}{" "}
+            {subjectCount} package{subjectCount === 1 ? "" : "s"} · {liveItems.length}{" "}
             active
-            {revokedCount > 0 && <> · {revokedCount} revoked</>}
+            {revokedItems.length > 0 && <> · {revokedItems.length} revoked</>}
           </Text>
         )}
       </div>
@@ -100,28 +108,78 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
         </div>
       )}
 
+      {failures > 0 && (
+        <div className="flex items-center gap-xs">
+          <WarningIcon className="h-4 w-4 shrink-0 text-content-negative" />
+          <Text as="span" kind="paragraph" size="paragraph-xs" className="text-content-tertiary">
+            {failures} attestation{failures === 1 ? "" : "s"} couldn&apos;t be loaded.
+          </Text>
+        </div>
+      )}
+
       {!isLoading && !error && issued.length === 0 && (
         <Text as="p" kind="paragraph" size="paragraph-small">
           This package hasn&apos;t issued any attestations.
         </Text>
       )}
 
-      {visible.length > 0 && (
-        <div className="flex flex-col divide-y divide-stroke-secondary">
-          {visible.map((item) => (
-            <IssuedRow key={item.info.id} item={item} name={nameOf(item.subject)} />
-          ))}
-        </div>
+      {liveVisible.length > 0 && (
+        <RowList
+          items={liveVisible}
+          total={liveItems.length}
+          nameOf={nameOf}
+          onShowMore={() => setLiveCount((c) => c + PAGE_SIZE)}
+        />
       )}
 
-      {visibleCount < sorted.length && (
-        <button
-          type="button"
-          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-          className="self-start"
-        >
+      {revokedItems.length > 0 && (
+        <div className="flex flex-col gap-sm border-t border-stroke-secondary pt-md">
+          <Text as="div" kind="label" size="label-regular" className="text-content-tertiary">
+            <p>Revoked</p>
+          </Text>
+          <RowList
+            items={revokedVisible}
+            total={revokedItems.length}
+            nameOf={nameOf}
+            deemphasized
+            onShowMore={() => setRevokedShown((c) => c + PAGE_SIZE)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A dense, paginated list of issued-attestation rows. */
+function RowList({
+  items,
+  total,
+  nameOf,
+  deemphasized,
+  onShowMore,
+}: {
+  items: IssuedAttestation[];
+  total: number;
+  nameOf: (subject: string) => string | undefined;
+  deemphasized?: boolean;
+  onShowMore: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-sm">
+      <div className="flex flex-col divide-y divide-stroke-secondary">
+        {items.map((item) => (
+          <IssuedRow
+            key={item.info.id}
+            item={item}
+            name={nameOf(item.subject)}
+            deemphasized={deemphasized}
+          />
+        ))}
+      </div>
+      {items.length < total && (
+        <button type="button" onClick={onShowMore} className="self-start">
           <Text kind="label" size="label-small" className="text-content-accent underline">
-            Show more ({sorted.length - visibleCount})
+            Show more ({total - items.length})
           </Text>
         </button>
       )}
@@ -129,36 +187,50 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   );
 }
 
-/** One dense row: the subject (linked), the attestation kind, its date, and a
- *  revoked tag. Revoked rows stay visible — on an attester you want to see how
- *  many they pull — but are de-emphasized. */
-function IssuedRow({ item, name }: { item: IssuedAttestation; name?: string }) {
+/** One dense row: the subject (linked) + the attestation's description, with the
+ *  `module::Type` and date as secondary metadata. Revoked rows live in their own
+ *  section and are de-emphasized. */
+function IssuedRow({
+  item,
+  name,
+  deemphasized,
+}: {
+  item: IssuedAttestation;
+  name?: string;
+  deemphasized?: boolean;
+}) {
   const { display, innerType } = item.info;
   const date = formatDate(display["publish_date"]);
+  const description = str(display["description"]) ?? str(display["name"]);
 
   return (
     <div
-      className="flex items-center justify-between gap-sm py-sm"
-      style={{ opacity: item.revoked ? 0.55 : 1 }}
+      className="flex items-start justify-between gap-sm py-sm"
+      style={{ opacity: deemphasized ? 0.55 : 1 }}
     >
-      <div className="flex min-w-0 items-center gap-sm">
-        <Text kind="label" size="label-small" className="truncate">
-          <SubjectLink id={item.subject} name={name} />
-        </Text>
-        <Text
-          as="span"
-          kind="paragraph"
-          size="paragraph-xs"
-          className="shrink-0 font-mono text-content-tertiary"
-        >
-          {moduleAndType(innerType)}
-        </Text>
-        {item.revoked && (
-          <span className="shrink-0 rounded-full bg-bg-quarternaryBleedthrough px-xs py-2xs">
-            <Text kind="label" size="label-2xs" className="text-content-tertiary">
-              revoked
-            </Text>
-          </span>
+      <div className="flex min-w-0 flex-col gap-2xs">
+        <div className="flex min-w-0 items-center gap-sm">
+          <Text kind="label" size="label-small" className="truncate">
+            <SubjectLink id={item.subject} name={name} />
+          </Text>
+          <Text
+            as="span"
+            kind="paragraph"
+            size="paragraph-xs"
+            className="shrink-0 font-mono text-content-tertiary"
+          >
+            {moduleAndType(innerType)}
+          </Text>
+        </div>
+        {description && (
+          <Text
+            as="p"
+            kind="paragraph"
+            size="paragraph-small"
+            className="truncate text-content-secondary"
+          >
+            {description}
+          </Text>
         )}
       </div>
       {date && (
