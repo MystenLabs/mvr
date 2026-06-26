@@ -106,7 +106,7 @@ async fn main() -> anyhow::Result<()> {
         registry_pkg,
         PKG_INFO_REGISTRY,
         "The attestation registry package: Attestation<T>, per-subject boxes, Display.",
-        None,
+        Some("packages/attestations"),
     )
     .await?;
     println!("seeded @mysten/attestations -> {registry_pkg}");
