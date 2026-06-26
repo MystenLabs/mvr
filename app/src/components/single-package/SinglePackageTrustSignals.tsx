@@ -175,15 +175,17 @@ function VersionAudits({
   );
 }
 
-/** One focused card per audit: a badge, the verdict headline (and score), the
- *  attester, and — demoted — the type and object link. Optimized for the common
- *  case of one audit per attester, so there is no per-attester sub-grouping. */
+/** One focused card per audit: a badge, the verdict headline, the attester, and
+ *  — demoted — the type and object link. Optimized for the common case of one
+ *  audit per attester, so there is no per-attester sub-grouping. Only the
+ *  standard presentation conventions (name/description/image_url/link) are
+ *  surfaced; schema-specific Display fields are not — the platform stays
+ *  agnostic to any one schema's custom fields. */
 function AuditCard({ item }: { item: DisplayedAttestation }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
   const { display, innerType, id } = item.info;
   const headline =
     str(display["description"]) ?? str(display["name"]) ?? "Attestation";
-  const score = str(display["score"]);
   const link = httpsLink(display["link"]);
 
   return (
@@ -191,12 +193,9 @@ function AuditCard({ item }: { item: DisplayedAttestation }) {
       <AuditBadge item={item} />
       <div className="flex min-w-0 flex-1 flex-col gap-2xs">
         {/* Verdict — the line the eye should land on first. */}
-        <div className="flex items-start justify-between gap-sm">
-          <Text kind="label" size="label-regular">
-            {headline}
-          </Text>
-          {score && <ScorePill>{score}</ScorePill>}
-        </div>
+        <Text kind="label" size="label-regular">
+          {headline}
+        </Text>
 
         {/* Attester identity + report link. */}
         <Text as="div" kind="paragraph" size="paragraph-xs" className="text-content-secondary">
@@ -237,17 +236,6 @@ function AuditBadge({ item }: { item: DisplayedAttestation }) {
         onError={() => setBroken(true)}
       />
     </span>
-  );
-}
-
-/** A small score pill (e.g. "95/100"), reusing the count-chip styling. */
-function ScorePill({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="shrink-0 rounded-full bg-bg-quarternaryBleedthrough px-xs py-2xs">
-      <Text kind="label" size="label-2xs">
-        {children}
-      </Text>
-    </div>
   );
 }
 
