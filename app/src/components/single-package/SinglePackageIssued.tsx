@@ -7,6 +7,7 @@ import {
   type IssuedAttestation,
 } from "@/hooks/useGetAttestations";
 import { useReverseResolution } from "@/hooks/useReverseResolution";
+import { attestationConfig, isConfiguredAttestor } from "@/lib/attestations";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
 import { WarningIcon } from "@/icons/single-package/WarningIcon";
@@ -15,13 +16,13 @@ const PAGE_SIZE = 20;
 
 /** Tab label: count of attestations this package has issued. */
 export function IssuedCount({
-  address,
+  name,
   network,
 }: {
-  address: string;
+  name: ResolvedName;
   network: "mainnet" | "testnet";
 }) {
-  const { data } = useIssuedAttestations(address, network);
+  const { data } = useIssuedAttestations(name, network);
   const count = data?.items.length ?? 0;
   // Attestations are a mainnet-only feature in the demo.
   if (network === "testnet" || !count) return null;
@@ -36,7 +37,11 @@ export function IssuedCount({
 
 export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   const network = usePackagesNetwork() as "mainnet" | "testnet";
-  const { data, isLoading, error } = useIssuedAttestations(name.package_address, network);
+  const { data, isLoading, error } = useIssuedAttestations(name, network);
+  // The nav lists this tab only for configured attesters, but it's reachable by
+  // URL for any package — warn when this package isn't a trusted attester.
+  const cfg = attestationConfig();
+  const trusted = !!cfg && isConfiguredAttestor(cfg, name.package_address);
   const [liveCount, setLiveCount] = useState(PAGE_SIZE);
   const [revokedShown, setRevokedShown] = useState(PAGE_SIZE);
 
@@ -94,6 +99,20 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
           </Text>
         )}
       </div>
+
+      {!trusted && (
+        <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
+          <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
+          <Text as="p" kind="paragraph" size="paragraph-small">
+            <span className="font-semibold text-content-negative">
+              This attester isn&apos;t on your trusted list.
+            </span>{" "}
+            These are on-chain claims this package has signed — not endorsements.
+            Anyone can publish a package and issue attestations; verify the
+            attester&apos;s identity before relying on them.
+          </Text>
+        </div>
+      )}
 
       {isLoading && (
         <LoadingState size="sm" title="" description="Loading issued attestations..." />

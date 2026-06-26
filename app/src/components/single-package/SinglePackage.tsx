@@ -109,9 +109,11 @@ export const Tabs: SinglePackageTab[] = [
     title: "Attestations",
     selectedIcon: <IssuedIcon />,
     unselectedIcon: <IssuedIcon />,
-    label: (address: string, network: "mainnet" | "testnet") => (
-      <IssuedCount address={address} network={network} />
-    ),
+    label: (
+      _address: string,
+      network: "mainnet" | "testnet",
+      name?: ResolvedName,
+    ) => (name ? <IssuedCount name={name} network={network} /> : null),
     component: (name: ResolvedName) => <SinglePackageIssued name={name} />,
   },
   {
@@ -135,19 +137,21 @@ export function SinglePackage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // The "Issued" tab only applies to attesters — gate it on whitelist
-  // membership (a free in-memory check) rather than probing every package.
+  // The "Issued" tab is in the nav only for configured attesters (a free
+  // in-memory check), but it stays reachable by URL (?tab=issued) for any
+  // package — the panel shows a not-trusted warning. So nav visibility
+  // (navTabs) and URL-selectability (the full Tabs list) differ.
   const cfg = attestationConfig();
-  const visibleTabs =
+  const navTabs =
     cfg && isConfiguredAttestor(cfg, name.package_address)
       ? Tabs
       : Tabs.filter((t) => t.key !== "issued");
 
-  const [activeTab, setActiveTab] = useState(visibleTabs[0]!.key);
+  const [activeTab, setActiveTab] = useState(navTabs[0]!.key);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && visibleTabs.some((t) => t.key === tab) && tab !== activeTab) {
+    if (tab && Tabs.some((t) => t.key === tab) && tab !== activeTab) {
       setActiveTab(tab as string);
     }
   }, [searchParams]);
@@ -166,14 +170,14 @@ export function SinglePackage({
       <div className="container">
         <div className="grid grid-cols-1 gap-2xl lg:grid-cols-24">
           <SinglePackageTabs
-            tabs={visibleTabs}
+            tabs={navTabs}
             name={name}
             setActiveTab={updateTab}
             isActiveTab={isActiveTab}
             className="col-span-1 gap-sm max-lg:flex max-lg:overflow-x-auto lg:col-span-5 2xl:col-span-4"
           />
           <div className="col-span-1 lg:col-span-12 2xl:col-span-13">
-            {visibleTabs.find((t) => t.key === activeTab)?.component(name)}
+            {Tabs.find((t) => t.key === activeTab)?.component(name)}
           </div>
           <div className="relative col-span-1 lg:col-span-7">
             <SinglePackageSidebar name={name} network={network} />

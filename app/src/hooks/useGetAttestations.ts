@@ -13,6 +13,8 @@ import {
   type AttestationInfo,
   type TrustedAttestor,
 } from "@/lib/attestations";
+import { useGetMvrVersionAddresses } from "./useGetMvrVersionAddresses";
+import { ResolvedName } from "./mvrResolution";
 
 /** A trusted attestation attributed to the attester whose lineage defines its
  *  type — the shared base for the active-box and revoked-box reads. */
@@ -172,31 +174,36 @@ const ISSUED_QUERY = `query($type: String!) {
 }`;
 
 /**
- * The attestations *issued by* `pkg` — the reverse of the per-subject read.
- * Uses GraphQL `objects(type:)` to find every `Attestation<T>` of the package's
- * types across all Boxes (the object's `subject` field says who it's about), then
- * re-reads each over JSON-RPC for Display + owner. Only configured trusted
- * attesters issue attestations in the demo, so a package not in the trust config
- * returns nothing.
+ * The attestations *issued by* a package — the reverse of the per-subject read.
+ * Enumerates the package's own `store` types across its mvr version lineage, uses
+ * GraphQL `objects(type:)` to find every `Attestation<T>` of those types across
+ * all Boxes (the object's `subject` field says who it's about), then re-reads
+ * each over JSON-RPC for Display + owner. Works for ANY package, not just
+ * configured trusted attesters — the trust config governs only how the UI frames
+ * the result (see the Issued tab's not-trusted warning), not whether it loads.
  */
 export function useIssuedAttestations(
-  pkg: string | undefined,
+  name: ResolvedName | undefined,
   network: "mainnet" | "testnet",
 ) {
   const clients = useSuiClientsContext();
   const client = clients[network];
   const gql = clients.graphql[network];
   const cfg = attestationConfig();
+  // The package's own types may be defined in any version, so enumerate across
+  // its whole mvr lineage rather than just the resolved version.
+  const { data: versions } = useGetMvrVersionAddresses(
+    name?.name ?? "",
+    name?.version ?? 0,
+    network,
+  );
+  const lineage = (versions ?? []).map((v) => v.address);
 
   return useQuery({
-    queryKey: [AppQueryKeys.ATTESTATIONS, "issued", network, pkg],
-    enabled: !!pkg && !!cfg,
+    queryKey: [AppQueryKeys.ATTESTATIONS, "issued", network, name?.package_address, lineage],
+    enabled: !!name && !!cfg && lineage.length > 0,
     queryFn: async (): Promise<{ items: IssuedAttestation[]; failures: number }> => {
-      const attestor = cfg!.trustedAttestors.find((a) =>
-        a.lineage.some((id) => normalizeSuiAddress(id) === normalizeSuiAddress(pkg!)),
-      );
-      if (!attestor) return { items: [], failures: 0 };
-      const types = await enumerateAttestationTypes(client, attestor.lineage, cfg!.registryPkg);
+      const types = await enumerateAttestationTypes(client, lineage, cfg!.registryPkg);
 
       // Reverse query: every object of each issued type, across all Boxes.
       const subjectById = new Map<string, string>();
