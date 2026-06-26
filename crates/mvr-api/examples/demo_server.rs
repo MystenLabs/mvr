@@ -46,6 +46,8 @@ const PKG_INFO_SUBJECT: &str =
     "0x00000000000000000000000000000000000000000000000000000000dee00001";
 const PKG_INFO_DEPENDENCY: &str =
     "0x00000000000000000000000000000000000000000000000000000000dee00002";
+const PKG_INFO_REGISTRY: &str =
+    "0x00000000000000000000000000000000000000000000000000000000dee00003";
 
 #[derive(Parser)]
 struct Args {
@@ -92,6 +94,22 @@ async fn main() -> anyhow::Result<()> {
         Some("demo/dependency_example"),
     )
     .await?;
+
+    // The attestation registry package itself, so `<registry-pkg>` resolves by
+    // name (e.g. as a move-call target like the auditor packages).
+    let registry_pkg = ids["attestationRegistryPkg"]
+        .as_str()
+        .expect("demo-ids.json missing attestationRegistryPkg");
+    seed(
+        &mut db,
+        "@demo/attestations",
+        registry_pkg,
+        PKG_INFO_REGISTRY,
+        "The attestation registry package: Attestation<T>, per-subject boxes, Display.",
+        None,
+    )
+    .await?;
+    println!("seeded @demo/attestations -> {registry_pkg}");
 
     // The real `subject -> dependency` edge, so the dependencies endpoint
     // returns it (powering both the Dependencies tab and vuln propagation).
