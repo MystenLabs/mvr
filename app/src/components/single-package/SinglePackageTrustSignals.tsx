@@ -16,7 +16,9 @@ import { type TrustedAttestor } from "@/lib/attestations";
 import { CheckIcon } from "@/icons/single-package/CheckIcon";
 import { WarningIcon } from "@/icons/single-package/WarningIcon";
 
-/** Tab label: a pill with the count of live attestations. */
+/** Tab label: a pill with the count of live attestations on the latest version.
+ *  Shown whenever attestations are configured — "✓ 0" is itself a signal (this
+ *  package has no published audits), so it shows even at zero. */
 export function TrustSignalCount({
   address,
   network,
@@ -27,8 +29,9 @@ export function TrustSignalCount({
   const { data } = useGetAttestations(address, network);
   const positives = (data ?? []).length;
 
-  // Attestations are a mainnet-only feature in the demo.
-  if (network === "testnet" || !positives) return null;
+  // Mainnet-only. Shown even at 0 — "✓ 0" is itself a signal that the latest
+  // version has no published audits.
+  if (network === "testnet") return null;
   return (
     <div className="flex items-center gap-2xs">
       <CountPill
