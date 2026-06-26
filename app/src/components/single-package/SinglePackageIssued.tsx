@@ -105,7 +105,7 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
           <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
           <Text as="p" kind="paragraph" size="paragraph-small">
             <span className="font-semibold text-content-negative">
-              This attester isn&apos;t on your trusted list.
+              This attester isn&apos;t on mvr&apos;s trusted list.
             </span>{" "}
             These are on-chain claims this package has signed — not endorsements.
             Anyone can publish a package and issue attestations; verify the
