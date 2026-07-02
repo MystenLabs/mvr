@@ -35,6 +35,7 @@ import { TextArea } from "@/components/ui/textarea";
 import { Text } from "@/components/ui/Text";
 import { nullishValueChanged } from "@/lib/utils";
 import { isValidNamedPackage } from "@mysten/sui/utils";
+import { toast } from "sonner";
 
 const formSchema = z
   .object({
@@ -217,34 +218,39 @@ export default function CreateOrUpdateApp({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     let isSuccess = false;
 
-    if (isUpdate) {
-      if (!appRecord) throw new Error("No app record provided");
-      const execution = await update({
-        record: appRecord,
-        mainnetPackageInfo: values.mainnet
-          ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
-          : undefined,
-        testnetPackageInfo: values.testnet
-          ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
-          : undefined,
-        metadata: formToMetadata(values),
-      });
+    try {
+      if (isUpdate) {
+        if (!appRecord) throw new Error("No app record provided");
+        const execution = await update({
+          record: appRecord,
+          mainnetPackageInfo: values.mainnet
+            ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
+            : undefined,
+          testnetPackageInfo: values.testnet
+            ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
+            : undefined,
+          metadata: formToMetadata(values),
+        });
 
-      isSuccess = !!execution;
-    } else {
-      if (!suins) throw new Error("No suins provided");
-      const execution = await create({
-        name: values.name,
-        suins,
-        mainnetPackageInfo: values.mainnet
-          ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
-          : undefined,
-        testnetPackageInfo: values.testnet
-          ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
-          : undefined,
-        metadata: formToMetadata(values),
-      });
-      isSuccess = !!execution;
+        isSuccess = !!execution;
+      } else {
+        if (!suins) throw new Error("No suins provided");
+        const execution = await create({
+          name: values.name,
+          suins,
+          mainnetPackageInfo: values.mainnet
+            ? mainnetPackageInfos?.find((x) => x.objectId === values.mainnet)
+            : undefined,
+          testnetPackageInfo: values.testnet
+            ? testnetPackageInfos?.find((x) => x.objectId === values.testnet)
+            : undefined,
+          metadata: formToMetadata(values),
+        });
+        isSuccess = !!execution;
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save app");
+      return;
     }
 
     if (isSuccess) postCreation();

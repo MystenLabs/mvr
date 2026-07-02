@@ -1,106 +1,95 @@
-import {
-  DynamicFieldInfo,
-  PaginatedObjectsResponse,
-  SuiClient,
-  SuiObjectDataFilter,
-  SuiObjectDataOptions,
-  SuiObjectResponse,
-} from "@mysten/sui/client";
+import type { SuiClientTypes } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 
-/** Max objects per page. */
-const MAX_PER_PAGE = 50;
-
-/** 
- * Fetch all pages of data from a paginated API endpoint (e.g. SuiClient.getOwnedObjects).
+/**
+ * Fetch all pages of a cursor-paginated gRPC list endpoint.
  */
-export const fetchAllPages = async ({
+export const fetchAllPages = async <T>({
   asyncFn,
 }: {
-  asyncFn: (cursor?: string | null) => Promise< {
-    data: any[];
+  asyncFn: (cursor?: string | null) => Promise<{
+    items: T[];
     hasNextPage: boolean;
-    nextCursor?: string | null;
+    cursor?: string | null;
   }>;
-}) => {
-  const data = [];
+}): Promise<T[]> => {
+  const data: T[] = [];
   let hasNextPage = true;
-  let nextCursor = undefined;
+  let cursor: string | null | undefined = undefined;
 
   while (hasNextPage) {
-    const res = await asyncFn(nextCursor);
-    if (!res) break;
-    if (!res.data) break;
-    data.push(...res.data);
+    const res = await asyncFn(cursor);
+    if (!res || !res.items) break;
+    data.push(...res.items);
     hasNextPage = res.hasNextPage;
-    nextCursor = res.nextCursor;
+    cursor = res.cursor;
   }
 
   return data;
 };
 
 /**
- * Fetch all objects owned by a given address.
+ * Fetch all objects of a given (fully-resolved) type owned by an address.
+ * Defaults to including the BCS content so callers can parse with generated types.
  */
-export const fetchAllOwnedObjects = async ({
+export const fetchAllOwnedObjects = async <
+  const Include extends SuiClientTypes.ObjectInclude = { content: true },
+>({
   client,
   address,
-  filter,
-  options = { showContent: true, showType: true },
+  type,
+  include,
 }: {
-  client: SuiClient;
+  client: SuiGrpcClient;
   address: string;
-  filter: SuiObjectDataFilter;
-  options?: SuiObjectDataOptions;
-}) => {
-  return await fetchAllPages({
+  type: string;
+  include?: Include;
+}): Promise<SuiClientTypes.Object<Include>[]> => {
+  const inc = (include ?? { content: true }) as Include;
+  return fetchAllPages<SuiClientTypes.Object<Include>>({
     asyncFn: async (cursor) => {
-      return client.getOwnedObjects({
+      const res = await client.core.listOwnedObjects({
         owner: address,
-        filter,
+        type,
         cursor,
-        options,
+        include: inc,
       });
+      return {
+        items: res.objects,
+        hasNextPage: res.hasNextPage,
+        cursor: res.cursor,
+      };
     },
-  }) as SuiObjectResponse[];
+  });
 };
 
-/** 
- * Allows fetching all the DFs & the equivalent objects 
- * 
- * USE WITH CAUTION: This function can be slow and expensive (easily hitting RPC limits).
- * */
+/**
+ * Fetch all dynamic-field entries (with their BCS values) of a parent table/bag.
+ *
+ * USE WITH CAUTION: can be slow/expensive for large tables.
+ */
 export const fetchAllDynamicFields = async ({
   client,
   tableId,
 }: {
-  client: SuiClient;
+  client: SuiGrpcClient;
   tableId: string;
 }) => {
-  const dfPages = await fetchAllPages({
+  return fetchAllPages({
     asyncFn: async (cursor) => {
-      return client.getDynamicFields({
+      const res = await client.listDynamicFields({
         parentId: tableId,
         cursor,
+        include: { value: true },
       });
+      return {
+        items: res.dynamicFields,
+        hasNextPage: res.hasNextPage,
+        cursor: res.cursor,
+      };
     },
-  }) as DynamicFieldInfo[];
-
-  const objectIds = dfPages.map(x => x.objectId);
-  const batches = batch(objectIds, MAX_PER_PAGE);
-
-  const objects = (await Promise.all(
-    batches.map(async (batch) => {
-      return await client.multiGetObjects({
-        ids: batch,
-        options: {
-          showContent: true
-        }
-      })
-    }),
-  )).flat();
-  
-  return objects;
-}
+  });
+};
 
 // create a batch function for arrays
 export const batch = <T>(arr: T[], batchSize: number) => {

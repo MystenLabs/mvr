@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppCap } from "./useOwnedApps";
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { Constants } from "@/lib/constants";
-import { SuiObjectResponse } from "@mysten/sui/client";
+import { AppRecord as AppRecordStruct } from "@/contracts/mvr_core/app_record";
 import { STATIC_CHAIN_IDENTIFIERS } from "./useChainIdentifier";
 
 export type AppInfo = {
@@ -24,56 +24,61 @@ export type AppRecord = {
   normalized: string;
 };
 
-const parseAppInfo = (field: any): AppInfo => {
+type ParsedRecord = ReturnType<typeof AppRecordStruct.parse>;
+
+const parseAppInfo = (info: {
+  package_address?: string | null;
+  upgrade_cap_id?: string | null;
+  package_info_id?: string | null;
+}): AppInfo => {
   return {
-    packageAddress: field.package_address,
-    upgradeCapId: field.upgrade_cap_id,
-    packageInfoId: field.package_info_id,
+    packageAddress: info.package_address ?? "",
+    upgradeCapId: info.upgrade_cap_id ?? "",
+    packageInfoId: info.package_info_id ?? "",
   };
 };
 
-const format = (
-  response: SuiObjectResponse & {
-    appName: string;
-    orgName: string;
-    normalized: string;
-  },
-) => {
-  if (response.data?.content?.dataType !== "moveObject")
-    throw new Error("Invalid object type");
-
-  const fields = response.data.content.fields as Record<string, any>;
-  const data = fields.value.fields;
-  const mainnetData = data.app_info?.fields
-    ? parseAppInfo(data.app_info.fields)
+const format = (input: {
+  record: ParsedRecord;
+  appName: string;
+  orgName: string;
+  normalized: string;
+}): AppRecord => {
+  const { record } = input;
+  // `app_info` can be `Some` with an empty/None `package_info_id` (an app with
+  // no mainnet package yet), which would otherwise be a truthy-but-empty object.
+  // Treat "no package info id" as no mainnet package.
+  const mainnetData = record.app_info?.package_info_id
+    ? parseAppInfo(record.app_info)
     : null;
+
   // All the network data are mapped here.
-  const networks = data.networks.fields.contents?.map((x: any) => ({
-    key: x.fields.key,
-    value: parseAppInfo(x.fields.value.fields),
-  })) as { key: string; value: AppInfo }[];
+  const networks = record.networks.contents.map((x) => ({
+    key: x.key,
+    value: parseAppInfo(x.value),
+  }));
 
   const testnet = networks.find(
     (x) => x.key === STATIC_CHAIN_IDENTIFIERS.testnet,
   )?.value;
 
   return {
-    objectId: fields.id.id,
+    objectId: record.app_cap_id,
     mainnet: mainnetData,
     testnet,
-    appCapId: data.app_cap_id,
-    metadata: data.metadata.fields.contents.reduce(
-      (acc: Record<string, string>, x: any) => {
-        acc[x.fields.key] = x.fields.value;
+    appCapId: record.app_cap_id,
+    metadata: record.metadata.contents.reduce(
+      (acc: Record<string, string>, x) => {
+        acc[x.key] = x.value;
         return acc;
       },
       {},
     ),
-    nsNftId: data.ns_nft_id,
-    appName: response.appName,
-    orgName: response.orgName,
-    normalized: response.normalized,
-  } as AppRecord;
+    nsNftId: record.ns_nft_id,
+    appName: input.appName,
+    orgName: input.orgName,
+    normalized: input.normalized,
+  };
 };
 
 export function useGetAppFromCap(cap: AppCap) {
@@ -82,13 +87,13 @@ export function useGetAppFromCap(cap: AppCap) {
   return useQuery({
     queryKey: [AppQueryKeys.APP, cap.normalizedName],
     queryFn: async () => {
-      const data = await client.getDynamicFieldObject({
+      const { dynamicField } = await client.core.getDynamicField({
         parentId: Constants.appsRegistryTableId,
         name: cap.dfName,
       });
 
       return {
-        ...data,
+        record: AppRecordStruct.parse(dynamicField.value.bcs),
         appName: cap.appName,
         orgName: cap.orgName,
         normalized: cap.normalizedName,

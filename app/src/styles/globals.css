@@ -1,6 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Wallet connect UI (@mysten/dapp-kit web components) — reproduces the old
+   mvrWalletTheme dark palette via the shadcn-style CSS custom properties the
+   components read (`var(--primary)`, `var(--background)`, …). Scoped to the
+   dapp-kit custom elements so the rest of the app's styles are untouched. */
+mysten-dapp-kit-connect-button,
+mysten-dapp-kit-connect-modal {
+  --background: #01070e;
+  --foreground: #f7f7f8;
+  --primary: #ffffff;
+  --primary-foreground: #01070e;
+  --secondary: #030f1c;
+  --secondary-foreground: #f7f7f8;
+  --muted: #030f1c;
+  --muted-foreground: #abbdcc;
+  --accent: rgba(77, 162, 255, 0.16);
+  --accent-foreground: #f7f7f8;
+  --popover: #030f1c;
+  --popover-foreground: #f7f7f8;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: #030f1c;
+  --ring: rgba(77, 162, 255, 0.5);
+  --destructive: #ff794b;
+  --radius: 12px;
+  --cursor-button: pointer;
+}
+
 @layer base {
     /* Primitives */
   :root {

@@ -133,9 +133,13 @@ export function useUpdateAppMutation() {
       const tx = new Transaction();
       let updates = 0;
 
+      // Mainnet package info is immutable, so only block an attempt to *change*
+      // it (a new mainnetPackageInfo that differs). Leaving it untouched — e.g.
+      // a testnet-only update — must not throw.
       if (
         record.mainnet &&
-        record.mainnet?.packageInfoId !== mainnetPackageInfo?.objectId
+        mainnetPackageInfo &&
+        record.mainnet.packageInfoId !== mainnetPackageInfo.objectId
       )
         throw new Error("Mainnet package info cannot be updated");
 

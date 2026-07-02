@@ -9,7 +9,7 @@ export const STATIC_CHAIN_IDENTIFIERS = {
 
 export function useChainIdentifier(network: Network) {
     const clients = useSuiClientsContext();
-  
+
     return useQuery({
       queryKey: ["chainIdentifier", network],
       queryFn: async () => {
@@ -21,8 +21,8 @@ export function useChainIdentifier(network: Network) {
             return STATIC_CHAIN_IDENTIFIERS.testnet;
         }
 
-        const chainId = await clients[network].getChainIdentifier();
-        return chainId;
+        const { chainIdentifier } = await clients[network].core.getChainIdentifier();
+        return chainIdentifier;
       },
       refetchOnMount: false,
       refetchOnReconnect: false,

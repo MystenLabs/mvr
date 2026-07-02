@@ -10,30 +10,15 @@ export function useFetchObjectByIds(objectIds: string[], network: Network) {
     queryKey: [AppQueryKeys.LIST_OF_OBJECTS, objectIds],
     queryFn: async () => {
       if (objectIds.length === 0) return [];
-      // batch in groups of 50
-      const batches = objectIds.reduce(
-        (acc: string[][], id: string, i: number) => {
-          if (i % 50 === 0) {
-            acc.push([]);
-          }
-          const batch = acc[acc.length - 1];
-          batch && batch.push(id);
-          return acc;
-        },
-        [[]],
+      // The core client batches/dedups these getObject calls under the hood,
+      // so no manual chunking is needed.
+      const results = await Promise.all(
+        objectIds.map((objectId) =>
+          client.core.getObject({ objectId, include: { json: true } }),
+        ),
       );
 
-      const objects = await Promise.all(
-        batches.map(async (batch) => {
-          if (batch.length === 0) return [];
-          return await client.multiGetObjects({
-            ids: batch,
-            options: { showContent: true, showType: true },
-          });
-        }),
-      );
-
-      return objects.flat();
+      return results.map((r) => r.object);
     },
     enabled: !!objectIds.length,
   });

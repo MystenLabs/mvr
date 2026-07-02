@@ -1,7 +1,7 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { AppQueryKeys, Network } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
-import { graphql } from "@mysten/sui/graphql/schemas/2024.4";
+import { graphql } from "@mysten/sui/graphql/schema";
 import { SuiGraphQLClient } from "@mysten/sui/graphql";
 
 const LATEST_PACKAGE_VERSION_QUERY = graphql(`

@@ -1,7 +1,7 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
-import { SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { AppQueryKeys, Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
 import { parsePackageInfoContent } from "@/utils/helpers";
@@ -27,19 +27,17 @@ export const DefaultColors = [
 ];
 
 const getPackageInfoObjects = async (
-  client: SuiClient,
+  client: SuiGrpcClient,
   address: string,
 ) => {
   return fetchAllOwnedObjects({
     client,
     address,
-    filter: {
-      StructType: `@mvr/metadata::package_info::PackageInfo`,
-    },
-    options: {
-      showContent: true,
-      showDisplay: true,
-    },
+    // Pass the MVR name, not a codegen'd typeTag (which bakes in the mainnet
+    // address). `listOwnedObjects` resolves MVR type names to this network's
+    // package address automatically, so the filter is network-agnostic.
+    type: "@mvr/metadata::package_info::PackageInfo",
+    include: { content: true, display: true },
   });
 };
 

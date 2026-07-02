@@ -3,7 +3,6 @@ import { mainPackage } from "@mysten/suins";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
 import { fetchAllOwnedObjects } from "@/utils/query";
-import { SuiObjectResponse } from "@mysten/sui/client";
 import { normalizeSuiNSName } from "@mysten/sui/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useKioskItems } from "./useKioskItems";
@@ -39,21 +38,28 @@ const PUBLIC_NAMES: SuinsName[] = [
   },
 ];
 
-const parse = (response: SuiObjectResponse) => {
-  if (response.data?.content?.dataType !== "moveObject")
-    throw new Error("Invalid object type");
+// SuiNS registration objects aren't part of the codegen'd MVR packages, so we
+// read the JSON view here rather than a generated BCS type. The object id comes
+// from the reliable core `objectId`; the remaining field paths should be
+// confirmed against live gRPC (Phase 5).
+const parse = (obj: {
+  objectId: string;
+  type: string;
+  json: Record<string, any> | null;
+}) => {
+  const json = obj.json;
+  if (!json) throw new Error("Invalid object type");
 
-  const objectFields = response.data.content.fields as Record<string, any>;
-  const isSubname = response.data.type === NS_SUBNAME_MAINNET_TYPE;
-  const nftFields = isSubname ? objectFields.nft.fields : objectFields;
+  const isSubname = obj.type === NS_SUBNAME_MAINNET_TYPE;
+  const nftFields = isSubname ? json.nft : json;
 
   return {
     ...nftFields,
-    nftId: objectFields.id.id,
+    nftId: obj.objectId,
     domainName: normalizeSuiNSName(nftFields.domain_name, "at"),
-    expirationTimestampMs: nftFields.expiration_timestamp_ms,
+    expirationTimestampMs: Number(nftFields.expiration_timestamp_ms),
     isSubname,
-    objectType: response.data.type,
+    objectType: obj.type,
   };
 };
 
@@ -69,9 +75,8 @@ export function useOwnedSuinsNames() {
       const ownedNames = await fetchAllOwnedObjects({
         client,
         address: activeAddress!,
-        filter: {
-          StructType: NS_MAINNET_TYPE,
-        },
+        type: NS_MAINNET_TYPE,
+        include: { json: true },
       });
 
       return ownedNames;
@@ -96,9 +101,8 @@ export function useOwnedSuinsSubnames() {
       const ownedSubnames = await fetchAllOwnedObjects({
         client,
         address: activeAddress!,
-        filter: {
-          StructType: NS_SUBNAME_MAINNET_TYPE,
-        },
+        type: NS_SUBNAME_MAINNET_TYPE,
+        include: { json: true },
       });
 
       return ownedSubnames;

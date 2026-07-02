@@ -14,15 +14,15 @@ export function useGetPackageInfo({
   return useQuery({
     queryKey: [AppQueryKeys.PACKAGE_INFO_BY_ID, objectId, network],
     queryFn: async () => {
-      const infoObj = await clients[network].getObject({
-        id: objectId!,
-        options: {
-          showContent: true,
-          showDisplay: true,
-        }
+      const { object } = await clients[network].core.getObject({
+        objectId: objectId!,
+        include: {
+          content: true,
+          display: true,
+        },
       });
 
-      return infoObj;
+      return object;
     },
     enabled: !!objectId,
     refetchOnMount: false,

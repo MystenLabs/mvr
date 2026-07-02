@@ -9,10 +9,9 @@ export function useSuiNSResolution(name: string, network: Network) {
   return useQuery({
     queryKey: [AppQueryKeys.SUINS_NAME_RESOLUTION, name, network],
     queryFn: async () => {
-      const address = await client.resolveNameServiceAddress({
-        name,
-      });
-      return address;
+      // Forward SuiNS resolution (name -> address) via the gRPC name service.
+      const res = await client.nameService.lookupName({ name }).response;
+      return res.record?.targetAddress ?? null;
     },
     enabled: !!name && isValidSuiNSName(name),
     refetchOnMount: false,

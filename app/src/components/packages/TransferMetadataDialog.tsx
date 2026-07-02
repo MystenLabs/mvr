@@ -14,7 +14,6 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePackagesNetwork } from "../providers/packages-provider";
-import { useResolveSuiNSName } from "@mysten/dapp-kit";
 import { useSuiNSResolution } from "@/hooks/useSuiNSResolution";
 import {
   Form,
@@ -142,7 +141,7 @@ export function TransferMetadataDialog({
 
     const res = await executeTransaction(transaction);
 
-    if (!res || res.effects?.status?.status !== "success") return;
+    if (!res) return;
 
     toast.success("Metadata transferred successfully");
 

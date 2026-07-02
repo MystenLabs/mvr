@@ -3,6 +3,7 @@ import { Constants } from "@/lib/constants";
 import { AppQueryKeys } from "@/utils/types";
 import { normalizeSuiNSName } from "@mysten/sui/utils";
 import { useQuery } from "@tanstack/react-query";
+import { Name } from "@/contracts/mvr_core/name";
 
 export function useIsNameAvailable(name: string, enabled = true) {
     const client = useSuiClientsContext().mainnet;
@@ -16,23 +17,27 @@ export function useIsNameAvailable(name: string, enabled = true) {
 
             const nsNameFormatted = normalizeSuiNSName(suinsName || '', 'dot');
 
-            const exists = await client.getDynamicFieldObject({
-                parentId: Constants.appsRegistryTableId,
-                name: {
-                    type: Constants.appsNameType,
-                    value: {
-                        app: [appName],
-                        org: {
-
-                            labels: nsNameFormatted.split('.').reverse()
-                        }
-                    }
-                }
-            });
-
-            return !!exists.error;
+            // 2.x throws when the dynamic field doesn't exist (v1 returned null),
+            // so absence == available.
+            try {
+                await client.core.getDynamicField({
+                    parentId: Constants.appsRegistryTableId,
+                    name: {
+                        type: Name.typeTag(),
+                        bcs: Name.serialize({
+                            org: {
+                                labels: nsNameFormatted.split('.').reverse(),
+                            },
+                            app: [appName],
+                        }).toBytes(),
+                    },
+                });
+                return false;
+            } catch {
+                return true;
+            }
         },
         enabled
     })
-  
+
 }
