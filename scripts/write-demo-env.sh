@@ -59,6 +59,11 @@ ATTESTORS = {
         "mvrName": "@auditor-a/audit",
         "iconUrl": f"{RAW}/demo/auditor_a/icon.svg",
     },
+    "auditor_c": {
+        "name": "Auditor C",
+        "mvrName": "@auditor-c/audit",
+        "iconUrl": f"{RAW}/demo/auditor_c/icon.svg",
+    },
     # PR-B attester; its icon lands at demo/vuln_reporter_a/icon.svg when that
     # package is added. Inert here (not in PR A's trusted set).
     "vuln_example": {
