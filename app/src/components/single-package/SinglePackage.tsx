@@ -12,6 +12,14 @@ import { ReadMeRenderer } from "./ReadMeRenderer";
 import { SinglePackageDependencies } from "./SinglePackageDependencies";
 import { SinglePackageDependents } from "./SinglePackageDependents";
 import { SinglePackageVersions } from "./SinglePackageVersions";
+import {
+  SinglePackageTrustSignals,
+  TrustSignalCount,
+} from "./SinglePackageTrustSignals";
+import {
+  SinglePackageIssued,
+  IssuedCount,
+} from "./SinglePackageIssued";
 import { DependenciesIconSelected } from "@/icons/single-package/DependenciesIcon";
 import { DependendsIconSelected } from "@/icons/single-package/DependendsIcon";
 import { DependenciesIconUnselected } from "@/icons/single-package/DependenciesIcon";
@@ -23,6 +31,24 @@ import { ReadMeIconUnselected } from "@/icons/single-package/ReadMeIcon";
 import { SinglePackageTab } from "@/utils/types";
 import { AnalyticsIconUnselected } from "@/icons/single-package/AnalyticsIcon";
 import { AnalyticsIconSelected } from "@/icons/single-package/AnalyticsIcon";
+import { attestationConfig, isConfiguredAttestor } from "@/lib/attestations";
+
+// Simple shield-check glyph for the Trust Signals tab; reused for both states.
+const TrustSignalsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+    <path d="M9 12l2 2 4-4" />
+  </svg>
+);
+
+// Upload/outbox glyph for the Issued tab (attestations this package emits).
+const IssuedIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+    <path d="M12 15V3" />
+    <path d="M7 8l5-5 5 5" />
+  </svg>
+);
 
 export const Tabs: SinglePackageTab[] = [
   {
@@ -69,6 +95,28 @@ export const Tabs: SinglePackageTab[] = [
     component: (name: ResolvedName) => <SinglePackageDependents name={name} />,
   },
   {
+    key: "trust-signals",
+    title: "Security",
+    selectedIcon: <TrustSignalsIcon />,
+    unselectedIcon: <TrustSignalsIcon />,
+    label: (address: string, network: "mainnet" | "testnet") => (
+      <TrustSignalCount address={address} network={network} />
+    ),
+    component: (name: ResolvedName) => <SinglePackageTrustSignals name={name} />,
+  },
+  {
+    key: "issued",
+    title: "Attestations",
+    selectedIcon: <IssuedIcon />,
+    unselectedIcon: <IssuedIcon />,
+    label: (
+      _address: string,
+      network: "mainnet" | "testnet",
+      name?: ResolvedName,
+    ) => (name ? <IssuedCount name={name} network={network} /> : null),
+    component: (name: ResolvedName) => <SinglePackageIssued name={name} />,
+  },
+  {
     key: "analytics",
     title: "Analytics",
     selectedIcon: <AnalyticsIconSelected />,
@@ -89,7 +137,17 @@ export function SinglePackage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
+  // The "Issued" tab is in the nav only for configured attesters (a free
+  // in-memory check), but it stays reachable by URL (?tab=issued) for any
+  // package — the panel shows a not-trusted warning. So nav visibility
+  // (navTabs) and URL-selectability (the full Tabs list) differ.
+  const cfg = attestationConfig();
+  const navTabs =
+    cfg && isConfiguredAttestor(cfg, name.package_address)
+      ? Tabs
+      : Tabs.filter((t) => t.key !== "issued");
+
+  const [activeTab, setActiveTab] = useState(navTabs[0]!.key);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -112,7 +170,7 @@ export function SinglePackage({
       <div className="container">
         <div className="grid grid-cols-1 gap-2xl lg:grid-cols-24">
           <SinglePackageTabs
-            tabs={Tabs}
+            tabs={navTabs}
             name={name}
             setActiveTab={updateTab}
             isActiveTab={isActiveTab}
