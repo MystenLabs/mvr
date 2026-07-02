@@ -131,20 +131,29 @@ async fn main() -> anyhow::Result<()> {
     if let Some(attestors) = ids["trustedAttestors"].as_array() {
         for (i, a) in attestors.iter().enumerate() {
             let pkg_name = a["name"].as_str().unwrap_or_default();
+            let original = a["originalId"].as_str().unwrap_or_default().to_string();
             let latest = a["latestId"].as_str().unwrap_or_default().to_string();
             let mvr_name = auditor_mvr_name(pkg_name);
             let pkg_info_id = format!("0x{:064x}", 0xdee0_0010u64 + i as u64);
             let git_path = format!("demo/{pkg_name}");
-            seed(
+            // Seed every published version, not just the latest: the reverse
+            // (Issued) read derives its type lineage from the MVR versions, and an
+            // upgraded auditor (auditor_a) defines Audit in v1 and AuditV2 in v2.
+            let versions: Vec<(String, i64)> = if !original.is_empty() && original != latest {
+                vec![(original, 1), (latest, 2)]
+            } else {
+                vec![(latest, 1)]
+            };
+            seed_versions(
                 &mut db,
                 &mvr_name,
-                &latest,
+                &versions,
                 &pkg_info_id,
                 "A trusted attester in the demo.",
                 Some(&git_path),
             )
             .await?;
-            println!("seeded {mvr_name}  -> {latest}");
+            println!("seeded {mvr_name}  -> {} version(s)", versions.len());
         }
     }
 
