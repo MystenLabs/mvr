@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Link from "next/link";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
@@ -11,8 +10,6 @@ import { attestationConfig, isConfiguredAttestor } from "@/lib/attestations";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
 import { WarningIcon } from "@/icons/single-package/WarningIcon";
-
-const PAGE_SIZE = 20;
 
 /** Tab label: count of attestations this package has issued. */
 export function IssuedCount({
@@ -42,27 +39,20 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   // URL for any package — warn when this package isn't a trusted attester.
   const cfg = attestationConfig();
   const trusted = !!cfg && isConfiguredAttestor(cfg, name.package_address);
-  const [liveCount, setLiveCount] = useState(PAGE_SIZE);
-  const [revokedShown, setRevokedShown] = useState(PAGE_SIZE);
-
   const issued = data?.items ?? [];
   const failures = data?.failures ?? 0;
 
   // Newest first; attestations without a publish_date sort last. Live and
   // revoked are split into separate sections (revoked moved out of the main
-  // list) so endorsements read distinctly from withdrawn ones.
+  // list) so endorsements read distinctly from withdrawn ones. The fetch pages
+  // through every result, so we render them all — no cap.
   const byDate = (a: IssuedAttestation, b: IssuedAttestation) => publishMs(b) - publishMs(a);
   const liveItems = issued.filter((i) => !i.revoked).sort(byDate);
   const revokedItems = issued.filter((i) => i.revoked).sort(byDate);
-  const liveVisible = liveItems.slice(0, liveCount);
-  const revokedVisible = revokedItems.slice(0, revokedShown);
 
-  // Resolve names only for the subjects currently on screen (both sections), so
-  // the lookup fan-out grows with what's shown rather than the whole list.
-  const visibleSubjects = [
-    ...new Set([...liveVisible, ...revokedVisible].map((i) => i.subject)),
-  ];
-  const { items: names } = useReverseResolution(visibleSubjects, network);
+  // Resolve subject names for every attestation shown.
+  const subjects = [...new Set(issued.map((i) => i.subject))];
+  const { items: names } = useReverseResolution(subjects, network);
   const nameOf = (subject: string) => (names[subject] as { name?: string })?.name;
 
   // Attestations are a mainnet-only feature in the demo.
@@ -142,66 +132,40 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
         </Text>
       )}
 
-      {liveVisible.length > 0 && (
-        <RowList
-          items={liveVisible}
-          total={liveItems.length}
-          nameOf={nameOf}
-          onShowMore={() => setLiveCount((c) => c + PAGE_SIZE)}
-        />
-      )}
+      {liveItems.length > 0 && <RowList items={liveItems} nameOf={nameOf} />}
 
       {revokedItems.length > 0 && (
         <div className="flex flex-col gap-sm border-t border-stroke-secondary pt-md">
           <Text as="div" kind="label" size="label-regular" className="text-content-tertiary">
             <p>Revoked</p>
           </Text>
-          <RowList
-            items={revokedVisible}
-            total={revokedItems.length}
-            nameOf={nameOf}
-            deemphasized
-            onShowMore={() => setRevokedShown((c) => c + PAGE_SIZE)}
-          />
+          <RowList items={revokedItems} nameOf={nameOf} deemphasized />
         </div>
       )}
     </div>
   );
 }
 
-/** A dense, paginated list of issued-attestation rows. */
+/** A dense list of issued-attestation rows. */
 function RowList({
   items,
-  total,
   nameOf,
   deemphasized,
-  onShowMore,
 }: {
   items: IssuedAttestation[];
-  total: number;
   nameOf: (subject: string) => string | undefined;
   deemphasized?: boolean;
-  onShowMore: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-sm">
-      <div className="flex flex-col divide-y divide-stroke-secondary">
-        {items.map((item) => (
-          <IssuedRow
-            key={item.info.id}
-            item={item}
-            name={nameOf(item.subject)}
-            deemphasized={deemphasized}
-          />
-        ))}
-      </div>
-      {items.length < total && (
-        <button type="button" onClick={onShowMore} className="self-start">
-          <Text kind="label" size="label-small" className="text-content-accent underline">
-            Show more ({total - items.length})
-          </Text>
-        </button>
-      )}
+    <div className="flex flex-col divide-y divide-stroke-secondary">
+      {items.map((item) => (
+        <IssuedRow
+          key={item.info.id}
+          item={item}
+          name={nameOf(item.subject)}
+          deemphasized={deemphasized}
+        />
+      ))}
     </div>
   );
 }

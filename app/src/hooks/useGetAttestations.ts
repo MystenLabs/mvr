@@ -167,8 +167,9 @@ export interface IssuedAttestation {
   revoked: boolean;
 }
 
-const ISSUED_QUERY = `query($type: String!) {
-  objects(filter: { type: $type }) {
+const ISSUED_QUERY = `query($type: String!, $after: String) {
+  objects(filter: { type: $type }, after: $after) {
+    pageInfo { hasNextPage endCursor }
     nodes { address asMoveObject { contents { json } } }
   }
 }`;
@@ -205,28 +206,39 @@ export function useIssuedAttestations(
     queryFn: async (): Promise<{ items: IssuedAttestation[]; failures: number }> => {
       const types = await enumerateAttestationTypes(client, lineage, cfg!.registryPkg);
 
-      // Reverse query: every object of each issued type, across all Boxes.
-      const subjectById = new Map<string, string>();
-      for (const type of types) {
-        const res = await gql.query<{
+      // Reverse query: page through every object of each issued type, across all
+      // Boxes. A typed helper (explicit `after` param) keeps the cursor out of
+      // the query's own return-type inference.
+      const issuedPage = (type: string, after: string | null) =>
+        gql.query<{
           objects: {
+            pageInfo: { hasNextPage: boolean; endCursor: string | null };
             nodes: {
               address: string;
               asMoveObject: { contents: { json: { subject?: string } } | null } | null;
             }[];
           };
-        }>({ query: ISSUED_QUERY, variables: { type } });
-        // Surface GraphQL errors instead of treating a failed query as "no
-        // results" — e.g. the localnet GraphQL's "Request is outside consistent
-        // range" when its consistent store lags. Swallowing it renders a
-        // failure as an empty Issued tab, which is misleading.
-        if (res.errors?.length) {
-          throw new Error(`GraphQL query failed: ${res.errors[0]?.message}`);
-        }
-        for (const node of res.data?.objects?.nodes ?? []) {
-          const subject = node.asMoveObject?.contents?.json?.subject;
-          if (node.address && subject) subjectById.set(node.address, subject);
-        }
+        }>({ query: ISSUED_QUERY, variables: { type, after } });
+
+      const subjectById = new Map<string, string>();
+      for (const type of types) {
+        let after: string | null = null;
+        do {
+          const res = await issuedPage(type, after);
+          // Surface GraphQL errors instead of treating a failed query as "no
+          // results" — e.g. the localnet GraphQL's "Request is outside consistent
+          // range" when its consistent store lags. Swallowing it renders a
+          // failure as an empty Issued tab, which is misleading.
+          if (res.errors?.length) {
+            throw new Error(`GraphQL query failed: ${res.errors[0]?.message}`);
+          }
+          for (const node of res.data?.objects?.nodes ?? []) {
+            const subject = node.asMoveObject?.contents?.json?.subject;
+            if (node.address && subject) subjectById.set(node.address, subject);
+          }
+          const pageInfo = res.data?.objects?.pageInfo;
+          after = pageInfo?.hasNextPage ? pageInfo.endCursor : null;
+        } while (after);
       }
       if (subjectById.size === 0) return { items: [], failures: 0 };
 
