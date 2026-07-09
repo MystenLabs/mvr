@@ -1,5 +1,5 @@
 import { formatAddress } from '@mysten/sui/utils';
-import { useResolveSuiNSName } from '@mysten/dapp-kit';
+import { useResolveSuiNSName } from '@/hooks/useResolveSuiNSName';
 import { normalizeSuiNSName } from "@mysten/sui/utils"
 
 import { Text } from '../ui/Text';

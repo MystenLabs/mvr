@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { MVRContext, MVRSetup } from "../providers/mvr-provider";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import Footer from "../Footer";
 import { LocalStorageKeys } from "@/data/localStorage";
 import { Toaster } from "sonner";
@@ -11,9 +10,6 @@ export function BaseLayout({ children }: { children: React.ReactNode }) {
   const [mvrSetup, setMVRSetup] = useState<MVRSetup>({
     isCustom: false,
     customAddress: undefined,
-    mainnetClient: new SuiClient({
-      url: getFullnodeUrl("mainnet"),
-    }),
   });
 
   // init multisig setup from local storage.

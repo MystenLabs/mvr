@@ -1,37 +1,39 @@
-import { SuiObjectResponse } from "@mysten/sui/client";
+import type { SuiClientTypes } from "@mysten/sui/client";
+import { PackageInfo } from "@/contracts/mvr_metadata/package_info";
 import { PackageInfoData } from "./types";
 
+/**
+ * Parse a PackageInfo object's BCS content (+ Display v2 output) into the shape
+ * the app consumes.
+ */
+export const parsePackageInfoContent = (
+  obj?: SuiClientTypes.Object<{ content: true; display: true }>,
+): PackageInfoData => {
+  if (!obj?.content) throw new Error("Invalid package info object");
 
-export const parsePackageInfoContent = (cap?: SuiObjectResponse): PackageInfoData => {
-    if (!cap) throw new Error("Invalid upgrade cap object");
-    if (!cap.data) throw new Error("Invalid upgrade cap object");
-    if (!cap.data.content) throw new Error("Invalid upgrade cap object");
-    if (cap.data.content.dataType !== "moveObject")
-      throw new Error("Invalid upgrade cap object");
-  
-    const display = cap.data.display?.data as Record<string, any>;
-    const fields = cap.data.content.fields as Record<string, any>;
-  
-    return {
-      objectId: fields.id.id,
-      packageAddress: fields.package_address,
-      upgradeCapId: fields.upgrade_cap_id,
-      display: {
-        gradientFrom: fields.display.fields.gradient_from,
-        gradientTo: fields.display.fields.gradient_to,
-        name: fields.display.fields.name,
-        textColor: fields.display.fields.text_color,
+  const fields = PackageInfo.parse(obj.content);
+  const display = (obj.display?.output ?? {}) as Record<string, any>;
+
+  return {
+    objectId: fields.id,
+    packageAddress: fields.package_address,
+    upgradeCapId: fields.upgrade_cap_id,
+    display: {
+      gradientFrom: fields.display.gradient_from,
+      gradientTo: fields.display.gradient_to,
+      name: fields.display.name,
+      textColor: fields.display.text_color,
+    },
+    gitVersionsTableId: fields.git_versioning.id,
+    metadata: fields.metadata.contents.reduce(
+      (acc: Record<string, string>, x) => {
+        acc[x.key] = x.value;
+        return acc;
       },
-      gitVersionsTableId: fields.git_versioning.fields.id.id,
-      metadata: fields.metadata.fields.contents.reduce(
-        (acc: Record<string, string>, x: any) => {
-          acc[x.fields.key] = x.fields.value;
-          return acc;
-        },
-        {},
-      ),
-      suiDisplay: {
-        imageUrl: display.image_url,
-      }
-    };
+      {},
+    ),
+    suiDisplay: {
+      imageUrl: display.image_url,
+    },
   };
+};

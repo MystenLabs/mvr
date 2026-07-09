@@ -1,61 +1,47 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import {
-  ConnectModal,
   useCurrentAccount,
   useCurrentWallet,
-  useDisconnectWallet,
-  useSwitchAccount,
-} from "@mysten/dapp-kit";
+  useDAppKit,
+  useWalletConnection,
+} from "@mysten/dapp-kit-react";
+import dynamic from "next/dynamic";
 
-import { Button } from "../ui/button";
-import { useState } from "react";
+// dapp-kit's connect UI is a Lit web component that references `window` at
+// import time, so load it client-side only to keep Next.js SSR/prerender happy.
+const ConnectButton = dynamic(
+  () => import("@mysten/dapp-kit-react/ui").then((m) => m.ConnectButton),
+  { ssr: false },
+);
+
 import { AccountSelector, AccountContent } from "./AccountSelector";
-import { SuiActiveAccountInfo, ActiveAccountInfo } from "./AccountInfo";
+import { SuiActiveAccountInfo } from "./AccountInfo";
 import { useWalletNetwork } from "@/hooks/useWalletNetwork";
+import { dAppKit } from "@/dapp-kit";
 
 //TODO: use network explorer url
 const EXPLORER_BASE_LINK = "https://suiscan.xyz";
 
-function ConnectSuiWalletButton() {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <ConnectModal
-      open={open}
-      trigger={
-        <Button
-          className="flex items-center gap-2"
-          variant="primaryBtnGradient"
-          size="header"
-        >
-          <ActiveAccountInfo label="Connect" />
-        </Button>
-      }
-      onOpenChange={(isOpen) => {
-        setOpen(isOpen);
-      }}
-    />
-  );
-}
-
 export function SuiConnectPill() {
-  const accounts = useCurrentAccount();
-  const { mutate: disconnect } = useDisconnectWallet();
-  const { mutate: switchAccount } = useSwitchAccount();
-  const { currentWallet, isConnecting, isDisconnected } = useCurrentWallet();
+  const dappKit = useDAppKit();
   const currentAccount = useCurrentAccount();
+  const currentWallet = useCurrentWallet();
+  const { isConnecting, isDisconnected } = useWalletConnection();
 
   const network = useWalletNetwork();
   const link =
     EXPLORER_BASE_LINK + (network === "mainnet" ? "" : `/${network}`);
 
   if ((!currentAccount && !isConnecting) || isDisconnected) {
-    return <ConnectSuiWalletButton />;
+    // TODO(theme): restyle this connect entrypoint to match the old mvrWalletTheme pill.
+    return <ConnectButton instance={dAppKit} />;
   }
 
   return (
     <AccountSelector
-      trigger={<SuiActiveAccountInfo address={accounts?.address ?? ""} />}
+      trigger={<SuiActiveAccountInfo address={currentAccount?.address ?? ""} />}
     >
       {currentWallet?.accounts.map((account) => (
         <AccountContent
@@ -68,10 +54,10 @@ export function SuiConnectPill() {
             )
           }
           explorerUrl={`${link}/address/${account.address}`}
-          disconnect={disconnect}
+          disconnect={() => dappKit.disconnectWallet()}
           onClick={(e) => {
             e.preventDefault();
-            switchAccount({ account });
+            dappKit.switchAccount({ account });
           }}
         />
       ))}

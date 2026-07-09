@@ -13,16 +13,18 @@ export function usePackageModules(packageId: string) {
     queryKey: [AppQueryKeys.UPGRADE_CAP_MODULE, packageId],
 
     queryFn: async () => {
-      const modules = await client.getNormalizedMoveModulesByPackage({
-        package: packageId,
-      });
+      // No core-level "list modules"; use the gRPC MovePackage service.
+      const res = await client.movePackageService.getPackage({
+        packageId,
+      }).response;
 
-      return modules;
+      return res.package?.modules ?? [];
     },
-    
 
     select(data) {
-      return Object.keys(data);
+      return data
+        .map((m) => m.name)
+        .filter((name): name is string => Boolean(name));
     },
     enabled: !!packageId,
   });

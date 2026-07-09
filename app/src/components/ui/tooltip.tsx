@@ -1,8 +1,5 @@
+import { useId } from "react";
 import { Tooltip } from "react-tooltip";
-
-const generateRandomId = () => {
-  return `id-${Math.random().toString(36).substr(2, 9)}-${Date.now()}`;
-};
 
 export function TooltipWrapper({
   children,
@@ -13,7 +10,9 @@ export function TooltipWrapper({
   tooltipText: string;
   tooltipPlace: "top" | "bottom" | "left" | "right";
 }) {
-  const tooltipId = generateRandomId();
+  // `useId()` yields a stable id across server render and client hydration,
+  // so the tooltip anchor markup no longer mismatches (was Math.random()+Date.now()).
+  const tooltipId = useId();
 
   return (
     <>

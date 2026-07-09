@@ -21,7 +21,7 @@ import MvrLogo from "@/icons/MvrLogo";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { HeaderSearchBar } from "./public/HeaderSearchBar";
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useCurrentAccount } from "@mysten/dapp-kit-react";
 
 const Links = [
   {

@@ -1,9 +1,11 @@
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { useQuery } from "@tanstack/react-query";
 import { useActiveAddress } from "./useActiveAddress";
-import { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
+import type { SuiClientTypes } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { AppQueryKeys, Network } from "@/utils/types";
 import { fetchAllOwnedObjects } from "@/utils/query";
+import { UpgradeCap as UpgradeCapStruct } from "@/contracts/sui/package";
 
 export type UpgradeCap = {
   objectId: string;
@@ -13,30 +15,26 @@ export type UpgradeCap = {
 };
 
 /// Fetches all upgrade caps owned by the given address
-const getUpgradeCaps = async (client: SuiClient, address: string) => {
+const getUpgradeCaps = async (client: SuiGrpcClient, address: string) => {
   return fetchAllOwnedObjects({
     client,
     address,
-    filter: {
-      StructType: "0x2::package::UpgradeCap",
-    },
+    type: UpgradeCapStruct.typeTag(),
   });
 };
 
-const parseUpgradeCapContent = (cap?: SuiObjectResponse): UpgradeCap => {
-  if (!cap) throw new Error("Invalid upgrade cap object");
-  if (!cap.data) throw new Error("Invalid upgrade cap object");
-  if (!cap.data.content) throw new Error("Invalid upgrade cap object");
-  if (cap.data.content.dataType !== "moveObject")
-    throw new Error("Invalid upgrade cap object");
+const parseUpgradeCapContent = (
+  obj?: SuiClientTypes.Object<{ content: true }>,
+): UpgradeCap => {
+  if (!obj?.content) throw new Error("Invalid upgrade cap object");
 
-  const fields = cap.data.content.fields as Record<string, any>;
+  const fields = UpgradeCapStruct.parse(obj.content);
 
   return {
-    objectId: fields.id.id,
+    objectId: fields.id,
     package: fields.package,
     version: fields.version,
-    policy: fields.policy,
+    policy: String(fields.policy),
   };
 };
 

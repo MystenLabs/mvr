@@ -3,6 +3,8 @@ import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import { fetchAllDynamicFields } from "@/utils/query";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
+import { bcs } from "@mysten/sui/bcs";
+import { GitInfo } from "@/contracts/mvr_metadata/git";
 
 export type GitVersion = {
     action?: 'add' | 'update' | 'delete';
@@ -31,19 +33,18 @@ export function useVersionsTable(tableId: string) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     select(data) {
-
         const versions: GitVersion[] = [];
-        for (const field of data) {
-            if (field.data?.content?.dataType !== 'moveObject') continue;
-            const fields = field.data.content.fields as Record<string, any>;
-            const version = parseInt(fields.name);
-            const data = fields.value.fields;
+        for (const entry of data) {
+            if (!entry.value) continue;
+            // key is the version (u64), value is a GitInfo struct.
+            const version = Number(bcs.u64().parse(entry.name.bcs));
+            const git = GitInfo.parse(entry.value.bcs);
 
             versions.push({
                 version,
-                repository: data.repository,
-                path: data.path,
-                tag: data.tag,
+                repository: git.repository,
+                path: git.path,
+                tag: git.tag,
             });
         }
 
