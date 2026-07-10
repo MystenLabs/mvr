@@ -42,7 +42,7 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   const issued = data?.items ?? [];
   const failures = data?.failures ?? 0;
 
-  // Newest first; attestations without a publish_date sort last. Live and
+  // Newest first; attestations without a published_at sort last. Live and
   // revoked are split into separate sections (revoked moved out of the main
   // list) so endorsements read distinctly from withdrawn ones. The fetch pages
   // through every result, so we render them all — no cap.
@@ -183,7 +183,7 @@ function IssuedRow({
   deemphasized?: boolean;
 }) {
   const { display, innerType } = item.info;
-  const date = formatDate(display["publish_date"]);
+  const date = formatDate(display["published_at"]);
   const description = str(display["description"]) ?? str(display["name"]);
 
   return (
@@ -246,15 +246,15 @@ function SubjectLink({ id, name }: { id: string; name?: string }) {
   );
 }
 
-/** Epoch ms of an attestation's publish_date, or -Infinity when absent (so it
+/** Epoch ms of an attestation's published_at, or -Infinity when absent (so it
  *  sorts to the end of a newest-first list). */
 function publishMs(item: IssuedAttestation): number {
-  const s = str(item.info.display["publish_date"]);
+  const s = str(item.info.display["published_at"]);
   const t = s ? Date.parse(s) : NaN;
   return Number.isNaN(t) ? -Infinity : t;
 }
 
-/** A publish_date rendered as a short date, or "" when absent/unparseable. */
+/** A published_at rendered as a short date, or "" when absent/unparseable. */
 function formatDate(v: unknown): string {
   const s = str(v);
   if (!s) return "";
