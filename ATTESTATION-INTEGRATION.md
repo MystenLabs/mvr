@@ -6,7 +6,7 @@ decisions reached during design exploration and the steps to build from.
 
 > **Two repos.** Paths under `app/` and `crates/` are in **this (mvr) repo**.
 > Paths like `DESIGN.md`, `CONVENTIONS.md`, `ts/`, `packages/`, `scripts/`
-> refer to the **attestation-registry repo** (`sui-attestation-registry`),
+> refer to the **attestation-registry repo** (`MystenLabs/attestations`),
 > which defines the on-chain registry, the Display-field conventions, and the
 > TypeScript read library this builds on. See that repo's `DESIGN.md` for
 > on-chain rationale and `CONVENTIONS.md` for the Display conventions.

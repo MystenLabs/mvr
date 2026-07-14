@@ -52,7 +52,7 @@ d = json.load(open(sys.argv[1]))
 # (the same place its README — shown on the mvr page — lives), so no demo asset
 # ships in the mvr app. `mvrName` is kept in sync with demo_server.rs. An
 # attester absent from this map falls back to its raw name with no icon/mvrName.
-RAW = "https://raw.githubusercontent.com/mdgeorge4153/sui-attestation-registry/mdgeorge/attest-positive"
+RAW = "https://raw.githubusercontent.com/MystenLabs/attestations/demo-latest"
 ATTESTORS = {
     "auditor_a": {
         "name": "Auditor A",

@@ -30,11 +30,12 @@ use mvr_schema::{
     MIGRATIONS,
 };
 
-// Where the demo package READMEs live, for MVR's git-backed README fetch. We
-// point at the PR branch (not a tag) so the READMEs always track the deployed
-// demo sources; a pinned tag goes stale whenever the demo is restructured.
-const DEMO_REPO_URL: &str = "https://github.com/mdgeorge4153/sui-attestation-registry";
-const DEMO_GIT_REF: &str = "mdgeorge/attest-positive";
+// Where the demo package READMEs live, for MVR's git-backed README fetch. The
+// ref is the registry repo's rolling demo tag, which is force-moved to whatever
+// commit the demo is cut from — so the READMEs track the deployed demo sources,
+// and the ref outlives any one PR branch.
+const DEMO_REPO_URL: &str = "https://github.com/MystenLabs/attestations";
+const DEMO_GIT_REF: &str = "demo-latest";
 use serde_json::json;
 use sui_pg_db::{temp::TempDb, Db, DbArgs};
 use tokio_util::sync::CancellationToken;
