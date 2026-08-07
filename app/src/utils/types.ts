@@ -75,4 +75,8 @@ export enum AppQueryKeys {
   MVR_VERSION_ADDRESSES = "mvr-version-addresses",
   SUINS_NAME_RESOLUTION = "suins-name-resolution",
   NAME_ANALYTICS = "name-analytics",
+  ATTESTATIONS = "attestations",
+  TRUSTED_ATTESTORS = "trusted-attestors",
+  SOURCE_VERIFICATIONS = "source-verifications",
+  RESOLVE_GIT_COMMIT = "resolve-git-commit",
 }
