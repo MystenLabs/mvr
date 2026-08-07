@@ -17,6 +17,14 @@ export function SinglePackageVersions({ name }: { name: ResolvedName }) {
     network,
   );
 
+  // The newest version, independent of which one the page is currently
+  // resolved to (`name.version`) — you can navigate to an older version, so the
+  // two diverge.
+  const latestVersion = (versions ?? []).reduce(
+    (max, v) => Math.max(max, v.version),
+    name.version,
+  );
+
   if (isLoading) {
     return <LoadingState size="sm" title="" description="Loading..." />;
   }
@@ -29,7 +37,7 @@ export function SinglePackageVersions({ name }: { name: ResolvedName }) {
         size="heading-regular"
         className="flex items-center gap-sm"
       >
-        Versions <DependentsCountLabel count={name.version} />
+        Versions <DependentsCountLabel count={latestVersion} />
       </Text>
       <table className="w-full">
         <thead>
@@ -57,7 +65,7 @@ export function SinglePackageVersions({ name }: { name: ResolvedName }) {
                     {version.version}
                   </Text>
 
-                  {version.version === name.version && (
+                  {version.version === latestVersion && (
                     <Text
                       as="span"
                       size="label-xs"
@@ -67,6 +75,17 @@ export function SinglePackageVersions({ name }: { name: ResolvedName }) {
                       Latest
                     </Text>
                   )}
+                  {version.version === name.version &&
+                    version.version !== latestVersion && (
+                      <Text
+                        as="span"
+                        size="label-xs"
+                        kind="label"
+                        className="ml-md rounded-md bg-bg-secondary px-sm py-xs text-content-secondary"
+                      >
+                        Current
+                      </Text>
+                    )}
                 </td>
                 <td className="flex items-center gap-sm py-sm">
                   <Text as="div" size="label-small" kind="label">

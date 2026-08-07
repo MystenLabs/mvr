@@ -1,8 +1,29 @@
+import Link from "next/link";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { Text } from "../ui/Text";
 import ImageWithFallback from "../ui/image-with-fallback";
 import { beautifySuiAddress } from "@/lib/utils";
 import { CopyBtn } from "../ui/CopyBtn";
+import { isConfiguredAttestor } from "@/lib/attestations";
+import { useTrustedAttestors } from "@/hooks/useTrustedAttestors";
+import { ShieldCheckIcon } from "@/icons/single-package/ShieldCheckIcon";
+
+/** Pill marking a package as a trusted attestor in this consumer's trust
+ *  config. Links to the full trusted-attestors list. Uses next/link so the
+ *  first click navigates (a plain <a> hard-navigates and was flaky here). */
+function TrustedAttestorBadge() {
+  return (
+    <Link
+      href="/attestors"
+      className="flex items-center gap-2xs rounded-full bg-bg-quarternaryBleedthrough px-xs py-2xs hover:bg-bg-accentBleedthrough3"
+    >
+      <ShieldCheckIcon className="h-3.5 w-3.5 text-content-positive" />
+      <Text kind="label" size="label-2xs">
+        MVR-trusted attestor
+      </Text>
+    </Link>
+  );
+}
 
 export function SinglePackageHeader({
   name,
@@ -11,6 +32,9 @@ export function SinglePackageHeader({
   name: ResolvedName;
   network: "mainnet" | "testnet";
 }) {
+  const { attestors } = useTrustedAttestors(network);
+  const isTrustedAttestor = isConfiguredAttestor(attestors, name.package_address);
+
   return (
     <div className="container flex items-center justify-between py-md md:py-lg">
       <div className="flex items-center gap-md">
@@ -20,9 +44,12 @@ export function SinglePackageHeader({
           className="h-14 w-14 rounded-sm"
         />
         <div className="flex flex-col gap-2xs">
-          <Text kind="heading" size="heading-regular">
-            {name.name}
-          </Text>
+          <div className="flex items-center gap-sm">
+            <Text kind="heading" size="heading-regular">
+              {name.name}
+            </Text>
+            {isTrustedAttestor && <TrustedAttestorBadge />}
+          </div>
           <Text
             kind="paragraph"
             size="paragraph-xs"
