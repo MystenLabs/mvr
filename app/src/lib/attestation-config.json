@@ -1,0 +1,29 @@
+{
+  "testnet": {
+    "registryPkg": "0x6e0e1141d77448253ab434b008a01259e81c5c31bd1cdac8922a5256da690c09",
+    "registryId": "0x5a8a789c0385d5e891519612a7d3d8ab36f1d9fc03d63cdabf1cefb3d848b568",
+    "trustedAttestors": [
+      {
+        "name": "Demo Auditor",
+        "mvrName": "@pkg/attestations-demo-auditor",
+        "originalId": "0xa44c54ed294089b0fe2f4d1620d86aa5cb4e05d25e60f4dff935670accfbbc6b"
+      },
+      {
+        "name": "Asymptotic",
+        "mvrName": "@asymptotic/attestation",
+        "iconUrl": "https://www.asymptotic.tech/favicon.svg",
+        "originalId": "0xbd7f5ade9c9dd44fce79a34bbc468cebe1f89255984475eddc0d6454c445bcdb"
+      },
+      {
+        "name": "Certora",
+        "iconUrl": "https://www.certora.com/favicon.ico",
+        "originalId": "0xd425b829cf1be09427569afca8f865d9157a124ee8a08c56ad6e7caa825091e6"
+      },
+      {
+        "name": "Source Verification",
+        "originalId": "0x3a38d71666de1b83e4e3d3a7ad5c49cbb8b1aaab35da0d8c13e186753968b9d7",
+        "role": "source-verification"
+      }
+    ]
+  }
+}
