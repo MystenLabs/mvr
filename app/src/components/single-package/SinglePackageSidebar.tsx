@@ -7,6 +7,7 @@ import { SinglePackageAnalytics } from "./SinglePackageAnalytics";
 import { SinglePackageSidebarLink } from "./SinglePackageLayout";
 import { SinglePackageSidebarTitle } from "./SinglePackageLayout";
 import { SinglePackageContent } from "./SinglePackageLayout";
+import { SourceCodeSection } from "./SourceCodeSection";
 
 export function SinglePackageSidebar({
   name,
@@ -15,11 +16,9 @@ export function SinglePackageSidebar({
   name: ResolvedName;
   network: "mainnet" | "testnet";
 }) {
+  // Source Code renders via SourceCodeSection (it carries the verification
+  // status); the rest are plain links.
   const links = [
-    {
-      title: "Source Code",
-      href: name.git_info?.repository_url ?? "",
-    },
     {
       title: "Documentation",
       href: name.metadata?.documentation_url ?? "",
@@ -56,6 +55,14 @@ export function SinglePackageSidebar({
             {name.metadata?.description || "No description provided"}
           </Text>
         </SinglePackageContent>
+
+        {name.git_info?.repository_url && (
+          <SourceCodeSection
+            href={name.git_info.repository_url}
+            name={name}
+            network={network}
+          />
+        )}
 
         {links.map(
           (link) =>
