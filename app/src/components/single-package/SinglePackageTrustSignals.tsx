@@ -227,7 +227,7 @@ function AuditCard({ item }: { item: DisplayedAttestation }) {
  *  broken-image icon). */
 function AuditBadge({ item }: { item: DisplayedAttestation }) {
   const [broken, setBroken] = useState(false);
-  const src = httpsLink(item.info.display["image_url"]);
+  const src = imageSource(item.info.display["image_url"]);
   if (!src || broken) {
     return <AttesterAvatar attestor={item.attestor} />;
   }
@@ -383,6 +383,23 @@ function str(v: unknown): string | undefined {
 export function httpsLink(v: unknown): string | undefined {
   const s = str(v);
   return s && s.startsWith("https://") ? s : undefined;
+}
+
+/** An `image_url` value we'll put in an `<img src>`: an `https` URL, or an
+ *  inline `data:image/svg+xml` URI (a badge a schema derives from the
+ *  attestation's own data). Safe because it renders in an `<img>`, where a
+ *  `<script>` or `onload` inside the SVG does not execute — the value must never
+ *  be inlined into the DOM. Distinct from `httpsLink` (used for the report
+ *  `link`), which stays https-only: a `data:` link target isn't wanted. Anything
+ *  else — `http`, other `data:` types — is rejected. */
+function imageSource(v: unknown): string | undefined {
+  const s = str(v);
+  if (!s) return undefined;
+  if (s.startsWith("https://")) return s;
+  if (s.startsWith("data:image/svg+xml,") || s.startsWith("data:image/svg+xml;")) {
+    return s;
+  }
+  return undefined;
 }
 
 function hostOf(url: string): string {
