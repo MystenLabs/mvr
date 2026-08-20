@@ -8,6 +8,13 @@ type ResolutionVersion = { version: number; address: string };
 
 const MAX_PER_PAGE = 5;
 
+/** Every version id of a package by address (for nameless packages, whose
+ *  versions can't be resolved through the MVR name endpoint). One page covers it:
+ *  it always includes v1, so the caller's pagination stops after it. */
+const VERSIONS_QUERY = `query($address: SuiAddress!) {
+  packageVersions(address: $address, first: 50) { nodes { version address } }
+}`;
+
 export function useGetMvrVersionAddresses(
   name: string,
   version: number,
@@ -19,6 +26,17 @@ export function useGetMvrVersionAddresses(
     queryKey: [AppQueryKeys.MVR_VERSION_ADDRESSES, name, network],
     initialPageParam: version,
     queryFn: async ({ pageParam }): Promise<ResolutionVersion[]> => {
+      // Nameless packages (`name` is a bare address) can't resolve versions via
+      // the MVR name endpoint; list them on-chain instead, all in one page.
+      if (name.startsWith("0x")) {
+        const res = await clients.graphql[network].query<{
+          packageVersions: { nodes: ResolutionVersion[] };
+        }>({ query: VERSIONS_QUERY, variables: { address: name } });
+        return (res.data?.packageVersions?.nodes ?? [])
+          .map((n) => ({ version: n.version, address: n.address }))
+          .sort((a, b) => b.version - a.version);
+      }
+
       const versionsToQuery = Array.from(
         { length: MAX_PER_PAGE },
         (_, i) => pageParam - i,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ResolvedName } from "@/hooks/mvrResolution";
+import { isUnregisteredPackage, ResolvedName } from "@/hooks/mvrResolution";
 import { Text } from "../ui/Text";
 import ImageWithFallback from "../ui/image-with-fallback";
 import { beautifySuiAddress } from "@/lib/utils";
@@ -46,7 +46,9 @@ export function SinglePackageHeader({
         <div className="flex flex-col gap-2xs">
           <div className="flex items-center gap-sm">
             <Text kind="heading" size="heading-regular">
-              {name.name}
+              {isUnregisteredPackage(name)
+                ? beautifySuiAddress(name.name)
+                : name.name}
             </Text>
             {isTrustedAttestor && <TrustedAttestorBadge />}
           </div>

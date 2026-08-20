@@ -5,7 +5,7 @@ import { useMVRContext } from "@/components/providers/mvr-provider";
 import { PackagesNetworkContext } from "@/components/providers/packages-provider";
 import { TabTitle } from "@/components/ui/TabTitle";
 import { Text } from "@/components/ui/Text";
-import { useResolveMvrName } from "@/hooks/mvrResolution";
+import { useResolvePackage } from "@/hooks/mvrResolution";
 import { useActiveAddress } from "@/hooks/useActiveAddress";
 import { useDecodedUriName } from "@/hooks/useDecodedUriName";
 import { useWalletNetwork } from "@/hooks/useWalletNetwork";
@@ -30,11 +30,11 @@ export default function PackagesLayout({
     isCustom || !walletNetwork ? "mainnet" : walletNetwork,
   );
 
-  const { data: mainnetData, isLoading: isMainnetLoading } = useResolveMvrName(
+  const { data: mainnetData, isLoading: isMainnetLoading } = useResolvePackage(
     decodedName,
     "mainnet",
   );
-  const { data: testnetData, isLoading: isTestnetLoading } = useResolveMvrName(
+  const { data: testnetData, isLoading: isTestnetLoading } = useResolvePackage(
     decodedName,
     "testnet",
   );

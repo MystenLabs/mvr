@@ -67,6 +67,7 @@ export enum AppQueryKeys {
   PACKAGE_INIT_AND_AT_VERSION = "package-init-and-at-version",
   IS_NAME_AVAILABLE = "is-name-available",
   RESOLVE_MVR_NAME = "resolve-mvr-name",
+  PACKAGE_BY_ADDRESS = "package-by-address",
   SEARCH_MVR_NAMES = "search-mvr-names",
   MVR_DEPENDENCIES = "mvr-dependencies",
   MVR_DEPENDENTS = "mvr-dependents",

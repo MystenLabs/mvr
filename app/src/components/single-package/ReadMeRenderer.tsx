@@ -1,7 +1,7 @@
 import { useGetSourceFromGit } from "@/hooks/useGetSourceFromGit";
 import LoadingState from "../LoadingState";
 import { MarkdownRenderer } from "../ui/markdown-renderer";
-import { ResolvedName } from "@/hooks/mvrResolution";
+import { isUnregisteredPackage, ResolvedName } from "@/hooks/mvrResolution";
 import { EmptyState } from "../EmptyState";
 import { Content } from "@/data/content";
 import { useEffect } from "react";
@@ -23,6 +23,11 @@ export function ReadMeRenderer({ name }: { name: ResolvedName }) {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   }, [readme]);
+
+  if (isUnregisteredPackage(name))
+    return (
+      <EmptyState {...Content.emptyStates.unregisteredPackage} size="sm" />
+    );
 
   if (isLoading)
     return <LoadingState size="sm" title="" description="Loading..." />;

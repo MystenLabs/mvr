@@ -2,14 +2,14 @@
 
 import { usePackagesNetwork } from "@/components/providers/packages-provider";
 import { SinglePackage } from "@/components/single-package/SinglePackage";
-import { useResolveMvrName } from "@/hooks/mvrResolution";
+import { useResolvePackage } from "@/hooks/mvrResolution";
 import { useDecodedUriName } from "@/hooks/useDecodedUriName";
 
 export default function PackagePage() {
   const decodedName = useDecodedUriName();
   const network = usePackagesNetwork();
 
-  const { data: packageInfo } = useResolveMvrName(
+  const { data: packageInfo } = useResolvePackage(
     decodedName,
     network as "mainnet" | "testnet",
   );

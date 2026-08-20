@@ -2,6 +2,7 @@ import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { MvrHeader } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
+import { useResolvePackageByAddress } from "./useResolvePackageByAddress";
 
 export type SearchResultItem = {
   name: string;
@@ -34,6 +35,14 @@ export type ResolvedName = {
   } | null;
 };
 
+/** Whether this is a nameless (unregistered) package — one resolved by bare
+ *  address, where `name.name` holds the address rather than an `@org/app` MVR
+ *  name. Such packages have no `git_info`/`package_info`, so only on-chain
+ *  surfaces (versions, dependencies, dependents, attestations) render. */
+export function isUnregisteredPackage(name: ResolvedName): boolean {
+  return name.name.startsWith("0x");
+}
+
 /**
  * Resolve a MVR name from the API.
  * @returns
@@ -63,6 +72,23 @@ export function useResolveMvrName(
     refetchOnReconnect: false,
     retry: false,
   });
+}
+
+/**
+ * Resolve a URL segment that is either an MVR name (`@org/app`) or a bare package
+ * address (`0x…`) into a `ResolvedName`. A name goes through the MVR resolver; an
+ * address has no name and is resolved on-chain by `useResolvePackageByAddress`
+ * (yielding a nameless `ResolvedName`). One of the two underlying queries is
+ * disabled each render, keyed on whether `input` looks like an address.
+ */
+export function useResolvePackage(
+  input: string,
+  network: "mainnet" | "testnet",
+) {
+  const isAddress = !!input && input.startsWith("0x");
+  const byName = useResolveMvrName(isAddress ? "" : input, network);
+  const byAddress = useResolvePackageByAddress(isAddress ? input : "", network);
+  return isAddress ? byAddress : byName;
 }
 
 /**
