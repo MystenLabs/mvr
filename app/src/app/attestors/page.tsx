@@ -46,6 +46,9 @@ export default function TrustedAttestorsPage() {
 }
 
 function AttestorCard({ attestor }: { attestor: TrustedAttestor }) {
+  // Link to the attester's package page — by MVR name when it has one, otherwise
+  // by address (the by-address page), where its Attestations tab lists what it
+  // has attested.
   return (
     <div className="flex items-center gap-md rounded-md bg-bg-secondary p-md">
       <AttesterAvatar attestor={attestor} size="lg" />
@@ -53,25 +56,18 @@ function AttestorCard({ attestor }: { attestor: TrustedAttestor }) {
         <Text kind="label" size="label-regular">
           {attestor.name}
         </Text>
-        {attestor.mvrName ? (
-          <a
-            href={`/package/${attestor.mvrName}`}
-            className="text-content-accent underline w-fit"
-          >
-            <Text kind="paragraph" size="paragraph-xs">
-              {attestor.mvrName}
-            </Text>
-          </a>
-        ) : (
+        <a
+          href={`/package/${attestor.mvrName ?? attestor.originalId}`}
+          className="text-content-accent underline w-fit"
+        >
           <Text
-            as="p"
             kind="paragraph"
             size="paragraph-xs"
-            className="font-mono opacity-60"
+            className={attestor.mvrName ? "" : "font-mono"}
           >
-            {beautifySuiAddress(attestor.originalId)}
+            {attestor.mvrName ?? beautifySuiAddress(attestor.originalId)}
           </Text>
-        )}
+        </a>
       </div>
     </div>
   );
