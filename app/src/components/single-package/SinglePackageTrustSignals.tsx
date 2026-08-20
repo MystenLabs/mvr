@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
+import { normalizeSuiAddress } from "@mysten/sui/utils";
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { usePackagesNetwork } from "../providers/packages-provider";
 import {
@@ -72,9 +73,19 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
   // is only deployed on testnet).
   if (!attestationConfig(network)) return null;
 
-  const versionList = (versions ?? [])
-    .slice()
-    .sort((a, b) => b.version - a.version); // newest first
+  // Attestations are keyed by the subject *address*, so versions published at the
+  // same address (a system package like the bridge keeps one address across all
+  // its upgrades) share a single box — collapse them to one section per distinct
+  // address, keeping the newest version as its representative.
+  const byAddress = new Map<string, NonNullable<typeof versions>[number]>();
+  for (const v of versions ?? []) {
+    const key = normalizeSuiAddress(v.address);
+    const seen = byAddress.get(key);
+    if (!seen || v.version > seen.version) byAddress.set(key, v);
+  }
+  const versionList = [...byAddress.values()].sort(
+    (a, b) => b.version - a.version,
+  ); // newest first
   const latestVersion = versionList.reduce(
     (max, v) => Math.max(max, v.version),
     name.version,
