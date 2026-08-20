@@ -237,19 +237,16 @@ function IssuedRow({
   );
 }
 
-/** Link a subject (attested package) to its MVR page by name, or show its id. */
+/** Link a subject (attested package) to its package page — by MVR name when it
+ *  has one, otherwise by address (the nameless by-address page). */
 function SubjectLink({ id, name }: { id: string; name?: string }) {
-  if (name) {
-    return (
-      <Link href={`/package/${name}`} className="text-content-accent underline">
-        {name}
-      </Link>
-    );
-  }
   return (
-    <span className="font-mono">
-      {id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id}
-    </span>
+    <Link
+      href={`/package/${name ?? id}`}
+      className="text-content-accent underline"
+    >
+      {name ?? (id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id)}
+    </Link>
   );
 }
 
