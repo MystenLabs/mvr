@@ -15,10 +15,10 @@ tokio = "1.49.0"
 serde = "1.0.228"
 serde_json = "1.0.145"
 dotenvy = "0.15.7"
-chrono = { version = "=0.4.42", features = ["clock", "serde"] }
-diesel = "2.2.7"
-diesel-async = "0.5.2"
-diesel_migrations = "2.2.0"
+chrono = { version = "0.4.44", features = ["clock", "serde"] }
+diesel = "2.3"
+diesel-async = "0.9"
+diesel_migrations = "2.3"
 anyhow = "1.0.100"
 thiserror = "2.0.17"
 once_cell = "1.20.3"
@@ -27,29 +27,32 @@ clap = "4.5.48"
 async-trait = "0.1.89"
 bcs = "0.1.6"
 url = "2.5.7"
-prometheus = "0.13.4"
+prometheus = "0.14"
 tokio-util = "0.7.16"
 futures = "0.3.31"
 tempfile = "3.20.0"
 
 # Main Sui Mono-repo
-sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
-sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8"}
-jsonrpc = { git = "https://github.com/mystenlabs/sui.git", rev = "0b653b5485fb62c552c63df9b0012db388df99b8" }
+sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-storage = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f"}
+jsonrpc = { git = "https://github.com/mystenlabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+
+# fastcrypto (pinned to the same rev the Sui mono-repo uses, to avoid duplicate crypto types)
+fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto", rev = "076bf5ad8cea140dc7cf5c5861c24a36acdf64ce" }
 
 # New Rust SDK
-sui-sdk-types = { git = "https://github.com/MystenLabs/sui-rust-sdk", package = "sui-sdk-types", rev = "c9105cd4028ae4dc5de4c612d25f4d476358a4b2", features = ["hash", "serde"] }
+sui-sdk-types = { git = "https://github.com/MystenLabs/sui-rust-sdk", package = "sui-sdk-types", rev = "618b6c8484a2394f73d9b5e21cce0ac228b2cf31", features = ["hash", "serde"] }
 
 # async-graphql (use same fork as sui to avoid version conflicts)
 async-graphql = { git = "https://github.com/amnn/async-graphql", branch = "v7.0.1-react-18-graphiql-4", features = ["dataloader"] }
