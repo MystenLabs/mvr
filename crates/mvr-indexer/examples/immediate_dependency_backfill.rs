@@ -1,9 +1,7 @@
 use clap::Parser;
 use diesel::upsert::excluded;
 use diesel::{ExpressionMethods, QueryableByName};
-use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
-use futures::future::try_join_all;
 use mvr_indexer::handlers::package_handler::package_dependencies;
 use sui_pg_db::{Db, DbArgs};
 use url::Url;
@@ -50,22 +48,20 @@ async fn main() -> Result<(), anyhow::Error> {
 
     use mvr_schema::schema::package_dependencies::*;
     let count = conn
-        .transaction(|conn| {
-            async move {
-                let inserts = try_join_all(results.chunks(1000).map(|chunk| {
-                    diesel::insert_into(
-                        mvr_schema::schema::package_dependencies::dsl::package_dependencies,
-                    )
-                    .values(chunk)
-                    .on_conflict((package_id, dependency_package_id, chain_id))
-                    .do_update()
-                    .set(immediate_dependency.eq(excluded(immediate_dependency)))
-                    .execute(conn)
-                }))
+        .transaction(async |conn| {
+            let mut inserted = 0;
+            for chunk in results.chunks(1000) {
+                inserted += diesel::insert_into(
+                    mvr_schema::schema::package_dependencies::dsl::package_dependencies,
+                )
+                .values(chunk)
+                .on_conflict((package_id, dependency_package_id, chain_id))
+                .do_update()
+                .set(immediate_dependency.eq(excluded(immediate_dependency)))
+                .execute(conn)
                 .await?;
-                Ok::<usize, diesel::result::Error>(inserts.iter().sum())
             }
-            .scope_boxed()
+            Ok::<usize, diesel::result::Error>(inserted)
         })
         .await?;
 

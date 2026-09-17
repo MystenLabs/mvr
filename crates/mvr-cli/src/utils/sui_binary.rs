@@ -94,7 +94,11 @@ pub fn check_sui_version(expected_version: (u32, u32)) -> Result<(), Error> {
 pub fn get_active_network() -> Result<Network, Error> {
     let fallback_network = env::var("MVR_FALLBACK_NETWORK");
 
-    let cli_output = sui_command(["client", "chain-identifier"].to_vec())?;
+    let mut args = vec!["client", "chain-identifier"];
+    if sui_version()? >= (1, 76) {
+        args.push("--format=hex");
+    }
+    let cli_output = sui_command(args)?;
 
     let chain_id = String::from_utf8_lossy(&cli_output.stdout)
         .trim()
@@ -147,6 +151,15 @@ pub fn cache_package(
         .map_err(|e| CliError::UnexpectedParsing(e.to_string()))?;
 
     Ok(response)
+}
+
+fn sui_version() -> Result<(u32, u32), Error> {
+    let output = sui_command(["--version"].to_vec())?;
+    let version_output = String::from_utf8_lossy(&output.stdout);
+    let caps = Regex::new(VERSION_REGEX)?
+        .captures(&version_output)
+        .ok_or_else(|| anyhow!("Failed to get the version of the SUI binary."))?;
+    Ok((caps[1].parse()?, caps[2].parse()?))
 }
 
 fn sui_command(args: Vec<&str>) -> Result<Output, CliError> {
