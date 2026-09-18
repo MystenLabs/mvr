@@ -60,9 +60,7 @@ pub async fn run_server(
 
     println!("🚀 Server started successfully on port {}", api_port);
 
-    let _handle = tokio::spawn(async move {
-        let _ = metrics.run().await;
-    });
+    let _metrics_service = metrics.run().await?;
 
     axum::serve(listener, app)
         .with_graceful_shutdown(async move {
