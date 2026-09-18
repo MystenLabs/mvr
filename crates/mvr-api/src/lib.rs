@@ -60,8 +60,6 @@ pub async fn run_server(
 
     println!("🚀 Server started successfully on port {}", api_port);
 
-    // `MetricsService::run` returns a `Service` that aborts its tasks when dropped, so the
-    // handle has to stay alive for as long as the API is serving.
     let _metrics_service = metrics.run().await?;
 
     axum::serve(listener, app)
