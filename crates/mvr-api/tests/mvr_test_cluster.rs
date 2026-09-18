@@ -215,7 +215,7 @@ async fn setup(port: Option<u16>) -> Result<MvrTestCluster, anyhow::Error> {
             mvr_api::Network::Mainnet,
             assigned_port,
             server_cancellation_token,
-            SocketAddr::from_str("0.0.0.0:9184").unwrap(),
+            SocketAddr::from_str("127.0.0.1:0").unwrap(),
         )
         .await;
     });
