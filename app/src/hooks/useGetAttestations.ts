@@ -14,7 +14,7 @@ import {
   type ResolvedAttestor,
 } from "@/lib/attestations";
 import { useTrustedAttestors } from "./useTrustedAttestors";
-import { useGetMvrVersionAddresses } from "./useGetMvrVersionAddresses";
+import { fetchPackageVersions } from "./useGetMvrVersionAddresses";
 import { ResolvedName } from "./mvrResolution";
 import { fetchAllPages } from "@/utils/query";
 
@@ -201,19 +201,14 @@ export function useIssuedAttestations(
   const client = clients[network];
   const gql = clients.graphql[network];
   const cfg = attestationConfig(network);
-  // The package's own types may be defined in any version, so enumerate across
-  // its whole mvr lineage rather than just the resolved version.
-  const { data: versions } = useGetMvrVersionAddresses(
-    name?.name ?? "",
-    name?.version ?? 0,
-    network,
-  );
-  const lineage = (versions ?? []).map((v) => v.address);
-
   return useQuery({
-    queryKey: [AppQueryKeys.ATTESTATIONS, "issued", network, name?.package_address, lineage],
-    enabled: !!name && !!cfg && lineage.length > 0,
+    queryKey: [AppQueryKeys.ATTESTATIONS, "issued", network, name?.package_address, cfg?.registryPkg],
+    enabled: !!name && !!cfg,
     queryFn: async (): Promise<{ items: IssuedAttestation[]; failures: number }> => {
+      // Schema origin IDs may belong to any release, including versions not
+      // loaded by the MVR versions tab. Read the complete on-chain lineage.
+      const versions = await fetchPackageVersions(gql, name!.package_address);
+      const lineage = [name!.package_address, ...versions.map((v) => v.address)];
       const types = await enumerateAttestationTypes(gql, lineage, cfg!.registryPkg);
 
       // Reverse query: page through every object of each issued type.

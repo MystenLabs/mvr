@@ -4,12 +4,7 @@ import type { SuiGraphQLClient } from "@mysten/sui/graphql";
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { AppQueryKeys } from "@/utils/types";
 import { attestationConfig, type ResolvedAttestor } from "@/lib/attestations";
-
-/** A package's version ids. One page (50) is plenty — no attester has that many
- *  upgrades — so pagination is skipped. */
-const VERSIONS_QUERY = `query($address: SuiAddress!) {
-  packageVersions(address: $address, first: 50) { nodes { address } }
-}`;
+import { fetchPackageVersions } from "./useGetMvrVersionAddresses";
 
 /** Every published version id of the package originally published at `originalId`
  *  — the attester's lineage. Always includes `originalId`, so a config entry still
@@ -18,13 +13,7 @@ async function lineageOf(
   gql: SuiGraphQLClient,
   originalId: string,
 ): Promise<string[]> {
-  const res = await gql.query<{
-    packageVersions: { nodes: { address: string }[] };
-  }>({ query: VERSIONS_QUERY, variables: { address: originalId } });
-  if (res.errors?.length) {
-    throw new Error(`packageVersions failed: ${res.errors[0]?.message}`);
-  }
-  const ids = (res.data?.packageVersions?.nodes ?? []).map((n) => n.address);
+  const ids = (await fetchPackageVersions(gql, originalId)).map((n) => n.address);
   return [...new Set([originalId, ...ids].map((a) => normalizeSuiAddress(a)))];
 }
 

@@ -52,8 +52,10 @@ schema fields through `data`. See the registry's
   to the existing partial-results warning.
 - `app/src/hooks/useSourceVerification.ts` reads typed claim contents through
   GraphQL at the same subject address. It excludes revoked claims before parsing
-  `data.git_url`, `data.git_sha`, and the other source fields. These reads reflect
-  the indexer's state and can lag recent transactions.
+  `data.git_url`, `data.git_sha`, and the other source fields. The verified label
+  requires the repository, package directory, and resolved commit to match the
+  linked source. These reads reflect the indexer's state and can lag recent
+  transactions.
 
 Attester identity comes from the schema's defining package, checked against the
 configured original package ID and its resolved upgrade lineage. Names and brand
@@ -156,8 +158,7 @@ bash scripts/write-demo-env.sh ../attestations/demo-ids.json
 Use IDs from that running chain. Start or restart the app after writing the env.
 Demo README and icon sources are pinned to the supported registry revision in
 `crates/mvr-api/examples/demo_server.rs` and `scripts/write-demo-env.sh`. Update
-those pins together when adopting another registry revision. The optional
-`attestations-demo/sui.Dockerfile` uses the same revision for its package sources.
+those pins together when adopting another registry revision.
 
 ## Verification
 
@@ -172,7 +173,8 @@ pnpm --dir app build
 Regression tests exercise the actual mapping and query functions with fake
 transport responses. They cover address derivation, revocation including zero,
 malformed status, registry identity, trust/Display filtering, pagination, Issued
-failure reporting, and source-verification filtering. They do not replace a
+failure reporting, source-location matching, and complete package-version
+pagination. They do not replace a
 browser check against freshly published registry state.
 
 ## Deferred work

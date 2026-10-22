@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { normalizeSuiAddress } from "@mysten/sui/utils";
 import { useSuiClientsContext } from "@/components/providers/client-provider";
 import { AppQueryKeys } from "@/utils/types";
 import type { ResolvedName } from "./mvrResolution";
 
-/** Confirms the address is a Move package and lists its versions in one query. */
+/** Read the package version at this address, including system package upgrades. */
 const PACKAGE_QUERY = `query($address: SuiAddress!) {
-  object(address: $address) { asMovePackage { address } }
-  packageVersions(address: $address, first: 50) { nodes { version address } }
+  object(address: $address) { asMovePackage { address version } }
 }`;
 
 /**
@@ -27,24 +25,17 @@ export function useResolvePackageByAddress(
     enabled: !!address && address.startsWith("0x"),
     queryFn: async (): Promise<ResolvedName | null> => {
       const res = await gql.query<{
-        object: { asMovePackage: { address: string } | null } | null;
-        packageVersions: { nodes: { version: number; address: string }[] };
+        object: { asMovePackage: { address: string; version: number } | null } | null;
       }>({ query: PACKAGE_QUERY, variables: { address } });
-      if (!res.data?.object?.asMovePackage) return null;
-      const nodes = res.data.packageVersions?.nodes ?? [];
-      // Prefer versions published at exactly this address (a system package keeps
-      // one address across versions); fall back to the whole set.
-      const here = nodes.filter(
-        (n) => normalizeSuiAddress(n.address) === normalizeSuiAddress(address),
-      );
-      const version = (here.length ? here : nodes).reduce(
-        (m, n) => Math.max(m, n.version),
-        0,
-      );
+      if (res.errors?.length) {
+        throw new Error(`Package query failed: ${res.errors[0]?.message}`);
+      }
+      const pkg = res.data?.object?.asMovePackage;
+      if (!pkg) return null;
       return {
         name: address,
-        version,
-        package_address: address,
+        version: pkg.version,
+        package_address: pkg.address,
         metadata: {},
         git_info: null,
         package_info: null,

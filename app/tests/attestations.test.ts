@@ -44,7 +44,8 @@ vi.mock("@/lib/attestations", async (original) => ({
 vi.mock("@/hooks/useTrustedAttestors", () => ({
   useTrustedAttestors: mocks.useTrustedAttestors,
 }));
-vi.mock("@/hooks/useGetMvrVersionAddresses", () => ({
+vi.mock("@/hooks/useGetMvrVersionAddresses", async (original) => ({
+  ...(await original<typeof import("@/hooks/useGetMvrVersionAddresses")>()),
   useGetMvrVersionAddresses: mocks.useGetMvrVersionAddresses,
 }));
 
@@ -115,6 +116,18 @@ function serve(objects: Object[]) {
     return { object: objects.find((o) => o.objectId === objectId) };
   });
   mocks.query.mockImplementation(async ({ query, variables }) => {
+    if (query.includes("packageVersions"))
+      return {
+        data: {
+          packageVersions: {
+            nodes: attestor.lineage.map((address, index) => ({
+              address,
+              version: index + 1,
+            })),
+            pageInfo: { hasNextPage: false, endCursor: null },
+          },
+        },
+      };
     if (query.includes("asMovePackage"))
       return {
         data: {
@@ -287,6 +300,24 @@ describe("v2 attestation reads", () => {
     const result = await run();
     expect(result.items.map((a) => a.revoked)).toEqual([false, true]);
     expect(result.failures).toBe(0);
+  });
+
+  it("finds original schemas even when the MVR versions page omits older releases", async () => {
+    serve([object("0x1")]);
+    mocks.useGetMvrVersionAddresses.mockReturnValue({
+      data: [{ address: attestor.lineage[1], version: 6 }],
+    });
+    const run = queryFunction<{ items: IssuedAttestation[]; failures: number }>(
+      useIssuedAttestations(
+        {
+          name: "@auditor/audit",
+          version: 6,
+          package_address: attestor.lineage[1],
+        } as Parameters<typeof useIssuedAttestations>[0],
+        "testnet",
+      ),
+    );
+    expect((await run()).items).toHaveLength(1);
   });
 
   it("counts unreadable Issued status as a per-object failure", async () => {
