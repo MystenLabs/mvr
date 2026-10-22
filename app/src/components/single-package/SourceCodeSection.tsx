@@ -2,7 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, LinkIcon } from "lucide-react";
 import { ResolvedName } from "@/hooks/mvrResolution";
-import { useResolveGitCommit, parseGithubRepo } from "@/hooks/useResolveGitCommit";
+import { useResolveGitCommit, parseGithubRepo, type GitInfo } from "@/hooks/useResolveGitCommit";
 import {
   useSourceVerification,
   type SourceVerification,
@@ -38,9 +38,9 @@ function InfoFilled({ className }: { className?: string }) {
  * The sidebar "Source Code" block: the repository link, with a header that
  * states the source's verification status.
  *
- * Verified means: the git_info link (repo + tag) resolves to a commit, and a
- * trusted source-verification attestation about this package covers that exact
- * commit. Matching the *resolved* link is what lets "Verified" mean "the source
+ * Verified means: the git_info link resolves to a commit, and a trusted
+ * source-verification attestation covers that repository, package directory,
+ * and commit. Matching the resolved link lets "Verified" mean "the source
  * you're looking at is verified"; a moved tag that outruns an older verification
  * correctly reads as unverified.
  *
@@ -65,8 +65,11 @@ export function SourceCodeSection({
   );
 
   const canCheck = !!commit && verifications !== undefined;
+  const sourceVerifications = (verifications ?? []).filter((v) =>
+    matchesSourceLocation(v, name.git_info),
+  );
   const match = canCheck
-    ? verifications!.find((v) => v.gitSha.toLowerCase() === commit!.toLowerCase())
+    ? sourceVerifications.find((v) => v.gitSha.toLowerCase() === commit!.toLowerCase())
     : undefined;
 
   // Default open when unverified (a quiet, useful note), closed when verified
@@ -125,10 +128,10 @@ export function SourceCodeSection({
           {match ? (
             <VerificationDetail v={match} network={network} />
           ) : (
-            verifications!.length > 0 &&
+            sourceVerifications.length > 0 &&
             name.git_info && (
               <VerifiedCommits
-                verifications={verifications!}
+                verifications={sourceVerifications}
                 repoUrl={name.git_info.repository_url}
                 currentCommit={commit!}
               />
@@ -139,6 +142,18 @@ export function SourceCodeSection({
       )}
     </SinglePackageContent>
   );
+}
+
+/** Match the repository and package directory, not just a shared commit. */
+function matchesSourceLocation(v: SourceVerification, gitInfo: GitInfo | null): boolean {
+  if (!gitInfo) return false;
+  const claimed = parseGithubRepo(v.gitUrl);
+  const linked = parseGithubRepo(gitInfo.repository_url);
+  const path = (value: string) => value.split("/").filter((part) => part && part !== ".").join("/");
+  return !!claimed && !!linked &&
+    claimed.owner.toLowerCase() === linked.owner.toLowerCase() &&
+    claimed.repo.toLowerCase() === linked.repo.toLowerCase() &&
+    path(v.subdir) === path(gitInfo.path);
 }
 
 /** MVR page for the source-verification service — the "learn more" target. Not
