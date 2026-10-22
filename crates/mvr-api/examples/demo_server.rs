@@ -40,8 +40,7 @@ use tokio_util::sync::CancellationToken;
 // Synthetic PackageInfo object ids for the seeded names. On a real network
 // these would be MVR PackageInfo objects; the demo subjects have none, and
 // resolution only uses these as join keys, so any distinct addresses work.
-const PKG_INFO_SUBJECT: &str =
-    "0x00000000000000000000000000000000000000000000000000000000dee00001";
+const PKG_INFO_SUBJECT: &str = "0x00000000000000000000000000000000000000000000000000000000dee00001";
 const PKG_INFO_DEPENDENCY: &str =
     "0x00000000000000000000000000000000000000000000000000000000dee00002";
 const PKG_INFO_REGISTRY: &str =
@@ -188,7 +187,10 @@ async fn main() -> anyhow::Result<()> {
             .join(", ")
     );
     println!("seeded dependency edge   {subject} -> {dependency}");
-    println!("point the frontend's mainnet mvrEndpoint at http://127.0.0.1:{}", args.port);
+    println!(
+        "point the frontend's mainnet mvrEndpoint at http://127.0.0.1:{}",
+        args.port
+    );
 
     run_server(
         url,
@@ -313,9 +315,18 @@ async fn seed_versions(
     };
 
     let mut conn = db.connect().await?;
-    insert_into(packages::table).values(packages).execute(&mut *conn).await?;
-    insert_into(package_infos::table).values(vec![package_info]).execute(&mut *conn).await?;
-    insert_into(name_records::table).values(vec![name_record]).execute(&mut *conn).await?;
+    insert_into(packages::table)
+        .values(packages)
+        .execute(&mut *conn)
+        .await?;
+    insert_into(package_infos::table)
+        .values(vec![package_info])
+        .execute(&mut *conn)
+        .await?;
+    insert_into(name_records::table)
+        .values(vec![name_record])
+        .execute(&mut *conn)
+        .await?;
     if let Some(path) = git_path {
         // One row per version: the README lookup joins on the *resolved*
         // version, so seeding only v1 leaves an upgraded package's page (which
@@ -334,7 +345,10 @@ async fn seed_versions(
                 tag: Some(DEMO_GIT_REF.to_string()),
             })
             .collect();
-        insert_into(git_infos::table).values(git_infos).execute(&mut *conn).await?;
+        insert_into(git_infos::table)
+            .values(git_infos)
+            .execute(&mut *conn)
+            .await?;
     }
     Ok(())
 }
