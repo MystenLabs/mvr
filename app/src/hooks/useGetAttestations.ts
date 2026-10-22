@@ -7,8 +7,7 @@ import { normalizeSuiAddress } from "@mysten/sui/utils";
 import {
   attestationConfig,
   attestorFor,
-  boxAddress,
-  revokedBoxAddress,
+  subjectAddress,
   toAttestationInfo,
   type AttestationConfig,
   type AttestationInfo,
@@ -19,8 +18,7 @@ import { useGetMvrVersionAddresses } from "./useGetMvrVersionAddresses";
 import { ResolvedName } from "./mvrResolution";
 import { fetchAllPages } from "@/utils/query";
 
-/** A trusted attestation attributed to the attester whose lineage defines its
- *  type — the shared base for the active-box and revoked-box reads. */
+/** A trusted attestation attributed to its schema's defining package. */
 export interface AttributedAttestation {
   info: AttestationInfo;
   /** The trusted attester this attestation's type belongs to. */
@@ -31,66 +29,48 @@ export interface AttributedAttestation {
  *  shape as AttributedAttestation; kept as a distinct name on the render path.) */
 export type DisplayedAttestation = AttributedAttestation;
 
-/**
- * Core read: the attestations about `subject` from the configured trusted
- * attesters. Reads the per-subject Box directly from the chain (no MVR backend),
- * then filters to trusted, displayed attestations client-side (see
- * `fetchBoxAttestations`).
- */
+/** Read live, displayed attestations from the configured trusted attesters. */
 export async function fetchTrustedAttestations(
   client: SuiGrpcClient,
   cfg: AttestationConfig,
   attestors: ResolvedAttestor[],
   subject: string,
 ): Promise<DisplayedAttestation[]> {
-  // Revocation is handled by box membership — a revoked attestation isn't in
-  // the active box at all, so everything read here is live.
-  const box = boxAddress(cfg.registryPkg, cfg.registryId, subject);
-  return fetchBoxAttestations(client, attestors, box);
+  const items = await fetchSubjectAttestations(client, cfg, attestors, subject);
+  return items.filter(({ info }) => !info.revoked);
 }
 
-/**
- * The revoked attestations about `subject`: the trusted, displayed ones that
- * `revoke` moved out of the active box into the subject's revoked box. Same
- * trusted/Display filter, just against the revoked-box address.
- */
+/** Read revoked attestations using the same trust and Display filters. */
 export async function fetchRevokedAttestations(
   client: SuiGrpcClient,
   cfg: AttestationConfig,
   attestors: ResolvedAttestor[],
   subject: string,
 ): Promise<AttributedAttestation[]> {
-  const revokedBox = revokedBoxAddress(cfg.registryPkg, cfg.registryId, subject);
-  return fetchBoxAttestations(client, attestors, revokedBox);
+  const items = await fetchSubjectAttestations(client, cfg, attestors, subject);
+  return items.filter(({ info }) => info.revoked);
 }
 
-/**
- * Trusted, displayed attestations owned by `boxAddr`, attributed to their
- * attester. Shared by the active-box and revoked-box reads. Lists every object
- * the box owns (`listOwnedObjects`) — a box holds only `Attestation<T>`,
- * transferred to it — and filters client-side: keep only those from a configured
- * trusted attester (`attestorFor`) that carry a registered Display. Untrusted
- * attesters can transfer junk into a box; `toAttestationInfo` and the trust
- * filter drop it here.
- */
-async function fetchBoxAttestations(
+/** Read every page at the subject address and apply registry, trust, and Display filters. */
+async function fetchSubjectAttestations(
   client: SuiGrpcClient,
+  cfg: AttestationConfig,
   attestors: ResolvedAttestor[],
-  boxAddr: string,
+  subject: string,
 ): Promise<AttributedAttestation[]> {
   const objects = await fetchAllPages({
     asyncFn: async (cursor) => {
       const page = await client.core.listOwnedObjects({
-        owner: boxAddr,
+        owner: subjectAddress(cfg.registryId, subject),
         cursor,
-        include: { display: true },
+        include: { display: true, json: true },
       });
       return { items: page.objects, hasNextPage: page.hasNextPage, cursor: page.cursor };
     },
   });
 
   return objects
-    .map((obj) => toAttestationInfo(obj))
+    .map((obj) => toAttestationInfo(obj, cfg.registryPkg))
     .filter((info): info is AttestationInfo => info !== null)
     .map((info) => ({ info, attestor: attestorFor(attestors, info.innerType) }))
     .filter(
@@ -172,7 +152,7 @@ export function useGetAttestations(
   });
 }
 
-/** The revoked attestations about `subject` (read from the revoked box). */
+/** The revoked attestations about `subject`. */
 export function useGetRevokedAttestations(
   subject: string | undefined,
   network: "mainnet" | "testnet",
@@ -193,7 +173,7 @@ export interface IssuedAttestation {
   info: AttestationInfo;
   /** The subject (package) the attestation is about. */
   subject: string;
-  /** Moved to the subject's revoked box (vs. its active box). */
+  /** Whether the registry has set revoked_at_ms. */
   revoked: boolean;
 }
 
@@ -208,8 +188,8 @@ const ISSUED_QUERY = `query($type: String!, $after: String) {
  * The attestations *issued by* a package — the reverse of the per-subject read.
  * Enumerates the package's own `store` types across its mvr version lineage, uses
  * GraphQL `objects(type:)` to find every `Attestation<T>` of those types across
- * all Boxes (the object's `subject` field says who it's about), then re-reads
- * each via the gRPC core client for Display + owner. Works for ANY package, not just
+ * all subject addresses, then re-reads each via the gRPC core client for
+ * Display and current revocation status. Works for ANY package, not just
  * configured trusted attesters — the trust config governs only how the UI frames
  * the result (see the Issued tab's not-trusted warning), not whether it loads.
  */
@@ -236,8 +216,8 @@ export function useIssuedAttestations(
     queryFn: async (): Promise<{ items: IssuedAttestation[]; failures: number }> => {
       const types = await enumerateAttestationTypes(gql, lineage, cfg!.registryPkg);
 
-      // Reverse query: page through every object of each issued type, across all
-      // Boxes. A typed helper (explicit `after` param) keeps the cursor out of
+      // Reverse query: page through every object of each issued type.
+      // A typed helper (explicit `after` param) keeps the cursor out of
       // the query's own return-type inference.
       const issuedPage = (type: string, after: string | null) =>
         gql.query<{
@@ -272,50 +252,29 @@ export function useIssuedAttestations(
       }
       if (subjectById.size === 0) return { items: [], failures: 0 };
 
-      // Re-read each for Display + owner; drop undisplayed types. An issued
-      // attestation is revoked iff it now lives in its subject's revoked box
-      // rather than the active box — the read-by-type Issued view is the one
-      // place that recovers revocation from ownership, since the object itself
-      // carries no status field. A re-read that fails (vs. a legitimately
-      // undisplayed/non-attestation object) is counted so the UI can flag that
-      // some attestations couldn't be loaded rather than silently dropping them.
+      // Re-read status with Display so an indexed pre-revocation record cannot
+      // override the current chain state. Count read/parse failures separately
+      // from objects intentionally omitted because they have no Display.
       const out: IssuedAttestation[] = [];
       let failures = 0;
       for (const [id, subject] of subjectById) {
-        let object;
         try {
-          const res = await client.core.getObject({
+          const { object } = await client.core.getObject({
             objectId: id,
-            include: { display: true },
+            include: { display: true, json: true },
           });
-          object = res.object;
+          const info = toAttestationInfo(object, cfg!.registryPkg);
+          if (!info || Object.keys(info.display).length === 0) continue;
+          out.push({
+            info,
+            subject: normalizeSuiAddress(subject),
+            revoked: info.revoked,
+          });
         } catch {
           failures++;
-          continue;
         }
-        const info = toAttestationInfo(object);
-        if (!info || Object.keys(info.display).length === 0) continue;
-        const owner = ownerAddress(object.owner);
-        const revokedBox = revokedBoxAddress(cfg!.registryPkg, cfg!.registryId, subject);
-        const revoked = !!owner && normalizeSuiAddress(owner) === normalizeSuiAddress(revokedBox);
-        out.push({
-          info,
-          subject: normalizeSuiAddress(subject),
-          revoked,
-        });
       }
       return { items: out, failures };
     },
   });
-}
-
-/** The address of an address-owned object, or undefined for other owner kinds.
- *  Tolerant of the SDK's owner representation. */
-function ownerAddress(owner: unknown): string | undefined {
-  if (owner && typeof owner === "object") {
-    const o = owner as Record<string, unknown>;
-    if (typeof o.AddressOwner === "string") return o.AddressOwner;
-    if (o.$kind === "Address" && typeof o.address === "string") return o.address;
-  }
-  return undefined;
 }

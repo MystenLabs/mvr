@@ -3,7 +3,7 @@
 //! Spins up an ephemeral Postgres (`TempDb`), seeds it so the localnet-published
 //! demo subjects resolve by MVR name, and runs the real mvr-api `run_server`
 //! against it. Reads the published package ids from the attestation-registry
-//! repo's `demo-ids.json` (produced by its `scripts/run-demo.sh`).
+//! repo's `demo-ids.json` (produced by its `demo/scripts/run-demo.sh`).
 //!
 //! This mirrors the seeding pattern in `tests/mvr_test_cluster.rs`
 //! (`setup_dummy_data`): mvr-api resolution is a pure Postgres read, so we
@@ -30,12 +30,9 @@ use mvr_schema::{
     MIGRATIONS,
 };
 
-// Where the demo package READMEs live, for MVR's git-backed README fetch. The
-// ref is the registry repo's rolling demo tag, which is force-moved to whatever
-// commit the demo is cut from — so the READMEs track the deployed demo sources,
-// and the ref outlives any one PR branch.
+// Pin README sources to the registry revision supported by this integration.
 const DEMO_REPO_URL: &str = "https://github.com/MystenLabs/attestations";
-const DEMO_GIT_REF: &str = "demo-latest";
+const DEMO_GIT_REF: &str = "0d7258d75db7e9d54bc98cf87169904db7c9a8f8";
 use serde_json::json;
 use sui_pg_db::{temp::TempDb, Db, DbArgs};
 use tokio_util::sync::CancellationToken;
@@ -106,7 +103,7 @@ async fn main() -> anyhow::Result<()> {
         "@mysten/attestations",
         registry_pkg,
         PKG_INFO_REGISTRY,
-        "The attestation registry package: Attestation<T>, per-subject boxes, Display.",
+        "The attestation registry package: Attestation<T>, subject addresses, Display.",
         Some("packages/attestations"),
     )
     .await?;

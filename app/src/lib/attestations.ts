@@ -1,6 +1,5 @@
-// Reading package attestations from the attestation registry. This is a pure
-// chain read (no MVR backend): derive the per-subject Box address and list the
-// `Attestation<T>` objects it owns, keeping only those from trusted attesters.
+// Read attestations from the registry's derived subject address, filtering by
+// trusted schema identity and the on-chain revoked_at_ms field.
 // See ATTESTATION-INTEGRATION.md.
 
 import { bcs } from "@mysten/sui/bcs";
@@ -36,11 +35,9 @@ export interface TrustedAttestor {
   role?: "source-verification";
 }
 
-/** A trusted attester with its package lineage resolved from `originalId` (every
- *  version id — original publish + upgrades). An attestation is this attester's
- *  when its inner type's defining package is in `lineage` — the off-chain form of
- *  the on-chain `attester_of<T>() = type_name::original_id<T>()` rule, expanded to
- *  every version so a type added in an upgrade still matches. */
+/** A trusted attester with every package version resolved from originalId.
+ *  Match the schema's defining package against this lineage so types introduced
+ *  in later upgrades retain the configured attester's identity. */
 export interface ResolvedAttestor extends TrustedAttestor {
   lineage: SuiAddress[];
 }
@@ -48,7 +45,7 @@ export interface ResolvedAttestor extends TrustedAttestor {
 export interface AttestationConfig {
   /** attestations package id (the `Attestation<>` wrapper type). */
   registryPkg: SuiAddress;
-  /** The shared Registry object id — parent for per-subject Box derivation. */
+  /** The shared Registry object ID, used to derive subject addresses. */
   registryId: ObjectId;
   trustedAttestors: TrustedAttestor[];
 }
@@ -104,50 +101,29 @@ export function allTrustedAttestors(): TrustedAttestor[] {
   return out;
 }
 
-// === Box address ===
-
-const BoxKey = bcs.struct("BoxKey", { subject: bcs.Address, revoked: bcs.bool() });
-
-/** Derive a subject's box address, mirroring on-chain
- *  `derived_object::derive_address(registry, BoxKey { subject, revoked })`. */
-function derivedBox(
-  registryPkg: SuiAddress,
+/** Derive the owner of all attestations for a subject, including revoked ones. */
+export function subjectAddress(
   registryId: ObjectId,
   subject: SuiAddress,
-  revoked: boolean,
 ): ObjectId {
-  const keyBytes = BoxKey.serialize({
-    subject: normalizeSuiAddress(subject),
-    revoked,
-  }).toBytes();
   return deriveObjectID(
     registryId,
-    `${registryPkg}::attestations::BoxKey`,
-    keyBytes,
+    "0x2::object::ID",
+    bcs.Address.serialize(normalizeSuiAddress(subject)).toBytes(),
   );
 }
 
-/** Address of the subject's active `Box` (`revoked: false`). `revoke` moves an
- *  attestation to the sibling revoked box, so reading this address yields
- *  exactly the un-revoked set. */
-export function boxAddress(
-  registryPkg: SuiAddress,
-  registryId: ObjectId,
-  subject: SuiAddress,
-): ObjectId {
-  return derivedBox(registryPkg, registryId, subject, false);
-}
-
-/** Address of the subject's revoked `Box` (`revoked: true`) — where `revoke`
- *  moves attestations. Lets the read-by-type Issued tab tell a revoked
- *  attestation from a live one by its owner, since the object carries no
- *  status field. */
-export function revokedBoxAddress(
-  registryPkg: SuiAddress,
-  registryId: ObjectId,
-  subject: SuiAddress,
-): ObjectId {
-  return derivedBox(registryPkg, registryId, subject, true);
+/** Read the JSON Option<u64>; reject unknown status rather than trust it. */
+export function isRevoked(value: unknown): boolean {
+  if (value === null) return false;
+  if (
+    typeof value === "string" &&
+    /^\d{1,20}$/.test(value) &&
+    BigInt(value) <= 18446744073709551615n
+  ) {
+    return true;
+  }
+  throw new Error("Invalid or missing attestation revocation status");
 }
 
 // === Attestation info + mapping ===
@@ -157,27 +133,29 @@ export interface AttestationInfo {
   /** The inner type `T`, e.g. `0xAUD::audit::Audit`. The full object type is
    *  always `${registryPkg}::attestations::Attestation<${innerType}>`. */
   innerType: string;
-  /** Server-rendered Display v2 fields (all values are strings). */
+  /** Whether the registry has set revoked_at_ms. */
+  revoked: boolean;
+  /** Server-rendered Display v2 fields. */
   display: Record<string, unknown>;
 }
 
-const ATTESTATION_RE = /::attestations::Attestation<(.+)>$/;
+const ATTESTATION_RE = /^(0x[0-9a-fA-F]+)::attestations::Attestation<(.+)>$/;
 
-/**
- * Map a `getOwnedObjects`/`getObject` response into `AttestationInfo`, or null
- * if it isn't a well-formed `Attestation<T>`. JSON-RPC nests Display fields
- * under `data.display.data`.
- */
+/** Parse a registry attestation; return null for unrelated object types.
+ *  Throw if its revocation status cannot be read. */
 export function toAttestationInfo(
-  object: SuiClientTypes.Object<{ display: true }>,
+  object: SuiClientTypes.Object<{ display: true; json: true }>,
+  registryPkg: SuiAddress,
 ): AttestationInfo | null {
-  if (!object.type) return null;
-  const m = object.type.match(ATTESTATION_RE);
-  if (!m) return null;
+  const m = object.type?.match(ATTESTATION_RE);
+  if (!m || normalizeSuiAddress(m[1]!) !== normalizeSuiAddress(registryPkg)) {
+    return null;
+  }
   return {
     id: object.objectId,
-    innerType: m[1]!,
-    display: (object.display?.output ?? {}) as Record<string, unknown>,
+    innerType: m[2]!,
+    revoked: isRevoked(object.json?.revoked_at_ms),
+    display: object.display?.output ?? {},
   };
 }
 

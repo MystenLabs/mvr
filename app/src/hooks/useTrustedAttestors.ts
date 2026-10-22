@@ -29,11 +29,9 @@ async function lineageOf(
 }
 
 /**
- * The network's trusted attesters with their lineages resolved from `originalId`
- * via `packageVersions`. This is the off-chain form of the on-chain original-id
- * trust rule (`attester_of<T>() = type_name::original_id<T>()`): the config carries
- * only `originalId`, and every version — including types introduced in later
- * upgrades — is derived here rather than hand-listed.
+ * Resolve the network's trusted attester lineages from originalId through
+ * packageVersions. Matching a schema's defining package against this lineage
+ * includes types introduced in upgrades without hand-listing version IDs.
  *
  * Returns `[]` while resolving (and when the network has no config), so callers
  * that gate on it (the Issued tab) show nothing until it's ready.

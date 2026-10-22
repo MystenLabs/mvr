@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { SuiGraphQLClient } from "@mysten/sui/graphql";
 import {
   attestationConfig,
-  boxAddress,
+  subjectAddress,
+  isRevoked,
   type TrustedAttestor,
 } from "@/lib/attestations";
 import { enumerateAttestationTypes } from "./useGetAttestations";
@@ -41,7 +42,7 @@ interface RawData {
 }
 
 /** One GraphQL page of `Attestation<T>` objects with their Move struct contents (JSON). */
-const BOX_TYPE_QUERY = `query($type: String!, $owner: SuiAddress!, $after: String) {
+const SUBJECT_TYPE_QUERY = `query($type: String!, $owner: SuiAddress!, $after: String) {
   objects(filter: { type: $type, owner: $owner }, after: $after) {
     pageInfo { hasNextPage endCursor }
     nodes { address asMoveObject { contents { json } } }
@@ -52,11 +53,9 @@ const str = (v: unknown): string | undefined =>
   typeof v === "string" ? v : undefined;
 
 /**
- * The source-verification attestations about `subject`: the live ones (in the
- * subject's active box) issued by a trusted attester whose config `role` is
- * `"source-verification"`. Reads the attestation's typed struct fields via
- * GraphQL — a read scoped to a known schema, so parsing `git_sha`/`git_url`
- * directly is intended, unlike the generic Display-only endorsement read.
+ * Read live source-verification claims from configured verifiers at the
+ * subject's address. GraphQL returns the schema's structured source fields;
+ * revoked_at_ms determines whether the claim is live.
  *
  * Returns `[]` (never resolving to attestations) when no verifier is configured.
  */
@@ -78,7 +77,7 @@ export function useSourceVerification(
     ],
     enabled: !!cfg && verifiers.length > 0 && !!subject,
     queryFn: async (): Promise<SourceVerification[]> => {
-      const box = boxAddress(cfg!.registryPkg, cfg!.registryId, subject);
+      const owner = subjectAddress(cfg!.registryId, subject);
       const out: SourceVerification[] = [];
       for (const verifier of verifiers) {
         const types = await enumerateAttestationTypes(
@@ -87,8 +86,10 @@ export function useSourceVerification(
           cfg!.registryPkg,
         );
         for (const type of types) {
-          for (const node of await queryBox(gql, type, box)) {
-            const d = (node.asMoveObject?.contents?.json?.data ?? {}) as RawData;
+          for (const node of await querySubject(gql, type, owner)) {
+            const json = node.asMoveObject?.contents?.json;
+            if (isRevoked(json?.revoked_at_ms)) continue;
+            const d = (json?.data ?? {}) as RawData;
             const gitUrl = str(d.git_url);
             const gitSha = str(d.git_sha);
             const subdir = str(d.subdir);
@@ -111,26 +112,24 @@ export function useSourceVerification(
   });
 }
 
-type BoxNode = {
+type SubjectNode = {
   address: string;
   asMoveObject: {
-    contents: { json?: { data?: unknown } | null } | null;
+    contents: { json?: { data?: unknown; revoked_at_ms?: unknown } | null } | null;
   } | null;
 };
 
-/** Page through every `Attestation<type>` owned by `box`. The query is a typed
- *  helper (explicit `after` param) so the cursor stays out of the response
- *  type's own inference. */
-async function queryBox(gql: SuiGraphQLClient, type: string, box: string) {
+/** Read every page of a schema's attestations at the subject address. */
+async function querySubject(gql: SuiGraphQLClient, type: string, owner: string) {
   const page = (after: string | null) =>
     gql.query<{
       objects: {
         pageInfo: { hasNextPage: boolean; endCursor: string | null };
-        nodes: BoxNode[];
+        nodes: SubjectNode[];
       };
-    }>({ query: BOX_TYPE_QUERY, variables: { type, owner: box, after } });
+    }>({ query: SUBJECT_TYPE_QUERY, variables: { type, owner, after } });
 
-  const nodes: BoxNode[] = [];
+  const nodes: SubjectNode[] = [];
   let after: string | null = null;
   do {
     const res = await page(after);

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Generate app/.env for the local attestation demo from the attestation-registry
 # repo's demo-ids.json: repoint all networks at the local stack and inject the
-# attestation config (registry id/pkg + trusted attesters with their lineage).
+# attestation config (registry ID/package + trusted attesters' original IDs).
 #
-# demo-ids.json (produced by the attestation-registry repo's run-demo.sh):
+# demo-ids.json (produced by the attestation repo's demo/scripts/run-demo.sh):
 #   {
 #     "registryId": "0x…",                // the shared Registry object id
 #     "attestationRegistryPkg": "0x…",     // the attestations package id
@@ -14,12 +14,12 @@
 #     "createdAttestations": { "dependencyAudit": "0x…", "subjectAuditV2": "0x…" }
 #   }
 # This script reads registryId, attestationRegistryPkg, and trustedAttestors
-# (name → friendly presentation via ATTESTORS below; originalId+latestId → lineage).
+# (name maps to presentation metadata; the app resolves lineage from originalId).
 #
 # Usage:
 #   bash scripts/write-demo-env.sh <path/to/demo-ids.json>
 # The path is required (or set ATTESTATION_DEMO_IDS); demo-ids.json is written
-# by the attestation-registry repo's run-demo.sh and lives in that checkout,
+# by the attestation repo's demo/scripts/run-demo.sh and lives in that checkout,
 # whose location this repo can't know. Env overrides: RPC_URL, MVR_ENDPOINT.
 
 set -euo pipefail
@@ -29,7 +29,7 @@ APP_ENV="$SCRIPT_DIR/../app/.env"
 DEMO_IDS="${1:-${ATTESTATION_DEMO_IDS:-}}"
 if [[ -z "$DEMO_IDS" ]]; then
     echo "usage: write-demo-env.sh <path/to/demo-ids.json> (or set ATTESTATION_DEMO_IDS)" >&2
-    echo "  demo-ids.json is produced by the attestation-registry repo's run-demo.sh" >&2
+    echo "  demo-ids.json is produced by the attestation repo's demo/scripts/run-demo.sh" >&2
     exit 2
 fi
 RPC="${RPC_URL:-http://127.0.0.1:9000}"
@@ -41,8 +41,7 @@ if [[ ! -f "$DEMO_IDS" ]]; then
     exit 1
 fi
 
-# Build the attestation config. Each attester's lineage is its original id plus
-# any later version ids (deduped) — the client-side trusted set.
+# Build the trust config. The app discovers upgraded schema types via GraphQL.
 CONFIG=$(python3 - "$DEMO_IDS" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1]))
@@ -52,7 +51,7 @@ d = json.load(open(sys.argv[1]))
 # (the same place its README — shown on the mvr page — lives), so no demo asset
 # ships in the mvr app. `mvrName` is kept in sync with demo_server.rs. An
 # attester absent from this map falls back to its raw name with no icon/mvrName.
-RAW = "https://raw.githubusercontent.com/MystenLabs/attestations/demo-latest"
+RAW = "https://raw.githubusercontent.com/MystenLabs/attestations/0d7258d75db7e9d54bc98cf87169904db7c9a8f8"
 ATTESTORS = {
     "auditor_a": {
         "name": "Auditor A",
@@ -75,13 +74,11 @@ ATTESTORS = {
 attestors = []
 for a in d["trustedAttestors"]:
     meta = ATTESTORS.get(a["name"], {})
-    lineage = list(dict.fromkeys([a["originalId"], a.get("latestId", a["originalId"])]))
     attestors.append({
         "name": meta.get("name", a["name"]),
         "iconUrl": meta.get("iconUrl"),
         "mvrName": meta.get("mvrName"),
         "originalId": a["originalId"],
-        "lineage": lineage,
     })
 config = {
     "registryPkg": d["attestationRegistryPkg"],
