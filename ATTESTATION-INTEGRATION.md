@@ -109,7 +109,7 @@ published to that network. Localnet IDs are not valid testnet configuration.
 ## Local demo from the sibling checkout
 
 Prerequisites: Sui CLI and the localnet dependencies described in the attestation
-repository, Rust, Postgres tools for the MVR demo server, and Node.js 22.12+ with
+repository, Rust, Postgres tools for the MVR demo server, and Node.js 24.x with
 pnpm for the app and regression tests. Install the frontend dependencies first:
 
 ```bash
