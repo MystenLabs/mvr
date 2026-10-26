@@ -73,14 +73,15 @@ store or interpret attestation status.
 - Registry package: `0x754da52dba4429dc141b4298c5afebb4697d7ff74a15580c0f3074f3f33f79e5`
 - Shared Registry object: `0x333d2e0d4eba57451e942bfc1ebffd0d4daf599ff719bab556e2882109df4db3`
 
-Both were verified through public testnet reads. The trusted-attester list is
-empty, so attestation features remain disabled until approved attester packages
-are added. Mainnet has no configuration. Do not reuse retired registry or
-attester IDs.
+Both were verified through public testnet reads. The testnet trusted list contains
+only `@pkg/attestations-demo`, with original package ID
+`0x1b3a65bc3eb8c2268329a2e91e3b87fc081516676efa6e3361c0d278782a371a`.
+This enables demo rendering, not a security endorsement. Mainnet remains disabled.
+Do not reuse retired registry or attester IDs.
 
-After publishing attester packages against this registry, add their original
-package IDs to the testnet trusted list. Configuration has the following shape;
-replace placeholders with IDs from the selected network:
+Add other attesters only after publishing them against this registry and approving
+their original package IDs. Configuration has the following shape; replace
+placeholders with IDs from the selected network:
 
 ```json
 {

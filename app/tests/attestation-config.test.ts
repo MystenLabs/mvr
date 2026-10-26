@@ -18,25 +18,58 @@ afterEach(() => {
   vi.resetModules();
 });
 
-it("records the new testnet registry without trusting any attesters", () => {
+it("trusts only the demo auditor on the new testnet registry", () => {
   expect(checkedInConfig).toEqual({
     testnet: {
       registryPkg:
         "0x754da52dba4429dc141b4298c5afebb4697d7ff74a15580c0f3074f3f33f79e5",
       registryId:
         "0x333d2e0d4eba57451e942bfc1ebffd0d4daf599ff719bab556e2882109df4db3",
-      trustedAttestors: [],
+      trustedAttestors: [
+        {
+          originalId:
+            "0x1b3a65bc3eb8c2268329a2e91e3b87fc081516676efa6e3361c0d278782a371a",
+          name: "Demo auditor (not a security auditor)",
+          mvrName: "@pkg/attestations-demo",
+        },
+      ],
     },
   });
 });
 
-it("keeps public networks disabled until trusted attesters are configured", async () => {
+it("enables demo attestations on testnet while keeping mainnet disabled", async () => {
   vi.stubEnv("NEXT_PUBLIC_ATTESTATION_CONFIG", "");
+  const { attestationConfig, allTrustedAttestors } = await import(
+    "@/lib/attestations"
+  );
+  expect(attestationConfig("testnet")).toEqual(checkedInConfig.testnet);
+  expect(attestationConfig("mainnet")).toBeNull();
+  expect(allTrustedAttestors()).toEqual(
+    checkedInConfig.testnet.trustedAttestors,
+  );
+});
+
+it("lets the environment override replace the checked-in configuration", async () => {
+  vi.stubEnv("NEXT_PUBLIC_ATTESTATION_CONFIG", "{}");
   const { attestationConfig, allTrustedAttestors } = await import(
     "@/lib/attestations"
   );
   expect(attestationConfig("testnet")).toBeNull();
   expect(attestationConfig("mainnet")).toBeNull();
+  expect(allTrustedAttestors()).toEqual([]);
+});
+
+it("disables attestations when the override has no trusted attesters", async () => {
+  vi.stubEnv(
+    "NEXT_PUBLIC_ATTESTATION_CONFIG",
+    JSON.stringify({
+      testnet: { ...checkedInConfig.testnet, trustedAttestors: [] },
+    }),
+  );
+  const { attestationConfig, allTrustedAttestors } = await import(
+    "@/lib/attestations"
+  );
+  expect(attestationConfig("testnet")).toBeNull();
   expect(allTrustedAttestors()).toEqual([]);
 });
 
