@@ -18,7 +18,7 @@ afterEach(() => {
   vi.resetModules();
 });
 
-it("trusts only the demo auditor on the new testnet registry", () => {
+it("trusts only the demo auditor on the testnet and mainnet registries", () => {
   expect(checkedInConfig).toEqual({
     testnet: {
       registryPkg:
@@ -34,19 +34,54 @@ it("trusts only the demo auditor on the new testnet registry", () => {
         },
       ],
     },
+    mainnet: {
+      registryPkg:
+        "0xf918b2fc17085f4e48021be94ee43f9cc4437256acfd085f1e3d1a54d11f6e7b",
+      registryId:
+        "0x86875cdb65149c3a1c9653486c09ef7846a751823bb2a96d434fd01fbd4b052e",
+      trustedAttestors: [
+        {
+          originalId:
+            "0x70b5189985e476f8f2e6f014ed9e2e6aeee71f4cafb07b768c3a7c7467e0e793",
+          name: "Demo auditor (not a security auditor)",
+          mvrName: "@pkg/attestations-demo",
+        },
+      ],
+    },
   });
 });
 
-it("enables demo attestations on testnet while keeping mainnet disabled", async () => {
+it("enables demo attestations on testnet and mainnet", async () => {
   vi.stubEnv("NEXT_PUBLIC_ATTESTATION_CONFIG", "");
-  const { attestationConfig, allTrustedAttestors } = await import(
-    "@/lib/attestations"
-  );
+  const { attestationConfig } = await import("@/lib/attestations");
   expect(attestationConfig("testnet")).toEqual(checkedInConfig.testnet);
-  expect(attestationConfig("mainnet")).toBeNull();
+  expect(attestationConfig("mainnet")).toEqual(checkedInConfig.mainnet);
+});
+
+it("lists an attester once when one MVR name spans networks", async () => {
+  vi.stubEnv("NEXT_PUBLIC_ATTESTATION_CONFIG", "");
+  const { allTrustedAttestors } = await import("@/lib/attestations");
   expect(allTrustedAttestors()).toEqual(
     checkedInConfig.testnet.trustedAttestors,
   );
+});
+
+it("lists unnamed attesters by package ID", async () => {
+  vi.stubEnv(
+    "NEXT_PUBLIC_ATTESTATION_CONFIG",
+    JSON.stringify({
+      testnet: {
+        ...checkedInConfig.testnet,
+        trustedAttestors: [
+          { name: "A", originalId: "0x5" },
+          { name: "A again", originalId: "0x05" },
+          { name: "B", originalId: "0x6" },
+        ],
+      },
+    }),
+  );
+  const { allTrustedAttestors } = await import("@/lib/attestations");
+  expect(allTrustedAttestors().map((a) => a.name)).toEqual(["A", "B"]);
 });
 
 it("lets the environment override replace the checked-in configuration", async () => {

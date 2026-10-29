@@ -9,5 +9,16 @@
         "mvrName": "@pkg/attestations-demo"
       }
     ]
+  },
+  "mainnet": {
+    "registryPkg": "0xf918b2fc17085f4e48021be94ee43f9cc4437256acfd085f1e3d1a54d11f6e7b",
+    "registryId": "0x86875cdb65149c3a1c9653486c09ef7846a751823bb2a96d434fd01fbd4b052e",
+    "trustedAttestors": [
+      {
+        "originalId": "0x70b5189985e476f8f2e6f014ed9e2e6aeee71f4cafb07b768c3a7c7467e0e793",
+        "name": "Demo auditor (not a security auditor)",
+        "mvrName": "@pkg/attestations-demo"
+      }
+    ]
   }
 }

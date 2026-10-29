@@ -84,14 +84,15 @@ export function attestationConfig(
   return cfg && cfg.trustedAttestors.length > 0 ? cfg : null;
 }
 
-/** Every trusted attester across all networks, deduped by `originalId` — for the
- *  network-agnostic "trusted attestors" listing. */
+/** Every trusted attester across all networks — for the network-agnostic "trusted
+ *  attestors" listing. Deduped by `mvrName` when set (one MVR app spans networks,
+ *  each with its own package), else by `originalId`. */
 export function allTrustedAttestors(): TrustedAttestor[] {
   const seen = new Set<string>();
   const out: TrustedAttestor[] = [];
   for (const cfg of Object.values(allConfigs())) {
     for (const a of cfg?.trustedAttestors ?? []) {
-      const id = normalizeSuiAddress(a.originalId);
+      const id = a.mvrName ?? normalizeSuiAddress(a.originalId);
       if (!seen.has(id)) {
         seen.add(id);
         out.push(a);
