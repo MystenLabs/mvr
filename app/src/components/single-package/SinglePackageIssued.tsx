@@ -6,7 +6,11 @@ import {
   type IssuedAttestation,
 } from "@/hooks/useGetAttestations";
 import { useReverseResolution } from "@/hooks/useReverseResolution";
-import { attestationConfig, isConfiguredAttestor } from "@/lib/attestations";
+import {
+  attestationConfig,
+  byPublishedAtDesc,
+  isConfiguredAttestor,
+} from "@/lib/attestations";
 import { useTrustedAttestors } from "@/hooks/useTrustedAttestors";
 import { reportLink, ReportHash, httpsLink } from "./SinglePackageTrustSignals";
 import { DependentsCountLabel } from "./SinglePackageTabs";
@@ -43,9 +47,8 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
   // revoked are split into separate sections (revoked moved out of the main
   // list) so endorsements read distinctly from withdrawn ones. The fetch pages
   // through every result, so we render them all — no cap.
-  const byDate = (a: IssuedAttestation, b: IssuedAttestation) => publishMs(b) - publishMs(a);
-  const liveItems = issued.filter((i) => !i.revoked).sort(byDate);
-  const revokedItems = issued.filter((i) => i.revoked).sort(byDate);
+  const liveItems = issued.filter((i) => !i.revoked).sort(byPublishedAtDesc);
+  const revokedItems = issued.filter((i) => i.revoked).sort(byPublishedAtDesc);
 
   // Resolve subject names for every attestation shown.
   const subjects = [...new Set(issued.map((i) => i.subject))];
@@ -262,14 +265,6 @@ function SubjectLink({ id, name }: { id: string; name?: string }) {
       {name ?? (id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id)}
     </Link>
   );
-}
-
-/** Epoch ms of an attestation's published_at, or -Infinity when absent (so it
- *  sorts to the end of a newest-first list). */
-function publishMs(item: IssuedAttestation): number {
-  const s = str(item.info.display["published_at"]);
-  const t = s ? Date.parse(s) : NaN;
-  return Number.isNaN(t) ? -Infinity : t;
 }
 
 /** A published_at rendered as a short date, or "" when absent/unparseable. */

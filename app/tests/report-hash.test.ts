@@ -157,20 +157,20 @@ describe("ReportHash", () => {
       createElement(ReportHash, { value: attested, url, verify: true }),
     );
 
-  it("turns the digest red and explains the mismatch on hover", () => {
+  it("says the report doesn't match, with both digests on hover", () => {
     const served = `sha256:${"b".repeat(64)}`;
     state.check = { status: "mismatch", actual: served };
     const html = render();
-    expect(html).toContain("text-content-negative");
-    expect(html).toContain(
-      `Doesn&#x27;t match the report at the link, which hashes to ${served}.`,
-    );
+    expect(html).toContain("Report doesn&#x27;t match attested hash");
+    expect(html).toContain(`Attested hash: ${attested}`);
+    expect(html).toContain(`Report at the link: ${served}`);
   });
 
-  it("marks a matching report without a warning", () => {
+  it("says the report matches, without a warning", () => {
     state.check = { status: "match" };
     const html = render();
-    expect(html).toContain("Matches the report at the link");
+    expect(html).toContain("Report matches attested hash");
+    expect(html).toContain(`Attested hash: ${attested}`);
     expect(html).not.toContain("text-content-negative");
   });
 
@@ -180,7 +180,14 @@ describe("ReportHash", () => {
       reason: "the report link returned HTTP 404",
     };
     const html = render();
+    expect(html).toContain("Report hash not checked");
     expect(html).not.toContain("text-content-negative");
     expect(html).toContain("Not checked: the report link returned HTTP 404.");
+  });
+
+  it("shows the bare digest when the report wasn't checked", () => {
+    const html = render();
+    expect(html).toContain(`sha256:${hex.slice(0, 8)}…`);
+    expect(html).not.toContain("attested hash");
   });
 });

@@ -4,6 +4,7 @@ import { deriveObjectID, normalizeSuiAddress } from "@mysten/sui/utils";
 import type { SuiClientTypes } from "@mysten/sui/client";
 import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import {
+  byPublishedAtDesc,
   subjectAddress,
   toAttestationInfo,
   type AttestationConfig,
@@ -362,5 +363,33 @@ describe("v2 attestation reads", () => {
         useSourceVerification(subject, "testnet"),
       )(),
     ).rejects.toThrow(/revocation/i);
+  });
+});
+
+describe("byPublishedAtDesc", () => {
+  const at = (id: string, published_at?: unknown) => ({
+    info: {
+      id,
+      innerType: "0x1::audit::Audit",
+      revoked: false,
+      display: published_at === undefined ? {} : { published_at },
+    },
+  });
+
+  it("orders newest published_at first and undated attestations last", () => {
+    const items = [
+      at("undated"),
+      at("2025", "2025-03-01T00:00:00.000Z"),
+      at("garbage", "not a date"),
+      at("2026", "2026-10-26T17:41:34.279Z"),
+      at("2024", "2024-12-31T23:59:59.000Z"),
+    ];
+    expect(items.sort(byPublishedAtDesc).map((i) => i.info.id)).toEqual([
+      "2026",
+      "2025",
+      "2024",
+      "undated",
+      "garbage",
+    ]);
   });
 });

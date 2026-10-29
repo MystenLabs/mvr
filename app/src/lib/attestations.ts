@@ -140,6 +140,24 @@ export interface AttestationInfo {
   display: Record<string, unknown>;
 }
 
+/** Epoch ms of an attestation's `published_at` Display field, or -Infinity when
+ *  absent or unparseable (so it sorts to the end of a newest-first list). */
+export function publishedAtMs(info: AttestationInfo): number {
+  const v = info.display["published_at"];
+  const t = typeof v === "string" ? Date.parse(v) : NaN;
+  return Number.isNaN(t) ? -Infinity : t;
+}
+
+/** Sort comparator: newest `published_at` first, undated attestations last. */
+export function byPublishedAtDesc(
+  a: { info: AttestationInfo },
+  b: { info: AttestationInfo },
+): number {
+  const ta = publishedAtMs(a.info);
+  const tb = publishedAtMs(b.info);
+  return ta === tb ? 0 : tb > ta ? 1 : -1;
+}
+
 const ATTESTATION_RE = /^(0x[0-9a-fA-F]+)::attestations::Attestation<(.+)>$/;
 
 /** Parse a registry attestation; return null for unrelated object types.

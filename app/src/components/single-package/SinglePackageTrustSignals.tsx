@@ -19,7 +19,11 @@ import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
 import ExplorerLink from "../ui/explorer-link";
 import { CopyBtn } from "../ui/CopyBtn";
-import { attestationConfig, type TrustedAttestor } from "@/lib/attestations";
+import {
+  attestationConfig,
+  byPublishedAtDesc,
+  type TrustedAttestor,
+} from "@/lib/attestations";
 import { CheckIcon } from "@/icons/single-package/CheckIcon";
 import { WarningIcon } from "@/icons/single-package/WarningIcon";
 
@@ -152,9 +156,10 @@ function VersionAudits({
     address,
     network,
   );
-  const revoked = revokedData ?? [];
+  // Newest first by the on-chain published_at; undated attestations last.
+  const revoked = [...(revokedData ?? [])].sort(byPublishedAtDesc);
   const displayError = error ?? revokedError;
-  const positives = data ?? [];
+  const positives = [...(data ?? [])].sort(byPublishedAtDesc);
   const hasLiveAttestation = positives.length > 0;
 
   return (
@@ -338,8 +343,8 @@ export function reportLink(url: string): React.ReactNode {
 /** The report digest (the `link_hash` convention, e.g. `sha256:…`) shown
  *  compactly, with a copy button carrying the full value so a viewer can check a
  *  downloaded report against it. Full value on hover. With `verify`, the report
- *  at `url` is hashed in the browser: a match gets a check, and a mismatch turns
- *  the digest red, with the digest the link actually serves on hover. */
+ *  at `url` is hashed in the browser and the digest is replaced by the outcome
+ *  in words, so it reads at a glance; the digests move to the hover. */
 export function ReportHash({
   value,
   url,
@@ -349,31 +354,19 @@ export function ReportHash({
   url?: string;
   verify: boolean;
 }) {
-  const { data: check } = useReportHashCheck(url, value, verify);
+  const { data: check, isFetching } = useReportHashCheck(url, value, verify);
   const tooltipId = useId();
-  const tooltip = {
-    "data-tooltip-id": tooltipId,
-    "data-tooltip-content": hashTooltip(value, check),
-  };
 
   return (
     <span className="inline-flex items-center gap-2xs align-middle">
       <span
-        {...tooltip}
-        className={
-          check?.status === "mismatch"
-            ? "cursor-help font-mono text-content-negative underline decoration-dotted underline-offset-2"
-            : "font-mono"
-        }
+        data-tooltip-id={tooltipId}
+        data-tooltip-content={hashTooltip(value, check)}
+        className="inline-flex cursor-help items-center gap-2xs"
       >
-        {truncateHash(value)}
+        {hashLabel(value, check, isFetching)}
       </span>
       <CopyBtn text={value} size="sm" />
-      {check?.status === "match" && (
-        <span {...tooltip}>
-          <CheckIcon className="h-3.5 w-3.5 text-content-positive" />
-        </span>
-      )}
       {/* A span wrapper: the digest sits inline, sometimes inside a <p>. */}
       <Tooltip
         id={tooltipId}
@@ -384,16 +377,49 @@ export function ReportHash({
   );
 }
 
+/** What checking the report found, in words; the bare digest when it wasn't
+ *  checked (untrusted attester, no link, or an algorithm we can't recompute). */
+function hashLabel(
+  value: string,
+  check: ReportHashCheck | undefined,
+  checking: boolean,
+): React.ReactNode {
+  switch (check?.status) {
+    case "match":
+      return (
+        <>
+          <CheckIcon className="h-3.5 w-3.5 shrink-0 text-content-positive" />
+          Report matches attested hash
+        </>
+      );
+    case "mismatch":
+      return (
+        <span className="inline-flex items-center gap-2xs text-content-negative">
+          <WarningIcon className="h-3.5 w-3.5 shrink-0" />
+          Report doesn&apos;t match attested hash
+        </span>
+      );
+    case "unverifiable":
+      return <span className="text-content-tertiary">Report hash not checked</span>;
+    default:
+      return checking ? (
+        <span className="text-content-tertiary">Checking report…</span>
+      ) : (
+        <span className="font-mono">{truncateHash(value)}</span>
+      );
+  }
+}
+
 /** Hover text for a report digest: the full attested value, then what
  *  recomputing the report's digest found, when it was checked. */
 function hashTooltip(value: string, check: ReportHashCheck | undefined): string {
   switch (check?.status) {
     case "match":
-      return `${value}\n\nMatches the report at the link (recomputed in your browser).`;
+      return `Attested hash: ${value}\n\nThe report at the link hashes to the same value (recomputed in your browser), so it's the report that was attested.`;
     case "mismatch":
-      return `${value}\n\nDoesn't match the report at the link, which hashes to ${check.actual}. The report may have changed since it was attested.`;
+      return `Attested hash: ${value}\nReport at the link: ${check.actual}\n\nThe report may have changed since it was attested.`;
     case "unverifiable":
-      return `${value}\n\nNot checked: ${check.reason}.`;
+      return `Attested hash: ${value}\n\nNot checked: ${check.reason}.`;
     default:
       return value;
   }
