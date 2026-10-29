@@ -8,7 +8,7 @@ import {
 import { useReverseResolution } from "@/hooks/useReverseResolution";
 import { attestationConfig, isConfiguredAttestor } from "@/lib/attestations";
 import { useTrustedAttestors } from "@/hooks/useTrustedAttestors";
-import { reportLink, reportHash, httpsLink } from "./SinglePackageTrustSignals";
+import { reportLink, ReportHash, httpsLink } from "./SinglePackageTrustSignals";
 import { DependentsCountLabel } from "./SinglePackageTabs";
 import { Text } from "../ui/Text";
 import LoadingState from "../LoadingState";
@@ -130,28 +130,39 @@ export function SinglePackageIssued({ name }: { name: ResolvedName }) {
         </Text>
       )}
 
-      {liveItems.length > 0 && <RowList items={liveItems} nameOf={nameOf} />}
+      {liveItems.length > 0 && (
+        <RowList items={liveItems} nameOf={nameOf} verifyReports={trusted} />
+      )}
 
       {revokedItems.length > 0 && (
         <div className="flex flex-col gap-sm border-t border-stroke-secondary pt-md">
           <Text as="div" kind="label" size="label-regular" className="text-content-tertiary">
             <p>Revoked</p>
           </Text>
-          <RowList items={revokedItems} nameOf={nameOf} deemphasized />
+          <RowList
+            items={revokedItems}
+            nameOf={nameOf}
+            verifyReports={trusted}
+            deemphasized
+          />
         </div>
       )}
     </div>
   );
 }
 
-/** A dense list of issued-attestation rows. */
+/** A dense list of issued-attestation rows. `verifyReports` hashes each linked
+ *  report in the browser — only for a trusted attester, so an arbitrary package
+ *  can't make viewers fetch the URLs it puts on chain. */
 function RowList({
   items,
   nameOf,
+  verifyReports,
   deemphasized,
 }: {
   items: IssuedAttestation[];
   nameOf: (subject: string) => string | undefined;
+  verifyReports: boolean;
   deemphasized?: boolean;
 }) {
   return (
@@ -161,6 +172,7 @@ function RowList({
           key={item.info.id}
           item={item}
           name={nameOf(item.subject)}
+          verifyReport={verifyReports}
           deemphasized={deemphasized}
         />
       ))}
@@ -174,10 +186,12 @@ function RowList({
 function IssuedRow({
   item,
   name,
+  verifyReport,
   deemphasized,
 }: {
   item: IssuedAttestation;
   name?: string;
+  verifyReport: boolean;
   deemphasized?: boolean;
 }) {
   const { display, innerType } = item.info;
@@ -219,7 +233,7 @@ function IssuedRow({
           <Text as="p" kind="paragraph" size="paragraph-xs">
             {report && reportLink(report)}
             {report && hash && " · "}
-            {hash && reportHash(hash)}
+            {hash && <ReportHash value={hash} url={report} verify={verifyReport} />}
           </Text>
         )}
       </div>

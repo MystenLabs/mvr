@@ -79,5 +79,6 @@ export enum AppQueryKeys {
   ATTESTATIONS = "attestations",
   TRUSTED_ATTESTORS = "trusted-attestors",
   SOURCE_VERIFICATIONS = "source-verifications",
+  REPORT_HASH = "report-hash",
   RESOLVE_GIT_COMMIT = "resolve-git-commit",
 }
