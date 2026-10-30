@@ -143,7 +143,7 @@ export function SinglePackageTrustSignals({ name }: { name: ResolvedName }) {
 }
 
 /** The attestation status of a single package version: live audits, the
- *  "no audits" warning, surfaced load errors, and any revoked attestations. */
+ *  "no audits" note, surfaced load errors, and any revoked attestations. */
 function VersionAudits({
   address,
   network,
@@ -177,13 +177,12 @@ function VersionAudits({
         </div>
       )}
 
+      {/* Informational, not a warning: most packages have no audits, and the
+          absence isn't an error. */}
       {!isLoading && !displayError && !hasLiveAttestation && (
-        <div className="flex items-start gap-sm rounded-md border border-stroke-secondary bg-bg-secondary p-md">
-          <WarningIcon className="mt-2xs h-5 w-5 shrink-0 text-content-negative" />
-          <Text as="p" kind="paragraph" size="paragraph-small">
-            This package version has no published audits.
-          </Text>
-        </div>
+        <Text as="p" kind="paragraph" size="paragraph-small" className="text-content-secondary">
+          This package version has no published audits.
+        </Text>
       )}
 
       {positives.length > 0 && (
