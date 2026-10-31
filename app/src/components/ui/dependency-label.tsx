@@ -28,12 +28,16 @@ export function DependencyLabel({
     );
   }
 
+  // A dependency with no MVR name is still a package — link it to its by-address
+  // page (attestations, versions, dependents) just like a resolved one.
   return (
     <DependencyTooltipWrapper calls={calls}>
-      <div className="flex items-center gap-xs rounded-full bg-bg-accentBleedthrough3 px-md py-xs">
-        <Text kind="label" size="label-small">
-          {beautifySuiAddress(dependency)}
-        </Text>
+      <div className="flex items-center gap-xs rounded-full bg-bg-accentBleedthrough3 px-md py-xs hover:bg-bg-accentBleedthrough2">
+        <Link href={`/package/${dependency}`}>
+          <Text kind="label" size="label-small">
+            {beautifySuiAddress(dependency)}
+          </Text>
+        </Link>
         <CopyBtn text={dependency} />
       </div>
     </DependencyTooltipWrapper>

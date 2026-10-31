@@ -67,6 +67,7 @@ export enum AppQueryKeys {
   PACKAGE_INIT_AND_AT_VERSION = "package-init-and-at-version",
   IS_NAME_AVAILABLE = "is-name-available",
   RESOLVE_MVR_NAME = "resolve-mvr-name",
+  PACKAGE_BY_ADDRESS = "package-by-address",
   SEARCH_MVR_NAMES = "search-mvr-names",
   MVR_DEPENDENCIES = "mvr-dependencies",
   MVR_DEPENDENTS = "mvr-dependents",
@@ -75,4 +76,9 @@ export enum AppQueryKeys {
   MVR_VERSION_ADDRESSES = "mvr-version-addresses",
   SUINS_NAME_RESOLUTION = "suins-name-resolution",
   NAME_ANALYTICS = "name-analytics",
+  ATTESTATIONS = "attestations",
+  TRUSTED_ATTESTORS = "trusted-attestors",
+  SOURCE_VERIFICATIONS = "source-verifications",
+  REPORT_HASH = "report-hash",
+  RESOLVE_GIT_COMMIT = "resolve-git-commit",
 }

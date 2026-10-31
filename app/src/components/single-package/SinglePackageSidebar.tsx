@@ -1,4 +1,4 @@
-import { ResolvedName } from "@/hooks/mvrResolution";
+import { isUnregisteredPackage, ResolvedName } from "@/hooks/mvrResolution";
 import { Text } from "@/components/ui/Text";
 import CodeRenderer from "../homepage/CodeRenderer";
 import { LinkIcon } from "lucide-react";
@@ -7,6 +7,7 @@ import { SinglePackageAnalytics } from "./SinglePackageAnalytics";
 import { SinglePackageSidebarLink } from "./SinglePackageLayout";
 import { SinglePackageSidebarTitle } from "./SinglePackageLayout";
 import { SinglePackageContent } from "./SinglePackageLayout";
+import { SourceCodeSection } from "./SourceCodeSection";
 
 export function SinglePackageSidebar({
   name,
@@ -15,11 +16,9 @@ export function SinglePackageSidebar({
   name: ResolvedName;
   network: "mainnet" | "testnet";
 }) {
+  // Source Code renders via SourceCodeSection (it carries the verification
+  // status); the rest are plain links.
   const links = [
-    {
-      title: "Source Code",
-      href: name.git_info?.repository_url ?? "",
-    },
     {
       title: "Documentation",
       href: name.metadata?.documentation_url ?? "",
@@ -33,20 +32,24 @@ export function SinglePackageSidebar({
   return (
     <div className="sticky">
       <div className="grid grid-cols-1 gap-lg rounded-md bg-bg-secondary py-lg">
-        <SinglePackageContent>
-          <SinglePackageSidebarTitle>Install</SinglePackageSidebarTitle>
-          <Text kind="paragraph" size="paragraph-small">
-            You can install this package in your Move project by calling
-          </Text>
-          <CodeRenderer
-            code={`mvr add ${name.name}`}
-            language="bash"
-            wrapLines={false}
-            wrapLongLines={false}
-            className="bg-bg-quarternaryBleedthrough px-0.5 py-2xs"
-            codeTagClassName="max-sm:text-11 text-12 "
-          />
-        </SinglePackageContent>
+        {/* `mvr add` takes an MVR name — a nameless package can't be installed
+            that way, so the Install snippet is omitted for it. */}
+        {!isUnregisteredPackage(name) && (
+          <SinglePackageContent>
+            <SinglePackageSidebarTitle>Install</SinglePackageSidebarTitle>
+            <Text kind="paragraph" size="paragraph-small">
+              You can install this package in your Move project by calling
+            </Text>
+            <CodeRenderer
+              code={`mvr add ${name.name}`}
+              language="bash"
+              wrapLines={false}
+              wrapLongLines={false}
+              className="bg-bg-quarternaryBleedthrough px-0.5 py-2xs"
+              codeTagClassName="max-sm:text-11 text-12 "
+            />
+          </SinglePackageContent>
+        )}
 
         <SinglePackageAnalytics name={name} />
 
@@ -56,6 +59,14 @@ export function SinglePackageSidebar({
             {name.metadata?.description || "No description provided"}
           </Text>
         </SinglePackageContent>
+
+        {name.git_info?.repository_url && (
+          <SourceCodeSection
+            href={name.git_info.repository_url}
+            name={name}
+            network={network}
+          />
+        )}
 
         {links.map(
           (link) =>

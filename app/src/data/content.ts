@@ -60,6 +60,13 @@ export const Content = {
       description:
         "README file not found. This either means the package does not have a README file in the path of the Move Package, or the README file is not publicly accessible.",
     },
+
+    unregisteredPackage: {
+      icon: "🔗",
+      title: "Unregistered package",
+      description:
+        "This package has no MVR name, so there's no README or source metadata to show. The tabs above still surface everything that's known on-chain — its versions, dependencies, dependents, and any attestations made about it.",
+    },
   },
   suinsNames: {
     icon: "🚀",
