@@ -18,7 +18,7 @@ afterEach(() => {
   vi.resetModules();
 });
 
-it("trusts only the demo auditor on the testnet and mainnet registries", () => {
+it("trusts the demo auditor on both networks and Asymptotic on testnet", () => {
   expect(checkedInConfig).toEqual({
     testnet: {
       registryPkg:
@@ -31,6 +31,12 @@ it("trusts only the demo auditor on the testnet and mainnet registries", () => {
             "0x1b3a65bc3eb8c2268329a2e91e3b87fc081516676efa6e3361c0d278782a371a",
           name: "Demo auditor (not a security auditor)",
           mvrName: "@pkg/attestations-demo",
+        },
+        {
+          originalId:
+            "0x8f8adc04b11672e2e0f1fc05f31eae8e5b50a14efbb22e9cc4229d532e48e0cb",
+          name: "Asymptotic",
+          iconUrl: "https://asymptotic.tech/favicon.svg",
         },
       ],
     },

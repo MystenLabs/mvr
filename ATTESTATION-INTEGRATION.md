@@ -75,10 +75,13 @@ store or interpret attestation status.
 | Registry package | `0x754da52dba4429dc141b4298c5afebb4697d7ff74a15580c0f3074f3f33f79e5` | `0xf918b2fc17085f4e48021be94ee43f9cc4437256acfd085f1e3d1a54d11f6e7b` |
 | Shared Registry object | `0x333d2e0d4eba57451e942bfc1ebffd0d4daf599ff719bab556e2882109df4db3` | `0x86875cdb65149c3a1c9653486c09ef7846a751823bb2a96d434fd01fbd4b052e` |
 | `@pkg/attestations-demo` original package ID | `0x1b3a65bc3eb8c2268329a2e91e3b87fc081516676efa6e3361c0d278782a371a` | `0x70b5189985e476f8f2e6f014ed9e2e6aeee71f4cafb07b768c3a7c7467e0e793` |
+| Asymptotic original package ID | `0x8f8adc04b11672e2e0f1fc05f31eae8e5b50a14efbb22e9cc4229d532e48e0cb` | not configured |
 
-All were verified through public reads on their networks. On each network the
-trusted list contains only `@pkg/attestations-demo`. This enables demo rendering,
-not a security endorsement. Do not reuse retired registry or attester IDs.
+All were verified through public reads on their networks. `@pkg/attestations-demo`
+is trusted on both networks to enable demo rendering, not as a security
+endorsement. Asymptotic's `formal_verification` package is trusted on testnet
+only; it has no MVR name, so `/attestors` links to it by package address. Do not
+reuse retired registry or attester IDs.
 
 Add other attesters only after publishing them against this registry and approving
 their original package IDs. Configuration has the following shape; replace
