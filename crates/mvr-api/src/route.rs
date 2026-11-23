@@ -52,6 +52,8 @@ pub fn create_router(app: Arc<AppState>) -> Router {
         )
         // Lists the organizations that have linked names (paginated, optional search query)
         .route("/orgs", get(Orgs::list))
+        // A single organization, by its exact name (`@org`, `sub@org`, `org.sui`)
+        .route("/orgs/{org}", get(Orgs::get))
         .route("/names/analytics/{*name}", get(Names::get_analytics))
         .route("/names/{*name}", get(Names::get_by_name))
         .route(

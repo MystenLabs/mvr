@@ -204,6 +204,15 @@ impl MvrTestCluster {
         self.query("v1/orgs", params).await
     }
 
+    /// Queries `/v1/orgs/{org}` with the supplied (already URL-safe) org,
+    /// returning the status code alongside the response body.
+    pub async fn get_org(
+        &self,
+        org: &str,
+    ) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
+        self.query(&format!("v1/orgs/{}", org), &[]).await
+    }
+
     async fn query(
         &self,
         path: &str,
