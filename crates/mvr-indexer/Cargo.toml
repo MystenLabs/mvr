@@ -42,7 +42,6 @@ telemetry-subscribers.workspace = true
 tokio-util.workspace = true
 
 [dev-dependencies]
-sui-storage.workspace = true
 sqlx = {version = "0.8.3", features = ["runtime-tokio", "postgres", "chrono"]}
 fastcrypto.workspace = true
 insta = { version = "1.43.1", features = ["json"] }
