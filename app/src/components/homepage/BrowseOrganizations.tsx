@@ -4,8 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/Text";
 import { Content } from "@/data/content";
 import { type OrgSummary } from "@/hooks/useSearchOrgs";
-import { getOrgsIfAvailable } from "@/lib/mvr-api";
-import { FEATURED_ORGS, isPublicName, orgPath, ORGS_PATH } from "@/lib/names";
+import { getLargestOrgsIfAvailable, getOrgIfAvailable } from "@/lib/mvr-api";
+import {
+  FEATURED_ORGS,
+  isPublicName,
+  orgPath,
+  ORGS_PATH,
+  PUBLIC_NAMES,
+} from "@/lib/names";
 
 /** How many (of the largest) other organizations are listed below. */
 const MORE_ORGS_COUNT = 6;
@@ -19,18 +25,25 @@ const MORE_ORGS_COUNT = 6;
  * organizations: they are listed on the organizations page only.
  */
 export async function BrowseOrganizations() {
-  const all = await getOrgsIfAvailable();
-  if (!all?.length) return null;
+  // Each featured organization is looked up on its own, and the largest other
+  // ones are the head of the list (which may also hold the featured ones and
+  // the public names): a single page of it, never the whole list.
+  const [featuredOrgs, largest] = await Promise.all([
+    Promise.all(FEATURED_ORGS.map((name) => getOrgIfAvailable(name))),
+    getLargestOrgsIfAvailable(
+      MORE_ORGS_COUNT + FEATURED_ORGS.length + PUBLIC_NAMES.length,
+    ),
+  ]);
 
-  const orgs = all.filter((org) => !isPublicName(org.name));
+  const featured = featuredOrgs.filter((org): org is OrgSummary => !!org);
 
-  const featured = FEATURED_ORGS.map((name) =>
-    orgs.find((org) => org.name === name),
-  ).filter((org): org is OrgSummary => !!org);
-
-  const more = orgs
-    .filter((org) => !FEATURED_ORGS.includes(org.name))
+  const more = (largest ?? [])
+    .filter(
+      (org) => !isPublicName(org.name) && !FEATURED_ORGS.includes(org.name),
+    )
     .slice(0, MORE_ORGS_COUNT);
+
+  if (!featured.length && !more.length) return null;
 
   return (
     <section className="container">

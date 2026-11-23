@@ -6,7 +6,7 @@ import { OrgPagination } from "@/components/org/OrgPagination";
 import { SearchResultItem } from "@/components/public/SearchResults";
 import { Text } from "@/components/ui/Text";
 import { Content } from "@/data/content";
-import { getOrgNames, getOrgsIfAvailable, ORG_PAGE_SIZE } from "@/lib/mvr-api";
+import { getOrgIfAvailable, getOrgNames, ORG_PAGE_SIZE } from "@/lib/mvr-api";
 import { isPublicName, orgPath, parseOrgSegment } from "@/lib/names";
 import { isHttpUrl } from "@/lib/utils";
 
@@ -32,10 +32,10 @@ async function loadOrgPage({ params, searchParams }: Props) {
   const page = parsePage(searchParams.page);
   if (!org || !page) return null;
 
-  // The org listing only provides the avatar: it is optional (never throws).
-  const [result, orgs] = await Promise.all([
+  // The org itself only provides the avatar: it is optional (never throws).
+  const [result, summary] = await Promise.all([
     getOrgNames(org),
-    getOrgsIfAvailable(),
+    getOrgIfAvailable(org),
   ]);
 
   if (result.status === "unsupported") {
@@ -55,9 +55,7 @@ async function loadOrgPage({ params, searchParams }: Props) {
     totalPages,
     total: names.length,
     // Never for a public name (`@pkg`): see `OrgAvatar`.
-    iconUrl: isPublicName(org)
-      ? null
-      : (orgs?.find((x) => x.name === org)?.icon_url ?? null),
+    iconUrl: isPublicName(org) ? null : (summary?.icon_url ?? null),
     items: names.slice((page - 1) * ORG_PAGE_SIZE, page * ORG_PAGE_SIZE),
   };
 }
