@@ -1,4 +1,4 @@
-FROM rust:1.90 AS builder
+FROM rust:1.92-bullseye AS builder
 
 ARG PROFILE=release
 ARG GIT_REVISION
