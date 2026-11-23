@@ -23,6 +23,8 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: 0
+  # No debuginfo in CI: ~20% less compile CPU and a ~60% smaller target dir to cache.
+  CARGO_PROFILE_DEV_DEBUG: 0
 
 jobs:
   test-crates:
@@ -32,21 +34,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: taiki-e/install-action@cargo-nextest
-      - name: Install postgres
-        shell: bash
-        run: |
-          sudo apt update && sudo apt install postgresql
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
+      # Postgres 16 ships with the ubuntu-24.04 image.
       - name: Add postgres to PATH
         run: echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
 
-      - name: Run mvr-indexer tests
+      # -p builds only these crates' tests; -E alone built the whole workspace.
+      - name: Run mvr-indexer and mvr-api tests
         run: |
-          cargo nextest run -E 'package(mvr-indexer)'
-
-      - name: Run mvr-api tests
-        run: |
-          cargo nextest run -E 'package(mvr-api)'
+          cargo nextest run -p mvr-indexer -p mvr-api
 
   build:
     runs-on: ubuntu-latest
@@ -61,6 +60,9 @@ jobs:
           cargo --version
 
       - uses: taiki-e/install-action@cargo-nextest
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build mvr-cli (debug)
         run: |
