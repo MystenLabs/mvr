@@ -5,8 +5,14 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { Text } from "./ui/Text";
 import NsLogo from "@/icons/NsLogo";
+import { Content } from "@/data/content";
+import { ORGS_PATH } from "@/lib/names";
 
 const Menu = [
+  {
+    name: Content.orgs.nav,
+    href: ORGS_PATH,
+  },
   {
     name: "Docs",
     href: "https://docs.suins.io/move-registry",

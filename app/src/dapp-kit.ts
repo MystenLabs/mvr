@@ -2,16 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createDAppKit } from "@mysten/dapp-kit-react";
 import { SuiGrpcClient } from "@mysten/sui/grpc";
+import { MVR_ENDPOINTS } from "@/lib/endpoints";
 
 // gRPC (gRPC-web) full node endpoints used by the wallet / dapp-kit layer.
 const GRPC_URLS = {
   mainnet: "https://fullnode.mainnet.sui.io:443",
   testnet: "https://fullnode.testnet.sui.io:443",
-} as const;
-
-const MVR_ENDPOINTS = {
-  mainnet: "https://mainnet.mvr.mystenlabs.com",
-  testnet: "https://testnet.mvr.mystenlabs.com",
 } as const;
 
 export const dAppKit = createDAppKit({

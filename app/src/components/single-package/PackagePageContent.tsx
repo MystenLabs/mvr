@@ -6,36 +6,51 @@ import { PackagesNetworkContext } from "@/components/providers/packages-provider
 import { TabTitle } from "@/components/ui/TabTitle";
 import { Text } from "@/components/ui/Text";
 import { useResolveMvrName } from "@/hooks/mvrResolution";
-import { useActiveAddress } from "@/hooks/useActiveAddress";
-import { useDecodedUriName } from "@/hooks/useDecodedUriName";
 import { useWalletNetwork } from "@/hooks/useWalletNetwork";
 import { switchGlobalAccent } from "@/lib/utils";
-import { AvailableNetworks, Network } from "@/utils/types";
+import { AvailableNetworks } from "@/utils/types";
 import { useEffect, useState } from "react";
 import LoadingState from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
 import { Content } from "@/data/content";
 import { SinglePackageHeader } from "@/components/single-package/SinglePackageHeader";
+import { SinglePackage } from "@/components/single-package/SinglePackage";
+import { type PackageOrgContext } from "@/lib/mvr-api";
 
-export default function PackagesLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+type PackageNetwork = "mainnet" | "testnet";
+
+/**
+ * The interactive part of a package page (network switch, tabs, wallet).
+ *
+ * The name is resolved on the server (`src/app/package/[...name]/page.tsx`)
+ * and handed over through the react-query cache, so both the server render
+ * and the first client render already have the data.
+ */
+export function PackagePageContent({
+  name,
+  initialNetwork,
+  orgContext,
+}: {
+  /** Optional data about the org of the package (see `getPackageOrgContext`). */
+  orgContext?: PackageOrgContext;
+  /** The decoded name from the URL (e.g. `@org/app` or `@org/app/1`). */
+  name: string;
+  /** The network the server rendered (mainnet, or testnet as a fallback). */
+  initialNetwork: PackageNetwork;
+}) {
   const { isCustom } = useMVRContext();
-  const activeAddress = useActiveAddress();
   const walletNetwork = useWalletNetwork();
 
-  const decodedName = useDecodedUriName();
-
-  const [network, setNetwork] = useState<Network>(
-    isCustom || !walletNetwork ? "mainnet" : walletNetwork,
-  );
+  // Start from the server's choice (keeps hydration deterministic); the
+  // wallet's network is applied right after mount by the effect below.
+  const [network, setNetwork] = useState<PackageNetwork>(initialNetwork);
 
   const { data: mainnetData, isLoading: isMainnetLoading } = useResolveMvrName(
-    decodedName,
+    name,
     "mainnet",
   );
   const { data: testnetData, isLoading: isTestnetLoading } = useResolveMvrName(
-    decodedName,
+    name,
     "testnet",
   );
 
@@ -44,7 +59,7 @@ export default function PackagesLayout({
       setNetwork("mainnet");
       return;
     }
-    if (!walletNetwork) return;
+    if (walletNetwork !== "mainnet" && walletNetwork !== "testnet") return;
     setNetwork(walletNetwork);
   }, [isCustom, walletNetwork]);
 
@@ -64,7 +79,10 @@ export default function PackagesLayout({
       setNetwork("mainnet");
   }, [mainnetData, testnetData, network, isMainnetLoading, isTestnetLoading]);
 
-  if (isMainnetLoading || isTestnetLoading) {
+  const isLoading = isMainnetLoading || isTestnetLoading;
+
+  // Only block on loading when there is nothing to show yet.
+  if (isLoading && !mainnetData && !testnetData) {
     return (
       <>
         <Header />
@@ -82,32 +100,35 @@ export default function PackagesLayout({
     );
   }
 
+  const data = { mainnet: mainnetData, testnet: testnetData };
+  // While the other network is still loading (or the network effect has not
+  // run yet), show the network we do have data for.
+  const activeNetwork: PackageNetwork = data[network]
+    ? network
+    : network === "mainnet"
+      ? "testnet"
+      : "mainnet";
+  const packageInfo = data[activeNetwork];
+
   return (
     <>
       <Header>
-        {network === "mainnet" && mainnetData && (
-          <SinglePackageHeader name={mainnetData} network={network} />
-        )}
-        {network === "testnet" && testnetData && (
-          <SinglePackageHeader name={testnetData} network={network} />
+        {packageInfo && (
+          <SinglePackageHeader
+            name={packageInfo}
+            network={activeNetwork}
+            orgContext={orgContext}
+          />
         )}
         <div className="">
           <div className="container flex min-h-[75px] items-end gap-lg">
-            {Object.values(AvailableNetworks)
-              .filter((net) => {
-                if (net === "mainnet") {
-                  return !!mainnetData;
-                }
-                if (net === "testnet") {
-                  return !!testnetData;
-                }
-                return false;
-              })
+            {(Object.values(AvailableNetworks) as PackageNetwork[])
+              .filter((net) => !!data[net])
               .map((net) => (
                 <TabTitle
                   key={net}
-                  active={net === network}
-                  onClick={() => setNetwork(net as Network)}
+                  active={net === activeNetwork}
+                  onClick={() => setNetwork(net)}
                 >
                   <Text kind="label" size="label-regular">
                     {net}
@@ -117,8 +138,18 @@ export default function PackagesLayout({
           </div>
         </div>
       </Header>
-      <PackagesNetworkContext.Provider value={network}>
-        {children}
+      <PackagesNetworkContext.Provider value={activeNetwork}>
+        <div className="flex-grow">
+          <div className="overflow-hidden py-lg">
+            {packageInfo && (
+              <SinglePackage
+                name={packageInfo}
+                network={activeNetwork}
+                org={orgContext}
+              />
+            )}
+          </div>
+        </div>
       </PackagesNetworkContext.Provider>
     </>
   );

@@ -9,6 +9,8 @@ import { SearchResults } from "./SearchResults";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Content } from "@/data/content";
 import { useIsFocused } from "@/hooks/useIsFocused";
+import { useSearchOrgs } from "@/hooks/useSearchOrgs";
+import { useSearchDropdown } from "@/hooks/useSearchDropdown";
 
 export function HeaderSearchBar({ className }: { className?: string }) {
   const { isFocused, handleFocus, handleBlur } = useIsFocused();
@@ -21,9 +23,13 @@ export function HeaderSearchBar({ className }: { className?: string }) {
   );
 
   const { data: searchResults, isLoading } = useSearchMvrNames(debouncedSearch);
+  const { data: orgResults } = useSearchOrgs(debouncedSearch);
+
+  const dropdownProps = useSearchDropdown({ handleFocus, handleBlur });
 
   return (
     <div
+      {...dropdownProps}
       className={cn(
         "relative ml-xs flex w-[450px] items-center rounded-sm bg-bg-quarternaryBleedthrough px-sm py-xs text-content-secondary md:ml-md xl:w-[500px]",
         className,
@@ -36,8 +42,6 @@ export function HeaderSearchBar({ className }: { className?: string }) {
       )}
       <Input
         value={searchQuery}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
         onChange={(e) => setSearchQuery(e.target.value)}
         className={cn(
           "flex h-full w-full rounded-none !border-none bg-transparent !p-0 !text-16 !leading-16 !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
@@ -48,6 +52,7 @@ export function HeaderSearchBar({ className }: { className?: string }) {
 
       <SearchResults
         results={searchResults || { data: [], next_cursor: null, limit: 0 }}
+        orgs={orgResults}
         hidden={!isFocused}
       />
     </div>

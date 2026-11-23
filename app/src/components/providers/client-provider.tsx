@@ -6,6 +6,7 @@ import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { KioskClient } from "@mysten/kiosk";
 import { createContext, useContext } from "react";
 import { SuiGraphQLClient } from "@mysten/sui/graphql";
+import { MVR_ENDPOINTS, MVR_EXPERIMENTAL_ENDPOINTS } from "@/lib/endpoints";
 
 export type Clients = {
   mainnet: SuiGrpcClient;
@@ -36,11 +37,6 @@ const GRPC_URLS = {
   testnet: "https://fullnode.testnet.sui.io:443",
   devnet: "https://fullnode.devnet.sui.io:443",
   localnet: "http://127.0.0.1:9000",
-};
-
-const MVR_ENDPOINTS = {
-  mainnet: "https://mainnet.mvr.mystenlabs.com",
-  testnet: "https://testnet.mvr.mystenlabs.com",
 };
 
 // gRPC clients resolve `@mvr/...` named packages during transaction building via
@@ -84,10 +80,7 @@ export const DefaultClients: Clients = {
     }),
   },
   mvrEndpoints: MVR_ENDPOINTS,
-  mvrExperimentalEndpoints: {
-    mainnet: "https://qa.mainnet.mvr.mystenlabs.com",
-    testnet: "https://qa.testnet.mvr.mystenlabs.com",
-  },
+  mvrExperimentalEndpoints: MVR_EXPERIMENTAL_ENDPOINTS,
 };
 
 export const SuiClientContext = createContext<Clients>(DefaultClients);

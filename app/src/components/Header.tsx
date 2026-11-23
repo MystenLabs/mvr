@@ -22,8 +22,21 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { HeaderSearchBar } from "./public/HeaderSearchBar";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
+import { Content } from "@/data/content";
+import { isPublicName, ORGS_PATH } from "@/lib/names";
 
-const Links = [
+/** Links that are visible to everyone. */
+const PublicLinks = [
+  {
+    name: Content.orgs.nav,
+    href: ORGS_PATH,
+    // Also active on the pages of a single organization.
+    activePrefix: "/org/",
+  },
+];
+
+/** Links that are only visible when a wallet is connected. */
+const WalletLinks = [
   {
     name: "My Packages",
     href: "/apps",
@@ -43,8 +56,6 @@ export default function Header({
   className?: string;
   showSearch?: boolean;
 }) {
-  const isLoggedIn = useCurrentAccount();
-
   return (
     <header className={cn("bg-header", className)}>
       <Sheet>
@@ -69,11 +80,12 @@ export default function Header({
                 <Menu />
               </div>
               <SuiConnectPill />
-              {isLoggedIn && (
-                <SheetTrigger className="rounded-xs bg-bg-secondary p-xs lg:hidden">
-                  <MenuIcon />
-                </SheetTrigger>
-              )}
+              <SheetTrigger
+                aria-label={Content.menu}
+                className="rounded-xs bg-bg-secondary p-xs lg:hidden"
+              >
+                <MenuIcon />
+              </SheetTrigger>
             </div>
           </div>
           {showSearch && (
@@ -99,27 +111,50 @@ export default function Header({
   );
 }
 
+const decodeOrgSegment = (segment: string) => {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+};
+
 const Menu = () => {
   const path = usePathname();
 
   const isLoggedIn = useCurrentAccount();
 
-  if (!isLoggedIn) return null;
+  const links: { name: string; href: string; activePrefix?: string }[] = [
+    ...PublicLinks,
+    ...(isLoggedIn ? WalletLinks : []),
+  ];
+
   return (
     <>
-      {Links.map(({ name, href }) => (
-        <SheetClose key={name} asChild>
-          <Button
-            asChild
-            key={name}
-            size="fit"
-            variant={path === href ? "linkActive" : "link"}
-            className="px-xs max-lg:w-full"
-          >
-            <Link href={href}>{name}</Link>
-          </Button>
-        </SheetClose>
-      ))}
+      {links.map(({ name, href, activePrefix }) => {
+        const isActive =
+          path === href ||
+          (!!activePrefix &&
+            path.startsWith(activePrefix) &&
+            // The page of a public name (`@pkg`) is not an organization page.
+            !isPublicName(decodeOrgSegment(path.slice(activePrefix.length))));
+
+        return (
+          <SheetClose key={name} asChild>
+            <Button
+              asChild
+              key={name}
+              size="fit"
+              variant={isActive ? "linkActive" : "link"}
+              className="px-xs max-lg:w-full"
+            >
+              <Link href={href} aria-current={isActive ? "page" : undefined}>
+                {name}
+              </Link>
+            </Button>
+          </SheetClose>
+        );
+      })}
     </>
   );
 };

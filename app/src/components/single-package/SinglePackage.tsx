@@ -1,6 +1,6 @@
 import { ResolvedName } from "@/hooks/mvrResolution";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   DependencyCount,
   DependentsCountLabel,
@@ -21,6 +21,7 @@ import { VersionsIconSelected } from "@/icons/single-package/VersionsIcon";
 import { ReadMeIconSelected } from "@/icons/single-package/ReadMeIcon";
 import { ReadMeIconUnselected } from "@/icons/single-package/ReadMeIcon";
 import { SinglePackageTab } from "@/utils/types";
+import { type PackageOrgContext } from "@/lib/mvr-api";
 import { AnalyticsIconUnselected } from "@/icons/single-package/AnalyticsIcon";
 import { AnalyticsIconSelected } from "@/icons/single-package/AnalyticsIcon";
 
@@ -82,11 +83,12 @@ export const Tabs: SinglePackageTab[] = [
 export function SinglePackage({
   name,
   network,
+  org,
 }: {
   name: ResolvedName;
   network: "mainnet" | "testnet";
+  org?: PackageOrgContext;
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState(Tabs[0]!.key);
@@ -101,7 +103,9 @@ export function SinglePackage({
   const updateTab = (tab: string) => {
     const params = new URLSearchParams(searchParams);
     params.set("tab", tab);
-    router.replace(`?${params.toString()}`);
+    // Not `router.replace`: that would re-run the (server-rendered) page on
+    // every tab change. Next.js keeps `useSearchParams` in sync with this.
+    window.history.replaceState(null, "", `?${params.toString()}`);
     setActiveTab(tab);
   };
 
@@ -122,7 +126,7 @@ export function SinglePackage({
             {Tabs.find((t) => t.key === activeTab)?.component(name)}
           </div>
           <div className="relative col-span-1 lg:col-span-7">
-            <SinglePackageSidebar name={name} network={network} />
+            <SinglePackageSidebar name={name} network={network} org={org} />
           </div>
         </div>
       </div>
