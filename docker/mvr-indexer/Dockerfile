@@ -13,7 +13,7 @@ COPY docker/mvr-indexer/entry.sh ./
 RUN apt-get update && apt-get install -y build-essential libssl-dev pkg-config curl cmake clang ca-certificates
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-RUN cargo build --profile $PROFILE --bin mvr-indexer --config net.git-fetch-with-cli=true
+RUN cargo build --profile ${PROFILE} --bin mvr-indexer --config net.git-fetch-with-cli=true
 
 FROM debian:trixie-slim AS runtime
 
