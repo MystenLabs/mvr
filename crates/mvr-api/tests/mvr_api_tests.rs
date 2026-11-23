@@ -327,7 +327,8 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
     ];
 
     // Exact match, in both supported formats.
-    for org in ["@deepbook", "deepbook.sui"] {
+    // The org is not case sensitive (names are always lowercase).
+    for org in ["@deepbook", "deepbook.sui", "@DeepBook", "DEEPBOOK.sui"] {
         let (status, query) = test_cluster.query_names(&[("org", org)]).await?;
         assert_eq!(status, StatusCode::OK);
         assert_eq!(names_of(&query), deepbook);
@@ -343,7 +344,7 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
     assert_eq!(names_of(&query), vec!["@deepbook-v3/core"]);
 
     // Subname orgs are separate orgs, in both supported formats.
-    for org in ["sub@deepbook", "sub.deepbook.sui"] {
+    for org in ["sub@deepbook", "sub.deepbook.sui", "Sub@Deepbook"] {
         let (_, query) = test_cluster.query_names(&[("org", org)]).await?;
         assert_eq!(names_of(&query), vec!["sub@deepbook/core"]);
     }
@@ -435,7 +436,6 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
         "@deepbook/",
         "@deep%25",
         "@deep_book",
-        "@Deepbook",
         "deepbook.com",
     ] {
         let (status, _) = test_cluster.query_names(&[("org", org)]).await?;
@@ -643,6 +643,24 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
     assert_eq!(pages, 3);
     assert_eq!(paginated, all);
 
+    // A cursor that points past the last org: an empty page, with the same total.
+    let past_the_end = "eyJwYWNrYWdlcyI6MCwibmFtZSI6IiJ9"; // {"packages":0,"name":""}
+    for params in [
+        vec![("cursor", past_the_end)],
+        vec![("cursor", past_the_end), ("search", "deep")],
+    ] {
+        let (status, query) = test_cluster.query_orgs(&params).await?;
+        assert_eq!(status, StatusCode::OK);
+        assert!(orgs_of(&query).is_empty());
+        assert!(query["next_cursor"].is_null());
+        assert_eq!(query["total"], if params.len() == 1 { 5 } else { 4 });
+    }
+    let (_, query) = test_cluster
+        .query_orgs(&[("cursor", past_the_end), ("search", "unknown")])
+        .await?;
+    assert!(orgs_of(&query).is_empty());
+    assert_eq!(query["total"], 0);
+
     // `search` is a (case-insensitive) substring match on the org name only.
     let names = |query: &serde_json::Value| -> Vec<String> {
         orgs_of(query)
@@ -756,6 +774,83 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
             .count(),
         1
     );
+
+    // A single org is the same item as the one of the listing, in every supported
+    // format of the org (`%40` is `@`), whatever the case.
+    let (_, listing) = test_cluster.query_orgs(&[]).await?;
+    for item in listing["data"].as_array().unwrap() {
+        let name = item["name"].as_str().unwrap();
+        let (status, single) = test_cluster.get_org(name).await?;
+        assert_eq!(status, StatusCode::OK, "org: {name}");
+        assert_eq!(&single, item, "org: {name}");
+    }
+
+    let (_, deepbook) = test_cluster.get_org("@deepbook").await?;
+    assert_eq!(deepbook["packages"], 4);
+    assert_eq!(deepbook["icon_url"], "https://deepbook.example/core.png");
+    assert_snapshot!("org", deepbook.to_string());
+
+    for org in [
+        "%40deepbook",
+        "deepbook.sui",
+        "@DeepBook",
+        "%40DEEPBOOK",
+        "DeepBook.sui",
+    ] {
+        let (status, single) = test_cluster.get_org(org).await?;
+        assert_eq!(status, StatusCode::OK, "org: {org}");
+        assert_eq!(single, deepbook, "org: {org}");
+    }
+
+    // An exact match: orgs that share a prefix, and subname orgs, are separate orgs.
+    for (org, name, packages) in [
+        ("@deep", "@deep", 2),
+        ("@deepbook-v3", "@deepbook-v3", 1),
+        ("sub@deepbook", "sub@deepbook", 1),
+        ("sub.deepbook.sui", "sub@deepbook", 1),
+        ("Sub%40DeepBook", "sub@deepbook", 1),
+    ] {
+        let (status, single) = test_cluster.get_org(org).await?;
+        assert_eq!(status, StatusCode::OK, "org: {org}");
+        assert_eq!(single["name"], name, "org: {org}");
+        assert_eq!(single["packages"], packages, "org: {org}");
+        assert_eq!(single["is_public_name"], false, "org: {org}");
+    }
+
+    // Public names are flagged, and never borrow an icon.
+    let (status, pkg) = test_cluster.get_org("@pkg").await?;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(pkg["packages"], 2);
+    assert_eq!(pkg["is_public_name"], true);
+    assert!(pkg["icon_url"].is_null());
+
+    // Orgs without linked names (unknown, a prefix of an existing one, unlinked
+    // names only) are not found.
+    for org in ["@unknown", "@deepboo", "other@deepbook", "@unlinked"] {
+        let (status, _) = test_cluster.get_org(org).await?;
+        assert_eq!(status, StatusCode::NOT_FOUND, "org: {org}");
+    }
+
+    let (_, not_found) = test_cluster.get_org("@Unknown").await?;
+    assert_snapshot!("org_not_found", not_found.to_string());
+
+    // Invalid orgs are rejected.
+    for org in [
+        "deepbook",
+        "@",
+        "@deep%25",
+        "@deep_book",
+        "@deep%5Cbook",
+        "deepbook.com",
+        "@deepbook%2Fcore",
+        "%20",
+    ] {
+        let (status, _) = test_cluster.get_org(org).await?;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "org: {org}");
+    }
+
+    let (_, invalid) = test_cluster.get_org("@deep%25").await?;
+    assert_snapshot!("org_invalid", invalid.to_string());
 
     // Invalid parameters are rejected.
     for params in [

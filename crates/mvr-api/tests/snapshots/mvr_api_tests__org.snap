@@ -1,0 +1,5 @@
+---
+source: crates/mvr-api/tests/mvr_api_tests.rs
+expression: deepbook.to_string()
+---
+{"name":"@deepbook","packages":4,"icon_url":"https://deepbook.example/core.png","is_public_name":false}
