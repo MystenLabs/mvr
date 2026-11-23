@@ -27,7 +27,8 @@ env:
 jobs:
   test-crates:
     name: test-crates
-    runs-on: ubuntu-latest
+    # ubuntu-26.04's compiler can't build librocksdb-sys 0.16, and it ships Postgres 18.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: taiki-e/install-action@cargo-nextest
