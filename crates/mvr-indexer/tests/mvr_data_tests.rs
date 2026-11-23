@@ -20,7 +20,6 @@ use sui_indexer_alt_framework::pipeline::Processor;
 use sui_indexer_alt_framework::postgres::handler::Handler;
 use sui_indexer_alt_framework::postgres::{Connection, Db, DbArgs};
 use sui_pg_db::temp::TempDb;
-use sui_storage::blob::Blob;
 use sui_types::full_checkpoint_content::{Checkpoint, CheckpointData};
 
 #[tokio::test]
@@ -107,7 +106,10 @@ async fn run_pipeline<'c, T: Handler + Processor, P: AsRef<Path>>(
     conn: &mut Connection<'c>,
 ) -> Result<(), anyhow::Error> {
     let bytes = fs::read(path)?;
-    let cp: CheckpointData = Blob::from_bytes(&bytes)?;
+    let bcs_bytes = bytes
+        .strip_prefix(&[1])
+        .ok_or_else(|| anyhow::anyhow!("checkpoint file is not a BCS blob"))?;
+    let cp: CheckpointData = bcs::from_bytes(bcs_bytes)?;
     let checkpoint: Checkpoint = cp.into();
     let result = handler.process(&Arc::new(checkpoint)).await?;
     T::commit(&result, conn).await?;
