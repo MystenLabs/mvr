@@ -1,0 +1,5 @@
+---
+source: crates/mvr-api/tests/mvr_api_tests.rs
+expression: query.to_string()
+---
+{"data":[{"name":"@deepbook","packages":4,"icon_url":"https://deepbook.example/core.png","is_public_name":false},{"name":"@another","packages":2,"icon_url":null,"is_public_name":false},{"name":"@deep","packages":2,"icon_url":null,"is_public_name":false},{"name":"@deepbook-v3","packages":1,"icon_url":null,"is_public_name":false},{"name":"sub@deepbook","packages":1,"icon_url":"https://deepbook.example/sub.png","is_public_name":false}],"next_cursor":null,"limit":20,"total":5}

@@ -1,0 +1,5 @@
+---
+source: crates/mvr-api/tests/mvr_api_tests.rs
+expression: invalid.to_string()
+---
+{"message":"Invalid search query: deep%"}

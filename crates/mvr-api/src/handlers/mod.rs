@@ -15,6 +15,7 @@ const BATCH_SIZE_DEFAULT: usize = 50;
 const MAX_SEARCH_QUERY_LENGTH: usize = 255;
 
 pub(crate) mod names;
+pub(crate) mod orgs;
 pub(crate) mod package_address;
 pub(crate) mod resolution;
 pub(crate) mod reverse_resolution;

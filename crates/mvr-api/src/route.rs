@@ -6,8 +6,8 @@ use std::sync::Arc;
 use crate::{
     data::app_state::AppState,
     handlers::{
-        health_check, names::Names, package_address::PackageAddress, resolution::Resolution,
-        reverse_resolution::ReverseResolution, sitemap::Sitemap,
+        health_check, names::Names, orgs::Orgs, package_address::PackageAddress,
+        resolution::Resolution, reverse_resolution::ReverseResolution, sitemap::Sitemap,
         struct_definition::StructDefinition, type_resolution::TypeResolution,
     },
     metrics::middleware::track_metrics,
@@ -50,6 +50,10 @@ pub fn create_router(app: Arc<AppState>) -> Router {
             // Queries all names (paginated & can supply search query)
             get(Names::search_names),
         )
+        // Lists the organizations that have linked names (paginated, optional search query)
+        .route("/orgs", get(Orgs::list))
+        // A single organization, by its exact name (`@org`, `sub@org`, `org.sui`)
+        .route("/orgs/{org}", get(Orgs::get))
         .route("/names/analytics/{*name}", get(Names::get_analytics))
         .route("/names/{*name}", get(Names::get_by_name))
         .route(
