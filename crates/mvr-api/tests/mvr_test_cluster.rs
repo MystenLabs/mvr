@@ -186,6 +186,57 @@ impl MvrTestCluster {
         Ok(res_body)
     }
 
+    /// Queries `/v1/names` with the supplied (already URL-safe) query params,
+    /// returning the status code alongside the response body.
+    pub async fn query_names(
+        &self,
+        params: &[(&str, &str)],
+    ) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
+        self.query("v1/names", params).await
+    }
+
+    /// Queries `/v1/orgs` with the supplied (already URL-safe) query params,
+    /// returning the status code alongside the response body.
+    pub async fn query_orgs(
+        &self,
+        params: &[(&str, &str)],
+    ) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
+        self.query("v1/orgs", params).await
+    }
+
+    async fn query(
+        &self,
+        path: &str,
+        params: &[(&str, &str)],
+    ) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
+        let query = params
+            .iter()
+            .map(|(key, value)| format!("{}={}", key, value))
+            .collect::<Vec<_>>()
+            .join("&");
+
+        let res = self
+            .client
+            .get(format!("{}{}?{}", self.server_url.as_str(), path, query).parse::<Url>()?)
+            .send()
+            .await?;
+
+        let status = res.status();
+        let res_body = res.json::<serde_json::Value>().await?;
+
+        Ok((status, res_body))
+    }
+
+    pub async fn sitemap(&self) -> Result<String, anyhow::Error> {
+        let res = self
+            .client
+            .get(format!("{}v1/sitemap", self.server_url.as_str()).parse::<Url>()?)
+            .send()
+            .await?;
+
+        Ok(res.text().await?)
+    }
+
     pub fn teardown(&self) {
         self.server_handle.abort();
         self.cancellation_token.cancel();

@@ -7,10 +7,13 @@ use axum::{
 use chrono::Local;
 use diesel::{
     prelude::QueryableByName,
-    sql_types::{Integer, VarChar},
+    sql_types::{Integer, Nullable, VarChar},
 };
 use futures::try_join;
-use mvr_types::name::VersionedName;
+use mvr_types::{
+    name::VersionedName,
+    name_service::{Domain, DomainFormat},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sui_sdk_types::Address;
@@ -51,6 +54,9 @@ pub struct NameSearchResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NameSearchQueryParams {
     pub search: Option<String>,
+    /// Restrict the results to the names of a single organization (exact match).
+    /// Accepts both `@org` (or `sub@org`) and `org.sui` (or `sub.org.sui`) formats.
+    pub org: Option<String>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
     pub is_linked: Option<bool>,
@@ -114,17 +120,34 @@ impl Names {
         let limit = PaginationLimit::new(params.limit)?;
         let cursor = Cursor::decode_or_default::<NameCursor>(&params.cursor)?;
 
+        let org_prefix = params
+            .org
+            .as_deref()
+            .map(org_name_prefix_pattern)
+            .transpose()?;
+
         let mut connection = app_state.reader().connect().await?;
 
+        let linked_filter = if params.is_linked.unwrap_or(false) {
+            "AND (mainnet_id IS NOT NULL OR testnet_id IS NOT NULL) "
+        } else {
+            ""
+        };
+
+        // `$5` is NULL when there is no org filter. When present, it is an (escaped)
+        // `{org}/%` LIKE pattern, which is an exact match on the org part of the name.
+        // We intentionally do not use a `name >= '{org}/' AND name < '{org}0'` range,
+        // as that is only correct under a byte-order ("C") collation.
         let query = diesel::sql_query(
             format!("SELECT name, metadata, mainnet_id as mainnet_package_info_id, testnet_id as testnet_package_info_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
-FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 {} 
-ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false) { "AND (mainnet_id IS NOT NULL OR testnet_id IS NOT NULL) " } else { "" })
+FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 AND ($5 IS NULL OR name LIKE $5 ESCAPE '\\') {} 
+ORDER BY relevance DESC, name ASC LIMIT $4", linked_filter)
         )
         .bind::<VarChar, _>(format!("%{}%", search))
         .bind::<VarChar, _>(search)
         .bind::<VarChar, _>(cursor.name.unwrap_or_default())
-        .bind::<Integer, _>(limit.query_limit() as i32);
+        .bind::<Integer, _>(limit.query_limit() as i32)
+        .bind::<Nullable<VarChar>, _>(org_prefix);
 
         let results: Vec<NameSearchResponse> = connection.results(query).await?;
 
@@ -170,5 +193,75 @@ ORDER BY relevance DESC, name ASC LIMIT $4", if params.is_linked.unwrap_or(false
             analytics: analytics.unwrap_or_default().analytics,
             total_dependents: total_dependents.unwrap_or_default(),
         }))
+    }
+}
+
+/// Parses an org (`@org`, `sub@org`, `org.sui` or `sub.org.sui`), and returns a `LIKE`
+/// pattern (using `\` as the escape character) that matches exactly the names of that org,
+/// e.g. `@org/%`.
+///
+/// Names are stored as `{org}/{app}` (with the org in the `@` format), so matching on the
+/// `{org}/` prefix is an exact match on the org: `@deep/` is not a prefix of `@deepbook/core`,
+/// and `@org/` is not a prefix of `sub@org/app`.
+fn org_name_prefix_pattern(org: &str) -> Result<String, ApiError> {
+    let invalid = || ApiError::BadRequest(format!("Invalid org: {}", org));
+
+    let domain = Domain::from_str(org).map_err(|_| invalid())?;
+
+    // Names in the registry are always under the `.sui` TLD (`@org` is `org.sui`).
+    if domain.labels.first().map(String::as_str) != Some("sui") {
+        return Err(invalid());
+    }
+
+    let org = domain.format(DomainFormat::At);
+
+    // A valid domain cannot contain any of these characters, but we escape them anyway,
+    // so that the pattern is always a literal prefix match.
+    let mut pattern = String::with_capacity(org.len() + 2);
+    for c in org.chars() {
+        if matches!(c, '\\' | '%' | '_') {
+            pattern.push('\\');
+        }
+        pattern.push(c);
+    }
+    pattern.push_str("/%");
+
+    Ok(pattern)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::org_name_prefix_pattern;
+
+    #[test]
+    fn org_prefix_pattern() {
+        for (input, expected) in [
+            ("@deepbook", "@deepbook/%"),
+            ("deepbook.sui", "@deepbook/%"),
+            ("sub@org", "sub@org/%"),
+            ("sub.org.sui", "sub@org/%"),
+            ("a.b@org", "a.b@org/%"),
+            ("@my-org", "@my-org/%"),
+        ] {
+            assert_eq!(org_name_prefix_pattern(input).unwrap(), expected);
+        }
+
+        for input in [
+            "",
+            " ",
+            "@",
+            "deepbook",
+            "deepbook.com",
+            "@Deepbook",
+            "@deep%",
+            "@deep_book",
+            "@deep/core",
+            "@org/",
+            "@org@org",
+            "@-org",
+            "%",
+        ] {
+            assert!(org_name_prefix_pattern(input).is_err(), "{input}");
+        }
     }
 }
