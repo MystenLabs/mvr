@@ -6,7 +6,11 @@ import { OrgPagination } from "@/components/org/OrgPagination";
 import { SearchResultItem } from "@/components/public/SearchResults";
 import { Text } from "@/components/ui/Text";
 import { Content } from "@/data/content";
-import { getOrgIfAvailable, getOrgNames, ORG_PAGE_SIZE } from "@/lib/mvr-api";
+import {
+  getOrgIfAvailable,
+  getOrgNamesPage,
+  ORG_PAGE_SIZE,
+} from "@/lib/mvr-api";
 import { isPublicName, orgPath, parseOrgSegment } from "@/lib/names";
 import { isHttpUrl } from "@/lib/utils";
 
@@ -23,9 +27,9 @@ const parsePage = (page: Props["searchParams"]["page"]) => {
 };
 
 /**
- * Loads the org's packages and the requested page of them.
+ * Loads the requested page of the org's packages.
  * Returns `null` (the page then 404s) on: an invalid org, an org without packages, an out of range page, or
- * an API that does not support the `org` filter (see `getOrgNames`).
+ * an API that does not support the `org` filter (see `getOrgNamesPage`).
  */
 async function loadOrgPage({ params, searchParams }: Props) {
   const org = parseOrgSegment(params.org);
@@ -34,7 +38,7 @@ async function loadOrgPage({ params, searchParams }: Props) {
 
   // The org itself only provides the avatar: it is optional (never throws).
   const [result, summary] = await Promise.all([
-    getOrgNames(org),
+    getOrgNamesPage(org, page),
     getOrgIfAvailable(org),
   ]);
 
@@ -45,18 +49,18 @@ async function loadOrgPage({ params, searchParams }: Props) {
     return null;
   }
 
-  const { names } = result;
-  const totalPages = Math.ceil(names.length / ORG_PAGE_SIZE);
+  const { names, total } = result;
+  const totalPages = Math.ceil(total / ORG_PAGE_SIZE);
   if (names.length === 0 || page > totalPages) return null;
 
   return {
     org,
     page,
     totalPages,
-    total: names.length,
+    total,
     // Never for a public name (`@pkg`): see `OrgAvatar`.
     iconUrl: isPublicName(org) ? null : (summary?.icon_url ?? null),
-    items: names.slice((page - 1) * ORG_PAGE_SIZE, page * ORG_PAGE_SIZE),
+    items: names,
   };
 }
 
