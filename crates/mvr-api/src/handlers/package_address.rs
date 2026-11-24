@@ -14,18 +14,16 @@ use crate::{
         app_state::AppState,
         package_analytics::{PackageAnalytics, PackageAnalyticsKey},
         package_dependencies::{PackageDependencies, PackageDependenciesKey},
-        package_dependents::{
-            PackageDependent, PackageDependentsCountKey, PackageDependentsCursor,
-            PackageDependentsKey,
-        },
+        package_dependents::{PackageDependent, PackageDependentsCountKey, PackageDependentsKey},
     },
     errors::ApiError,
-    utils::pagination::{format_paginated_response, Cursor, PaginatedResponse, PaginationLimit},
+    utils::pagination::{format_paginated_response, PaginatedResponse, Pagination},
 };
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DependentsQueryParams {
     pub cursor: Option<String>,
+    pub offset: Option<u32>,
     pub limit: Option<u32>,
 }
 
@@ -66,14 +64,12 @@ impl PackageAddress {
         let object_id = Address::from_str(&package_address)
             .map_err(|e| ApiError::BadRequest(format!("Invalid package address: {}", e)))?;
 
-        let limit = PaginationLimit::new(params.limit)?;
-        let cursor = Cursor::decode_or_default::<PackageDependentsCursor>(&params.cursor)?;
+        let pagination = Pagination::new(params.cursor.as_deref(), params.offset, params.limit)?;
 
         let (dependents, dependents_count) = try_join!(
             app_state.cached_loader().load_one(PackageDependentsKey(
                 object_id,
-                cursor,
-                limit.clone(),
+                pagination.clone(),
                 Local::now().date_naive(),
             )),
             app_state
@@ -86,12 +82,8 @@ impl PackageAddress {
 
         Ok(Json(format_paginated_response(
             dependents.unwrap_or_default(),
-            limit.get(),
+            &pagination,
             dependents_count,
-            |item| PackageDependentsCursor {
-                package_id: Some(Address::from_str(&item.package_id).unwrap()),
-                aggregated_total_calls: Some(item.aggregated_total_calls),
-            },
         )))
     }
 

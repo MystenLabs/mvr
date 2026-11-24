@@ -7,7 +7,7 @@ use axum::{
 use chrono::Local;
 use diesel::{
     prelude::QueryableByName,
-    sql_types::{Integer, Nullable, VarChar},
+    sql_types::{BigInt, Jsonb, Nullable, Text, VarChar},
 };
 use futures::try_join;
 use mvr_types::name::VersionedName;
@@ -23,7 +23,7 @@ use crate::{
         resolution_loader::ResolutionKey,
     },
     errors::ApiError,
-    utils::pagination::{format_paginated_response, Cursor, PaginatedResponse, PaginationLimit},
+    utils::pagination::{format_paginated_response, PaginatedResponse, Pagination},
 };
 
 use super::{
@@ -39,15 +39,11 @@ pub struct PackageByNameResponse {
     pub package_address: Address,
 }
 
-#[derive(Serialize, Deserialize, QueryableByName)]
+#[derive(Serialize, Deserialize)]
 pub struct NameSearchResponse {
-    #[diesel(sql_type = diesel::sql_types::Text)]
     pub name: String,
-    #[diesel(sql_type = diesel::sql_types::Jsonb)]
     pub metadata: Value,
-    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub mainnet_package_info_id: Option<String>,
-    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub testnet_package_info_id: Option<String>,
 }
 
@@ -58,13 +54,23 @@ pub struct NameSearchQueryParams {
     /// Accepts both `@org` (or `sub@org`) and `org.sui` (or `sub.org.sui`) formats.
     pub org: Option<String>,
     pub cursor: Option<String>,
+    pub offset: Option<u32>,
     pub limit: Option<u32>,
     pub is_linked: Option<bool>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct NameCursor {
-    pub name: Option<String>,
+#[derive(QueryableByName)]
+struct NameSearchRow {
+    #[diesel(sql_type = Nullable<Text>)]
+    name: Option<String>,
+    #[diesel(sql_type = Nullable<Jsonb>)]
+    metadata: Option<Value>,
+    #[diesel(sql_type = Nullable<Text>)]
+    mainnet_package_info_id: Option<String>,
+    #[diesel(sql_type = Nullable<Text>)]
+    testnet_package_info_id: Option<String>,
+    #[diesel(sql_type = BigInt)]
+    total: i64,
 }
 
 #[derive(Serialize, Deserialize, Default)]
@@ -117,8 +123,7 @@ impl Names {
         let search = params.search.unwrap_or_default();
         validate_search_query(&search)?;
 
-        let limit = PaginationLimit::new(params.limit)?;
-        let cursor = Cursor::decode_or_default::<NameCursor>(&params.cursor)?;
+        let pagination = Pagination::new(params.cursor.as_deref(), params.offset, params.limit)?;
 
         let org_prefix = params
             .org
@@ -130,37 +135,60 @@ impl Names {
         let mut connection = app_state.reader().connect().await?;
 
         let linked_filter = if params.is_linked.unwrap_or(false) {
-            "AND (mainnet_id IS NOT NULL OR testnet_id IS NOT NULL) "
+            "AND (mainnet_id IS NOT NULL OR testnet_id IS NOT NULL)"
         } else {
             ""
         };
 
-        // `$5` is NULL when there is no org filter. When present, it is an `{org}/%`
+        // `$3` is NULL when there is no org filter. When present, it is an `{org}/%`
         // LIKE pattern (see `org_name_prefix_pattern`), which is an exact match on the
         // org part of the name.
         // We intentionally do not use a `name >= '{org}/' AND name < '{org}0'` range,
         // as that is only correct under a byte-order ("C") collation.
-        let query = diesel::sql_query(
-            format!("SELECT name, metadata, mainnet_id as mainnet_package_info_id, testnet_id as testnet_package_info_id, (CASE WHEN name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) THEN 1 ELSE 0 END) AS relevance 
-FROM name_records WHERE ( name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2) ) AND name > $3 AND ($5 IS NULL OR name LIKE $5) {} 
-ORDER BY relevance DESC, name ASC LIMIT $4", linked_filter)
-        )
+        let query = diesel::sql_query(format!(
+            r#"WITH matching AS (
+    SELECT name, metadata, mainnet_id, testnet_id
+    FROM name_records
+    WHERE (name SIMILAR TO $1 OR to_tsvector('english', metadata->>'description') @@ plainto_tsquery($2))
+        AND ($3 IS NULL OR name LIKE $3) {linked_filter}
+), page AS (
+    SELECT * FROM matching
+    ORDER BY name ASC
+    LIMIT $4 OFFSET $5
+)
+SELECT
+    page.name,
+    page.metadata,
+    page.mainnet_id AS mainnet_package_info_id,
+    page.testnet_id AS testnet_package_info_id,
+    totals.total
+FROM (SELECT COUNT(*) AS total FROM matching) totals
+LEFT JOIN page ON TRUE
+ORDER BY page.name ASC"#
+        ))
         .bind::<VarChar, _>(format!("%{}%", search))
         .bind::<VarChar, _>(search)
-        .bind::<VarChar, _>(cursor.name.unwrap_or_default())
-        .bind::<Integer, _>(limit.query_limit() as i32)
-        .bind::<Nullable<VarChar>, _>(org_prefix);
+        .bind::<Nullable<VarChar>, _>(org_prefix)
+        .bind::<BigInt, _>(pagination.limit().query_limit() as i64)
+        .bind::<BigInt, _>(pagination.offset() as i64);
 
-        let results: Vec<NameSearchResponse> = connection.results(query).await?;
+        let rows: Vec<NameSearchRow> = connection.results(query).await?;
 
-        Ok(Json(format_paginated_response(
-            results,
-            limit.get(),
-            None,
-            |item| NameCursor {
-                name: Some(item.name.clone()),
-            },
-        )))
+        let total = rows.first().map(|row| row.total);
+
+        let results: Vec<NameSearchResponse> = rows
+            .into_iter()
+            .filter_map(|row| {
+                Some(NameSearchResponse {
+                    name: row.name?,
+                    metadata: row.metadata?,
+                    mainnet_package_info_id: row.mainnet_package_info_id,
+                    testnet_package_info_id: row.testnet_package_info_id,
+                })
+            })
+            .collect();
+
+        Ok(Json(format_paginated_response(results, &pagination, total)))
     }
 
     /// Aggregated analytics by package name.

@@ -6,7 +6,7 @@ use diesel::{
     dsl::count_star,
     prelude::QueryableByName,
     query_dsl::methods::{FilterDsl, SelectDsl},
-    sql_types::{BigInt, Integer, Text},
+    sql_types::{BigInt, Text},
     ExpressionMethods,
 };
 use futures::future::try_join_all;
@@ -14,23 +14,12 @@ use mvr_schema::schema;
 use serde::{Deserialize, Serialize};
 use sui_sdk_types::Address;
 
-use crate::{errors::ApiError, utils::pagination::PaginationLimit};
+use crate::{errors::ApiError, utils::pagination::Pagination};
 
 use super::reader::Reader;
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
-pub struct PackageDependentsCursor {
-    pub package_id: Option<Address>,
-    pub aggregated_total_calls: Option<i64>,
-}
-
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct PackageDependentsKey(
-    pub Address,
-    pub PackageDependentsCursor,
-    pub PaginationLimit,
-    pub NaiveDate,
-);
+pub struct PackageDependentsKey(pub Address, pub Pagination, pub NaiveDate);
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct PackageDependentsCountKey(pub Address, pub NaiveDate);
@@ -62,7 +51,7 @@ impl Loader<PackageDependentsKey> for Reader {
 
         // In this particular scenario, we use `try_join_all` to parallelize our db queries,
         // because there is no easy way to parallelize the db queries in the SQL layer,
-        // because of our cursor-based pagination.
+        // because each key is its own page.
         Ok(try_join_all(requests).await?.into_iter().collect())
     }
 }
@@ -94,14 +83,8 @@ async fn get_package_dependents(
 
     let sql_query = diesel::sql_query(DEPENDENTS_QUERY)
         .bind::<Text, _>(package_id.to_string())
-        .bind::<Text, _>(
-            key.1
-                .package_id
-                .map(|id| id.to_string())
-                .unwrap_or_default(),
-        )
-        .bind::<BigInt, _>(key.1.aggregated_total_calls.unwrap_or(i64::MAX))
-        .bind::<Integer, _>(key.2.query_limit() as i32);
+        .bind::<BigInt, _>(key.1.limit().query_limit() as i64)
+        .bind::<BigInt, _>(key.1.offset() as i64);
 
     let result: Vec<PackageDependent> = connection.results(sql_query).await?;
 
@@ -151,7 +134,5 @@ SELECT
 	COALESCE(la.aggregated_total_calls, 0) AS aggregated_total_calls
 FROM dependents d
 LEFT JOIN latest_activity la ON d.package_id = la.package_id
-WHERE (COALESCE(la.aggregated_total_calls, 0) < $3)
-   OR (COALESCE(la.aggregated_total_calls, 0) = $3 AND d.package_id > $2)
 ORDER BY aggregated_total_calls DESC, d.package_id ASC
-LIMIT $4";
+LIMIT $2 OFFSET $3";

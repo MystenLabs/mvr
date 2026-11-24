@@ -9,7 +9,7 @@ use axum::{
 };
 use diesel::{
     prelude::QueryableByName,
-    sql_types::{BigInt, Integer, Nullable, Text, VarChar},
+    sql_types::{BigInt, Nullable, Text, VarChar},
 };
 use mvr_types::name_service::{Domain, DomainFormat};
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     data::app_state::AppState,
     errors::ApiError,
-    utils::pagination::{format_paginated_response, Cursor, PaginatedResponse, PaginationLimit},
+    utils::pagination::{format_paginated_response, PaginatedResponse, Pagination},
 };
 
 use super::validate_search_query;
@@ -111,7 +111,7 @@ struct OrgListRow {
     packages: Option<i64>,
     #[diesel(sql_type = Nullable<Text>)]
     icon_url: Option<String>,
-    /// The total number of orgs that match the search (regardless of the cursor).
+    /// The total number of orgs that match the search (regardless of the page).
     #[diesel(sql_type = BigInt)]
     total: i64,
 }
@@ -129,15 +129,8 @@ pub struct OrgSearchQueryParams {
     /// Optional substring to match on the org name (case-insensitive).
     pub search: Option<String>,
     pub cursor: Option<String>,
+    pub offset: Option<u32>,
     pub limit: Option<u32>,
-}
-
-/// Orgs are ordered by `packages DESC, name ASC`, so the (keyset) cursor is the
-/// `(packages, name)` pair of the last item of the page.
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct OrgCursor {
-    pub packages: Option<i64>,
-    pub name: Option<String>,
 }
 
 pub struct Orgs;
@@ -161,21 +154,19 @@ impl Orgs {
         // Org names are always lowercase.
         let search = search.trim().to_lowercase();
 
-        let limit = PaginationLimit::new(params.limit)?;
-        let cursor = Cursor::decode_or_default::<OrgCursor>(&params.cursor)?;
+        let pagination = Pagination::new(params.cursor.as_deref(), params.offset, params.limit)?;
 
         let mut connection = app_state.reader().connect().await?;
 
         // Names are stored as `{org}/{app}`, so the org is everything before the `/`.
         //
         // `strpos` is a literal substring match (no pattern to escape), and matches
-        // every org for an empty search. The org name ordering (and the cursor
-        // comparison) use the "C" collation, so that the order is the same on every
-        // database, whatever its locale.
+        // every org for an empty search. The org name ordering uses the "C" collation,
+        // so that the order is the same on every database, whatever its locale.
         //
         // The page is joined to the total, so that the total is always returned: a
-        // page without orgs (e.g. a cursor that points past the last one) is a single
-        // row of `NULL` org columns.
+        // page without orgs (e.g. an offset past the last one) is a single row of
+        // `NULL` org columns.
         let query = diesel::sql_query(format!(
             r#"WITH orgs AS (
     SELECT
@@ -189,9 +180,8 @@ impl Orgs {
     SELECT * FROM orgs WHERE strpos(org, $1) > 0
 ), page AS (
     SELECT * FROM matching
-    WHERE $2 IS NULL OR packages < $2 OR (packages = $2 AND org COLLATE "C" > $3)
     ORDER BY packages DESC, org COLLATE "C" ASC
-    LIMIT $4
+    LIMIT $2 OFFSET $3
 )
 SELECT page.org AS name, page.packages, page.icon_url, totals.total
 FROM (SELECT COUNT(*) AS total FROM matching) totals
@@ -199,9 +189,8 @@ LEFT JOIN page ON TRUE
 ORDER BY page.packages DESC, page.org COLLATE "C" ASC"#
         ))
         .bind::<VarChar, _>(search)
-        .bind::<Nullable<BigInt>, _>(cursor.packages)
-        .bind::<VarChar, _>(cursor.name.unwrap_or_default())
-        .bind::<Integer, _>(limit.query_limit() as i32);
+        .bind::<BigInt, _>(pagination.limit().query_limit() as i64)
+        .bind::<BigInt, _>(pagination.offset() as i64);
 
         let rows: Vec<OrgListRow> = connection.results(query).await?;
 
@@ -213,15 +202,7 @@ ORDER BY page.packages DESC, page.org COLLATE "C" ASC"#
             .filter_map(|row| Some(OrgResponse::new(row.name?, row.packages?, row.icon_url)))
             .collect();
 
-        Ok(Json(format_paginated_response(
-            results,
-            limit.get(),
-            total,
-            |item| OrgCursor {
-                packages: Some(item.packages),
-                name: Some(item.name.clone()),
-            },
-        )))
+        Ok(Json(format_paginated_response(results, &pagination, total)))
     }
 
     /// Returns a single org (the same item as the one of the listing), by its exact
