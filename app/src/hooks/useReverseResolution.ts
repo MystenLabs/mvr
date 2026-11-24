@@ -40,7 +40,7 @@ export function useReverseResolution(
   const { isLoading, error } = useQuery({
     queryKey: [AppQueryKeys.MVR_REVERSE_RESOLUTION_BULK, network, uncachedIds],
     queryFn: async () => {
-      const responses = await Promise.all(
+      await Promise.all(
         chunk(uncachedIds, MAX_BULK_REVERSE_RESOLUTION).map(async (ids) => {
           const response = await fetch(
             `${clients.mvrEndpoints[network]}/v1/reverse-resolution/bulk`,
@@ -56,23 +56,21 @@ export function useReverseResolution(
           }
 
           const data = await response.json();
-          return data.resolution as Record<string, ReverseResolution>;
+          const resolution = data.resolution as Record<
+            string,
+            ReverseResolution
+          >;
+
+          for (const id of ids) {
+            queryClient.setQueryData(
+              [AppQueryKeys.MVR_REVERSE_RESOLUTION, network, id],
+              resolution[id] ?? { name: null },
+            );
+          }
         }),
       );
 
-      const resolution: Record<string, ReverseResolution> = Object.assign(
-        {},
-        ...responses,
-      );
-
-      for (const id of uncachedIds) {
-        queryClient.setQueryData(
-          [AppQueryKeys.MVR_REVERSE_RESOLUTION, network, id],
-          resolution[id] ?? { name: null },
-        );
-      }
-
-      return resolution;
+      return null;
     },
     enabled: uncachedIds.length > 0,
   });
