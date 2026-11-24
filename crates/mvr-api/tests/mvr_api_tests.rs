@@ -223,11 +223,14 @@ async fn test_search_with_filters() -> Result<(), anyhow::Error> {
     // no "filters", we should have all 6 names in the query.
     assert_eq!(generic_query["data"].as_array().unwrap().len(), 6);
     assert!(generic_query["next_cursor"].is_null());
+    assert_eq!(generic_query["total"], 6);
 
     // now let's change "limit" to be 3, and check we can paginate in two pages.
     let mut query = test_cluster.search_names(None, None, Some(3)).await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 3);
     assert!(query["next_cursor"].is_string());
+    assert_eq!(query["offset"], 0);
+    assert_eq!(query["total"], 6);
 
     let next_cursor = query["next_cursor"].as_str().unwrap().to_string();
 
@@ -237,6 +240,8 @@ async fn test_search_with_filters() -> Result<(), anyhow::Error> {
         .await?;
     assert_eq!(query["data"].as_array().unwrap().len(), 3);
     assert!(query["next_cursor"].is_null());
+    assert_eq!(query["offset"], 3);
+    assert_eq!(query["total"], 6);
 
     // now let's change the search query to be "@test"
     query = test_cluster
@@ -388,6 +393,28 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
     assert_eq!(pages, 3);
     assert_eq!(paginated, deepbook);
 
+    for (offset, expected) in [
+        ("0", &deepbook[0..2]),
+        ("2", &deepbook[2..4]),
+        ("4", &deepbook[4..]),
+    ] {
+        let (status, query) = test_cluster
+            .query_names(&[("org", "@deepbook"), ("limit", "2"), ("offset", offset)])
+            .await?;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(names_of(&query), expected);
+        assert_eq!(query["offset"], offset.parse::<u32>()?);
+        assert_eq!(query["total"], deepbook.len());
+    }
+
+    let (status, query) = test_cluster
+        .query_names(&[("org", "@deepbook"), ("offset", "100")])
+        .await?;
+    assert_eq!(status, StatusCode::OK);
+    assert!(names_of(&query).is_empty());
+    assert!(query["next_cursor"].is_null());
+    assert_eq!(query["total"], deepbook.len());
+
     // Combined with `is_linked`.
     let (_, query) = test_cluster
         .query_names(&[("org", "@deepbook"), ("is_linked", "true")])
@@ -511,6 +538,14 @@ async fn test_sitemap() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+async fn query_cursor(
+    test_cluster: &MvrTestCluster,
+    params: &[(&str, &str)],
+) -> Result<String, anyhow::Error> {
+    let (_, query) = test_cluster.query_orgs(params).await?;
+    Ok(query["next_cursor"].as_str().unwrap().replace('+', "%2B"))
+}
+
 /// Returns the `(name, packages, icon_url)` of the orgs of a `/v1/orgs` response.
 fn orgs_of(response: &serde_json::Value) -> Vec<(String, i64, Option<String>)> {
     response["data"]
@@ -615,7 +650,7 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
     assert_snapshot!(query.to_string());
 
     // Pagination across pages (2 + 2 + 1), including a tie on the packages count
-    // that spans two pages. The total is not affected by the cursor.
+    // that spans two pages. The total is not affected by the page.
     let mut paginated = vec![];
     let mut cursor: Option<String> = None;
     let mut pages = 0;
@@ -643,11 +678,19 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
     assert_eq!(pages, 3);
     assert_eq!(paginated, all);
 
-    // A cursor that points past the last org: an empty page, with the same total.
-    let past_the_end = "eyJwYWNrYWdlcyI6MCwibmFtZSI6IiJ9"; // {"packages":0,"name":""}
+    let (status, query) = test_cluster
+        .query_orgs(&[("limit", "2"), ("offset", "2")])
+        .await?;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(orgs_of(&query), all[2..4]);
+    assert_eq!(query["offset"], 2);
+    assert!(query["next_cursor"].is_string());
+
+    // An offset past the last org: an empty page, with the same total.
+    let past_the_end = "5";
     for params in [
-        vec![("cursor", past_the_end)],
-        vec![("cursor", past_the_end), ("search", "deep")],
+        vec![("offset", past_the_end)],
+        vec![("offset", past_the_end), ("search", "deep")],
     ] {
         let (status, query) = test_cluster.query_orgs(&params).await?;
         assert_eq!(status, StatusCode::OK);
@@ -656,10 +699,20 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
         assert_eq!(query["total"], if params.len() == 1 { 5 } else { 4 });
     }
     let (_, query) = test_cluster
-        .query_orgs(&[("cursor", past_the_end), ("search", "unknown")])
+        .query_orgs(&[("offset", past_the_end), ("search", "unknown")])
         .await?;
     assert!(orgs_of(&query).is_empty());
     assert_eq!(query["total"], 0);
+
+    let cursor = query_cursor(&test_cluster, &[("limit", "2")]).await?;
+    let keyset_cursor = "eyJwYWNrYWdlcyI6MCwibmFtZSI6IiJ9"; // {"packages":0,"name":""}
+    for params in [
+        vec![("cursor", cursor.as_str()), ("offset", "2")],
+        vec![("cursor", keyset_cursor)],
+    ] {
+        let (status, _) = test_cluster.query_orgs(&params).await?;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "params: {params:?}");
+    }
 
     // `search` is a (case-insensitive) substring match on the org name only.
     let names = |query: &serde_json::Value| -> Vec<String> {

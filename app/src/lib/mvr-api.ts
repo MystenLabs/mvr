@@ -32,14 +32,10 @@ const README_MAX_BYTES = 300_000;
 const README_MAX_REDIRECTS = 3;
 
 export const ORG_PAGE_SIZE = 50;
-/** Safety cap on the number of API pages we walk for a single org. */
-const ORG_MAX_API_PAGES = 40;
-/** Overall time budget for listing all the names of an org. */
-const ORG_DEADLINE_MS = 10_000;
 
-/** Page size used to walk `GET /v1/orgs` (the API's maximum). */
+/** Page size used to list `GET /v1/orgs` (the API's maximum). */
 const ORGS_API_PAGE_SIZE = 50;
-/** Safety cap on the number of API pages we walk to list the orgs. */
+/** Safety cap on the number of API pages we read to list the orgs. */
 const ORGS_MAX_API_PAGES = 40;
 /** Overall time budget for listing all the orgs (the orgs directory). */
 const ORGS_DEADLINE_MS = 8_000;
@@ -235,52 +231,51 @@ export const getPackageReadme = cache(
   },
 );
 
-export type OrgNames =
-  | { status: "ok"; names: SearchResultItem[] }
+export type OrgNamesPage =
+  | { status: "ok"; names: SearchResultItem[]; total: number }
   /** The API returned names of other orgs: it does not support `?org=` yet. */
   | { status: "unsupported" };
 
+const isPageAt = (
+  result: { offset?: number; total?: number | null },
+  offset: number,
+): result is { offset: number; total: number } =>
+  result.offset === offset && typeof result.total === "number";
+
 /**
- * Lists ALL the linked names of an org, by walking the cursor-paginated
- * `GET /v1/names?org={org}&is_linked=true` endpoint (each API page is cached).
+ * One page (`ORG_PAGE_SIZE` names, 1-based) of the linked names of an org, from
+ * `GET /v1/names?org={org}&is_linked=true&offset=...` (cached).
  *
  * `org` is an exact match on the part of the name before `/`. Every returned
  * name is verified to belong to the org: an API that ignores the `org`
  * parameter would otherwise make us list unrelated packages.
  *
- * Throws if the whole list cannot be loaded (API error, time budget or page
- * cap exceeded): a partial list must not be rendered (or mistaken for a 404).
+ * Throws if the page cannot be loaded (API error, timeout, or an API without
+ * offset pagination): it must not be mistaken for a 404.
  */
-export const getOrgNames = cache(async (org: string): Promise<OrgNames> => {
-  const names: SearchResultItem[] = [];
-  const seenCursors = new Set<string>();
-  const deadline = Date.now() + ORG_DEADLINE_MS;
-  let cursor: string | null = null;
-
-  for (let page = 0; page < ORG_MAX_API_PAGES; page++) {
+export const getOrgNamesPage = cache(
+  async (org: string, page: number): Promise<OrgNamesPage> => {
+    const offset = (page - 1) * ORG_PAGE_SIZE;
     const params = new URLSearchParams({
       org,
       limit: String(ORG_PAGE_SIZE),
+      offset: String(offset),
       // Names without a linked package have no package page to link to.
       is_linked: "true",
     });
-    if (cursor) params.set("cursor", cursor);
-
-    const remaining = deadline - Date.now();
-    if (remaining <= 0) break;
 
     const response = await fetch(
       `${MVR_ENDPOINTS.mainnet}/v1/names?${params.toString()}`,
       {
         ...MvrHeader(),
         next: { revalidate: NAME_REVALIDATE_SECONDS },
-        signal: AbortSignal.timeout(Math.min(API_TIMEOUT_MS, remaining)),
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
       },
     );
 
     // The API rejects invalid orgs with a 400: same as "no such org".
     if (response.status === 400) {
-      return { status: "ok", names: [] };
+      return { status: "ok", names: [], total: 0 };
     }
 
     if (!response.ok) {
@@ -291,24 +286,19 @@ export const getOrgNames = cache(async (org: string): Promise<OrgNames> => {
 
     const result = (await response.json()) as SearchResult;
 
+    if (!Array.isArray(result?.data) || !isPageAt(result, offset)) {
+      throw new Error(
+        `Failed to list the names of ${org} (unexpected response)`,
+      );
+    }
+
     if (result.data.some((item) => getOrgFromName(item.name) !== org)) {
       return { status: "unsupported" };
     }
 
-    names.push(...result.data);
-
-    if (!result.next_cursor || result.data.length === 0) {
-      return { status: "ok", names };
-    }
-    // Defensive: an API ignoring the cursor would loop forever.
-    if (seenCursors.has(result.next_cursor)) break;
-
-    seenCursors.add(result.next_cursor);
-    cursor = result.next_cursor;
-  }
-
-  throw new Error(`Failed to list all the names of ${org}`);
-});
+    return { status: "ok", names: result.data, total: result.total };
+  },
+);
 
 /** Whether a value has the shape of an org of the API (`OrgSummary`). */
 const isOrgSummary = (value: unknown): value is OrgSummary => {
@@ -321,73 +311,85 @@ const isOrgSummary = (value: unknown): value is OrgSummary => {
   );
 };
 
+const fetchOrgsPage = async (offset: number, deadline: number) => {
+  const params = new URLSearchParams({
+    limit: String(ORGS_API_PAGE_SIZE),
+    offset: String(offset),
+  });
+
+  const remaining = deadline - Date.now();
+  if (remaining <= 0) {
+    throw new Error("Failed to list the organizations (timeout)");
+  }
+
+  const response = await fetch(
+    `${MVR_ENDPOINTS.mainnet}/v1/orgs?${params.toString()}`,
+    {
+      ...MvrHeader(),
+      // Cached as a part of the whole list, never page by page.
+      cache: "no-store",
+      signal: AbortSignal.timeout(Math.min(API_TIMEOUT_MS, remaining)),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to list the organizations (${response.status})`);
+  }
+
+  const result = (await response.json()) as OrgSearchResult;
+
+  if (
+    !Array.isArray(result?.data) ||
+    !result.data.every(isOrgSummary) ||
+    !isPageAt(result, offset)
+  ) {
+    throw new Error("Failed to list the organizations (unexpected response)");
+  }
+
+  return result;
+};
+
 /**
- * Walks the cursor-paginated `GET /v1/orgs` endpoint, to list ALL the
- * organizations that have at least one linked package, with the largest first.
+ * Lists ALL the organizations that have at least one linked package, with the
+ * largest first: the first page of `GET /v1/orgs` gives the total, and the
+ * other pages are then read in parallel.
  *
  * The list is ordered by package count, which changes over time: pages read
- * at different times can repeat (or skip) an org. So the pages are never
- * cached on their own (the assembled list is, see `getOrgs`), and are read
- * back to back; an org that is still repeated is only kept once.
+ * at (slightly) different times can repeat (or skip) an org. So the pages are
+ * never cached on their own (the assembled list is, see `getOrgs`), and an org
+ * that is repeated is only kept once.
  *
  * Throws if the whole list cannot be loaded (API error, unexpected response,
  * time budget or page cap exceeded).
  */
-const walkOrgs = async (): Promise<OrgSummary[]> => {
-  const orgs = new Map<string, OrgSummary>();
-  const seenCursors = new Set<string>();
+const listOrgs = async (): Promise<OrgSummary[]> => {
   const deadline = Date.now() + ORGS_DEADLINE_MS;
-  let cursor: string | null = null;
+  const first = await fetchOrgsPage(0, deadline);
 
-  for (let page = 0; page < ORGS_MAX_API_PAGES; page++) {
-    const params = new URLSearchParams({ limit: String(ORGS_API_PAGE_SIZE) });
-    if (cursor) params.set("cursor", cursor);
-
-    const remaining = deadline - Date.now();
-    if (remaining <= 0) break;
-
-    const response = await fetch(
-      `${MVR_ENDPOINTS.mainnet}/v1/orgs?${params.toString()}`,
-      {
-        ...MvrHeader(),
-        // Cached as a part of the whole list, never page by page.
-        cache: "no-store",
-        signal: AbortSignal.timeout(Math.min(API_TIMEOUT_MS, remaining)),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to list the organizations (${response.status})`);
-    }
-
-    const result = (await response.json()) as OrgSearchResult;
-
-    if (!Array.isArray(result?.data) || !result.data.every(isOrgSummary)) {
-      throw new Error("Failed to list the organizations (unexpected response)");
-    }
-
-    for (const org of result.data) {
-      if (!orgs.has(org.name)) orgs.set(org.name, org);
-    }
-
-    if (!result.next_cursor || result.data.length === 0) {
-      return [...orgs.values()];
-    }
-    // Defensive: an API ignoring the cursor would loop forever.
-    if (seenCursors.has(result.next_cursor)) break;
-
-    seenCursors.add(result.next_cursor);
-    cursor = result.next_cursor;
+  const pages = Math.ceil(first.total / ORGS_API_PAGE_SIZE);
+  if (pages > ORGS_MAX_API_PAGES) {
+    throw new Error(`Failed to list all the organizations (${pages} pages)`);
   }
 
-  throw new Error("Failed to list all the organizations");
+  const rest = await Promise.all(
+    Array.from({ length: Math.max(pages - 1, 0) }, (_, i) =>
+      fetchOrgsPage((i + 1) * ORGS_API_PAGE_SIZE, deadline),
+    ),
+  );
+
+  const orgs = new Map<string, OrgSummary>();
+  for (const org of [first, ...rest].flatMap((page) => page.data)) {
+    if (!orgs.has(org.name)) orgs.set(org.name, org);
+  }
+
+  return [...orgs.values()];
 };
 
 /**
  * The whole list of organizations, cached as a single unit (one cache entry
  * for the assembled list, with a single timer). A failed walk is not cached.
  */
-const getCachedOrgs = unstable_cache(walkOrgs, ["mvr-orgs"], {
+const getCachedOrgs = unstable_cache(listOrgs, ["mvr-orgs"], {
   revalidate: NAME_REVALIDATE_SECONDS,
 });
 
@@ -511,8 +513,7 @@ const getOrgPackagesPreview = async (
       packages: result.data
         .filter((item) => item.name !== exclude)
         .slice(0, max),
-      /** Only known when the org fits in a single API page. */
-      total: result.next_cursor ? null : result.data.length,
+      total: typeof result.total === "number" ? result.total : null,
     };
   } catch {
     return null;
