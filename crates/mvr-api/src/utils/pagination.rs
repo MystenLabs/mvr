@@ -19,9 +19,9 @@ impl PaginationLimit {
     pub fn new(limit: Option<u32>) -> Result<Self, ApiError> {
         let limit = limit.unwrap_or(DEFAULT_PAGE_LIMIT);
 
-        if limit > MAX_PAGE_LIMIT {
+        if limit == 0 || limit > MAX_PAGE_LIMIT {
             return Err(ApiError::BadRequest(format!(
-                "Limit must be less than or equal to {}",
+                "Limit must be between 1 and {}",
                 MAX_PAGE_LIMIT
             )));
         }
@@ -64,7 +64,7 @@ impl OffsetCursor {
     }
 }
 
-#[derive(Debug, Clone, Default, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Pagination {
     offset: u32,
     limit: PaginationLimit,
@@ -152,6 +152,8 @@ mod tests {
 
         assert!(Pagination::new(Some(&OffsetCursor::encode(1)), Some(1), None).is_err());
         assert!(Pagination::new(None, None, Some(MAX_PAGE_LIMIT + 1)).is_err());
+        assert!(Pagination::new(None, None, Some(0)).is_err());
+        assert!(Pagination::new(None, None, Some(MAX_PAGE_LIMIT)).is_ok());
 
         assert!(Pagination::new(Some("not a cursor"), None, None).is_err());
         let keyset_cursor = general_purpose::STANDARD.encode(r#"{"name":"@test/first"}"#);

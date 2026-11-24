@@ -1,4 +1,11 @@
+use base64::{engine::general_purpose::STANDARD, Engine};
+use diesel::{
+    insert_into,
+    sql_types::{BigInt, Text},
+};
+use diesel_async::RunQueryDsl;
 use insta::assert_snapshot;
+use mvr_schema::{models::PackageDependency, schema::package_dependencies};
 use mvr_test_cluster::{add_name_record_to_database, MvrTestCluster};
 use reqwest::StatusCode;
 use serde_json::json;
@@ -365,6 +372,7 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
         assert_eq!(status, StatusCode::OK);
         assert!(names_of(&query).is_empty());
         assert!(query["next_cursor"].is_null());
+        assert_eq!(query["total"], 0);
     }
 
     // Pagination across pages (2 + 2 + 1).
@@ -420,6 +428,7 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
         .query_names(&[("org", "@deepbook"), ("is_linked", "true")])
         .await?;
     assert_eq!(names_of(&query), vec!["@deepbook/core", "@deepbook/margin"]);
+    assert_eq!(query["total"], 2);
 
     let (_, query) = test_cluster
         .query_names(&[("org", "@deepbook"), ("is_linked", "true"), ("limit", "1")])
@@ -448,6 +457,7 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
         .query_names(&[("org", "@deepbook"), ("search", "core")])
         .await?;
     assert_eq!(names_of(&query), vec!["@deepbook/core"]);
+    assert_eq!(query["total"], 1);
 
     let (_, query) = test_cluster
         .query_names(&[("org", "@another"), ("search", "deepbook")])
@@ -467,6 +477,19 @@ async fn test_search_by_org() -> Result<(), anyhow::Error> {
     ] {
         let (status, _) = test_cluster.query_names(&[("org", org)]).await?;
         assert_eq!(status, StatusCode::BAD_REQUEST, "org: {org}");
+    }
+
+    let keyset_cursor = STANDARD.encode(r#"{"name":"@deepbook/core"}"#);
+    let offset_cursor = STANDARD.encode(r#"{"offset":2}"#);
+    for params in [
+        vec![("cursor", offset_cursor.as_str()), ("offset", "2")],
+        vec![("cursor", keyset_cursor.as_str())],
+        vec![("cursor", "not-a-cursor")],
+        vec![("limit", "0")],
+        vec![("limit", "51")],
+    ] {
+        let (status, _) = test_cluster.query_names(&params).await?;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "params: {params:?}");
     }
 
     let (status, invalid) = test_cluster.query_names(&[("org", "@deep%25")]).await?;
@@ -538,12 +561,12 @@ async fn test_sitemap() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn query_cursor(
+async fn orgs_next_cursor(
     test_cluster: &MvrTestCluster,
     params: &[(&str, &str)],
 ) -> Result<String, anyhow::Error> {
     let (_, query) = test_cluster.query_orgs(params).await?;
-    Ok(query["next_cursor"].as_str().unwrap().replace('+', "%2B"))
+    Ok(query["next_cursor"].as_str().unwrap().to_string())
 }
 
 /// Returns the `(name, packages, icon_url)` of the orgs of a `/v1/orgs` response.
@@ -686,6 +709,13 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
     assert_eq!(query["offset"], 2);
     assert!(query["next_cursor"].is_string());
 
+    let cursor = orgs_next_cursor(&test_cluster, &[("limit", "2"), ("offset", "1")]).await?;
+    let (_, query) = test_cluster
+        .query_orgs(&[("limit", "2"), ("cursor", &cursor)])
+        .await?;
+    assert_eq!(orgs_of(&query), all[3..5]);
+    assert_eq!(query["offset"], 3);
+
     // An offset past the last org: an empty page, with the same total.
     let past_the_end = "5";
     for params in [
@@ -704,7 +734,7 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
     assert!(orgs_of(&query).is_empty());
     assert_eq!(query["total"], 0);
 
-    let cursor = query_cursor(&test_cluster, &[("limit", "2")]).await?;
+    let cursor = orgs_next_cursor(&test_cluster, &[("limit", "2")]).await?;
     let keyset_cursor = "eyJwYWNrYWdlcyI6MCwibmFtZSI6IiJ9"; // {"packages":0,"name":""}
     for params in [
         vec![("cursor", cursor.as_str()), ("offset", "2")],
@@ -919,6 +949,128 @@ async fn test_orgs() -> Result<(), anyhow::Error> {
     let (status, invalid) = test_cluster.query_orgs(&[("search", "deep%25")]).await?;
     assert_eq!(status, StatusCode::BAD_REQUEST);
     assert_snapshot!(invalid.to_string());
+
+    test_cluster.teardown();
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_dependents() -> Result<(), anyhow::Error> {
+    let test_cluster = MvrTestCluster::new(None).await?;
+    let db = test_cluster.db_for_write().await?;
+    let mut connection = db.connect().await?;
+
+    let dependency = ObjectID::from_single_byte(0xd0).to_canonical_string(true);
+    let dependent = |byte: u8| ObjectID::from_single_byte(byte).to_canonical_string(true);
+
+    insert_into(package_dependencies::table)
+        .values(
+            (1..=5)
+                .map(|byte| PackageDependency {
+                    package_id: dependent(byte),
+                    dependency_package_id: dependency.clone(),
+                    chain_id: "35834a8a".to_string(),
+                    immediate_dependency: true,
+                })
+                .collect::<Vec<_>>(),
+        )
+        .execute(&mut *connection)
+        .await?;
+
+    for (byte, date, calls) in [
+        (2, "2025-01-01", 1000),
+        (2, "2025-01-02", 10),
+        (4, "2025-01-02", 50),
+    ] {
+        diesel::sql_query(
+            "INSERT INTO package_analytics VALUES ($1::date, $2, 0, $3, 0, 0, 0, $3)",
+        )
+        .bind::<Text, _>(date)
+        .bind::<Text, _>(dependent(byte))
+        .bind::<BigInt, _>(calls)
+        .execute(&mut *connection)
+        .await?;
+    }
+    drop(connection);
+
+    let dependents_of = |query: &serde_json::Value| -> Vec<(String, i64)> {
+        query["data"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| {
+                (
+                    item["package_id"].as_str().unwrap().to_string(),
+                    item["aggregated_total_calls"].as_i64().unwrap(),
+                )
+            })
+            .collect()
+    };
+
+    let all = vec![
+        (dependent(4), 50),
+        (dependent(2), 10),
+        (dependent(1), 0),
+        (dependent(3), 0),
+        (dependent(5), 0),
+    ];
+
+    let (status, query) = test_cluster.query_dependents(&dependency, &[]).await?;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(dependents_of(&query), all);
+    assert_eq!(query["total"], 5);
+    assert!(query["next_cursor"].is_null());
+
+    let mut paginated = vec![];
+    let mut cursor: Option<String> = None;
+    let mut pages = 0;
+
+    loop {
+        let mut params = vec![("limit", "2")];
+        if let Some(cursor) = cursor.as_deref() {
+            params.push(("cursor", cursor));
+        }
+
+        let (_, query) = test_cluster.query_dependents(&dependency, &params).await?;
+        assert_eq!(query["total"], 5);
+        paginated.extend(dependents_of(&query));
+        pages += 1;
+
+        match query["next_cursor"].as_str() {
+            Some(next_cursor) => cursor = Some(next_cursor.to_string()),
+            None => break,
+        }
+    }
+
+    assert_eq!(pages, 3);
+    assert_eq!(paginated, all);
+
+    let (_, query) = test_cluster
+        .query_dependents(&dependency, &[("limit", "2"), ("offset", "3")])
+        .await?;
+    assert_eq!(dependents_of(&query), all[3..]);
+    assert_eq!(query["offset"], 3);
+
+    let (status, query) = test_cluster
+        .query_dependents(&dependency, &[("offset", "10")])
+        .await?;
+    assert_eq!(status, StatusCode::OK);
+    assert!(dependents_of(&query).is_empty());
+    assert!(query["next_cursor"].is_null());
+    assert_eq!(query["total"], 5);
+
+    let keyset_cursor = STANDARD.encode(r#"{"package_id":null,"aggregated_total_calls":0}"#);
+    let offset_cursor = STANDARD.encode(r#"{"offset":2}"#);
+    for params in [
+        vec![("cursor", offset_cursor.as_str()), ("offset", "2")],
+        vec![("cursor", keyset_cursor.as_str())],
+        vec![("limit", "0")],
+        vec![("limit", "51")],
+    ] {
+        let (status, _) = test_cluster.query_dependents(&dependency, &params).await?;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "params: {params:?}");
+    }
 
     test_cluster.teardown();
 

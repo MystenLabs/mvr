@@ -39,15 +39,11 @@ pub struct PackageByNameResponse {
     pub package_address: Address,
 }
 
-#[derive(Serialize, Deserialize, QueryableByName)]
+#[derive(Serialize, Deserialize)]
 pub struct NameSearchResponse {
-    #[diesel(sql_type = diesel::sql_types::Text)]
     pub name: String,
-    #[diesel(sql_type = diesel::sql_types::Jsonb)]
     pub metadata: Value,
-    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub mainnet_package_info_id: Option<String>,
-    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub testnet_package_info_id: Option<String>,
 }
 

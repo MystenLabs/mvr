@@ -37,6 +37,7 @@ export const ORG_PAGE_SIZE = 50;
 const ORGS_API_PAGE_SIZE = 50;
 /** Safety cap on the number of API pages we read to list the orgs. */
 const ORGS_MAX_API_PAGES = 40;
+const ORGS_API_CONCURRENCY = 4;
 /** Overall time budget for listing all the orgs (the orgs directory). */
 const ORGS_DEADLINE_MS = 8_000;
 /** Time budget for org data that only decorates another page. */
@@ -242,6 +243,17 @@ const isPageAt = (
 ): result is { offset: number; total: number } =>
   result.offset === offset && typeof result.total === "number";
 
+const orgNamesUrl = (org: string, offset: number) => {
+  const params = new URLSearchParams({
+    org,
+    limit: String(ORG_PAGE_SIZE),
+    offset: String(offset),
+    // Names without a linked package have no package page to link to.
+    is_linked: "true",
+  });
+  return `${MVR_ENDPOINTS.mainnet}/v1/names?${params.toString()}`;
+};
+
 /**
  * One page (`ORG_PAGE_SIZE` names, 1-based) of the linked names of an org, from
  * `GET /v1/names?org={org}&is_linked=true&offset=...` (cached).
@@ -256,22 +268,12 @@ const isPageAt = (
 export const getOrgNamesPage = cache(
   async (org: string, page: number): Promise<OrgNamesPage> => {
     const offset = (page - 1) * ORG_PAGE_SIZE;
-    const params = new URLSearchParams({
-      org,
-      limit: String(ORG_PAGE_SIZE),
-      offset: String(offset),
-      // Names without a linked package have no package page to link to.
-      is_linked: "true",
-    });
 
-    const response = await fetch(
-      `${MVR_ENDPOINTS.mainnet}/v1/names?${params.toString()}`,
-      {
-        ...MvrHeader(),
-        next: { revalidate: NAME_REVALIDATE_SECONDS },
-        signal: AbortSignal.timeout(API_TIMEOUT_MS),
-      },
-    );
+    const response = await fetch(orgNamesUrl(org, offset), {
+      ...MvrHeader(),
+      next: { revalidate: NAME_REVALIDATE_SECONDS },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
 
     // The API rejects invalid orgs with a 400: same as "no such org".
     if (response.status === 400) {
@@ -371,14 +373,26 @@ const listOrgs = async (): Promise<OrgSummary[]> => {
     throw new Error(`Failed to list all the organizations (${pages} pages)`);
   }
 
-  const rest = await Promise.all(
-    Array.from({ length: Math.max(pages - 1, 0) }, (_, i) =>
-      fetchOrgsPage((i + 1) * ORGS_API_PAGE_SIZE, deadline),
-    ),
-  );
+  const results = [first];
+  for (let page = 1; page < pages; page += ORGS_API_CONCURRENCY) {
+    const batch = Array.from(
+      { length: Math.min(ORGS_API_CONCURRENCY, pages - page) },
+      (_, i) => fetchOrgsPage((page + i) * ORGS_API_PAGE_SIZE, deadline),
+    );
+    results.push(...(await Promise.all(batch)));
+  }
+
+  while (results.at(-1)?.next_cursor) {
+    if (results.length >= ORGS_MAX_API_PAGES) {
+      throw new Error("Failed to list all the organizations (page cap)");
+    }
+    results.push(
+      await fetchOrgsPage(results.length * ORGS_API_PAGE_SIZE, deadline),
+    );
+  }
 
   const orgs = new Map<string, OrgSummary>();
-  for (const org of [first, ...rest].flatMap((page) => page.data)) {
+  for (const org of results.flatMap((page) => page.data)) {
     if (!orgs.has(org.name)) orgs.set(org.name, org);
   }
 
@@ -387,7 +401,7 @@ const listOrgs = async (): Promise<OrgSummary[]> => {
 
 /**
  * The whole list of organizations, cached as a single unit (one cache entry
- * for the assembled list, with a single timer). A failed walk is not cached.
+ * for the assembled list, with a single timer). A failed listing is not cached.
  */
 const getCachedOrgs = unstable_cache(listOrgs, ["mvr-orgs"], {
   revalidate: NAME_REVALIDATE_SECONDS,
@@ -486,20 +500,11 @@ const getOrgPackagesPreview = async (
   exclude?: string,
 ) => {
   try {
-    const params = new URLSearchParams({
-      org,
-      limit: String(ORG_PAGE_SIZE),
-      is_linked: "true",
+    const response = await fetch(orgNamesUrl(org, 0), {
+      ...MvrHeader(),
+      next: { revalidate: NAME_REVALIDATE_SECONDS },
+      signal: AbortSignal.timeout(OPTIONAL_TIMEOUT_MS),
     });
-
-    const response = await fetch(
-      `${MVR_ENDPOINTS.mainnet}/v1/names?${params.toString()}`,
-      {
-        ...MvrHeader(),
-        next: { revalidate: NAME_REVALIDATE_SECONDS },
-        signal: AbortSignal.timeout(OPTIONAL_TIMEOUT_MS),
-      },
-    );
     if (!response.ok) return null;
 
     const result = (await response.json()) as SearchResult;

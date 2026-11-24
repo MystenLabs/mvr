@@ -213,6 +213,18 @@ impl MvrTestCluster {
         self.query(&format!("v1/orgs/{}", org), &[]).await
     }
 
+    pub async fn query_dependents(
+        &self,
+        package_id: &str,
+        params: &[(&str, &str)],
+    ) -> Result<(StatusCode, serde_json::Value), anyhow::Error> {
+        self.query(
+            &format!("v1/package-address/{}/dependents", package_id),
+            params,
+        )
+        .await
+    }
+
     async fn query(
         &self,
         path: &str,
