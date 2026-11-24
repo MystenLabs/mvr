@@ -53,7 +53,7 @@ export function useGetMvrDependents(
       const endpoint = clients.mvrExperimentalEndpoints[network];
 
       const response = await fetch(
-        `${endpoint}/v1/package-address/${packageId}/dependents?limit=50${pageParam ? `&cursor=${pageParam}` : ""}`,
+        `${endpoint}/v1/package-address/${packageId}/dependents?limit=50${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ""}`,
         MvrHeader(),
       );
 
