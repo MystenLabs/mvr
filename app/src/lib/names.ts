@@ -75,11 +75,11 @@ export const parsePackageNameSegments = (segments: string[]) => {
 };
 
 /**
- * Decodes the `[org]` route segment into an org name in the `@` format
- * (`@org`, `sub@org`). Returns `null` if it is not a valid org.
+ * Decodes the `[org]` route segment into a lowercase org name in the `@`
+ * format (`@org`, `sub@org`). Returns `null` if it is not a valid org.
  */
 export const parseOrgSegment = (segment: string) => {
-  const org = safeDecode(segment);
+  const org = safeDecode(segment)?.toLowerCase();
   if (!org?.includes("@") || !isValidSuiNSName(org)) return null;
   return org;
 };
