@@ -3,6 +3,18 @@ import { MvrHeader } from "@/lib/utils";
 import { AppQueryKeys } from "@/utils/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+const MAX_BULK_REVERSE_RESOLUTION = 50;
+
+type ReverseResolution = { name: string | null };
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
 export function useReverseResolution(
   address: string | string[],
   network: "mainnet" | "testnet",
@@ -12,57 +24,68 @@ export function useReverseResolution(
   const queryClient = useQueryClient();
   const clients = useSuiClientsContext();
 
-  const uncachedIds = addresses.filter(
-    (addr) =>
-      !queryClient.getQueryData([
-        AppQueryKeys.MVR_REVERSE_RESOLUTION,
-        network,
-        addr,
-      ]),
-  );
+  const uncachedIds = [
+    ...new Set(
+      addresses.filter(
+        (addr) =>
+          !queryClient.getQueryData([
+            AppQueryKeys.MVR_REVERSE_RESOLUTION,
+            network,
+            addr,
+          ]),
+      ),
+    ),
+  ];
 
-  const { data, isLoading, error } = useQuery({
+  const { isLoading, error } = useQuery({
     queryKey: [AppQueryKeys.MVR_REVERSE_RESOLUTION_BULK, network, uncachedIds],
     queryFn: async () => {
-      const response = await fetch(
-        `${clients.mvrEndpoints[network]}/v1/reverse-resolution/bulk`,
-        {
-          method: "POST",
-          ...MvrHeader({ "Content-Type": "application/json" }),
-          body: JSON.stringify({
-            package_ids: uncachedIds,
-          }),
-        },
+      await Promise.all(
+        chunk(uncachedIds, MAX_BULK_REVERSE_RESOLUTION).map(async (ids) => {
+          const response = await fetch(
+            `${clients.mvrEndpoints[network]}/v1/reverse-resolution/bulk`,
+            {
+              method: "POST",
+              ...MvrHeader({ "Content-Type": "application/json" }),
+              body: JSON.stringify({ package_ids: ids }),
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to reverse resolve package ids");
+          }
+
+          const data = await response.json();
+          const resolution = data.resolution as Record<
+            string,
+            ReverseResolution
+          >;
+
+          for (const id of ids) {
+            queryClient.setQueryData(
+              [AppQueryKeys.MVR_REVERSE_RESOLUTION, network, id],
+              resolution[id] ?? { name: null },
+            );
+          }
+        }),
       );
-      const data = await response.json();
 
-      for (const [address, resolution] of Object.entries(data.resolution)) {
-        queryClient.setQueryData(
-          [AppQueryKeys.MVR_REVERSE_RESOLUTION, network, address],
-          resolution,
-        );
-      }
-
-      return data;
+      return null;
     },
     enabled: uncachedIds.length > 0,
-    select: (data) => {
-      return data.resolution;
-    },
   });
 
-  // Return all items: cached + newly fetched
   const allItems = addresses.reduce(
     (acc, id) => {
-      const cached = queryClient.getQueryData([
+      const cached = queryClient.getQueryData<ReverseResolution>([
         AppQueryKeys.MVR_REVERSE_RESOLUTION,
         network,
         id,
       ]);
-      if (cached) acc[id] = cached;
+      if (cached?.name) acc[id] = { name: cached.name };
       return acc;
     },
-    {} as Record<string, any>,
+    {} as Record<string, { name: string }>,
   );
 
   return {
