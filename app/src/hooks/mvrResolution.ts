@@ -14,8 +14,6 @@ export type SearchResult = {
   data: SearchResultItem[];
   next_cursor: string | null;
   limit: number;
-  offset?: number;
-  total?: number | null;
 };
 
 export type ResolvedName = {

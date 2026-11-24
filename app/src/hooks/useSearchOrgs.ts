@@ -26,7 +26,6 @@ export type OrgSearchResult = {
   data: OrgSummary[];
   next_cursor: string | null;
   limit: number;
-  offset?: number;
   total: number | null;
 };
 
