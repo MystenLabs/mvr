@@ -1,5 +1,6 @@
 import { PlainPageLayout } from "@/components/layouts/PlainPageLayout";
-import { Text } from "@/components/ui/Text";
+import { Content } from "@/data/content";
+import { type Metadata } from "next";
 
 
 const TERMS_CONTENT = `<p><strong>Terms of Service</strong></p>
@@ -132,6 +133,24 @@ const TERMS_CONTENT = `<p><strong>Terms of Service</strong></p>
 <ol start="18">
     <li><strong>Contact Information</strong>. If you have any questions about these Terms or the Services, please contact the Foundation at legal@mystenlabs.com</li>
 </ol>`;
+
+export const metadata: Metadata = {
+  title: Content.seo.terms.title,
+  description: Content.seo.terms.description,
+  alternates: { canonical: "/terms" },
+  openGraph: {
+    type: "website",
+    siteName: Content.seo.siteName,
+    title: `${Content.seo.terms.title} | ${Content.seo.siteName}`,
+    description: Content.seo.terms.description,
+    url: "/terms",
+  },
+  twitter: {
+    card: "summary",
+    title: `${Content.seo.terms.title} | ${Content.seo.siteName}`,
+    description: Content.seo.terms.description,
+  },
+};
 
 export default function Terms() {
   return (

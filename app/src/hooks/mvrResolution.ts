@@ -34,9 +34,18 @@ export type ResolvedName = {
   } | null;
 };
 
+/** Query key of a resolved name. Also used to seed the cache from the server. */
+export const resolveMvrNameQueryKey = (
+  name: string,
+  network: "mainnet" | "testnet",
+) => [AppQueryKeys.RESOLVE_MVR_NAME, network, name];
+
 /**
  * Resolve a MVR name from the API.
- * @returns
+ * The data is `null` when the name does not exist on the given network.
+ *
+ * Package pages seed this query from the server (see
+ * `src/app/package/[...name]/page.tsx`), so the first render already has data.
  */
 export function useResolveMvrName(
   name: string,
@@ -45,12 +54,15 @@ export function useResolveMvrName(
   const mvrEndpoint = useSuiClientsContext().mvrEndpoints[network];
 
   return useQuery({
-    queryKey: [AppQueryKeys.RESOLVE_MVR_NAME, network, name],
-    queryFn: async () => {
+    queryKey: resolveMvrNameQueryKey(name, network),
+    queryFn: async (): Promise<ResolvedName | null> => {
       const response = await fetch(
         `${mvrEndpoint}/v1/names/${name}`,
         MvrHeader(),
       );
+
+      // Not found (or malformed) names are a valid, cacheable answer.
+      if (response.status === 404 || response.status === 400) return null;
 
       if (!response.ok) {
         throw new Error("Failed to resolve MVR name");
@@ -59,6 +71,8 @@ export function useResolveMvrName(
       return response.json() as Promise<ResolvedName>;
     },
     enabled: !!name,
+    // Avoid refetching right after hydrating server-fetched data.
+    staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     retry: false,

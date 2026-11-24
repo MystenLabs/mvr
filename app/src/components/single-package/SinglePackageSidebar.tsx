@@ -7,13 +7,18 @@ import { SinglePackageAnalytics } from "./SinglePackageAnalytics";
 import { SinglePackageSidebarLink } from "./SinglePackageLayout";
 import { SinglePackageSidebarTitle } from "./SinglePackageLayout";
 import { SinglePackageContent } from "./SinglePackageLayout";
+import { MoreFromOrg } from "./MoreFromOrg";
+import { type PackageOrgContext } from "@/lib/mvr-api";
 
 export function SinglePackageSidebar({
   name,
   network,
+  org,
 }: {
   name: ResolvedName;
   network: "mainnet" | "testnet";
+  /** Server-provided data about the org of the package (optional extras). */
+  org?: PackageOrgContext;
 }) {
   const links = [
     {
@@ -31,7 +36,7 @@ export function SinglePackageSidebar({
   ];
 
   return (
-    <div className="sticky">
+    <div className="sticky grid grid-cols-1 gap-lg">
       <div className="grid grid-cols-1 gap-lg rounded-md bg-bg-secondary py-lg">
         <SinglePackageContent>
           <SinglePackageSidebarTitle>Install</SinglePackageSidebarTitle>
@@ -73,6 +78,8 @@ export function SinglePackageSidebar({
           </SinglePackageContent>
         )}
       </div>
+
+      {org && <MoreFromOrg org={org} />}
     </div>
   );
 }

@@ -1,11 +1,9 @@
 import { Content } from "@/data/content";
 import { Text } from "../ui/Text";
 import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function DocsCTA() {
-  const router = useRouter();
-
   return (
     <div className="container relative overflow-hidden rounded-xl px-2xl py-2xl">
       <img
@@ -28,18 +26,19 @@ export function DocsCTA() {
           </Text>
         </div>
         <div className="flex items-center gap-xs">
-          <Button
-            variant="secondary"
-            size="header"
-            onClick={() => router.push(Content.homepage.docs.registerUrl)}
-          >
-            {Content.homepage.docs.register}
+          <Button asChild variant="secondary" size="header">
+            <Link href={Content.homepage.docs.registerUrl}>
+              {Content.homepage.docs.register}
+            </Link>
           </Button>
-          <Button
-            size="header"
-            onClick={() => window.open(Content.homepage.docs.docsUrl, "_blank")}
-          >
-            {Content.homepage.docs.viewDocs}
+          <Button asChild size="header">
+            <a
+              href={Content.homepage.docs.docsUrl}
+              target="_blank"
+              rel="noopener"
+            >
+              {Content.homepage.docs.viewDocs}
+            </a>
           </Button>
         </div>
       </div>

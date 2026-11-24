@@ -16,7 +16,10 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    // Optional overrides for the MVR API base URLs (e.g. http://localhost:8000).
+    // Defaults (see `src/lib/endpoints.ts`) are the production hosts.
+    NEXT_PUBLIC_MVR_MAINNET_API_URL: z.string().url().optional(),
+    NEXT_PUBLIC_MVR_TESTNET_API_URL: z.string().url().optional(),
   },
 
   /**
@@ -25,7 +28,10 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+    NEXT_PUBLIC_MVR_MAINNET_API_URL:
+      process.env.NEXT_PUBLIC_MVR_MAINNET_API_URL,
+    NEXT_PUBLIC_MVR_TESTNET_API_URL:
+      process.env.NEXT_PUBLIC_MVR_TESTNET_API_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

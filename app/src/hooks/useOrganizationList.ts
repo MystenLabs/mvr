@@ -10,6 +10,7 @@ import { useFetchObjectByIds } from "./useGetObjectsById";
 import { KioskOwnerCap } from "@mysten/kiosk";
 import { useOwnedApps } from "./useOwnedApps";
 import { ReactNode } from "react";
+import { PKG_PUBLIC_NAME } from "@/lib/names";
 
 const NS_MAINNET_TYPE = `${mainPackage.mainnet.packageIdV1}::suins_registration::SuinsRegistration`;
 const NS_SUBNAME_MAINNET_TYPE = `0x00c2f85e07181b90c140b15c5ce27d863f93c4d9159d2a4e7bdaeb40e286d6f5::subdomain_registration::SubDomainRegistration`;
@@ -31,7 +32,7 @@ export type SuinsName = {
 const PUBLIC_NAMES: SuinsName[] = [
   {
     nftId: "0xa7427dd0bde7fc61856a9955e52f855451ea3d01f96cc042cfacd80bd76af0c3", // replace this with the `public good` object id.
-    domainName: "@pkg",
+    domainName: PKG_PUBLIC_NAME,
     expirationTimestampMs: 0,
     isCapabilityOnly: false,
     isPublicName: true,

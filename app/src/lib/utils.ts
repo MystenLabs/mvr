@@ -71,6 +71,9 @@ export const beautifySuiAddress = (address: string, digits = 6) => {
   );
 };
 
+/** Whether a (user-provided, e.g. on-chain) value is an `http(s)` URL. */
+export const isHttpUrl = (url?: string) => !!url && /^https?:\/\//.test(url);
+
 // A tanstack configuration for no refetching.
 export const NoRefetching = {
   staleTime: Infinity,

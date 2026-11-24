@@ -2,7 +2,108 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export const Content = {
+  seo: {
+    siteName: "Move Registry",
+    defaultTitle: "Move Package Registry",
+    package: {
+      fallbackDescription: (name: string) =>
+        `${name} is a Move package on Sui, registered on the Move Registry (MVR). View its versions, source code, dependencies and install instructions.`,
+    },
+    org: {
+      title: (org: string, page: number) =>
+        `${org} packages${page > 1 ? ` - Page ${page}` : ""}`,
+      description: (org: string, count: number) =>
+        `Browse the ${count} Move ${count === 1 ? "package" : "packages"} published by ${org} on the Move Registry (MVR), the package registry for Sui.`,
+    },
+    orgs: {
+      title: "Organizations",
+      description: (count: number) =>
+        `Browse the ${count} organizations publishing Move packages on the Move Registry (MVR), the package registry for Sui.`,
+    },
+    publicName: {
+      title: (name: string, page: number) =>
+        `Public packages (${name})${page > 1 ? ` - Page ${page}` : ""}`,
+      description: (name: string, count: number) =>
+        `Browse the ${count} Move ${count === 1 ? "package" : "packages"} registered under ${name}, the public name of the Move Registry (MVR), where anyone can publish without owning a SuiNS name.`,
+    },
+    faq: {
+      title: "FAQ",
+      description:
+        "Answers to the most frequently asked questions about the Move Registry (MVR): what it is, how to register a name, what it costs and how name resolution works.",
+    },
+    terms: {
+      title: "Terms of Service",
+      description:
+        "The Terms of Service that govern your use of the Move Registry (MVR) website.",
+    },
+    privacyPolicy: {
+      title: "Privacy Policy",
+    },
+    apps: {
+      title: "My Packages",
+    },
+    metadata: {
+      title: "My Metadata",
+    },
+  },
+  notFound: {
+    icon: "🧭",
+    title: "Page not found",
+    description:
+      "The page or package you are looking for does not exist. It might have been moved, or the name might be misspelled.",
+    button: "Back to the homepage",
+  },
+  error: {
+    icon: "⚠️",
+    title: "Something went wrong",
+    description:
+      "We could not load this page right now. Please try again in a moment.",
+    button: "Try again",
+  },
+  org: {
+    packagesCount: (count: number) =>
+      `${count} ${count === 1 ? "package" : "packages"}`,
+    pageOf: (page: number, total: number) => `Page ${page} of ${total}`,
+    previous: "Previous",
+    next: "Next",
+    pagination: "Pagination",
+    breadcrumb: "Breadcrumb",
+    publishedBy: "Published by",
+    by: (org: string) => `by ${org}`,
+    moreFrom: (org: string) => `More from ${org}`,
+    viewAll: (org: string, count?: number | null) =>
+      count ? `View all ${count} packages` : `View all ${org} packages`,
+    viewOrg: (org: string) => `View all packages by ${org}`,
+  },
+  publicName: {
+    label: "Public name",
+    title: "Public packages",
+    explanation: (name: string) =>
+      `${name} is a public name: anyone can publish packages under it, without owning a SuiNS name.`,
+    short: "Anyone can publish here.",
+    browse: "Browse public packages",
+    back: "Browse organizations",
+  },
+  orgs: {
+    title: "Organizations",
+    nav: "Organizations",
+    subtitle: (count: number) =>
+      `${count} ${count === 1 ? "organization publishes" : "organizations publish"} Move packages on MVR.`,
+    filterPlaceholder: "Filter organizations...",
+    noResults: (query: string) => `No organizations match "${query}".`,
+    home: {
+      title: "Browse organizations",
+      subtitle: "Explore the teams and projects publishing packages on MVR.",
+      viewAll: "View all organizations",
+      more: "More organizations",
+    },
+  },
+  search: {
+    organizations: "Organizations",
+    packages: "Packages",
+  },
   searchPackage: "Search package...",
+  menu: "Menu",
   mainnet: "Mainnet",
   testnet: "Testnet",
   emptyStates: {

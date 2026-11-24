@@ -27,7 +27,10 @@ export function EmptyState({
   children,
   size = "lg",
   useCard = false,
+  titleAs = "p",
 }: {
+  /** Use "h1" when the title is the main heading of the page (e.g. 404). */
+  titleAs?: "p" | "h1";
   size?: "sm" | "md" | "lg";
   icon?: string;
   title?: string;
@@ -50,10 +53,15 @@ export function EmptyState({
   return (
     <div className={`container flex flex-grow items-center justify-center overflow-hidden`}>
       <div className={cn("text-center", useCard && "bg-bg-secondary px-lg py-2xl lg:px-2xl lg:py-3xl rounded-xl")}>
-        {icon && <h1 className={SizeSetup.icon[size]}>{icon}</h1>}
+        {icon && (
+          <div aria-hidden className={SizeSetup.icon[size]}>
+            {icon}
+          </div>
+        )}
 
         {title && (
           <Text
+            as={titleAs}
             kind="display"
             // @ts-ignore-next-line
             size={sizeToTitleSize[size]}

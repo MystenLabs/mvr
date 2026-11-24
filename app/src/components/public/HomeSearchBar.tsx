@@ -5,6 +5,8 @@ import { SearchResult } from "@/hooks/mvrResolution";
 import { Loader2 } from "lucide-react";
 import { SearchResults } from "./SearchResults";
 import { Content } from "@/data/content";
+import { type OrgSummary } from "@/hooks/useSearchOrgs";
+import { useSearchDropdown } from "@/hooks/useSearchDropdown";
 
 type HomeSearchBarProps = {
   isDebouncing: boolean;
@@ -14,6 +16,7 @@ type HomeSearchBarProps = {
   handleBlur: () => void;
   setSearchQuery: (query: string) => void;
   searchResults?: SearchResult;
+  orgResults?: OrgSummary[];
   isInputFocused: boolean;
   className?: string;
 };
@@ -26,11 +29,15 @@ export function HomeSearchBar({
   handleBlur,
   setSearchQuery,
   searchResults,
+  orgResults,
   isInputFocused,
   className,
 }: HomeSearchBarProps) {
+  const dropdownProps = useSearchDropdown({ handleFocus, handleBlur });
+
   return (
     <div
+      {...dropdownProps}
       className={cn(
         "bg-purpleSalmonOp12 relative mt-lg rounded-full p-[2px]",
         isInputFocused && "bg-purpleBlue",
@@ -52,8 +59,6 @@ export function HomeSearchBar({
         )}
         <Input
           value={searchQuery}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
           onChange={(e) => setSearchQuery(e.target.value)}
           className={cn(
             "flex h-full w-full rounded-none !border-none bg-transparent !px-0 !py-md !text-16 !leading-16 !outline-none !ring-0 placeholder:font-light placeholder:text-content-tertiary placeholder:opacity-100 disabled:cursor-not-allowed disabled:opacity-50",
@@ -64,6 +69,7 @@ export function HomeSearchBar({
       </div>
       <SearchResults
         results={searchResults || { data: [], next_cursor: null, limit: 0 }}
+        orgs={orgResults}
         hidden={!isInputFocused}
       />
     </div>

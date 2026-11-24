@@ -100,7 +100,8 @@ const formatGitUrl = (url: string) => {
   return url;
 };
 
-export const querySource = async ({
+/** The raw URL of a file in a git source. Throws on an unsupported `url`. */
+export const gitSourceUrl = ({
   url,
   subPath,
   tagOrHash,
@@ -115,7 +116,7 @@ export const querySource = async ({
 
   if (!provider || !repo || !owner) throw new Error("Invalid URL");
 
-  const gitUrl = GithubUrl({
+  return GithubUrl({
     owner,
     repository: repo,
     tagOrHash,
@@ -123,8 +124,15 @@ export const querySource = async ({
     file,
     provider,
   });
+};
 
-  const response = await fetch(gitUrl);
+export const querySource = async (source: {
+  url: string;
+  subPath: string;
+  tagOrHash: string;
+  file?: string;
+}) => {
+  const response = await fetch(gitSourceUrl(source));
 
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -132,6 +140,19 @@ export const querySource = async ({
 
   return response.text();
 };
+
+/** Query key of a git source file. Also used to seed the cache from the server. */
+export const gitSourceQueryKey = ({
+  url,
+  subPath,
+  tagOrHash,
+  file = "Move.lock",
+}: {
+  url?: string;
+  subPath?: string;
+  tagOrHash?: string;
+  file?: string;
+}) => [AppQueryKeys.GIT_SOURCE, url, subPath, tagOrHash, file];
 
 export function useGetSourceFromGit({
   url,
@@ -145,7 +166,7 @@ export function useGetSourceFromGit({
   file?: string;
 }) {
   return useQuery({
-    queryKey: [AppQueryKeys.GIT_SOURCE, url, subPath, tagOrHash, file],
+    queryKey: gitSourceQueryKey({ url, subPath, tagOrHash, file }),
     queryFn: async () => {
       if (!url || !tagOrHash) throw new Error("Invalid URL");
 

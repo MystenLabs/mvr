@@ -1,64 +1,15 @@
-"use client";
+import { type Metadata } from "next";
+import { AppsLayout } from "@/components/layouts/AppsLayout";
+import { Content } from "@/data/content";
 
-import Header from "@/components/Header";
-import { WalletConnectedContent } from "@/components/layouts/WalletConnectedContent";
-import {
-  AppContext,
-  AppContextType,
-} from "@/components/providers/app-provider";
-import { LocalStorageKeys } from "@/data/localStorage";
-import { useActiveAddress } from "@/hooks/useActiveAddress";
-import { useOrganizationList } from "@/hooks/useOrganizationList";
-import { useEffect, useState } from "react";
+// Wallet-gated page: nothing to index.
+export const metadata: Metadata = {
+  title: Content.seo.apps.title,
+  robots: { index: false, follow: false },
+};
 
-export default function AppsLayout({
+export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { names: ownedNames } = useOrganizationList();
-  const address = useActiveAddress();
-
-  const [appValue, setAppValue] = useState<AppContextType["value"]>({
-    selectedSuinsName: null,
-  });
-
-  useEffect(() => {
-    const sessionStorageEntry =
-      JSON.parse(
-        sessionStorage.getItem(LocalStorageKeys.SELECTED_NS_NAME) ?? "{}",
-      )?.selectedSuinsName ?? null;
-
-    if (sessionStorageEntry) {
-      setAppValue({ selectedSuinsName: sessionStorageEntry });
-    }
-  }, []);
-
-  const setAndCacheValue = (value: AppContextType["value"]) => {
-    sessionStorage.setItem(
-      LocalStorageKeys.SELECTED_NS_NAME,
-      JSON.stringify(value),
-    );
-    setAppValue(value);
-  };
-
-  useEffect(() => {
-    if (
-      !ownedNames?.find((x) => x.nftId === appValue.selectedSuinsName?.nftId) &&
-      appValue.selectedSuinsName?.nftId
-    ) {
-      setAppValue({ selectedSuinsName: null });
-    }
-  }, [ownedNames, address]);
-
-  return (
-    <>
-      <Header />
-      <WalletConnectedContent>
-        <AppContext.Provider
-          value={{ value: appValue, setValue: setAndCacheValue }}
-        >
-          {children}
-        </AppContext.Provider>
-      </WalletConnectedContent>
-    </>
-  );
+  return <AppsLayout>{children}</AppsLayout>;
 }
