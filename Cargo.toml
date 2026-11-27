@@ -33,25 +33,25 @@ futures = "0.3.31"
 tempfile = "3.20.0"
 
 # Main Sui Mono-repo
-sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
-sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f"}
-jsonrpc = { git = "https://github.com/mystenlabs/sui.git", rev = "ceaaff1cc84c1ba2f12c4e7928914ece81fbdd0f" }
+sui-indexer-alt-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+mysten-metrics = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+telemetry-subscribers = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+sui-pg-db = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+move-core-types = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+sui-types = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+sui-package-resolver = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+sui-move-build = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+move-binary-format = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+sui-indexer-alt-framework = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+sui-rpc-api = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
+sui-field-count = { git = "https://github.com/MystenLabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8"}
+jsonrpc = { git = "https://github.com/mystenlabs/sui.git", rev = "9dc25070cf2ed18bcda1ebb095f39708638195a8" }
 
 # fastcrypto (pinned to the same rev the Sui mono-repo uses, to avoid duplicate crypto types)
-fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto", rev = "076bf5ad8cea140dc7cf5c5861c24a36acdf64ce" }
+fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto", rev = "0a263279c31a45ba4bcd986a82b7e99c63ed16c0" }
 
 # New Rust SDK
-sui-sdk-types = { git = "https://github.com/MystenLabs/sui-rust-sdk", package = "sui-sdk-types", rev = "618b6c8484a2394f73d9b5e21cce0ac228b2cf31", features = ["hash", "serde"] }
+sui-sdk-types = { git = "https://github.com/MystenLabs/sui-rust-sdk", package = "sui-sdk-types", rev = "8c356d65b1c324590a3fd25990c382af308ea545", features = ["hash", "serde"] }
 
 # async-graphql (use same fork as sui to avoid version conflicts)
 async-graphql = { git = "https://github.com/amnn/async-graphql", branch = "v7.0.1-react-18-graphiql-4", features = ["dataloader"] }

@@ -9,4 +9,4 @@ Networks: mainnet
 Tip: You can find more information about a package by using: mvr resolve <name>
 
 There are multiple pages of results. Use the cursor to paginate through the results.
-mvr search <query> --cursor eyJuYW1lIjoiQHRlc3RpbmdhZnJlZWNsYWltL3VwZ3JhZGVkIn0=
+mvr search <query> --cursor eyJvZmZzZXQiOjF9
